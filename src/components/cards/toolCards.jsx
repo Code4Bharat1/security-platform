@@ -19,6 +19,13 @@ const ToolCardsPage = () => {
       slug: "vuln-scanner",
       buttonLabel: "Scan for Vulnerabilities",
     },
+     {
+      name: "Jest Scanner",
+      image: "/vuln_scanner.png",
+      description: "Scan websites for security weaknesses like XSS or SQL injection.",
+      slug: "codeForm",
+      buttonLabel: "Jest Scanner",
+    },
     {
       name: "Website Recon",
       image: "/web-recon.png",
@@ -81,6 +88,14 @@ const ToolCardsPage = () => {
       description: "Allows users to test API endpoints, validating functionality, security headers",
       slug: "portScannerForm",
       buttonLabel: "Check Headers",
+
+    },
+    {
+      name: "Jest Scanner",
+      image: "/port_scan.png",
+      description: "Allows users to test API endpoints, validating functionality, security headers",
+      slug: "jestForm",
+      buttonLabel: "Analyze code",
 
     },
     {
