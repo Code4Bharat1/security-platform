@@ -1,8 +1,13 @@
 import { defineConfig } from "eslint/config";
 import js from "@eslint/js";
 import globals from "globals";
-import pluginReact from "eslint-plugin-react";
-import pluginSecurity from "eslint-plugin-security";
+import noEvalRule from "./rules/no-eval.js";
+
+const customSecurityPlugin = {
+  rules: {
+    "no-eval": noEvalRule,
+  },
+};
 
 export default defineConfig([
   {
@@ -19,13 +24,17 @@ export default defineConfig([
     plugins: ["react"],
     extends: ["plugin:react/recommended"],
     rules: {
-      "react/prop-types": "off", // If you don't want prop-types validation
-      "react/jsx-uses-react": "off", // React 17+ doesn't require this rule
+      "react/prop-types": "off",
+      "react/jsx-uses-react": "off",
     },
   },
   {
     files: ["**/*.{js,mjs,cjs,jsx}"],
-    plugins: ["security"],
-    extends: ["plugin:security/recommended"],
+    plugins: {
+      security: customSecurityPlugin,
+    },
+    rules: {
+      "security/no-eval": "error",
+    },
   },
 ]);

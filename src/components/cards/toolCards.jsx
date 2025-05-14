@@ -27,6 +27,20 @@ const ToolCardsPage = () => {
       buttonLabel: "Jest Scanner",
     },
     {
+      name: "Sonar Scanner",
+      image: "/vuln_scanner.png",
+      description: "Scan websites for security weaknesses like XSS or SQL injection.",
+      slug: "sonarForm",
+      buttonLabel: "Sonar Scanner",
+    },
+     {
+      name: "Checkmarx Scanner",
+      image: "/vuln_scanner.png",
+      description: "Scan websites for security weaknesses like XSS or SQL injection.",
+      slug: "codeAnalysis",
+      buttonLabel: "Scan your codes",
+    },
+    {
       name: "Website Recon",
       image: "/web-recon.png",
       description: "Perform an in-depth reconnaissance of a website to identify key metadata, technologies used.",

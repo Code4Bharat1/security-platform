@@ -5,6 +5,7 @@ const createJestConfig = nextJest({ dir: './' });
 module.exports = createJestConfig({
   testEnvironment: 'jsdom',
   collectCoverage: true,
-  coverageDirectory: "public/coverage",
+  coverageDirectory: "coverage",
+  coverageReporters:['lcov' , 'text']
 });
 

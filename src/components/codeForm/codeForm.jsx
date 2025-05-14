@@ -8,6 +8,16 @@ export default function CodeForm() {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState(null);
 
+  const downloadResult = () => {
+  const blob = new Blob([JSON.stringify(result, null, 2)], { type: 'application/json' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = 'analysis-result.json';
+  a.click();
+  URL.revokeObjectURL(url);
+};
+
   const handleSubmit = async () => {
     // Reset previous states
     setResult(null);
@@ -82,13 +92,40 @@ export default function CodeForm() {
 
       {/* Result Display */}
       {result && (
-        <div className="mt-4 p-4 bg-gray-50 border border-gray-200 rounded-lg">
-          <h3 className="text-lg font-semibold mb-2 text-gray-800">Analysis Result:</h3>
-          <pre className="bg-white p-3 rounded-md overflow-x-auto text-sm text-gray-700 border border-gray-200">
-            {JSON.stringify(result, null, 2)}
-          </pre>
-        </div>
+  <div className="mt-4 p-4 bg-gray-50 border border-gray-200 rounded-lg">
+    <h3 className="text-lg font-semibold mb-2 text-gray-800">Analysis Result:</h3>
+
+    {/* Summary Stats */}
+    <ul className="text-sm text-gray-700 mb-3">
+      <li><strong>Message:</strong> {result.message}</li>
+      <li><strong>Total Lines of Code:</strong> {result.lines}</li>
+     <li><strong>Total File Length:</strong> {result.length} characters</li>
+      {result.coverage && (
+        <>
+          <li><strong>Line Coverage:</strong> {result.coverage.lines}</li>
+          <li><strong>Function Coverage:</strong> {result.coverage.functions}</li>
+          <li><strong>Statement Coverage:</strong> {result.coverage.statements}</li>
+          <li><strong>Branch Coverage:</strong> {result.coverage.branches}</li>
+        </>
       )}
+    </ul>
+
+    {/* Raw JSON View */}
+    <pre className="bg-white p-3 rounded-md overflow-x-auto text-sm text-gray-700 border border-gray-200">
+      {JSON.stringify(result, null, 2)}
+    </pre>
+
+    {/* Download Button */}
+    <button
+      onClick={downloadResult}
+      className="mt-3 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors duration-300"
+    >
+      Download Result
+    </button>
+  </div>
+)}
+
+
     </div>
   );
 }

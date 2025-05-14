@@ -3,12 +3,17 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
+    "test": "jest",
+    "test:coverage": "jest --coverage",
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "next lint"
+    "lint": "next lint",
+    "analyze": "node index.js"
   },
   "dependencies": {
+    "@babel/parser": "^7.27.2",
+    "@babel/traverse": "^7.27.1",
     "@prisma/client": "^6.7.0",
     "axios": "^1.9.0",
     "bcrypt": "^5.1.1",
@@ -45,6 +50,7 @@
     "eslint-plugin-security": "^3.0.1",
     "globals": "^16.1.0",
     "jest": "^29.7.0",
+    "jest-environment-jsdom": "^29.7.0",
     "tailwindcss": "^4"
   }
 }
