@@ -9,7 +9,7 @@ const ToolCardsPage = () => {
       name: "WAF Scanner",
       image: "/waf1.png",
       description: "Detects and analyzes WAF protection on a website, providing insights into security rules",
-      slug: "waf_form",
+      slug: "firewallDashboard",
       buttonLabel: "Check WAF",
     },
     {
@@ -104,14 +104,7 @@ const ToolCardsPage = () => {
       buttonLabel: "Check Headers",
 
     },
-    {
-      name: "Jest Scanner",
-      image: "/port_scan.png",
-      description: "Allows users to test API endpoints, validating functionality, security headers",
-      slug: "jestForm",
-      buttonLabel: "Analyze code",
-
-    },
+   
     {
       name: "Meta Tag Analyzer",
       image: "/meta_tag.png",

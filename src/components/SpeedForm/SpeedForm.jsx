@@ -22,7 +22,7 @@ export default function SpeedForm({ onTest, data, loading }) {
 
       <div className="bg-white p-6 rounded-lg shadow-lg w-full max-w-4xl mt-10">
         <h1 className="text-2xl font-bold text-center mb-5 mt-4 text-green-800">
-          Website SSL Checker
+         Page Speed Tester
         </h1>
 
         <form onSubmit={handleSubmit} className="space-y-4">

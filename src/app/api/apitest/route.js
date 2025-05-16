@@ -428,7 +428,7 @@ function generateRecommendations(response, requestHeaders) {
 }
 
 // Create routes for API testing
-app.post("/api/test", async (req, res) => {
+app.post("/api/apitest", async (req, res) => {
   const { url, method = "GET", headers = {}, body = {}, options = {} } = req.body;
   
   if (!url) {
@@ -465,7 +465,7 @@ app.get("/", (req, res) => {
     name: "API Security Tester",
     version: "1.0.0",
     endpoints: {
-      "/api/test": {
+      "/api/apitest": {
         method: "POST",
         description: "Test the security of an API endpoint",
         body: {
