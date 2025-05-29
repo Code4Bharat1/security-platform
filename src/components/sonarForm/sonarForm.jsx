@@ -5,7 +5,7 @@ export default function SonarForm() {
   const [code, setCode] = useState("");
   const [results, setResults] = useState([]);
 
- const handleAnalyze = async () => {
+ const handleAnalyze = async () => {           
   try {
     const res = await fetch("/api/sonar_analyze", {
       method: "POST",

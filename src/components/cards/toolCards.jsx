@@ -30,7 +30,7 @@ const ToolCardsPage = () => {
       name: "Sonar Scanner",
       image: "/vuln_scanner.png",
       description: "Scan websites for security weaknesses like XSS or SQL injection.",
-      slug: "sonarForm",
+      slug: "sonarScanner",
       buttonLabel: "Sonar Scanner",
     },
      {
