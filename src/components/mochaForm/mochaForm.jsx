@@ -88,7 +88,7 @@ const MochaTestPage = () => {
 
   return (
     <div className="flex flex-col items-center min-h-screen bg-gray-100 mb-5">
-      <img src="/api/placeholder/64/80" alt="Mocha logo" className="w-16 h-20 mb-4 mt-7" />
+      <img src="/mocha-logo.png" alt="Mocha logo" className="w-20 h-20 mb-4 mt-7" />
       <h1 className="text-3xl md:text-4xl font-bold text-slate-800 mt-3">Mocha API Testing</h1>
       <p className="text-lg text-slate-600 max-w-2xl mx-auto text-center mt-3">
         Test your API endpoints with Mocha and verify responses with a simple interface.

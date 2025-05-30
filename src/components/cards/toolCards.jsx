@@ -44,7 +44,7 @@ const ToolCardsPage = () => {
       name: "Website Recon",
       image: "/web-recon.png",
       description: "Perform an in-depth reconnaissance of a website to identify key metadata, technologies used.",
-      slug: "webreconForm",
+      slug: "webrecon",
       buttonLabel: "Website Recon",
     },
     {
