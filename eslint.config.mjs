@@ -1,11 +1,23 @@
 import js from "@eslint/js";
-import globals from "globals";
-import pluginReact from "eslint-plugin-react";
-import { defineConfig } from "eslint/config";
+import pluginSecurity from "eslint-plugin-security";
+import pluginNoUnsanitized from "eslint-plugin-no-unsanitized";
 
-
-export default defineConfig([
-  { files: ["**/*.{js,mjs,cjs,jsx}"], plugins: { js }, extends: ["js/recommended"] },
-  { files: ["**/*.{js,mjs,cjs,jsx}"], languageOptions: { globals: globals.browser } },
-  pluginReact.configs.flat.recommended,
-]);
+/** @type {import("eslint").FlatConfig[]} */
+export default [
+  js.configs.recommended,
+  {
+    plugins: {
+      security: pluginSecurity,
+      "no-unsanitized": pluginNoUnsanitized
+    },
+    rules: {
+      "security/detect-eval-with-expression": "error",
+      "no-unsanitized/method": "error",
+      "no-unsanitized/property": "error"
+    },
+    languageOptions: {
+      ecmaVersion: "latest",
+      sourceType: "module"
+    }
+  }
+];
