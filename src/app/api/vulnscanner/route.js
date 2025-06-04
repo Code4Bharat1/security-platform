@@ -1,7 +1,7 @@
 import sslChecker from "ssl-checker";
 import axios from "axios";
 import https from "https";
-
+import { NextResponse } from "next/server";
 export async function POST(request) {
   const { url } = await request.json();
 
@@ -122,7 +122,7 @@ export async function POST(request) {
           });
         }
       } catch (error) {
-        // Ignore connection errors for these tests
+         return NextResponse.json({ error: "Unable to fetch or analyze the website.",details: error.message }, { status: 500 });
       }
     }
     

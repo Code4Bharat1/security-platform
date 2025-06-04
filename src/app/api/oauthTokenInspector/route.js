@@ -1,3 +1,5 @@
+import { Buffer } from 'buffer'; // fix Buffer reference
+
 export async function POST(req) {
   try {
     const { token } = await req.json();
@@ -33,6 +35,7 @@ export async function POST(req) {
 
     return Response.json({ payload, issues });
   } catch (err) {
+    console.error('JWT decode error:', err); // fix unused err
     return Response.json(
       { error: 'Failed to parse or decode the token.' },
       { status: 500 }

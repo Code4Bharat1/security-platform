@@ -20,11 +20,10 @@ export async function POST(request) {
         return new Response(JSON.stringify({ error: 'No PTR record found for this IP' }), { status: 404 });
       }
       return new Response(JSON.stringify({ domains }), { status: 200 });
-    } catch (error) {
-      // If dns.reverse throws, it's likely no PTR record or lookup failure
+    } catch {
       return new Response(JSON.stringify({ error: 'No PTR record found or DNS lookup failed' }), { status: 404 });
     }
-  } catch (err) {
+  } catch {
     return new Response(JSON.stringify({ error: 'Invalid request' }), { status: 400 });
   }
 }

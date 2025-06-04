@@ -1,4 +1,6 @@
 // Function to analyze WAF rules based on detected WAFs and headers
+/* eslint-env node, es2022 */
+
 function analyzeWafRules(detectedWAFs, headers, statusCode) {
     if (detectedWAFs.length === 0) {
         return {

@@ -16,6 +16,7 @@ export async function POST(req) {
 
     return Response.json({ isProtected, protectedBy, headers });
   } catch (err) {
+    console.error(err);
     return Response.json({ error: 'Failed to fetch headers. Invalid or unreachable URL.' }, { status: 500 });
   }
 }
