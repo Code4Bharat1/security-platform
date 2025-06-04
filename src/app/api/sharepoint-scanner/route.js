@@ -1,7 +1,6 @@
 // File: /app/api/sharepoint-scanner/route.js
 import { NextResponse } from 'next/server';
-import axios from 'axios';
-import * as cheerio from 'cheerio';
+
 
 /**
  * Handles SharePoint security scanning requests
@@ -43,7 +42,7 @@ async function scanSharePointSite(url) {
     }
     
     // Simulate a delay for the scanning process
-    await new Promise(resolve => setTimeout(resolve, 1500));
+//await new Promise(resolve => setTimeout(resolve, 1500));
     
     // Generate simulated scan results based on the URL
     return generateSharePointScanResults(url);

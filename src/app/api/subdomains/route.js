@@ -3,10 +3,10 @@
 export async function POST(req) {
   const { domain } = await req.json();
   const apiKey = process.env.SECURITYTRAILS_API_KEY;
+
   if (!domain) {
     return new Response(JSON.stringify({ error: 'Domain is required' }), { status: 400 });
   }
-
 
   if (!apiKey) {
     return new Response(
@@ -41,7 +41,9 @@ export async function POST(req) {
 
     return new Response(JSON.stringify({ results }), { status: 200 });
   } catch (error) {
-    return new Response(JSON.stringify({ error: 'Failed to fetch subdomains' }), { status: 500 });
+    return new Response(
+      JSON.stringify({ error: 'Failed to fetch subdomains', details: error.message }),
+      { status: 500 }
+    );
   }
 }
-

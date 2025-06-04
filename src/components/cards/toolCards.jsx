@@ -40,13 +40,13 @@ const ToolCardsPage = () => {
       slug: "codeAnalysis",
       buttonLabel: "Scan your codes",
     },
-    {
-      name: "Website Recon",
-      image: "/web-recon.png",
-      description: "Perform an in-depth reconnaissance of a website to identify key metadata, technologies used.",
-      slug: "webrecon",
-      buttonLabel: "Website Recon",
-    },
+     {
+       name: "Website Recon",
+       image: "/web-recon.png",
+       description: "Perform an in-depth reconnaissance of a website to identify key metadata, technologies used.",
+       slug: "webrecon",
+       buttonLabel: "Website Recon",
+     },
     {
       name: "Zap Scanner",
       image: "/zap-logo.png",
@@ -104,7 +104,128 @@ const ToolCardsPage = () => {
       buttonLabel: "Check Headers",
 
     },
-   
+    {
+      name: "ASN Lookup",
+      image: "/port_scan.png",
+      description: "Retrieve details about an Autonomous System Number (ASN).",
+      slug: "asnLookup",
+      buttonLabel: "ASN Lookup",
+
+    },
+    {
+      name: "Clickjacking Tester",
+      image: "/port_scan.png",
+      description: " Check for UI redressing vulnerabilities in a webpage.",
+      slug: "clickjackingTester",
+      buttonLabel: "Clickjacking Tester",
+
+    },
+    {
+      name: "- CSRF Vulnerability Scanner",
+      image: "/port_scan.png",
+      description: " Check for UI redressing vulnerabilities in a webpage.",
+      slug: "csrfChecker",
+      buttonLabel: "CSRF Vulnerability Scanner",
+
+    },
+   {
+      name: "HTTPS Security Checker",
+      image: "/port_scan.png",
+      description: " Validate HTTPS security implementation.",
+      slug: "httpsCheckerForm",
+      buttonLabel: "HTTPS Security Checker",
+
+    },
+    {
+      name: "IP Geolocation Lookup",
+      image: "/port_scan.png",
+      description: " Validate HTTPS security implementation.",
+      slug: "ipGeo",
+      buttonLabel: "IP Geolocation Lookup",
+
+    },
+    {
+      name: "JWT Checker",
+      image: "/port_scan.png",
+      description: " Verify JWT authenticity and expiration",
+      slug: "jwtForm",
+      buttonLabel: "JWT Checker",
+
+    },
+    {
+      name: "JWT Signature Validator",
+      image: "/port_scan.png",
+      description: "Ensure JWT signature integrity.",
+      slug: "JWTSignatureValidator",
+      buttonLabel: "JWT Signature Validator",
+
+    },
+    {
+      name: "OAuth Token Analyzer",
+      image: "/port_scan.png",
+      description: " Inspect OAuth tokens for security risks.",
+      slug: "OAuthTokenInspector",
+      buttonLabel: "OAuth Token Analyzer",
+
+    },
+    {
+      name: " Obfuscation Detector",
+      image: "/port_scan.png",
+      description: "Identify obfuscation techniques in code.",
+      slug: "obfuscationChecker",
+      buttonLabel: "Obfuscation Detector",
+
+    },
+     {
+      name: "Open Redirect Tester ",
+      image: "/port_scan.png",
+      description: "Find unsafe redirection vulnerabilities.",
+      slug: "openRedirectTester",
+      buttonLabel: "Open Redirect Tester ",
+    },
+
+    {
+      name: " Regex Security Validator",
+      image: "/port_scan.png",
+      description: "Check regular expressions for security flaws",
+      slug: "regexDetector",
+      buttonLabel: "Regex Security Validator",
+    },
+    {
+      name: "Reverse DNS Resolver ",
+      image: "/port_scan.png",
+      description: "Retrieve domain names linked to an IP.",
+      slug: "reverseDNSLookup",
+      buttonLabel: "Reverse DNS Resolver",
+    },
+    {
+      name: "Secret Key Scanner",
+      image: "/port_scan.png",
+      description: "Search for exposed API keys or credentials.",
+      slug: "secretKeyScanner",
+      buttonLabel: "Secret Key Scanner",
+    },
+     {
+      name: "Session Fixation Tester",
+      image: "/port_scan.png",
+      description: "Detect session fixation vulnerabilities",
+      slug: "sessionFixationChecker",
+      buttonLabel: "Session Fixation Tester",
+    },
+      {
+      name: "Whois Domain Lookup",
+      image: "/port_scan.png",
+      description: "Retrieve domain registration and ownership details.",
+      slug: "whoisLookup",
+      buttonLabel: "Whois Domain Lookup",
+    },
+     {
+      name: "XSS Vulnerability Tester",
+      image: "/port_scan.png",
+      description: "Identify Cross-Site Scripting (XSS) risks",
+      slug: "xssTester",
+      buttonLabel: "XSS Vulnerability Tester",
+    },
     {
       name: "Meta Tag Analyzer",
       image: "/meta_tag.png",

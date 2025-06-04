@@ -1,8 +1,8 @@
 // File: app/api/sitemap-generator/route.js
 import { NextResponse } from 'next/server';
 import axios from 'axios';
-import cheerio from 'cheerio';
 import { URL } from 'url';
+import * as cheerio from 'cheerio';  // <-- changed this import
 
 // Function to normalize URL (add protocol if missing)
 const normalizeUrl = (url) => {
@@ -13,24 +13,24 @@ const normalizeUrl = (url) => {
 };
 
 // Function to check if a URL belongs to the same domain
+// Function to check if a URL belongs to the same domain
 const isSameDomain = (baseUrl, url) => {
   try {
     const baseHostname = new URL(baseUrl).hostname;
     const urlHostname = new URL(url).hostname;
     return baseHostname === urlHostname;
-  } catch (error) {
-    return false;
+  } catch {
+    return false;  // no error var needed here
   }
 };
 
+
 // Function to extract and normalize links from HTML
 const extractLinks = async (url, baseUrl, visited = new Set(), depth = 3, maxDepth = 3) => {
-  // Stop if we've reached max depth or already visited this URL
   if (depth > maxDepth || visited.has(url)) {
     return visited;
   }
   
-  // Mark as visited
   visited.add(url);
   
   try {
@@ -44,23 +44,19 @@ const extractLinks = async (url, baseUrl, visited = new Set(), depth = 3, maxDep
     const $ = cheerio.load(data);
     const links = new Set();
 
-    // Extract all links
     $('a').each((_, element) => {
       let link = $(element).attr('href');
       
-      // Skip if no href or it's a fragment/mailto/tel link
       if (!link || link.startsWith('#') || link.startsWith('mailto:') || link.startsWith('tel:')) {
         return;
       }
       
       try {
-        // Handle relative URLs
         if (!link.startsWith('http')) {
           const base = new URL(url);
           if (link.startsWith('/')) {
             link = `${base.protocol}//${base.hostname}${link}`;
           } else {
-            // Remove last part of path for relative links
             let basePath = base.pathname;
             if (!basePath.endsWith('/')) {
               basePath = basePath.substring(0, basePath.lastIndexOf('/') + 1);
@@ -69,16 +65,14 @@ const extractLinks = async (url, baseUrl, visited = new Set(), depth = 3, maxDep
           }
         }
         
-        // Only process links from the same domain
         if (isSameDomain(baseUrl, link)) {
           links.add(link);
         }
-      } catch (error) {
-        // Skip invalid URLs
+      } catch {
+        // skip invalid URLs
       }
     });
 
-    // Recursively crawl discovered links
     if (depth < maxDepth) {
       for (const link of links) {
         if (!visited.has(link)) {
@@ -104,16 +98,13 @@ export async function POST(request) {
     }
     
     const normalizedUrl = normalizeUrl(url);
-    const maxDepth = Math.min(Math.max(parseInt(depth), 1), 5); // Limit depth between 1-5
+    const maxDepth = Math.min(Math.max(parseInt(depth), 1), 5);
     const visited = new Set();
     
-    // Start crawling
     const urls = await extractLinks(normalizedUrl, normalizedUrl, visited, 1, maxDepth);
     
-    // Convert Set to Array for response
     const urlArray = Array.from(urls);
 
-    // Generate XML content
     let xml = `<?xml version="1.0" encoding="UTF-8"?>\n`;
     xml += `<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n`;
     urlArray.forEach((link) => {

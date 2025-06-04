@@ -1,4 +1,5 @@
 import { ESLint } from 'eslint';
+import { Response } from 'node-fetch';
 
 export async function POST(req) {
   try {
@@ -7,6 +8,9 @@ export async function POST(req) {
     if (!code || typeof code !== 'string') {
       return new Response(JSON.stringify({ error: "Invalid or missing code" }), { status: 400 });
     }
+
+    // Dynamically import the CommonJS plugin
+    const securityPlugin = (await import('eslint-plugin-security')).default || (await import('eslint-plugin-security'));
 
     const eslint = new ESLint({
       overrideConfig: [
@@ -17,7 +21,7 @@ export async function POST(req) {
             sourceType: "module",
           },
           plugins: {
-            security: require("eslint-plugin-security"),
+            security: securityPlugin,
           },
           rules: {
             "no-unused-vars": "warn",
@@ -54,7 +58,7 @@ export async function POST(req) {
       headers: { 'Content-Type': 'application/json' },
     });
   } catch (err) {
-    console.error("ESLint API error:", err);
+    // Optionally handle logging differently if console is not available
     return new Response(JSON.stringify({ error: err.message }), { status: 500 });
   }
 }

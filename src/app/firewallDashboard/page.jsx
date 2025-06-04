@@ -1,7 +1,7 @@
 "use client"; // because we'll use hooks and client fetch
 
 import FirewallDashboard from "@/components/firewallDashboard/firewallDashboard";
-import Footer from "@/components/layout/footer";
+
 import Navbar from "@/components/layout/navbar";
 import React, { useState } from "react";
 
@@ -69,7 +69,7 @@ export default function DashboardPage() {
 
       {data && <FirewallDashboard data={data}/>}
     </div>
-    <Footer/>
+    
     </div>
   );
 }

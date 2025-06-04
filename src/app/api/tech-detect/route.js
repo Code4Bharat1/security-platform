@@ -39,6 +39,6 @@ export async function POST(req) {
     });
 
   } catch (err) {
-    return NextResponse.json({ error: "Unable to fetch or analyze the website." }, { status: 500 });
+    return NextResponse.json({ error: "Unable to fetch or analyze the website.",details: err.message }, { status: 500 });
   }
 }
