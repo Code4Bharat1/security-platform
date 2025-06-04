@@ -1,102 +1,72 @@
-import  axios from "axios";
-import * as cheerio from "cheerio";
+import axios from 'axios';
+import * as cheerio from 'cheerio';
+import pLimit from 'p-limit';
 
-// Function to fetch webpage and extract links
-const extractLinks = async (url) => {
+export async function GET(req) {
+  const { searchParams } = new URL(req.url);
+  const targetUrl = searchParams.get('url');
+
+  if (!targetUrl) {
+    return Response.json({ error: 'URL is required' }, { status: 400 });
+  }
+
   try {
-    const { data } = await axios.get(url);
-    const $ = cheerio.load(data);
-
-    const links = [];
-    const linkMap = new Map(); // To track which page each link was found on
-
-    $("a").each((_, element) => {
-      const link = $(element).attr("href");
-      if (link && link.startsWith("http")) {
-        links.push(link);
-        linkMap.set(link, url); // Store the current page URL as the source
-      }
+    const pageRes = await axios.get(targetUrl, {
+      headers: { 'User-Agent': 'Mozilla/5.0' },
+      timeout: 15000,
     });
 
-    return { links, linkMap };
-  } catch (error) {
-    console.error("Error fetching page:", error.message);
-    return { links: [], linkMap: new Map() };
-  }
-};
+    const $ = cheerio.load(pageRes.data);
+    const linksSet = new Set();
 
-// Function to check if links are broken
-const checkLinks = async (links, linkMap) => {
-  const results = await Promise.all(
-    links.map(async (link) => {
-      try {
-        
-  const response = await axios.get(link, {
-  timeout: 5000,
-  validateStatus: false,
-  headers: {
-    'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 Chrome/91.0.4472.124 Safari/537.36',
-    'Accept-Language': 'en-US,en;q=0.9',
-  }
-});
+    $('a').each((_, el) => {
+      const href = $(el).attr('href');
+      if (href && href.startsWith('http')) linksSet.add(href);
+    });
 
+    const links = Array.from(linksSet).slice(0, 30); // max 30 links
 
-        return {
-          url: link,
-          status: response.status,
-          working: response.status >= 200 && response.status < 400,
-          foundOn: linkMap.get(link),
-        };
-      } catch (error) {
-        return {
-          url: link,
-          status: error.response ? error.response.status : "Network Error",
-          error: error.message,
-          working: false,
-          foundOn: linkMap.get(link),
-        };
-      }
-    })
-  );
+    const limit = pLimit(5); // concurrency limit 5
 
-  return results;
-};
+    const results = await Promise.all(
+      links.map(link =>
+        limit(async () => {
+          try {
+            const headRes = await axios.head(link, {
+              headers: { 'User-Agent': 'Mozilla/5.0' },
+              timeout: 10000,
+            });
+            return { url: link, status: headRes.status, ok: headRes.status < 400 };
+          } catch (err) {
+            if (err.response?.status === 405) {
+              // fallback to GET if HEAD not allowed
+              try {
+                const getRes = await axios.get(link, {
+                  headers: { 'User-Agent': 'Mozilla/5.0' },
+                  timeout: 10000,
+                });
+                return { url: link, status: getRes.status, ok: getRes.status < 400 };
+              } catch (getErr) {
+                return {
+                  url: link,
+                  status: getErr.response?.status || 'Blocked/Error',
+                  ok: false,
+                };
+              }
+            }
 
-// POST handler for Next.js App Router
-export async function POST(request) {
-  try {
-    const body = await request.json();
-    const { url } = body;
-
-    if (!url) {
-      return new Response(
-        JSON.stringify({ error: "URL is required" }),
-        { status: 400, headers: { "Content-Type": "application/json" } }
-      );
-    }
-
-    const { links, linkMap } = await extractLinks(url);
-    const checkedLinks = await checkLinks(links, linkMap);
-    const brokenLinks = checkedLinks.filter((link) => !link.working);
-
-    return new Response(
-      JSON.stringify({
-        url,
-        totalLinks: links.length,
-        brokenLinks: brokenLinks.map((link) => ({
-          url: link.url,
-          status: link.status,
-          error: link.error || `Status Code: ${link.status}`,
-          foundOn: link.foundOn || url,
-        })),
-      }),
-      { status: 200, headers: { "Content-Type": "application/json" } }
+            return {
+              url: link,
+              status: err.response?.status || 'Blocked/Error',
+              ok: false,
+            };
+          }
+        })
+      )
     );
+
+    return Response.json({ links: results });
   } catch (error) {
-    console.error("Error processing request:", error);
-    return new Response(
-      JSON.stringify({ error: "Failed to check links" }),
-      { status: 500, headers: { "Content-Type": "application/json" } }
-    );
+    return Response.json({ error: 'Failed to fetch page' }, { status: 500 });
   }
 }

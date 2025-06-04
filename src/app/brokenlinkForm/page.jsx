@@ -8,7 +8,7 @@ export default function Page() {
     <div>
      <Navbar/>
      <BrokenlinkForm/>
-     <Footer/> 
+    
     </div>
   )
 }
