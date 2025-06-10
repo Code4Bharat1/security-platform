@@ -18,7 +18,7 @@ export default function DashboardPage() {
     setData(null);
 
     try {
-      const res = await fetch("/api/detect-waf", {
+      const res = await fetch("http://localhost:5000/api/waf/waf-scan", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ url }),

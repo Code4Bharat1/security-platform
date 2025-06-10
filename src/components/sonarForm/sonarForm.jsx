@@ -7,7 +7,7 @@ export default function SonarForm() {
 
  const handleAnalyze = async () => {           
   try {
-    const res = await fetch("/api/sonar_analyze", {
+    const res = await fetch("http://localhost:5000/api/sonar/sonar_analyze", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",

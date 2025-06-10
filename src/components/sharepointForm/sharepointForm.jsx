@@ -1,7 +1,7 @@
 'use client'
 import { useState } from "react";
 import { Search, Loader2, LockIcon } from 'lucide-react';
-
+import axios from "axios";
 const SharePointScanner = () => {
   const [url, setUrl] = useState("");
   const [error, setError] = useState("");
@@ -28,8 +28,8 @@ const SharePointScanner = () => {
     setLoading(true); // Show loading indicator
     setScanData(null); // Clear previous results
 
-    try {
-      const response = await fetch("/api/sharepoint-scanner", {
+    try {      
+      const response = await fetch("http://localhost:5000/api/sharepoint/sharepoint-scanner", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ url }),

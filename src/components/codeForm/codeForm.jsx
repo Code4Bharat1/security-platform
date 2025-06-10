@@ -1,11 +1,11 @@
 "use client";
 import { useState } from "react";
-import { Code, Send, Loader2, Download } from "lucide-react";
+import { Code, Send, Loader2 } from "lucide-react";
 import { Light as SyntaxHighlighter } from "react-syntax-highlighter";
 import js from "react-syntax-highlighter/dist/esm/languages/hljs/javascript";
-import { github } from "react-syntax-highlighter/dist/esm/styles/hljs";
 
-SyntaxHighlighter.registerLanguage("javascript", js);
+
+SyntaxHighlighter.registerLanguage("javascript", js)
 
 export default function CodeForm() {
   const [code, setCode] = useState("");
@@ -29,7 +29,7 @@ export default function CodeForm() {
     setIsLoading(true);
 
     try {
-      const response = await fetch("/api/analyzeCode", {
+      const response = await fetch("http://localhost:5000/api/analyze/analyzeCode", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

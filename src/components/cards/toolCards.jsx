@@ -30,7 +30,7 @@ const ToolCardsPage = () => {
       name: "Sonar Scanner",
       image: "/vuln_scanner.png",
       description: "Scan websites for security weaknesses like XSS or SQL injection.",
-      slug: "sonarScanner",
+      slug: "sonarForm",
       buttonLabel: "Sonar Scanner",
     },
      {
@@ -41,6 +41,13 @@ const ToolCardsPage = () => {
       buttonLabel: "Scan your codes",
     },
      {
+      name: "subdomain Scanner",
+      image: "/vuln_scanner.png",
+      description: "Scan websites for analyzing subdomains and their security posture.",
+      slug: "subdomainEnumeration",
+      buttonLabel: "Scan your website",
+    },
+     {
        name: "Website Recon",
        image: "/web-recon.png",
        description: "Perform an in-depth reconnaissance of a website to identify key metadata, technologies used.",
@@ -48,11 +55,18 @@ const ToolCardsPage = () => {
        buttonLabel: "Website Recon",
      },
     {
-      name: "Zap Scanner",
+      name: "Technology Fingerprinter",
       image: "/zap-logo.png",
       description: "un an OWASP ZAP-powered automated security scan to detect vulnerabilities.",
-      slug: "zapForm",
-      buttonLabel: "Zap Scanner",
+      slug: "fingerPrint",
+      buttonLabel: "fingerPrint",
+    },
+     {
+      name: "Brute Force Scanner",
+      image: "/zap-logo.png",
+      description: "un an OWASP ZAP-powered automated security scan to detect vulnerabilities.",
+      slug: "bruteForce",
+      buttonLabel: "bruteForce",
     },
     {
       name: "Mocha Testing",
@@ -72,7 +86,7 @@ const ToolCardsPage = () => {
       name: "Broken link Checker",
       image: "/brokenlink1.png",
       description: "Scans web pages for dead or broken links, helping maintain SEO integrity",
-      slug: "brokenlinkForm",
+      slug: "brokenStreamForm",
       buttonLabel: "Scan for Vulnerabilities",
     },
     {

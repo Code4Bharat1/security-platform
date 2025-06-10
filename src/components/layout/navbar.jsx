@@ -5,7 +5,9 @@ const Navbar = () => {
     <nav className="bg-[#515c40] text-white p-4 shadow-md">
       <div className="container mx-auto flex justify-between items-center">
         <div className="md:text-lg font-bold text-sm">
-          <Link href="/" className="md:text-lg text-md">Security Platform</Link>
+          <Link href="/" className="md:text-lg text-md">
+            Security Platform
+          </Link>
         </div>
         <ul className="flex md:space-x-10 md:text-lg space-x-2 text-sm">
           <li>
@@ -30,12 +32,14 @@ const Navbar = () => {
           </li>
         </ul>
         <div>
-        <Link href="/signinForm">
-        <button 
-        className="bg-white text-black w-12 h-7 md:text-lg text-xs md:w-30 md:h-10 md:rounded-xl rounded-sm font-semibold"> 
-        Sign In
-        </button>
-        </Link>
+          <Link href="/signinForm">
+            <button
+              className="bg-white text-black w-12 h-7 md:text-lg text-xs md:w-30 md:h-10 md:rounded-xl rounded-sm font-semibold"
+              suppressHydrationWarning
+            >
+              Sign In
+            </button>
+          </Link>
         </div>
       </div>
     </nav>

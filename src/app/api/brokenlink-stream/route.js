@@ -13,6 +13,10 @@ export async function GET(req) {
 
   const stream = new ReadableStream({
     async start(controller) {
+      const sendSSE = (data) => {
+        controller.enqueue(encoder.encode(`data: ${JSON.stringify(data)}\n\n`));
+      };
+
       try {
         const pageRes = await axios.get(targetUrl, {
           headers: { 'User-Agent': 'Mozilla/5.0' },
@@ -27,10 +31,6 @@ export async function GET(req) {
         });
 
         const links = Array.from(linksSet).slice(0, 30); // limit to first 30 links
-
-        function sendSSE(data) {
-          controller.enqueue(encoder.encode(`data: ${JSON.stringify(data)}\n\n`));
-        }
 
         sendSSE({ type: 'total', total: links.length });
 
@@ -73,7 +73,7 @@ export async function GET(req) {
 
         sendSSE({ type: 'done' });
         controller.close();
-      } catch (error) {
+      } catch {
         sendSSE({ type: 'error', message: 'Failed to fetch page' });
         controller.close();
       }

@@ -13,7 +13,7 @@ export default function XssTester() {
     setLoading(true);
     setResult(null);
 
-    const res = await fetch('/api/xssTester', {
+    const res = await fetch('http://localhost:5000/api/xssTester/xssTester-scan', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ url, param, payload }),
@@ -61,8 +61,10 @@ export default function XssTester() {
 
       {result && (
         <div className="bg-gray-100 p-4 rounded mt-4 max-w-7xl">
-          <h2 className="font-semibold">🔍 Test Result</h2>
-          <pre className=" mt-2 text-sm max-w-2xl">{JSON.stringify(result, null, 2)}</pre>
+          <h2 className="font-semibold">Test Result</h2>
+          <pre className=" mt-2 text-sm max-w-2xl whitespace-pre-wrap break-words">
+            {JSON.stringify(result, null, 2)}
+          </pre>
         </div>
       )}
     </div>

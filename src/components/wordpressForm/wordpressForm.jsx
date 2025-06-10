@@ -29,7 +29,7 @@ const WordPressScanner = () => {
     setScanData(null); // Clear previous results
 
     try {
-      const response = await fetch("/api/wordpress-scanner", {
+      const response = await fetch('http://localhost:5000/api/wordpress/wordpress-scan', {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ url }),

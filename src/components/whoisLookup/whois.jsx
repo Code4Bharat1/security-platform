@@ -20,7 +20,7 @@ export default function WhoisLookup() {
     setLoading(true);
 
     try {
-      const res = await fetch('/api/whois', {
+      const res = await fetch('http://localhost:5000/api/whois/whois-scan', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ domain }),
