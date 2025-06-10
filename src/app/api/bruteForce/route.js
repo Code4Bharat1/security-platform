@@ -30,7 +30,8 @@ export async function POST(req) {
       }
 
       results.push({ path, status, result: statusResult });
-    } catch (err) {
+    } catch{
+
       results.push({ path, status: "Error", result: "⚠️ Request Failed" });
     }
   }
