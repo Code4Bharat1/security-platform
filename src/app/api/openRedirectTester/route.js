@@ -12,7 +12,7 @@ function replaceRedirectParam(originalUrl, paramName, testUrl) {
     return null;
   }
 }
-
+    
 // Utility to follow redirects and get final URL (max 10 redirects)
 async function followRedirects(url, maxRedirects = 10) {
   let currentUrl = url;

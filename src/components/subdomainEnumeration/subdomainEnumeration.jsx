@@ -7,7 +7,7 @@ export default function SubdomainEnumeration() {
   const [results, setResults] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
-
+          
   const handleSubmit = async () => {
     setLoading(true);
     setError('');
@@ -20,7 +20,7 @@ export default function SubdomainEnumeration() {
     }
 
     try {
-      const res = await fetch('/api/subdomains', {
+      const res = await fetch('http://localhost:5000/api/subdomain/subdomains-scan', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ domain: domain.trim() }),

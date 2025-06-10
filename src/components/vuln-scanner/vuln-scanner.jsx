@@ -30,7 +30,7 @@ export default function Vulnscanner() {
     setScanData(null);
 
     try {
-      const response = await fetch("/api/vulnscanner", {
+      const response = await fetch('http://localhost:5000/api/scan/run-scan', {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ url }),

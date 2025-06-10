@@ -1,13 +1,12 @@
-import CookieAnalyzer from '@/components/cookieAnalyzer/cookieAnalyzer'
+import TechnologyFingerprinter from '@/components/fingerPrint/fingerPrint'
 import Navbar from '@/components/layout/navbar'
 import React from 'react'
 
 export default function Page() {
   return (
     <div>
-     <Navbar/> 
-     <CookieAnalyzer/>
+     <Navbar/>
+     <TechnologyFingerprinter/> 
     </div>
   )
 }
-

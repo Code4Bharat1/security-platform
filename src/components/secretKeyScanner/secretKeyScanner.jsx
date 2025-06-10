@@ -8,7 +8,7 @@ export default function SecretKeyScanner() {
 
   const scanSecrets = async () => {
     setLoading(true);
-    const res = await fetch('/api/secretKeyScanner', {
+    const res = await fetch('http://localhost:5000/api/secretKeyScanner/secret-scan', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ code }),
@@ -61,13 +61,33 @@ export default function SecretKeyScanner() {
       {results.length > 0 && (
         <div className="mt-6 space-y-4">
           <h2 className="text-xl font-semibold"> Secrets Detected: {results.length}</h2>
-          {results.map((r, idx) => (
-            <div key={idx} className="bg-red-100 border-l-4 border-red-500 p-4 rounded shadow">
-              <p><strong> Type:</strong> {r.type}</p>
-              <p><strong> Line {r.line}:</strong> <code className="bg-gray-200 px-1 py-0.5 rounded">{r.secret}</code></p>
-              <p className="text-sm text-gray-600 mt-1"> Suggestion: Move to environment variable or secure vault.</p>
-            </div>
-          ))}
+    
+    {results.length > 0 && (
+  <div className="mt-6 space-y-4">
+    <h2 className="text-xl font-semibold">🛡️ Secrets Detected: {results.length}</h2>
+    {results.map((r, idx) => (
+      <div
+        key={idx}
+        className={`border-l-4 p-4 rounded shadow ${
+          r.severity === 'Critical'
+            ? 'bg-red-200 border-red-600'
+            : r.severity === 'High'
+            ? 'bg-red-100 border-red-500'
+            : r.severity === 'Medium'
+            ? 'bg-yellow-100 border-yellow-500'
+            : 'bg-gray-100 border-gray-400'
+        }`}
+      >
+        <p><strong>Type:</strong> {r.type}</p>
+        <p><strong>Line {r.line}:</strong> <code className="bg-white px-1 py-0.5 rounded">{r.secret}</code></p>
+        <p><strong>Severity:</strong> <span className="font-medium">{r.severity}</span></p>
+        <p className="text-sm text-gray-700 mt-1"><strong>Suggestion:</strong> {r.suggestion}</p>
+      </div>
+    ))}
+  </div>
+)}
+
+
         </div>
       )}
 

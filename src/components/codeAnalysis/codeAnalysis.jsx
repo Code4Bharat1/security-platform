@@ -47,7 +47,7 @@ export default function AnalysisForm() {
     }
 
     try {
-      const res = await fetch("/api/analyze", {
+      const res = await fetch("http://localhost:5000/api/analysis/analyze-scan", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ code }),
@@ -126,7 +126,7 @@ export default function AnalysisForm() {
   };
 
   return (
-    <div className="p-4 max-w-2xl mx-auto">
+    <div className="p-4 max-w-5xl mx-auto">
       <h1 className="text-2xl font-bold mb-4">JavaScript Security Analyzer</h1>
       
       <div className="mb-4">
