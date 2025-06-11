@@ -58,6 +58,11 @@ const PortScannerForm = () => {
   const [loading, setLoading] = useState(false);
   const [toast, setToast] = useState(null);
 
+  // Backend API configuration
+  //const API_BASE_URL = "https://localhost:5000/api"; // Change this to your backend URL
+  // For development, you might use: "http://localhost:5000/api"
+  // For production, use your deployed backend URL
+
   const showToast = (message, type = "success") => {
     setToast({ message, type });
   };
@@ -95,8 +100,34 @@ const PortScannerForm = () => {
     return false;
   };
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
+  // API call function
+  const performPortScan = async (hostParam, portRangeParam) => {
+    try {
+      const response = await fetch(
+    `http://localhost:5000/api/port/portScan?host=${hostParam}&port=${portRangeParam}`,
+    {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.message || `HTTP error! status: ${response.status}`);
+      }
+
+      const data = await response.json();
+      return data;
+    }
+    
+    catch (error) {
+      console.error('API Error:', error);
+      throw error;
+    }
+  };
+
+  const handleSubmit = async () => {
 
     if (!validateHost(host)) {
       setError("Please enter a valid hostname or IP address.");
@@ -115,70 +146,14 @@ const PortScannerForm = () => {
     setScanResults(null);
 
     try {
-      // Simulate API call for demo purposes
-      await new Promise((resolve) => setTimeout(resolve, 2000));
-
-      // Mock scan results
-      const mockResults = {
-        host: host,
-        scanTime: new Date().toISOString(),
-        summary: {
-          open: Math.floor(Math.random() * 5) + 1,
-          total:
-            portRange === "common"
-              ? 10
-              : portRange.includes("-")
-              ? parseInt(portRange.split("-")[1]) -
-                parseInt(portRange.split("-")[0]) +
-                1
-              : 1,
-          riskAssessment: ["Low", "Medium", "High"][
-            Math.floor(Math.random() * 3)
-          ],
-        },
-        ports: {
-          22: {
-            open: true,
-            service: "SSH",
-            risk: "Medium",
-            description: "Secure Shell protocol for remote access",
-          },
-          80: {
-            open: true,
-            service: "HTTP",
-            risk: "Low",
-            description: "Standard web server port",
-          },
-          443: {
-            open: true,
-            service: "HTTPS",
-            risk: "Low",
-            description: "Secure web server port",
-          },
-          3389: {
-            open: false,
-            service: "RDP",
-            risk: "High",
-            description: "Remote Desktop Protocol",
-          },
-          21: {
-            open: false,
-            service: "FTP",
-            risk: "High",
-            description: "File Transfer Protocol",
-          },
-        },
-        recommendations: [
-          "Consider disabling unused services on open ports",
-          "Ensure SSH uses key-based authentication",
-          "Keep all services updated to latest versions",
-        ],
-      };
-
-      setScanResults(mockResults);
+      // Call the actual backend API
+      const results = await performPortScan(host, portRange);
+      
+      // Set the results from the backend
+      setScanResults(results);
 
       // Show success toast
-      const openPorts = mockResults.summary.open;
+      const openPorts = results.summary?.open || 0;
       showToast(
         `✅ Scan completed successfully! Found ${openPorts} open port${
           openPorts !== 1 ? "s" : ""
@@ -255,7 +230,7 @@ const PortScannerForm = () => {
             </p>
           </div>
 
-          <form onSubmit={handleSubmit} className="space-y-6">
+          <div className="space-y-6">
             <div className="grid md:grid-cols-2 gap-6">
               <div className="space-y-2">
                 <label className="block text-sm font-semibold text-gray-700">
@@ -271,7 +246,7 @@ const PortScannerForm = () => {
                     required
                     className="w-full pl-12 pr-4 py-3 border-2 border-green-200 rounded-xl focus:border-green-500 focus:ring-2 focus:ring-green-200 transition-all duration-200 text-gray-700"
                   />
-                </div>
+                </div> {/*http://localhost:5000/api/port/portScan?host=${hostTarget}&port=${portNumber} */}
               </div>
 
               <div className="space-y-2">
@@ -306,7 +281,8 @@ const PortScannerForm = () => {
             )}
 
             <button
-              type="submit"
+              type="button"
+              onClick={handleSubmit}
               disabled={loading}
               className="w-full bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 disabled:from-gray-300 disabled:to-gray-400 text-white font-semibold py-4 px-6 rounded-xl transition-all duration-200 transform hover:scale-[1.02] disabled:scale-100 shadow-lg hover:shadow-xl"
             >
@@ -322,7 +298,7 @@ const PortScannerForm = () => {
                 </div>
               )}
             </button>
-          </form>
+          </div>
         </div>
 
         {/* Loading State */}
@@ -366,7 +342,7 @@ const PortScannerForm = () => {
                   Scan Time
                 </p>
                 <p className="text-lg font-bold text-gray-800">
-                  {new Date(scanResults.scanTime).toLocaleString()}
+                  {scanResults.scanTime ? new Date(scanResults.scanTime).toLocaleString() : 'N/A'}
                 </p>
               </div>
               <div className="bg-gradient-to-r from-green-50 to-emerald-50 p-5 rounded-xl border border-green-200">
@@ -374,7 +350,7 @@ const PortScannerForm = () => {
                   Open Ports
                 </p>
                 <p className="text-lg font-bold text-yellow-600">
-                  {scanResults.summary.open} / {scanResults.summary.total}
+                  {scanResults.summary?.open || 0} / {scanResults.summary?.total || 0}
                 </p>
               </div>
               <div className="bg-gradient-to-r from-green-50 to-emerald-50 p-5 rounded-xl border border-green-200">
@@ -383,91 +359,93 @@ const PortScannerForm = () => {
                 </p>
                 <span
                   className={`text-lg font-bold ${getRiskColor(
-                    scanResults.summary.riskAssessment
+                    scanResults.summary?.riskAssessment || 'Unknown'
                   )}`}
                 >
-                  {scanResults.summary.riskAssessment}
+                  {scanResults.summary?.riskAssessment || 'Unknown'}
                 </span>
               </div>
             </div>
 
             {/* Port Details Table */}
-            <div className="mb-8">
-              <h3 className="text-xl font-bold text-gray-800 mb-4 flex items-center gap-2">
-                <Server className="w-6 h-6 text-green-600" />
-                Port Details
-              </h3>
-              <div className="overflow-x-auto bg-gray-50 rounded-xl">
-                <table className="min-w-full divide-y divide-gray-200">
-                  <thead className="bg-gradient-to-r from-green-100 to-emerald-100">
-                    <tr>
-                      <th className="px-6 py-4 text-left text-sm font-bold text-gray-700 uppercase tracking-wider">
-                        Port
-                      </th>
-                      <th className="px-6 py-4 text-left text-sm font-bold text-gray-700 uppercase tracking-wider">
-                        Status
-                      </th>
-                      <th className="px-6 py-4 text-left text-sm font-bold text-gray-700 uppercase tracking-wider">
-                        Service
-                      </th>
-                      <th className="px-6 py-4 text-left text-sm font-bold text-gray-700 uppercase tracking-wider">
-                        Risk Level
-                      </th>
-                      <th className="px-6 py-4 text-left text-sm font-bold text-gray-700 uppercase tracking-wider">
-                        Description
-                      </th>
-                    </tr>
-                  </thead>
-                  <tbody className="bg-white divide-y divide-gray-200">
-                    {Object.entries(scanResults.ports).map(
-                      ([port, details]) => (
-                        <tr
-                          key={port}
-                          className={`${
-                            details.open ? "bg-green-50" : "hover:bg-gray-50"
-                          } transition-colors`}
-                        >
-                          <td className="px-6 py-4 whitespace-nowrap font-semibold text-gray-900">
-                            {port}
-                          </td>
-                          <td className="px-6 py-4 whitespace-nowrap">
-                            <span
-                              className={`inline-flex items-center gap-1 px-3 py-1 rounded-full text-sm font-semibold ${
-                                details.open
-                                  ? "bg-green-100 text-green-800"
-                                  : "bg-red-100 text-red-800"
-                              }`}
-                            >
-                              {details.open ? (
-                                <CheckCircle className="w-4 h-4" />
-                              ) : (
-                                <XCircle className="w-4 h-4" />
-                              )}
-                              {details.open ? "Open" : "Closed"}
-                            </span>
-                          </td>
-                          <td className="px-6 py-4 whitespace-nowrap font-medium text-gray-700">
-                            {details.service}
-                          </td>
-                          <td className="px-6 py-4 whitespace-nowrap">
-                            <span
-                              className={`inline-flex items-center px-3 py-1 rounded-full text-sm font-semibold ${getRiskBadgeColor(
-                                details.risk
-                              )}`}
-                            >
-                              {details.risk}
-                            </span>
-                          </td>
-                          <td className="px-6 py-4 text-sm text-gray-600">
-                            {details.description}
-                          </td>
-                        </tr>
-                      )
-                    )}
-                  </tbody>
-                </table>
+            {scanResults.ports && Object.keys(scanResults.ports).length > 0 && (
+              <div className="mb-8">
+                <h3 className="text-xl font-bold text-gray-800 mb-4 flex items-center gap-2">
+                  <Server className="w-6 h-6 text-green-600" />
+                  Port Details
+                </h3>
+                <div className="overflow-x-auto bg-gray-50 rounded-xl">
+                  <table className="min-w-full divide-y divide-gray-200">
+                    <thead className="bg-gradient-to-r from-green-100 to-emerald-100">
+                      <tr>
+                        <th className="px-6 py-4 text-left text-sm font-bold text-gray-700 uppercase tracking-wider">
+                          Port
+                        </th>
+                        <th className="px-6 py-4 text-left text-sm font-bold text-gray-700 uppercase tracking-wider">
+                          Status
+                        </th>
+                        <th className="px-6 py-4 text-left text-sm font-bold text-gray-700 uppercase tracking-wider">
+                          Service
+                        </th>
+                        <th className="px-6 py-4 text-left text-sm font-bold text-gray-700 uppercase tracking-wider">
+                          Risk Level
+                        </th>
+                        <th className="px-6 py-4 text-left text-sm font-bold text-gray-700 uppercase tracking-wider">
+                          Description
+                        </th>
+                      </tr>
+                    </thead>
+                    <tbody className="bg-white divide-y divide-gray-200">
+                      {Object.entries(scanResults.ports).map(
+                        ([port, details]) => (
+                          <tr
+                            key={port}
+                            className={`${
+                              details.open ? "bg-green-50" : "hover:bg-gray-50"
+                            } transition-colors`}
+                          >
+                            <td className="px-6 py-4 whitespace-nowrap font-semibold text-gray-900">
+                              {port}
+                            </td>
+                            <td className="px-6 py-4 whitespace-nowrap">
+                              <span
+                                className={`inline-flex items-center gap-1 px-3 py-1 rounded-full text-sm font-semibold ${
+                                  details.open
+                                    ? "bg-green-100 text-green-800"
+                                    : "bg-red-100 text-red-800"
+                                }`}
+                              >
+                                {details.open ? (
+                                  <CheckCircle className="w-4 h-4" />
+                                ) : (
+                                  <XCircle className="w-4 h-4" />
+                                )}
+                                {details.open ? "Open" : "Closed"}
+                              </span>
+                            </td>
+                            <td className="px-6 py-4 whitespace-nowrap font-medium text-gray-700">
+                              {details.service || 'Unknown'}
+                            </td>
+                            <td className="px-6 py-4 whitespace-nowrap">
+                              <span
+                                className={`inline-flex items-center px-3 py-1 rounded-full text-sm font-semibold ${getRiskBadgeColor(
+                                  details.risk || 'Unknown'
+                                )}`}
+                              >
+                                {details.risk || 'Unknown'}
+                              </span>
+                            </td>
+                            <td className="px-6 py-4 text-sm text-gray-600">
+                              {details.description || 'No description available'}
+                            </td>
+                          </tr>
+                        )
+                      )}
+                    </tbody>
+                  </table>
+                </div>
               </div>
-            </div>
+            )}
 
             {/* Security Recommendations */}
             {scanResults.recommendations &&
