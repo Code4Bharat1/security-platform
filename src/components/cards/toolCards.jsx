@@ -306,7 +306,7 @@ const ToolCardsPage = () => {
   className="card bg-white p-5 rounded-lg shadow-lg flex border flex-col w-full h-[100%] items-center"
 >
   {/* Tool Image/Icon */}
-  <img src={tool.image} alt={tool.name} className="w-16 h-16 mb-4 mt-7" />
+  <img src={tool.image} alt={tool.name} className={`${tool.className || 'w-35 h-20'} object-contain`} />
 
   {/* Tool Title */}
   <h2 className="text-xl font-bold text-green-800 mb-2">{tool.name}</h2>
