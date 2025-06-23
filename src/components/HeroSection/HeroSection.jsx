@@ -154,7 +154,7 @@ export default function HeroSection() {
           <div className="flex flex-col sm:flex-row gap-4 mb-12 w-full max-w-md mx-auto animate-fade-in-up" style={{ animationDelay: '0.6s' }}>
             <GradientButton
               large
-              className="relative group flex-1 overflow-hidden"
+              className="relative group flex-1 overflow-hidden cursor-pointer"
               onMouseEnter={() => setIsHovered(true)}
               onMouseLeave={() => setIsHovered(false)}
             >
@@ -162,7 +162,7 @@ export default function HeroSection() {
               <ArrowRight size={16} className={combineClasses("ml-2 transition-transform duration-300", isHovered && "translate-x-1")} />
               <span className={combineClasses("absolute inset-0 w-full h-full bg-white rounded-md opacity-0 transition-opacity duration-300 -z-10", isHovered && "opacity-10")} />
             </GradientButton>
-            <OutlineButton large className="flex-1">Schedule Demo</OutlineButton>
+            <OutlineButton large className="flex-1 cursor-pointer">Schedule Demo</OutlineButton>
           </div>
 
           <div className="flex flex-wrap justify-center gap-x-8 gap-y-4 text-sm text-gray-600 animate-fade-in-up" style={{ animationDelay: '0.8s' }}>
@@ -187,7 +187,7 @@ export default function HeroSection() {
 
              <GradientButton
       large
-      className="relative group flex-1 overflow-hidden mt-5"
+      className="relative group flex-1 overflow-hidden mt-5 cursor-pointer"
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
       onClick={() => router.push('/Cards')} // <-- Navigates in the same tab

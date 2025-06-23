@@ -17,33 +17,59 @@ export default function SignUp() {
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [accepted, setAccepted] = useState(false);
+  const [loading, setLoading] = useState(false);
 
   const handleChange = (e) => {
     setFormData({
       ...formData,
       [e.target.name]: e.target.value,
     });
+    setErrors({ ...errors, [e.target.name]: '' });
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-
-    // Basic validation
     const newErrors = {};
-    if (!formData.email) newErrors.email = 'Email is required';
-    if (!formData.password) newErrors.password = 'Password is required';
+
     if (!formData.fname) newErrors.fname = 'First name is required';
     if (!formData.lname) newErrors.lname = 'Last name is required';
+    if (!formData.email) newErrors.email = 'Email is required';
+    if (!formData.password) newErrors.password = 'Password is required';
     if (formData.password !== formData.confirmPassword) {
       newErrors.confirmPassword = 'Passwords do not match';
     }
     if (!accepted) newErrors.accepted = 'Please accept the terms';
 
     setErrors(newErrors);
+    setMessage('');
 
     if (Object.keys(newErrors).length === 0) {
-      console.log('Submitting:', formData);
-      setMessage('Form submitted successfully!');
+      try {
+        setLoading(true);
+        const res = await fetch('http://localhost:5000/api/auth/signup', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            name: `${formData.fname} ${formData.lname}`,
+            email: formData.email,
+            password: formData.password,
+          }),
+        });
+
+        const result = await res.json();
+        if (res.ok) {
+          setMessage('Signup successful! Please login.');
+        } else {
+          setMessage(result.message || 'Signup failed');
+        }
+      } catch (err) {
+        console.error('Signup error:', err);
+        setMessage('Something went wrong.');
+      } finally {
+        setLoading(false);
+      }
     }
   };
 
@@ -63,13 +89,9 @@ export default function SignUp() {
                 placeholder="First Name"
                 value={formData.fname}
                 onChange={handleChange}
-                className={`w-full px-3 py-2 border ${
-                  errors.fname ? 'border-red-500' : 'border-gray-300'
-                } rounded-md bg-gray-100 focus:outline-none focus:ring-2 focus:ring-[#3498db]`}
+                className={`w-full px-3 py-2 border ${errors.fname ? 'border-red-500' : 'border-gray-300'} rounded-md bg-gray-100 focus:outline-none focus:ring-2 focus:ring-[#3498db]`}
               />
-              {errors.fname && (
-                <p className="text-red-500 text-sm mt-1">{errors.fname}</p>
-              )}
+              {errors.fname && <p className="text-red-500 text-sm mt-1">{errors.fname}</p>}
             </div>
             <div className="w-1/2">
               <input
@@ -78,13 +100,9 @@ export default function SignUp() {
                 placeholder="Last Name"
                 value={formData.lname}
                 onChange={handleChange}
-                className={`w-full px-3 py-2 border ${
-                  errors.lname ? 'border-red-500' : 'border-gray-300'
-                } rounded-md bg-gray-100 focus:outline-none focus:ring-2 focus:ring-[#3498db]`}
+                className={`w-full px-3 py-2 border ${errors.lname ? 'border-red-500' : 'border-gray-300'} rounded-md bg-gray-100 focus:outline-none focus:ring-2 focus:ring-[#3498db]`}
               />
-              {errors.lname && (
-                <p className="text-red-500 text-sm mt-1">{errors.lname}</p>
-              )}
+              {errors.lname && <p className="text-red-500 text-sm mt-1">{errors.lname}</p>}
             </div>
           </div>
 
@@ -95,13 +113,9 @@ export default function SignUp() {
               placeholder="Email"
               value={formData.email}
               onChange={handleChange}
-              className={`w-full px-3 py-2 border ${
-                errors.email ? 'border-red-500' : 'border-gray-300'
-              } rounded-md bg-gray-100 focus:outline-none focus:ring-2 focus:ring-[#3498db]`}
+              className={`w-full px-3 py-2 border ${errors.email ? 'border-red-500' : 'border-gray-300'} rounded-md bg-gray-100 focus:outline-none focus:ring-2 focus:ring-[#3498db]`}
             />
-            {errors.email && (
-              <p className="text-red-500 text-sm mt-1">{errors.email}</p>
-            )}
+            {errors.email && <p className="text-red-500 text-sm mt-1">{errors.email}</p>}
           </div>
 
           <div className="mb-4 relative">
@@ -111,21 +125,16 @@ export default function SignUp() {
               placeholder="Password"
               value={formData.password}
               onChange={handleChange}
-              className={`w-full px-3 py-2 border ${
-                errors.password ? 'border-red-500' : 'border-gray-300'
-              } rounded-md bg-gray-100 focus:outline-none focus:ring-2 focus:ring-[#3498db]`}
+              className={`w-full px-3 py-2 border ${errors.password ? 'border-red-500' : 'border-gray-300'} rounded-md bg-gray-100 focus:outline-none focus:ring-2 focus:ring-[#3498db]`}
             />
             <button
               type="button"
-              onClick={() => setShowPassword((prev) => !prev)}
+              onClick={() => setShowPassword(!showPassword)}
               className="absolute right-3 top-2.5 text-gray-600"
-              aria-label="Toggle password visibility"
             >
               {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
             </button>
-            {errors.password && (
-              <p className="text-red-500 text-sm mt-1">{errors.password}</p>
-            )}
+            {errors.password && <p className="text-red-500 text-sm mt-1">{errors.password}</p>}
           </div>
 
           <div className="mb-4 relative">
@@ -135,23 +144,16 @@ export default function SignUp() {
               placeholder="Confirm Password"
               value={formData.confirmPassword}
               onChange={handleChange}
-              className={`w-full px-3 py-2 border ${
-                errors.confirmPassword ? 'border-red-500' : 'border-gray-300'
-              } rounded-md bg-gray-100 focus:outline-none focus:ring-2 focus:ring-[#3498db]`}
+              className={`w-full px-3 py-2 border ${errors.confirmPassword ? 'border-red-500' : 'border-gray-300'} rounded-md bg-gray-100 focus:outline-none focus:ring-2 focus:ring-[#3498db]`}
             />
             <button
               type="button"
-              onClick={() => setShowConfirmPassword((prev) => !prev)}
+              onClick={() => setShowConfirmPassword(!showConfirmPassword)}
               className="absolute right-3 top-2.5 text-gray-600"
-              aria-label="Toggle confirm password visibility"
             >
               {showConfirmPassword ? <EyeOff size={20} /> : <Eye size={20} />}
             </button>
-            {errors.confirmPassword && (
-              <p className="text-red-500 text-sm mt-1">
-                {errors.confirmPassword}
-              </p>
-            )}
+            {errors.confirmPassword && <p className="text-red-500 text-sm mt-1">{errors.confirmPassword}</p>}
           </div>
 
           <div className="flex items-center mb-4">
@@ -174,20 +176,21 @@ export default function SignUp() {
               .
             </label>
           </div>
-          {errors.accepted && (
-            <p className="text-red-500 text-sm mt-1">{errors.accepted}</p>
-          )}
+          {errors.accepted && <p className="text-red-500 text-sm mt-1">{errors.accepted}</p>}
 
           <button
             type="submit"
-            className="w-full text-center text-sm text-white mt-6 bg-[#3498db] py-3 rounded-md hover:bg-blue-600 transition"
+            disabled={loading}
+            className={`w-full text-center text-sm text-white mt-6 bg-[#3498db] py-3 rounded-md hover:bg-blue-600 transition ${loading ? 'opacity-50 cursor-not-allowed' : ''}`}
           >
-            Sign Up
+            {loading ? 'Signing Up...' : 'Sign Up'}
           </button>
         </form>
 
         {message && (
-          <p className="text-green-600 text-center mt-4 font-medium">{message}</p>
+          <p className={`mt-4 text-center font-medium ${message.includes('success') ? 'text-green-600' : 'text-red-500'}`}>
+            {message}
+          </p>
         )}
 
         <p className="text-center text-sm text-white mt-6 bg-gray-400 py-3 rounded-b-md">
