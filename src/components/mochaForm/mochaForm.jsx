@@ -70,28 +70,27 @@ const MochaTestPage = () => {
         }
       }
 
-      // Simulate API call for demo
-      await new Promise(resolve => setTimeout(resolve, 2000));
-      
-      // Mock successful response
-      const mockResult = {
-        passed: true,
-        statusCode: 200,
-        assertions: [
-          { message: "Status code is 200 (Success)", passed: true },
-          { message: "Response is valid JSON object", passed: true },
-          { message: "Response time is acceptable (156ms)", passed: true }
-        ],
-        response: {
-          id: 1,
-          title: "Test Response",
-          body: "This is a mock successful response",
-          userId: 1
+      // Call your real Mocha API endpoint
+      const response = await fetch('http://localhost:5000/api/mocha/mocha-test', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
         },
-        duration: 156
-      };
+        body: JSON.stringify({
+          endpoint: endpoint,
+          method: method,
+          headers: headerObj,
+          body: bodyObj,
+          testDescription: testDescription
+        })
+      });
 
-      setTestResults(mockResult);
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+
+      const result = await response.json();
+      setTestResults(result);
       showToastMessage("🎉 Test completed successfully!", "success");
       setLoading(false);
     } catch (error) {
@@ -150,6 +149,13 @@ const MochaTestPage = () => {
         <p className="text-lg text-gray-600 max-w-2xl mx-auto px-4">
           Test your API endpoints with ease. Enter your API details below and get instant feedback on performance and reliability.
         </p>
+        <div className="mt-4 bg-blue-50 border border-blue-200 rounded-lg p-3 max-w-md mx-auto">
+          <p className="text-sm text-blue-700 flex items-center gap-2">
+            <Info className="h-4 w-4" />
+            <span className="font-medium">Connected to:</span>
+            <code className="bg-blue-100 px-2 py-1 rounded text-xs">localhost:5000</code>
+          </p>
+        </div>
       </div>
 
       {/* Main Content */}
@@ -303,7 +309,7 @@ const MochaTestPage = () => {
               <div className="bg-gradient-to-r from-green-50 to-emerald-50 border-2 border-green-200 rounded-xl p-8 text-center">
                 <div className="animate-spin rounded-full h-12 w-12 border-4 border-green-500 border-t-transparent mx-auto mb-4"></div>
                 <h3 className="text-lg font-semibold text-green-700 mb-2">Running Mocha Tests...</h3>
-                <p className="text-green-600">Please wait while we test your API endpoint</p>
+                <p className="text-green-600">Testing your API endpoint with real Mocha tests</p>
                 <div className="mt-4 bg-white rounded-lg p-3">
                   <div className="flex justify-between text-sm text-gray-600">
                     <span>Progress</span>
@@ -354,53 +360,57 @@ const MochaTestPage = () => {
                   )}
 
                   {/* API Response */}
-                  <div className="space-y-3">
-                    <h4 className="font-semibold text-gray-700 flex items-center gap-2">
-                      <Info className="h-5 w-5 text-green-600" />
-                      API Response
-                    </h4>
-                    <div className="bg-gray-900 rounded-xl p-4 overflow-auto max-h-60">
-                      <pre className="text-sm text-green-400 whitespace-pre-wrap break-words">
-                        {JSON.stringify(testResults.response, null, 2)}
-                      </pre>
+                  {testResults.response && (
+                    <div className="space-y-3">
+                      <h4 className="font-semibold text-gray-700 flex items-center gap-2">
+                        <Info className="h-5 w-5 text-green-600" />
+                        API Response
+                      </h4>
+                      <div className="bg-gray-900 rounded-xl p-4 overflow-auto max-h-60">
+                        <pre className="text-sm text-green-400 whitespace-pre-wrap break-words">
+                          {JSON.stringify(testResults.response, null, 2)}
+                        </pre>
+                      </div>
                     </div>
-                  </div>
+                  )}
 
                   {/* Test Assertions */}
-                  <div className="space-y-3">
-                    <h4 className="font-semibold text-gray-700">Test Assertions</h4>
-                    <div className="space-y-2">
-                      {testResults.assertions.map((assertion, index) => (
-                        <div key={index} className={`p-4 rounded-xl border-l-4 ${
-                          assertion.passed 
-                            ? 'bg-green-50 border-green-500' 
-                            : 'bg-red-50 border-red-500'
-                        }`}>
-                          <div className="flex items-start gap-3">
-                            {assertion.passed ? (
-                              <Check className="h-5 w-5 text-green-600 flex-shrink-0 mt-0.5" />
-                            ) : (
-                              <AlertCircle className="h-5 w-5 text-red-600 flex-shrink-0 mt-0.5" />
-                            )}
-                            <div className="flex-1">
-                              <p className={`font-medium ${assertion.passed ? "text-green-700" : "text-red-700"}`}>
-                                {assertion.message}
-                              </p>
-                              {!assertion.passed && assertion.error && (
-                                <p className="text-sm text-red-600 mt-1">{assertion.error}</p>
+                  {testResults.assertions && testResults.assertions.length > 0 && (
+                    <div className="space-y-3">
+                      <h4 className="font-semibold text-gray-700">Test Assertions</h4>
+                      <div className="space-y-2">
+                        {testResults.assertions.map((assertion, index) => (
+                          <div key={index} className={`p-4 rounded-xl border-l-4 ${
+                            assertion.passed 
+                              ? 'bg-green-50 border-green-500' 
+                              : 'bg-red-50 border-red-500'
+                          }`}>
+                            <div className="flex items-start gap-3">
+                              {assertion.passed ? (
+                                <Check className="h-5 w-5 text-green-600 flex-shrink-0 mt-0.5" />
+                              ) : (
+                                <AlertCircle className="h-5 w-5 text-red-600 flex-shrink-0 mt-0.5" />
                               )}
+                              <div className="flex-1">
+                                <p className={`font-medium ${assertion.passed ? "text-green-700" : "text-red-700"}`}>
+                                  {assertion.message}
+                                </p>
+                                {!assertion.passed && assertion.error && (
+                                  <p className="text-sm text-red-600 mt-1">{assertion.error}</p>
+                                )}
+                              </div>
                             </div>
                           </div>
-                        </div>
-                      ))}
+                        ))}
+                      </div>
                     </div>
-                  </div>
+                  )}
 
                   {/* Summary */}
                   <div className="bg-white rounded-xl p-4 border-2 border-gray-200">
                     <div className="grid md:grid-cols-3 gap-4 text-center">
                       <div>
-                        <p className="text-2xl font-bold text-green-600">{testResults.duration}ms</p>
+                        <p className="text-2xl font-bold text-green-600">{testResults.duration || 'N/A'}ms</p>
                         <p className="text-sm text-gray-600">Response Time</p>
                       </div>
                       <div>
@@ -408,7 +418,12 @@ const MochaTestPage = () => {
                         <p className="text-sm text-gray-600">Method Used</p>
                       </div>
                       <div>
-                        <p className="text-2xl font-bold text-purple-600">{testResults.assertions.filter(a => a.passed).length}/{testResults.assertions.length}</p>
+                        <p className="text-2xl font-bold text-purple-600">
+                          {testResults.assertions ? 
+                            `${testResults.assertions.filter(a => a.passed).length}/${testResults.assertions.length}` : 
+                            'N/A'
+                          }
+                        </p>
                         <p className="text-sm text-gray-600">Tests Passed</p>
                       </div>
                     </div>

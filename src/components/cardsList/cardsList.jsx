@@ -16,7 +16,7 @@ function classNames(...classes) {
       slug: "firewallDashboard",
       buttonLabel: "Check WAF",
     },
-    {
+    {            
       name: "Vulnerability Scanner",
       image: "/vuln_scanner.png",
       description: "Scan websites for security weaknesses like XSS or SQL injection.",
@@ -25,26 +25,32 @@ function classNames(...classes) {
     },
      {
       name: "Jest Scanner",
-      image: "/vuln_scanner.png",
+      image: "/jest.png",
       description: "Scan websites for security weaknesses like XSS or SQL injection.",
       slug: "codeForm",
       buttonLabel: "Jest Scanner",
     },
     {
       name: "Sonar Scanner",
-      image: "/vuln_scanner.png",
+      image: "/sonar-image.png",
       description: "Scan websites for security weaknesses like XSS or SQL injection.",
       slug: "sonarScanner",
       buttonLabel: "Sonar Scanner",
     },
      {
       name: "Checkmarx Scanner",
-      image: "/vuln_scanner.png",
+      image: "/checkmarx.png",
       description: "Scan websites for security weaknesses like XSS or SQL injection.",
       slug: "codeAnalysis",
       buttonLabel: "Scan your codes",
     },
-    
+     {
+      name: "subdomain Scanner",
+      image: "/subdomain.png",
+      description: "Scan websites for analyzing subdomains and their security posture.",
+      slug: "subdomainEnumeration",
+      buttonLabel: "Scan your website",
+    },
    
   ];
 
