@@ -73,7 +73,7 @@ function classNames(...classes) {
   {/* Scan Button */}
   <button
     onClick={() => router.push(`/${tool.slug}`)}
-    className="bg-green-800 text-white py-2 px-4 rounded hover:bg-green-700 transition-colors duration-300 "
+    className="bg-green-800 text-white py-2 px-4 rounded hover:bg-green-700 transition-colors duration-300 cursor-pointer"
   >
     {tool.buttonLabel}
   </button>

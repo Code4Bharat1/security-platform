@@ -2,7 +2,7 @@
 const nextConfig = {
   async headers() {
     const isDev = process.env.NODE_ENV === 'development';
-    
+
     return [
       {
         source: '/(.*)',
@@ -12,7 +12,7 @@ const nextConfig = {
             value: `
               default-src 'self';
               script-src 'self' 'unsafe-eval' 'unsafe-inline' https://trusted-site.com;
-              style-src 'self' 'unsafe-inline';
+              style-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net;
               img-src 'self' data: https:;
               connect-src 'self' ${isDev ? 'http://localhost:* http://127.0.0.1:*' : 'https://your-production-api.com'};
             `.replace(/\s{2,}/g, ' ').trim()
