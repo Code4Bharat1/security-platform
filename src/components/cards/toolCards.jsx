@@ -19,7 +19,7 @@ const ToolCardsPage = () => {
       slug: "vuln-scanner",
       buttonLabel: "Scan for Vulnerabilities",
     },
-     {
+    {
       name: "Jest Scanner",
       image: "/jest.png",
       description: "Scan websites for security weaknesses like XSS or SQL injection.",
@@ -33,13 +33,14 @@ const ToolCardsPage = () => {
       slug: "sonarForm",
       buttonLabel: "Sonar Scanner",
     },
-     {
+    {
       name: "Checkmarx Scanner",
       image: "/checkmarx.png",
       description: "Scan websites for security weaknesses like XSS or SQL injection.",
       slug: "codeAnalysis",
       buttonLabel: "Scan your codes",
     },
+
      {
       name: "subdomain Scanner",
       image: "/subdomain.png",
@@ -47,13 +48,13 @@ const ToolCardsPage = () => {
       slug: "subdomainEnumeration",
       buttonLabel: "Scan your website",
     },
-     {
-       name: "Website Recon",
-       image: "/web-recon.png",
-       description: "Perform an in-depth reconnaissance of a website to identify key metadata, technologies used.",
-       slug: "webrecon",
-       buttonLabel: "Website Recon",
-     },
+    {
+      name: "Website Recon",
+      image: "/web-recon.png",
+      description: "Perform an in-depth reconnaissance of a website to identify key metadata, technologies used.",
+      slug: "webrecon",
+      buttonLabel: "Website Recon",
+    },
     {
       name: "Technology Fingerprinter",
       image: "/fingerprint.png",
@@ -61,7 +62,7 @@ const ToolCardsPage = () => {
       slug: "fingerPrint",
       buttonLabel: "fingerPrint",
     },
-     {
+    {
       name: "Brute Force Scanner",
       image: "/brute-force.png",
       description: "un an OWASP ZAP-powered automated security scan to detect vulnerabilities.",
@@ -142,7 +143,7 @@ const ToolCardsPage = () => {
       buttonLabel: "CSRF Vulnerability Scanner",
 
     },
-   {
+    {
       name: "HTTPS Security Checker",
       image: "/https-security.png",
       description: " Validate HTTPS security implementation.",
@@ -190,7 +191,7 @@ const ToolCardsPage = () => {
       buttonLabel: "Obfuscation Detector",
 
     },
-     {
+    {
       name: "Open Redirect Tester ",
       image: "/open-redirect.png",
       description: "Find unsafe redirection vulnerabilities.",
@@ -219,21 +220,21 @@ const ToolCardsPage = () => {
       slug: "secretKeyScanner",
       buttonLabel: "Secret Key Scanner",
     },
-     {
+    {
       name: "Session Fixation Tester",
       image: "/session_fixation.png",
       description: "Detect session fixation vulnerabilities",
       slug: "sessionFixationChecker",
       buttonLabel: "Session Fixation Tester",
     },
-      {
+    {
       name: "Whois Domain Lookup",
       image: "/whois.png",
       description: "Retrieve domain registration and ownership details.",
       slug: "whoisLookup",
       buttonLabel: "Whois Domain Lookup",
     },
-     {
+    {
       name: "XSS Vulnerability Tester",
       image: "/xss.png",
       description: "Identify Cross-Site Scripting (XSS) risks",
@@ -262,6 +263,176 @@ const ToolCardsPage = () => {
       buttonLabel: "Check Keyword Density",
     },
     {
+
+      name: "Rogue WiFi Detector",
+      image: "/wifi.png",
+      description: "Scans for duplicate WiFi networks with suspicious behavior.",
+      slug: "rogue-wifi-detector",
+      buttonLabel: "Scan Now",
+    },
+    {
+      name: "Link Detector",
+      image: "/link_dec.png",
+      description: "This tool helps detect malicious, suspicious, or unsafe links.",
+      slug: "link-detector",
+      buttonLabel: "Scan Link",
+    },
+    {
+      name: "SQLi Scanner",
+      image: "/sql_injection.png",
+      description: "This tool scans websites for SQL Injection vulnerabilities.",
+      slug: "link-detector",
+      buttonLabel: "Scan Link",
+    },
+    {
+      name: "Hash Generator",
+      image: "/hash.png",
+      description: "This tool generates cryptographic hashes.",
+      slug: "hash-generator",
+      buttonLabel: "Generate Hash",
+    },
+    {
+      name: "John The Ripper",
+      image: "/John.png",
+      description: "Cracks password hashes using smart attacks.",
+      slug: "John The Ripper",
+      buttonLabel: "Crack Password",
+    },
+    {
+      name: "SecureCrypt",
+      image: "/dycrypt.png",
+      description: "Encrypts and decrypts text using secure algorithms.",
+      slug: "link-detector",
+      buttonLabel: "Scan Link",
+    },
+    {
+      name: "Nexpose",
+      image: "/nexpose.png",
+      description: "This tool scans websites for SQL Injection vulnerabilities.",
+      slug: "securecrypt",
+      buttonLabel: "Encrypt Now",
+    },
+    {
+      name: "MDR Monitor",
+      image: "/MDR.png",
+      description: "Monitors and responds to real-time security threats.",
+      slug: "mdr-monitor",
+      buttonLabel: "Start Monitoring",
+    },
+    {
+      name: "Folder Threat Scanner",
+      image: "/folder-scan.png",
+      description: "Scans folders for malware or suspicious files.",
+      slug: "folder-threat-scanner",
+      buttonLabel: "Scan Folder",
+    },
+    {
+      name: "USB Malware Detector",
+      image: "/USB - Copy.png",
+      description: "Scans USB devices for hidden malware or threats.",
+      slug: "usb-malware-detector",
+      buttonLabel: "Scan USB"
+    },
+    {
+      name: "Data Leak Detector",
+      image: "/data-leak.png",
+      description: "Detects sensitive data leaks from local files or folders.",
+      slug: "data-leak-detector",
+      buttonLabel: "Detect Leak",
+    },
+    {
+      name: "Social Media Privacy Analyzer",
+      image: "/social-media.png",
+      description: "Analyzes your social profiles for privacy risks.",
+      slug: "social-media-privacy-analyzer",
+      buttonLabel: "Analyze Now",
+    },
+    {
+      name: "Fake Software Detector",
+      image: "/fake.png",
+      description: "Identifies fake or malicious software on your system.",
+      slug: "fake-software-detector",
+      buttonLabel: "Detect Now",
+    },
+    {
+      name: "WhatsApp Privacy Inspector",
+      image: "/wp.png",
+      description: "Checks WhatsApp settings for potential privacy risks.",
+      slug: "whatsapp-privacy-inspector",
+      buttonLabel: "Inspect Now",
+    },
+    {
+      name: "Email Attachment Analyzer",
+      image: "/email.png",
+      description: "Scans email attachments for malware or hidden threats.",
+      slug: "email-attachment-analyzer",
+      buttonLabel: "Analyze File",
+    },
+    {
+      name: " IP Address Info Finder",
+      image: "/ip.png",
+      description: "Fetches location and network details of an IP address.",
+      slug: "ip-address-info-finder",
+      buttonLabel: "Find Info",
+    },
+    {
+      name: "Third-Party App Permission Scanner",
+      image: "/permission.png",
+      description: "Checks third-party apps for risky or extra permissions.",
+      slug: "third-party-permission-scanner",
+      buttonLabel: "Scan Apps",
+    },
+    {
+      name: "Network Port Activity Scanner ",
+      image: "/port.png",
+      description: "Scans open ports and checks for suspicious activity.",
+      slug: "network-port-activity-scanner",
+      buttonLabel: "Scan Ports",
+    },
+    {
+      name: "File Metadata Analyzer",
+      image: "/meta.png",
+      description: "Extracts hidden metadata from files for analysis.",
+      slug: "file-metadata-analyzer",
+      buttonLabel: "Analyze File",
+    },
+    {
+      name: "Fake QR Code Detector",
+      image: "/QR.png",
+      description: "Scans QR codes to detect phishing or malicious links.",
+      slug: "fake-qr-code-detector",
+      buttonLabel: "Scan QR",
+    },
+    {
+      name: "Website Optimization Tool",
+      image: "/optimization.png",
+      description: "Detects deployment issues like unused code, large assets, and slow-loading elements.",
+      slug: "website-optimization-tool",
+      buttonLabel: "Check Optimization",
+    },
+    {
+      name: "CAPTCHA Detection & Audit Tool",
+      image: "/captha.png",
+      description: "Detects presence and strength of CAPTCHA on web forms.",
+      slug: "captcha-detection-audit-tool",
+      buttonLabel: "Audit CAPTCHA",
+    },
+    {
+      name: "Broken Link & Dead Page Scanner",
+      image: "/Broken-Links.png",
+      description: "Finds broken links and dead pages on websites.",
+      slug: "broken-link-dead-page-scanner",
+      buttonLabel: "Scan Website",
+    },
+    {
+      name: "SEO Score Analyzer Tool",
+      image: "/seo-score.png",
+      description: "Analyzes website SEO and provides improvement tips.",
+      slug: "seo-score-analyzer-tool",
+      buttonLabel: "Analyze SEO",
+    },
+
+{
       name: "ssrf Scanner",
       image: "/ssrf.png",
       description: "Analyze keyword frequency for SEO structuring on website.",
@@ -296,37 +467,42 @@ const ToolCardsPage = () => {
       slug: "AISecurityHeaders",
       buttonLabel: "AI Headers checker",
     },
+
   ];
 
+
   return (
-    <div className="grid grid-cols-1 md:grid-cols-3 gap-6  mb-10 p-3 bg-white">
-      {tools.map((tool, index) => (
-<div
-  key={tool.slug}
-  className="card bg-white p-5 rounded-lg shadow-lg flex border flex-col w-full h-[100%] items-center"
->
-  {/* Tool Image/Icon */}
-  <img src={tool.image} alt={tool.name} className={`${tool.className || 'w-35 h-20'} object-contain`} />
+  <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-10 p-3 bg-white">
+    {tools.map((tool) => (
+      <div
+        key={tool.slug}
+        className="card bg-white p-5 rounded-lg shadow-lg flex border flex-col w-full h-[100%] items-center"
+      >
+        {/* Tool Image/Icon */}
+        <img
+          src={tool.image}
+          alt={tool.name}
+          className={`${tool.className || 'w-16 h-16'} object-contain mb-4 mt-7`}
+        />
 
-  {/* Tool Title */}
-  <h2 className="text-xl font-bold text-green-800 mb-2">{tool.name}</h2>
+        {/* Tool Title */}
+        <h2 className="text-xl font-bold text-green-800 mb-2">{tool.name}</h2>
 
-  {/* Tool Description */}
-  <p className="text-gray-700 text-center mb-6">{tool.description}</p>
+        {/* Tool Description */}
+        <p className="text-gray-700 text-center mb-6">{tool.description}</p>
 
-  {/* Scan Button */}
-  <button
-    onClick={() => router.push(`/${tool.slug}`)}
-    className="bg-green-800 text-white py-2 px-4 rounded hover:bg-green-700 transition-colors duration-300 "
-  >
-    {tool.buttonLabel}
-  </button>
-</div>
+        {/* Scan Button */}
+        <button
+          onClick={() => router.push(`/${tool.slug}`)}
+          className="bg-green-800 text-white py-2 px-4 rounded hover:bg-green-700 transition-colors duration-300 cursor-pointer"
+        >
+          {tool.buttonLabel}
+        </button>
+      </div>
+    ))}
+  </div>
+);
 
-
-      ))}
-    </div>
-  );
 };
 
 export default ToolCardsPage;

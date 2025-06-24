@@ -134,7 +134,7 @@ export default function AnalysisForm() {
         <div className="flex flex-wrap gap-2">
           <button
             onClick={() => loadSampleCode("xss")}
-            className="bg-yellow-500 text-white px-3 py-1 rounded hover:bg-yellow-600"
+            className="bg-yellow-500 text-white px-3 py-1 rounded hover:bg-yellow-600 cursor-pointer"
           >
             XSS Example
           </button>
