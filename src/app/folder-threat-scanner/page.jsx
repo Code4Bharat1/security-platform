@@ -1,13 +1,14 @@
 "use client";
+
 import Navbar from "@/components/layout/navbar";
 import Footer from "@/components/layout/footer";
-import SqlScanner from "@/components/sqli/SqlScanner";
+import FolderThreatScanner from "@/components/folderthreat/FolderThreatScanner";
 
-export default function SqlScannerPage() {
+export default function FolderScannerPage() {
   return (
     <main>
       <Navbar />
-      <SqlScanner />
+      <FolderThreatScanner />
       <Footer />
     </main>
   );

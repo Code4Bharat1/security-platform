@@ -1,13 +1,13 @@
 "use client";
 import Navbar from "@/components/layout/navbar";
 import Footer from "@/components/layout/footer";
-import SqlScanner from "@/components/sqli/SqlScanner";
+import CaptchaAuditTool from "@/components/captcha/CaptchaAuditTool";
 
-export default function SqlScannerPage() {
+export default function CaptchaAuditToolPage() {
   return (
     <main>
       <Navbar />
-      <SqlScanner />
+      <CaptchaAuditTool />
       <Footer />
     </main>
   );

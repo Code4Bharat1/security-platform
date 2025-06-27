@@ -1,13 +1,13 @@
 "use client";
 import Navbar from "@/components/layout/navbar";
 import Footer from "@/components/layout/footer";
-import SqlScanner from "@/components/sqli/SqlScanner";
+import BrokenLinkScanner from "@/components/brokenlinks/BrokenLinkScanner";
 
-export default function SqlScannerPage() {
+export default function BrokenLinkScannerPage() {
   return (
     <main>
       <Navbar />
-      <SqlScanner />
+      <BrokenLinkScanner />
       <Footer />
     </main>
   );

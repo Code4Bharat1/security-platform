@@ -1,13 +1,13 @@
 "use client";
 import Navbar from "@/components/layout/navbar";
 import Footer from "@/components/layout/footer";
-import SqlScanner from "@/components/sqli/SqlScanner";
+import SeoScoreAnalyzer from "@/components/seoanalyzer/SeoScoreAnalyzer";
 
-export default function SqlScannerPage() {
+export default function SeoScoreAnalyzerPage() {
   return (
     <main>
       <Navbar />
-      <SqlScanner />
+      <SeoScoreAnalyzer />
       <Footer />
     </main>
   );

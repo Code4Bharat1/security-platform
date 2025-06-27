@@ -1,14 +1,13 @@
 "use client";
-
 import Navbar from "@/components/layout/navbar";
 import Footer from "@/components/layout/footer";
-import JohnTheRipper from "@/components/johntheripper/JohnTheRipper";
+import JohnRipper from "@/components/john/JohnRipper";
 
 export default function JohnTheRipperPage() {
   return (
     <main>
       <Navbar />
-      <JohnTheRipper />
+      <JohnRipper />
       <Footer />
     </main>
   );

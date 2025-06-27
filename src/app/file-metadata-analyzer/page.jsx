@@ -1,13 +1,13 @@
 "use client";
 import Navbar from "@/components/layout/navbar";
 import Footer from "@/components/layout/footer";
-import SqlScanner from "@/components/sqli/SqlScanner";
+import FileMetadataAnalyzer from "@/components/filemetadata/FileMetadataAnalyzer";
 
-export default function SqlScannerPage() {
+export default function FileMetadataAnalyzerPage() {
   return (
     <main>
       <Navbar />
-      <SqlScanner />
+      <FileMetadataAnalyzer />
       <Footer />
     </main>
   );

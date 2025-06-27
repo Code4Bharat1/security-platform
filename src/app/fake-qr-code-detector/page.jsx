@@ -1,13 +1,12 @@
-"use client";
 import Navbar from "@/components/layout/navbar";
 import Footer from "@/components/layout/footer";
-import SqlScanner from "@/components/sqli/SqlScanner";
+import FakeQrCodeDetector from "@/components/fakeqr/FakeQrCodeDetector";
 
-export default function SqlScannerPage() {
+export default function FakeQrPage() {
   return (
     <main>
       <Navbar />
-      <SqlScanner />
+      <FakeQrCodeDetector />
       <Footer />
     </main>
   );
