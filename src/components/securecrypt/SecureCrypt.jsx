@@ -34,7 +34,7 @@ export default function SecureCrypt() {
     <div className="min-h-screen bg-gray-100 flex flex-col items-center px-4 pt-20">
       <div className="text-center mb-6">
         <img
-          src="/tools/securecrypt.png"
+          src="/dycrypt.png"
           alt="SecureCrypt"
           className="w-16 h-16 mx-auto mb-4"
         />

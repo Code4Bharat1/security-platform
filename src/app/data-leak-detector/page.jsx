@@ -1,13 +1,14 @@
 "use client";
+
 import Navbar from "@/components/layout/navbar";
 import Footer from "@/components/layout/footer";
-import SqlScanner from "@/components/sqli/SqlScanner";
+import LeakDetector from "@/components/dataleak/LeakDetector";
 
-export default function SqlScannerPage() {
+export default function LeakDetectorPage() {
   return (
     <main>
       <Navbar />
-      <SqlScanner />
+      <LeakDetector />
       <Footer />
     </main>
   );

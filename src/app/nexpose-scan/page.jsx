@@ -1,14 +1,13 @@
 "use client";
-
 import Navbar from "@/components/layout/navbar";
 import Footer from "@/components/layout/footer";
-import LinkDetector from "@/components/linkdetector/LinkDetector";
+import NexposeScanner from "@/components/nexpose/NexposeScanner";
 
-export default function LinkDetectorPage() {
+export default function NexposeScanPage() {
   return (
     <main>
       <Navbar />
-      <LinkDetector />
+      <NexposeScanner />
       <Footer />
     </main>
   );

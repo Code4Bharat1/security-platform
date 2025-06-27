@@ -1,13 +1,12 @@
-"use client";
 import Navbar from "@/components/layout/navbar";
 import Footer from "@/components/layout/footer";
-import SqlScanner from "@/components/sqli/SqlScanner";
+import MdrMonitor from "@/components/mdr/MdrMonitor"; // or Mdr
 
-export default function SqlScannerPage() {
+export default function MdrMonitorPage() {
   return (
     <main>
       <Navbar />
-      <SqlScanner />
+      <MdrMonitor />
       <Footer />
     </main>
   );

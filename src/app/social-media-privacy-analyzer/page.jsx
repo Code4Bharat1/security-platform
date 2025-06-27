@@ -1,13 +1,14 @@
 "use client";
+
 import Navbar from "@/components/layout/navbar";
 import Footer from "@/components/layout/footer";
-import SqlScanner from "@/components/sqli/SqlScanner";
+import SocialAnalyzer from "@/components/socialmedia/SocialAnalyzer";
 
-export default function SqlScannerPage() {
+export default function SocialPrivacyAnalyzerPage() {
   return (
     <main>
       <Navbar />
-      <SqlScanner />
+      <SocialAnalyzer />
       <Footer />
     </main>
   );

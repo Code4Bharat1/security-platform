@@ -1,13 +1,14 @@
 "use client";
+
 import Navbar from "@/components/layout/navbar";
 import Footer from "@/components/layout/footer";
-import SqlScanner from "@/components/sqli/SqlScanner";
+import FakeSoftwareDetector from "@/components/fakesoftware/FakeSoftwareDetector";
 
-export default function SqlScannerPage() {
+export default function FakeSoftwarePage() {
   return (
     <main>
       <Navbar />
-      <SqlScanner />
+      <FakeSoftwareDetector />
       <Footer />
     </main>
   );

@@ -1,13 +1,14 @@
 "use client";
+
 import Navbar from "@/components/layout/navbar";
 import Footer from "@/components/layout/footer";
-import SqlScanner from "@/components/sqli/SqlScanner";
+import ThirdPartyPermissionScanner from "@/components/permissions/ThirdPartyPermissionScanner";
 
-export default function SqlScannerPage() {
+export default function PermissionPage() {
   return (
     <main>
       <Navbar />
-      <SqlScanner />
+      <ThirdPartyPermissionScanner />
       <Footer />
     </main>
   );

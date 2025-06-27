@@ -1,69 +1,71 @@
 "use client";
 import { useState } from "react";
-import { Link2 } from "lucide-react";
+import { BarChart3 } from "lucide-react";
 
-export default function LinkDetector() {
-  const [link, setLink] = useState("");
-  const [scanning, setScanning] = useState(false);
+export default function SeoScoreAnalyzer() {
+  const [url, setUrl] = useState("");
+  const [loading, setLoading] = useState(false);
   const [result, setResult] = useState(null);
 
-  const handleScan = async () => {
-    if (!link.trim()) return;
+  const handleAnalyze = async () => {
+    if (!url.trim()) return;
 
-    setScanning(true);
+    setLoading(true);
     setResult(null);
 
     try {
-      const res = await fetch("/api/link-detector", {
+      const res = await fetch("/api/seo-score-analyzer", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({ link }),
+        body: JSON.stringify({ url }),
       });
 
       const data = await res.json();
-      setResult(data.message || "✅ Link is safe.");
+      setResult(data.message || "✅ SEO Analysis Complete.");
     } catch (err) {
-      setResult("❌ Failed to check the link.");
+      setResult("❌ Failed to analyze SEO.");
     }
 
-    setScanning(false);
+    setLoading(false);
   };
 
   return (
     <div className="min-h-screen bg-gray-100 flex flex-col items-center pt-20 px-4">
       <div className="text-center mb-10">
-        <Link2 className="mx-auto mb-4 text-green-600" size={48} />
-        <h1 className="text-3xl font-bold text-green-800">Link Detector</h1>
+        <BarChart3 className="mx-auto mb-4 text-green-600" size={48} />
+        <h1 className="text-3xl font-bold text-green-800">SEO Score Analyzer Tool</h1>
         <p className="text-gray-600 mt-2">
-          This tool helps detect malicious, suspicious, or unsafe links.
+          Analyzes website SEO and provides improvement tips.
         </p>
       </div>
 
       <div className="bg-white shadow-lg rounded-xl p-6 w-full max-w-lg text-center">
         <input
           type="text"
-          placeholder="🔗 Enter link to check..."
-          value={link}
-          onChange={(e) => setLink(e.target.value)}
+          placeholder="🔗 Enter website URL..."
+          value={url}
+          onChange={(e) => setUrl(e.target.value)}
           className="w-full px-4 py-3 mb-4 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-600 text-gray-800"
         />
 
         <button
-          onClick={handleScan}
-          disabled={scanning || !link}
+          onClick={handleAnalyze}
+          disabled={loading || !url}
           className={`w-full py-3 rounded-md text-white font-semibold transition ${
-            scanning
+            loading
               ? "bg-green-400 cursor-not-allowed"
               : "bg-green-700 hover:bg-green-800"
           }`}
         >
-          {scanning ? "Scanning..." : "Check Link"}
+          {loading ? "Analyzing..." : "Analyze SEO"}
         </button>
 
         {result && (
-          <div className="mt-6 text-center text-green-700 font-semibold">{result}</div>
+          <div className="mt-6 text-center text-green-700 font-semibold">
+            {result}
+          </div>
         )}
       </div>
     </div>

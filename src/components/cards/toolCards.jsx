@@ -41,6 +41,7 @@ const ToolCardsPage = () => {
       buttonLabel: "Scan your codes",
     },
 
+
      {
       name: "subdomain Scanner",
       image: "/subdomain.png",
@@ -119,8 +120,10 @@ const ToolCardsPage = () => {
       buttonLabel: "Check Headers",
 
     },
+
     {
       name: "ASN Lookup",
+      image: "asn-logo.png",
       image: "/asn.png",
       description: "Retrieve details about an Autonomous System Number (ASN).",
       slug: "asnLookup",
@@ -136,7 +139,7 @@ const ToolCardsPage = () => {
 
     },
     {
-      name: "- CSRF Vulnerability Scanner",
+      name: "CSRF Vulnerability Scanner",
       image: "/csrf.png",
       description: " Check for UI redressing vulnerabilities in a webpage.",
       slug: "csrfChecker",
@@ -262,6 +265,7 @@ const ToolCardsPage = () => {
       slug: "keyword-checker",
       buttonLabel: "Check Keyword Density",
     },
+
     {
 
       name: "Rogue WiFi Detector",
@@ -274,15 +278,15 @@ const ToolCardsPage = () => {
       name: "Link Detector",
       image: "/link_dec.png",
       description: "This tool helps detect malicious, suspicious, or unsafe links.",
-      slug: "link-detector",
-      buttonLabel: "Scan Link",
+      slug: "check-link",
+      buttonLabel: "Check Link",
     },
     {
       name: "SQLi Scanner",
       image: "/sql_injection.png",
       description: "This tool scans websites for SQL Injection vulnerabilities.",
-      slug: "link-detector",
-      buttonLabel: "Scan Link",
+      slug: "sqli-scanner",
+      buttonLabel: "Scan SQLi",
     },
     {
       name: "Hash Generator",
@@ -295,22 +299,22 @@ const ToolCardsPage = () => {
       name: "John The Ripper",
       image: "/John.png",
       description: "Cracks password hashes using smart attacks.",
-      slug: "John The Ripper",
-      buttonLabel: "Crack Password",
+      slug: "john-the-ripper",
+      buttonLabel: "Crack Passwords",
     },
     {
       name: "SecureCrypt",
       image: "/dycrypt.png",
       description: "Encrypts and decrypts text using secure algorithms.",
-      slug: "link-detector",
-      buttonLabel: "Scan Link",
+      slug: "securecrypt",
+      buttonLabel: "Encrypt Now",
     },
     {
       name: "Nexpose",
       image: "/nexpose.png",
       description: "This tool scans websites for SQL Injection vulnerabilities.",
-      slug: "securecrypt",
-      buttonLabel: "Encrypt Now",
+      slug: "nexpose-scan",
+      buttonLabel: "Nexpose Scan",
     },
     {
       name: "MDR Monitor",
@@ -432,42 +436,21 @@ const ToolCardsPage = () => {
       buttonLabel: "Analyze SEO",
     },
 
-{
+  {
       name: "ssrf Scanner",
       image: "/ssrf.png",
       description: "Analyze keyword frequency for SEO structuring on website.",
       slug: "ssrfScannerForm",
       buttonLabel: "SSRF Scanner",
     },
-    {
-      name: "File Scanner",
-      image: "/file_scan.png",
-      description: "Analyze keyword frequency for SEO structuring on website.",
-      slug: "sensitiveFileScanner",
-      buttonLabel: "File Scanner",
-    },
+
     {
       name: "Broken Access Scanner",
       image: "/broken_access.png",
       description: "Analyze keyword frequency for SEO structuring on website.",
       slug: "brokenAccessPage",
       buttonLabel: "Broken Access Scanner",
-    },
-     {
-      name: "AI Vulnerability Scanner",
-      image: "/ai_scan.png",
-      description: "Analyze keyword frequency for SEO structuring on website.",
-      slug: "AIVulnerabilityExplainer",
-      buttonLabel: "AI Vulnerability Scanner",
-    },
-     {
-      name: "AI Headers checker",
-      image: "/ai_header.png",
-      description: "Analyze keyword frequency for SEO structuring on website.",
-      slug: "AISecurityHeaders",
-      buttonLabel: "AI Headers checker",
-    },
-
+    }, 
   ];
 
 
