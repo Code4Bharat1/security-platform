@@ -6,28 +6,41 @@ export default function SecureCrypt() {
   const [text, setText] = useState("");
   const [result, setResult] = useState("");
   const [mode, setMode] = useState("encrypt");
+  const [loading, setLoading] = useState(false);
 
-  const handleEncrypt = () => {
-    const encrypted = btoa(text); // base64 encode
-    setResult(encrypted);
-  };
+  const handleSubmit = async () => {
+    if (!text.trim()) return;
 
-  const handleDecrypt = () => {
+    setLoading(true);
+    setResult("");
+
+    const endpoint =
+      mode === "encrypt" ? "/api/securecrypt/encrypt" : "/api/securecrypt/decrypt";
+
+    const body =
+      mode === "encrypt" ? { text } : { encryptedText: text };
+
     try {
-      const decrypted = atob(text); // base64 decode
-      setResult(decrypted);
-    } catch (error) {
-      setResult("Invalid encrypted text!");
-    }
-  };
+      const res = await fetch(endpoint, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(body),
+      });
 
-  const handleSubmit = () => {
-    if (!text) return;
-    if (mode === "encrypt") {
-      handleEncrypt();
-    } else {
-      handleDecrypt();
+      const data = await res.json();
+
+      if (mode === "encrypt") {
+        setResult(data.encrypted || "❌ Encryption failed");
+      } else {
+        setResult(data.decrypted || "❌ Decryption failed");
+      }
+    } catch (err) {
+      setResult("❌ Error contacting server.");
     }
+
+    setLoading(false);
   };
 
   return (
@@ -78,9 +91,16 @@ export default function SecureCrypt() {
 
         <button
           onClick={handleSubmit}
+          disabled={loading}
           className="w-full py-3 rounded-md text-white font-semibold bg-green-700 hover:bg-green-800"
         >
-          {mode === "encrypt" ? "Encrypt Text" : "Decrypt Text"}
+          {loading
+            ? mode === "encrypt"
+              ? "Encrypting..."
+              : "Decrypting..."
+            : mode === "encrypt"
+            ? "Encrypt Text"
+            : "Decrypt Text"}
         </button>
 
         {result && (

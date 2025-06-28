@@ -11,7 +11,7 @@ export default function PortActivityScanner() {
     setResult(null);
 
     try {
-      const res = await fetch("/api/port-scan");
+      const res = await fetch("http://localhost:5000/api/port-scan"); // Backend call
       const data = await res.json();
       setResult(data);
     } catch (err) {
@@ -48,18 +48,31 @@ export default function PortActivityScanner() {
               <p className="text-red-600">{result.error}</p>
             ) : (
               <>
-                <p className="font-bold text-green-700">🔓 Open Ports:</p>
-                <ul className="list-disc list-inside text-gray-700 mb-2">
-                  {result.openPorts?.map((port, index) => (
-                    <li key={index}>Port {port}</li>
-                  ))}
-                </ul>
-                <p className="font-bold text-red-600">⚠ Suspicious Ports:</p>
-                <ul className="list-disc list-inside text-gray-700">
-                  {result.suspicious?.map((port, index) => (
-                    <li key={index}>Port {port}</li>
-                  ))}
-                </ul>
+                {result.openPorts?.length > 0 && (
+                  <>
+                    <p className="font-bold text-green-700">🔓 Open Ports:</p>
+                    <ul className="list-disc list-inside text-gray-700 mb-2">
+                      {result.openPorts.map((port, index) => (
+                        <li key={index}>Port {port}</li>
+                      ))}
+                    </ul>
+                  </>
+                )}
+
+                {result.suspicious?.length > 0 && (
+                  <>
+                    <p className="font-bold text-red-600">⚠ Suspicious Ports:</p>
+                    <ul className="list-disc list-inside text-gray-700">
+                      {result.suspicious.map((port, index) => (
+                        <li key={index}>Port {port}</li>
+                      ))}
+                    </ul>
+                  </>
+                )}
+
+                {result.openPorts?.length === 0 && result.suspicious?.length === 0 && (
+                  <p className="text-gray-600">✅ No open or suspicious ports detected.</p>
+                )}
               </>
             )}
           </div>

@@ -13,7 +13,7 @@ export default function JohnRipper() {
     setResult(null);
 
     try {
-      const res = await fetch("/api/john-the-ripper", {
+      const res = await fetch("http://localhost:5000/api/john-the-ripper", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -24,7 +24,7 @@ export default function JohnRipper() {
       const data = await res.json();
       setResult(data.result || "✅ Hash cracked successfully.");
     } catch (err) {
-      setResult("❌ Failed to crack the hash.");
+      setResult("❌ Failed to connect to backend.");
     }
 
     setLoading(false);

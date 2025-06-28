@@ -14,7 +14,7 @@ export default function NexposeScanner() {
     setResult(null);
 
     try {
-      const res = await fetch("/api/nexpose-scan", {
+      const res = await fetch("http://localhost:5000/api/nexpose", {  // ✅ FIXED
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -23,7 +23,7 @@ export default function NexposeScanner() {
       });
 
       const data = await res.json();
-      setResult(data.message || "✅ Scan complete. No vulnerabilities found.");
+      setResult(data.details || "✅ Scan complete. No vulnerabilities found.");
     } catch (err) {
       setResult("❌ Failed to scan with Nexpose.");
     }

@@ -1,24 +1,36 @@
 "use client";
 import { useState } from "react";
-import { Globe } from "lucide-react";
+import { LocateFixed } from "lucide-react";
 
-export default function IpInfoFinder() {
+export default function IPInfoFinder() {
   const [ip, setIp] = useState("");
   const [loading, setLoading] = useState(false);
-  const [result, setResult] = useState(null);
+  const [info, setInfo] = useState(null);
+  const [error, setError] = useState("");
 
-  const handleFind = async () => {
-    if (!ip) return;
+  const handleSubmit = async () => {
+    if (!ip.trim()) return;
+
     setLoading(true);
-    setResult(null);
+    setInfo(null);
+    setError("");
 
     try {
-      // Replace this URL with your backend endpoint
-      const res = await fetch(`/api/ip-info?ip=${ip}`);
+      const res = await fetch("http://localhost:5000/api/ip-info", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ ip }),
+      });
+
       const data = await res.json();
-      setResult(data);
-    } catch (error) {
-      setResult({ error: "❌ Failed to fetch IP info." });
+
+      if (data.error) {
+        setError(data.error);
+      } else {
+        setInfo(data);
+      }
+    } catch (err) {
+      setError("❌ Failed to fetch IP info.");
     }
 
     setLoading(false);
@@ -27,47 +39,48 @@ export default function IpInfoFinder() {
   return (
     <div className="min-h-screen bg-gray-100 flex flex-col items-center pt-20 px-4">
       <div className="text-center mb-10">
-        <Globe className="mx-auto mb-4 text-green-600" size={48} />
+        <LocateFixed className="mx-auto mb-4 text-green-600" size={48} />
         <h1 className="text-3xl font-bold text-green-800">IP Address Info Finder</h1>
         <p className="text-gray-600 mt-2">
-          Enter an IP address to get location and network details.
+          Fetches location and network details of an IP address.
         </p>
       </div>
 
       <div className="bg-white shadow-lg rounded-xl p-6 w-full max-w-lg text-center">
         <input
           type="text"
-          placeholder="Enter IP address (e.g., 8.8.8.8)"
+          placeholder="Enter IP address..."
           value={ip}
           onChange={(e) => setIp(e.target.value)}
-          className="w-full px-4 py-3 mb-4 border rounded-md focus:outline-none focus:ring-2 focus:ring-green-500"
+          className="w-full px-4 py-3 mb-4 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-600"
         />
 
         <button
-          onClick={handleFind}
-          disabled={loading}
+          onClick={handleSubmit}
+          disabled={loading || !ip}
           className={`w-full py-3 rounded-md text-white font-semibold ${
-            loading ? "bg-green-400 cursor-not-allowed" : "bg-green-700 hover:bg-green-800"
+            loading
+              ? "bg-green-400 cursor-not-allowed"
+              : "bg-green-700 hover:bg-green-800"
           }`}
         >
-          {loading ? "Fetching..." : "Find Info"}
+          {loading ? "Fetching..." : "Get IP Info"}
         </button>
 
-        {result && (
-          <div className="mt-6 text-left text-sm text-gray-700 bg-gray-50 p-4 rounded-md">
-            {result.error ? (
-              <p className="text-red-600">{result.error}</p>
-            ) : (
-              <>
-                <p><strong>IP:</strong> {result.ip}</p>
-                <p><strong>Country:</strong> {result.country}</p>
-                <p><strong>Region:</strong> {result.region}</p>
-                <p><strong>City:</strong> {result.city}</p>
-                <p><strong>ISP:</strong> {result.isp}</p>
-                <p><strong>Latitude:</strong> {result.lat}</p>
-                <p><strong>Longitude:</strong> {result.lon}</p>
-              </>
-            )}
+        {error && (
+          <div className="mt-4 text-red-600 font-semibold">{error}</div>
+        )}
+
+        {info && (
+          <div className="mt-6 text-left text-sm text-gray-800">
+            <p><strong>🌍 IP:</strong> {info.ip}</p>
+            <p><strong>📍 Country:</strong> {info.country}</p>
+            <p><strong>🏙️ City:</strong> {info.city}</p>
+            <p><strong>🛰️ ISP:</strong> {info.isp}</p>
+            <p><strong>🌐 Org:</strong> {info.org}</p>
+            <p><strong>🕓 Timezone:</strong> {info.timezone}</p>
+            <p><strong>📡 Latitude:</strong> {info.lat}</p>
+            <p><strong>📡 Longitude:</strong> {info.lon}</p>
           </div>
         )}
       </div>

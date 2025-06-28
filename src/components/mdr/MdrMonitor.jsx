@@ -3,17 +3,30 @@ import { ShieldCheck } from "lucide-react";
 import React, { useState } from "react";
 
 export default function MdrMonitor() {
-  const [monitoring, setMonitoring] = useState(false);
-  const [status, setStatus] = useState("");
+  const [url, setUrl] = useState("");
+  const [loading, setLoading] = useState(false);
+  const [data, setData] = useState(null);
 
-  const handleStartMonitoring = () => {
-    setMonitoring(true);
-    setStatus("Monitoring started...");
+  const handleMonitor = async () => {
+    if (!url.trim()) return;
 
-    // Simulate real-time detection
-    setTimeout(() => {
-      setStatus("✅ No active threats detected.");
-    }, 2000);
+    setLoading(true);
+    setData(null);
+
+    try {
+      const res = await fetch("http://localhost:5000/api/mdr-monitor", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ url }),
+      });
+
+      const json = await res.json();
+      setData(json);
+    } catch (err) {
+      setData({ summary: "❌ Failed to connect to MDR Monitor server." });
+    }
+
+    setLoading(false);
   };
 
   return (
@@ -27,25 +40,36 @@ export default function MdrMonitor() {
       </div>
 
       <div className="bg-white shadow-lg rounded-xl p-6 w-full max-w-lg">
-        <p className="text-gray-700 mb-4">
-          Click below to start real-time threat monitoring.
-        </p>
+        <input
+          type="text"
+          placeholder="🔗 Enter website URL..."
+          value={url}
+          onChange={(e) => setUrl(e.target.value)}
+          className="w-full px-4 py-3 mb-4 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-600 text-gray-800"
+        />
 
         <button
-          onClick={handleStartMonitoring}
-          disabled={monitoring}
-          className={`w-full py-3 rounded-md text-white font-semibold ${
-            monitoring
+          onClick={handleMonitor}
+          disabled={loading || !url}
+          className={`w-full py-3 rounded-md text-white font-semibold transition ${
+            loading
               ? "bg-green-400 cursor-not-allowed"
               : "bg-green-700 hover:bg-green-800"
           }`}
         >
-          {monitoring ? "Monitoring..." : "Start Monitoring"}
+          {loading ? "Monitoring..." : "Start Monitoring"}
         </button>
 
-        {status && (
-          <div className="mt-6 text-center">
-            <p className="text-lg font-bold text-green-700">{status}</p>
+        {data && (
+          <div className="mt-6">
+            <p className="text-lg font-bold text-green-700">{data.summary}</p>
+            {data.results && (
+              <ul className="mt-3 list-disc list-inside text-gray-700 text-left">
+                {data.results.map((item, i) => (
+                  <li key={i}>{item}</li>
+                ))}
+              </ul>
+            )}
           </div>
         )}
       </div>
