@@ -9,40 +9,43 @@ export default function WhatsAppInspector() {
   const [loading, setLoading] = useState(false);
   const [result, setResult] = useState(null);
 
-  const sendOtp = async () => {
+  const sendOtp = () => {
     if (!phone) return;
-    setLoading(true);
-    // Simulate backend call
-    setTimeout(() => {
-      setLoading(false);
-      setStep(2);
-    }, 1000);
+    setStep(2);
   };
 
-  const verifyOtp = async () => {
+  const verifyOtp = () => {
     if (!otp) return;
-    setLoading(true);
-    // Simulate verification
-    setTimeout(() => {
-      setLoading(false);
-      setStep(3);
-    }, 1000);
+    setStep(3);
   };
 
   const inspectPrivacy = async () => {
     setLoading(true);
     setResult(null);
-    // Simulate inspection
-    setTimeout(() => {
-      setResult([
-        "✅ 2-step verification is enabled.",
-        "⚠️ Last seen is visible to everyone.",
-        "✅ Disappearing messages are enabled.",
-        "❌ Profile photo is visible to unknown numbers.",
-        "✅ Group add restriction is enabled.",
-      ]);
-      setLoading(false);
-    }, 1500);
+
+    const settings = {
+      profilePhoto: "Everyone",
+      lastSeen: "Everyone",
+      groups: "Everyone",
+      readReceipts: true,
+    };
+
+    try {
+      const res = await fetch("/api/whatsapp-privacy", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ settings }),
+      });
+
+      const data = await res.json();
+      setResult(data.risks || ["✅ All settings are safe."]);
+    } catch (err) {
+      setResult(["❌ Failed to inspect privacy settings."]);
+    }
+
+    setLoading(false);
   };
 
   return (
@@ -72,10 +75,9 @@ export default function WhatsAppInspector() {
             />
             <button
               onClick={sendOtp}
-              disabled={loading || !phone}
               className="w-full py-3 rounded-md text-white bg-green-700 hover:bg-green-800"
             >
-              {loading ? "Sending OTP..." : "Send OTP"}
+              Send OTP
             </button>
           </>
         )}
@@ -94,10 +96,9 @@ export default function WhatsAppInspector() {
             />
             <button
               onClick={verifyOtp}
-              disabled={loading || !otp}
               className="w-full py-3 rounded-md text-white bg-green-700 hover:bg-green-800"
             >
-              {loading ? "Verifying..." : "Verify OTP"}
+              Verify OTP
             </button>
           </>
         )}

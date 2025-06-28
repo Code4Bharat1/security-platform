@@ -22,15 +22,20 @@ export default function FakeSoftwareDetector() {
     formData.append("file", file);
 
     try {
-      const res = await fetch("/api/fake-software-scan", {
+      const response = await fetch("/api/fake-software-scan", {
         method: "POST",
         body: formData,
       });
 
-      const data = await res.json();
-      setResult(data.message || "✅ No fake software detected.");
-    } catch (err) {
-      setResult("❌ Failed to scan the file.");
+      const data = await response.json();
+
+      if (response.ok) {
+        setResult(data.message);
+      } else {
+        setResult("❌ Error: " + (data.message || "Scan failed."));
+      }
+    } catch (error) {
+      setResult("❌ Failed to connect to backend.");
     }
 
     setScanning(false);

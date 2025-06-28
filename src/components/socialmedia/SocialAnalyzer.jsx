@@ -6,12 +6,14 @@ export default function SocialAnalyzer() {
   const [url, setUrl] = useState("");
   const [scanning, setScanning] = useState(false);
   const [result, setResult] = useState(null);
+  const [risks, setRisks] = useState([]);
 
   const handleAnalyze = async () => {
     if (!url) return;
 
     setScanning(true);
     setResult(null);
+    setRisks([]);
 
     try {
       const res = await fetch("/api/social-analyze", {
@@ -24,6 +26,7 @@ export default function SocialAnalyzer() {
 
       const data = await res.json();
       setResult(data.message || "✅ No privacy issues detected.");
+      setRisks(data.risks || []);
     } catch (err) {
       setResult("❌ Failed to analyze profile.");
     }
@@ -68,6 +71,14 @@ export default function SocialAnalyzer() {
           <div className="mt-6 text-center text-green-700 font-semibold">
             {result}
           </div>
+        )}
+
+        {risks.length > 0 && (
+          <ul className="mt-4 text-left text-sm text-gray-700 list-disc list-inside">
+            {risks.map((risk, index) => (
+              <li key={index}>⚠️ {risk}</li>
+            ))}
+          </ul>
         )}
       </div>
     </div>

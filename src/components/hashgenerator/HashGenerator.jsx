@@ -1,33 +1,37 @@
 "use client";
 import { useState } from "react";
 import { FileText } from "lucide-react";
-import sha256 from "crypto-js/sha256";
-import sha1 from "crypto-js/sha1";
-import md5 from "crypto-js/md5";
 
 export default function HashGenerator() {
   const [text, setText] = useState("");
   const [algorithm, setAlgorithm] = useState("SHA-256");
   const [hash, setHash] = useState("");
+  const [error, setError] = useState("");
 
-  const generateHash = () => {
+  const generateHash = async () => {
     if (!text) return;
 
-    let result = "";
-    switch (algorithm) {
-      case "SHA-256":
-        result = sha256(text).toString();
-        break;
-      case "SHA-1":
-        result = sha1(text).toString();
-        break;
-      case "MD5":
-        result = md5(text).toString();
-        break;
-      default:
-        break;
+    setError("");
+    setHash("");
+
+    try {
+      const res = await fetch("http://localhost:5000/api/hash-generator", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ text, algorithm }),
+      });
+
+      const data = await res.json();
+      if (res.ok) {
+        setHash(data.hash);
+      } else {
+        setError(data.error || "Failed to generate hash.");
+      }
+    } catch (err) {
+      setError("❌ Error connecting to server.");
     }
-    setHash(result);
   };
 
   return (
@@ -65,6 +69,12 @@ export default function HashGenerator() {
         >
           Generate Hash
         </button>
+
+        {error && (
+          <div className="mt-4 text-red-600 font-semibold text-center">
+            {error}
+          </div>
+        )}
 
         {hash && (
           <div className="mt-6">

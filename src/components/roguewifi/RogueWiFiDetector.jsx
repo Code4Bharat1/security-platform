@@ -1,61 +1,81 @@
-"use client";
-import { useState } from 'react';
-import { Wifi } from 'lucide-react';
+import React, { useState } from "react";
 
-export default function RogueWiFiDetector() {
-  const [input, setInput] = useState('');
-  const [loading, setLoading] = useState(false);
+function RogueWifiDetector() {
+  const [input, setInput] = useState("");
   const [result, setResult] = useState(null);
+  const [loading, setLoading] = useState(false);
 
-  const handleScan = () => {
-    if (!input) return;
+  const handleScan = async (e) => {
+    e.preventDefault();
     setLoading(true);
-    setResult(null);
-
-    setTimeout(() => {
-      setResult({
-        status: 'Scan Complete',
-        message: 'No rogue WiFi networks detected.',
+    try {
+      const response = await fetch("http://localhost:5000/api/rogue-wifi/rogue-wifi-scan", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ input }),
       });
+      const data = await response.json();
+      setResult(data);
+    } catch (error) {
+      console.error("Scan failed:", error);
+    } finally {
       setLoading(false);
-    }, 1500);
+    }
   };
 
   return (
-    <div className="min-h-screen bg-gray-100 flex flex-col items-center pt-20 px-4">
-      <div className="text-center mb-10">
-        <Wifi className="mx-auto mb-4 text-green-600" size={48} />
-        <h1 className="text-3xl font-bold text-green-800">Rogue WiFi Detector</h1>
-        <p className="text-gray-600 mt-2">
-          Scans for duplicate or suspicious WiFi networks in your area.
-        </p>
-      </div>
+    <div className="rogue-scanner-container" style={{ textAlign: "center", marginTop: "60px" }}>
+      <h2 style={{ color: "#00703c" }}>Rogue WiFi Detector</h2>
+      <p>Scans for duplicate or suspicious WiFi networks in your area.</p>
 
-      <div className="bg-white shadow-lg rounded-xl p-6 w-full max-w-lg">
+      <form onSubmit={handleScan} style={{ marginTop: "20px" }}>
         <input
           type="text"
-          placeholder="Enter SSID or IP (optional)"
+          placeholder="Enter SSID or IP"
           value={input}
           onChange={(e) => setInput(e.target.value)}
-          className="w-full px-4 py-3 mb-4 border rounded-md focus:outline-none focus:ring-2 focus:ring-green-500"
+          style={{
+            padding: "10px",
+            width: "300px",
+            borderRadius: "5px",
+            border: "1px solid #ccc",
+          }}
+          required
         />
+        <br />
         <button
-          onClick={handleScan}
-          disabled={loading}
-          className={`w-full py-3 rounded-md text-white font-semibold ${
-            loading ? 'bg-green-400 cursor-not-allowed' : 'bg-green-700 hover:bg-green-800'
-          }`}
+          type="submit"
+          style={{
+            marginTop: "15px",
+            padding: "10px 20px",
+            backgroundColor: "#00703c",
+            color: "white",
+            border: "none",
+            borderRadius: "5px",
+            cursor: "pointer",
+          }}
         >
-          {loading ? 'Scanning...' : 'Scan Now'}
+          {loading ? "Scanning..." : "Scan Now"}
         </button>
+      </form>
 
-        {result && (
-          <div className="mt-6 text-center">
-            <p className="text-lg font-bold text-green-700">{result.status}</p>
-            <p className="text-gray-600 mt-1">{result.message}</p>
-          </div>
-        )}
-      </div>
+      {result && (
+        <div style={{ marginTop: "30px", color: "#333" }}>
+          <h3 style={{ color: "#00703c" }}>Scan Complete</h3>
+          <p>
+            {result.status === "rogue" && "⚠️ Rogue WiFi detected!"}
+            {result.status === "suspicious" && "⚠️ Suspicious WiFi network found!"}
+            {result.status === "safe" && "✅ No rogue WiFi networks detected."}
+          </p>
+          <p><strong>Status:</strong> {result.status}</p>
+          <p><strong>Message:</strong> {result.message}</p>
+          <p><strong>Checked At:</strong> {new Date(result.savedAt).toLocaleString()}</p>
+        </div>
+      )}
     </div>
   );
 }
+
+export default RogueWifiDetector;

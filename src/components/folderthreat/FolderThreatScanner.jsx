@@ -24,16 +24,15 @@ export default function FolderThreatScanner() {
     });
 
     try {
-      // TODO: Replace with your actual backend endpoint
       const res = await fetch("/api/folder-scan", {
         method: "POST",
         body: formData,
       });
 
       const data = await res.json();
-      setResult(data.message || "✅ Scan complete.");
+      setResult(data);
     } catch (err) {
-      setResult("❌ Failed to scan folder.");
+      setResult({ message: "❌ Failed to scan folder.", suspiciousFiles: [] });
     }
 
     setScanning(false);
@@ -50,7 +49,6 @@ export default function FolderThreatScanner() {
       </div>
 
       <div className="bg-white shadow-lg rounded-xl p-6 w-full max-w-lg text-center">
-        {/* Stylish Choose Folder Button */}
         <label
           htmlFor="folderInput"
           className="block mb-4 w-full bg-green-600 text-white text-center py-3 rounded-md cursor-pointer hover:bg-green-700 transition-all"
@@ -80,8 +78,21 @@ export default function FolderThreatScanner() {
         </button>
 
         {result && (
-          <div className="mt-6 text-center text-green-700 font-semibold">
-            {result}
+          <div className="mt-6 text-left text-green-700 font-medium">
+            <p className="text-lg font-bold text-center">{result.message}</p>
+
+            <div className="mt-4">
+              <p>Total Files Scanned: {result.totalFiles}</p>
+              <p>Suspicious Files Detected: {result.suspiciousCount}</p>
+
+              {result.suspiciousFiles?.length > 0 && (
+                <ul className="mt-3 list-disc list-inside text-red-600">
+                  {result.suspiciousFiles.map((file, idx) => (
+                    <li key={idx}>{file}</li>
+                  ))}
+                </ul>
+              )}
+            </div>
           </div>
         )}
       </div>

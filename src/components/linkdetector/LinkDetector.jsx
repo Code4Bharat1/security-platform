@@ -6,26 +6,34 @@ export default function LinkDetector() {
   const [link, setLink] = useState("");
   const [scanning, setScanning] = useState(false);
   const [result, setResult] = useState(null);
+  const [error, setError] = useState("");
 
   const handleScan = async () => {
     if (!link.trim()) return;
 
     setScanning(true);
     setResult(null);
+    setError("");
 
     try {
-      const res = await fetch("/api/link-detector", {
+      const res = await fetch("http://localhost:5000/api/link-detector/link-scan", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({ link }),
+        body: JSON.stringify({ url: link }), // ✅ Fix: send `url` not `link`
       });
 
       const data = await res.json();
-      setResult(data.message || "✅ Link is safe.");
+
+      if (res.ok) {
+        setResult(data);
+      } else {
+        setError("❌ Link check failed.");
+      }
     } catch (err) {
-      setResult("❌ Failed to check the link.");
+      console.error("Request error:", err);
+      setError("❌ Failed to check the link.");
     }
 
     setScanning(false);
@@ -62,8 +70,27 @@ export default function LinkDetector() {
           {scanning ? "Scanning..." : "Check Link"}
         </button>
 
+        {/* ✅ Result */}
         {result && (
-          <div className="mt-6 text-center text-green-700 font-semibold">{result}</div>
+          <div className="mt-6 text-center text-green-800 font-semibold">
+            <p>
+              {result.status === "malicious" && "🛑 Malicious Link Detected!"}
+              {result.status === "suspicious" && "⚠️ Suspicious Link!"}
+              {result.status === "safe" && "✅ Link is safe."}
+            </p>
+            <p className="text-sm mt-1 text-gray-700">Status: {result.status}</p>
+            <p className="text-sm">{result.message}</p>
+            <p className="text-xs text-gray-500 mt-1">
+              Checked At: {new Date(result.scannedAt).toLocaleString()}
+            </p>
+          </div>
+        )}
+
+        {/* ❌ Error */}
+        {error && (
+          <div className="mt-6 text-red-600 font-semibold">
+            {error}
+          </div>
         )}
       </div>
     </div>
