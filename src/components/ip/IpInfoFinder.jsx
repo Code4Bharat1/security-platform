@@ -16,7 +16,7 @@ export default function IPInfoFinder() {
     setError("");
 
     try {
-      const res = await fetch("http://localhost:5000/api/ip-info", {
+      const res = await fetch("https://zypher-api.code4bharat.com/api/ip-info", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ ip }),

@@ -21,7 +21,7 @@ export default function EmailAttachmentAnalyzer() {
     formData.append("file", file);
 
     try {
-      const res = await fetch("http://localhost:5000/api/email-attachment", {
+      const res = await fetch("https://zypher-api.code4bharat.com/api/email-attachment", {
         method: "POST",
         body: formData,
       });

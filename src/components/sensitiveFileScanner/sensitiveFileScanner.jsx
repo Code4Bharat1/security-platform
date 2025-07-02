@@ -19,7 +19,7 @@ export default function SensitiveFileScanner() {
     setResults([]);
 
     try {
-      const res = await fetch('http://localhost:5000/api/sensitive-files/check', {
+      const res = await fetch('https://zypher-api.code4bharat.com/api/sensitive-files/check', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ url }),

@@ -8,7 +8,7 @@ export default function SecretKeyScanner() {
 
   const scanSecrets = async () => {
     setLoading(true);
-    const res = await fetch('http://localhost:5000/api/secretKeyScanner/secret-scan', {
+    const res = await fetch('https://zypher-api.code4bharat.com/api/secretKeyScanner/secret-scan', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ code }),

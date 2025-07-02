@@ -27,7 +27,7 @@ export default function SignInPage() {
     if (Object.keys(newErrors).length === 0) {
       try {
         setLoading(true);
-        const res = await fetch('http://localhost:5000/api/auth/login', {
+        const res = await fetch('https://zypher-api.code4bharat.com/api/auth/login', {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',

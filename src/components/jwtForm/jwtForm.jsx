@@ -101,7 +101,7 @@ export default function JWTAnalyzer() {
     setBackendResponse(null);
 
     try {
-      const res = await fetch("http://localhost:5000/api/jwt/token", {
+      const res = await fetch("https://zypher-api.code4bharat.com/api/jwt/token", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

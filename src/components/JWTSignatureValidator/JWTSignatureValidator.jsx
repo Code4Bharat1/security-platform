@@ -21,7 +21,7 @@ export default function JWTSignatureValidator() {
 
     try {
       const res = await fetch(
-        "http://localhost:5000/api/jwtsign/jwt-signature",
+        "https://zypher-api.code4bharat.com/api/jwtsign/jwt-signature",
         {
           method: "POST",
           headers: { "Content-Type": "application/json" },
@@ -39,7 +39,7 @@ export default function JWTSignatureValidator() {
     } catch (err) {
       console.error("Network error:", err);
       setError(
-        "Network error: Unable to connect to server. Make sure the backend is running on http://localhost:5000"
+        "Network error: Unable to connect to server. Make sure the backend is running on https://zypher-api.code4bharat.com"
       );
     } finally {
       setLoading(false);
