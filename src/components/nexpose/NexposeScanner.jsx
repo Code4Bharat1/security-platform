@@ -14,7 +14,7 @@ export default function NexposeScanner() {
     setResult(null);
 
     try {
-      const res = await fetch("http://localhost:5000/api/nexpose", {  // ✅ FIXED
+      const res = await fetch("https://zypher-api.code4bharat.com/api/nexpose", {  // ✅ FIXED
         method: "POST",
         headers: {
           "Content-Type": "application/json",

@@ -13,7 +13,7 @@ export default function JohnRipper() {
     setResult(null);
 
     try {
-      const res = await fetch("http://localhost:5000/api/john-the-ripper", {
+      const res = await fetch("https://zypher-api.code4bharat.com/api/john-the-ripper", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

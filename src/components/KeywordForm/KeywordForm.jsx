@@ -26,7 +26,7 @@ export default function KeywordPage() {
       const timeoutId = setTimeout(() => controller.abort(), 30000); // 30s timeout
 
       const response = await fetch(
-        "http://localhost:5000/api/keyword/analyze",
+        "https://zypher-api.code4bharat.com/api/keyword/analyze",
         {
           method: "POST",
           headers: {
