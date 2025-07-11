@@ -345,20 +345,6 @@ const ToolCardsPage = () => {
       buttonLabel: "Detect Leak",
     },
     {
-      name: "Social Media Privacy Analyzer",
-      image: "/social-media.png",
-      description: "Analyzes your social profiles for privacy risks.",
-      slug: "social-media-privacy-analyzer",
-      buttonLabel: "Analyze Now",
-    },
-    {
-      name: "Fake Software Detector",
-      image: "/fake.png",
-      description: "Identifies fake or malicious software on your system.",
-      slug: "fake-software-detector",
-      buttonLabel: "Detect Now",
-    },
-    {
       name: "WhatsApp Privacy Inspector",
       image: "/wp.png",
       description: "Checks WhatsApp settings for potential privacy risks.",
@@ -380,27 +366,6 @@ const ToolCardsPage = () => {
       buttonLabel: "Find Info",
     },
     {
-      name: "Third-Party App Permission Scanner",
-      image: "/permission.png",
-      description: "Checks third-party apps for risky or extra permissions.",
-      slug: "third-party-permission-scanner",
-      buttonLabel: "Scan Apps",
-    },
-    {
-      name: "Network Port Activity Scanner ",
-      image: "/port.png",
-      description: "Scans open ports and checks for suspicious activity.",
-      slug: "network-port-activity-scanner",
-      buttonLabel: "Scan Ports",
-    },
-    {
-      name: "File Metadata Analyzer",
-      image: "/meta.png",
-      description: "Extracts hidden metadata from files for analysis.",
-      slug: "file-metadata-analyzer",
-      buttonLabel: "Analyze File",
-    },
-    {
       name: "Fake QR Code Detector",
       image: "/QR.png",
       description: "Scans QR codes to detect phishing or malicious links.",
@@ -415,18 +380,11 @@ const ToolCardsPage = () => {
       buttonLabel: "Check Optimization",
     },
     {
-      name: "CAPTCHA Detection & Audit Tool",
+      name: "CAPTCHA Detection",
       image: "/captha.png",
       description: "Detects presence and strength of CAPTCHA on web forms.",
       slug: "captcha-detection-audit-tool",
       buttonLabel: "Audit CAPTCHA",
-    },
-    {
-      name: "Broken Link & Dead Page Scanner",
-      image: "/Broken-Links.png",
-      description: "Finds broken links and dead pages on websites.",
-      slug: "broken-link-dead-page-scanner",
-      buttonLabel: "Scan Website",
     },
     {
       name: "SEO Score Analyzer Tool",
@@ -435,22 +393,6 @@ const ToolCardsPage = () => {
       slug: "seo-score-analyzer-tool",
       buttonLabel: "Analyze SEO",
     },
-
-  {
-      name: "ssrf Scanner",
-      image: "/ssrf.png",
-      description: "Analyze keyword frequency for SEO structuring on website.",
-      slug: "ssrfScannerForm",
-      buttonLabel: "SSRF Scanner",
-    },
-
-    {
-      name: "Broken Access Scanner",
-      image: "/broken_access.png",
-      description: "Analyze keyword frequency for SEO structuring on website.",
-      slug: "brokenAccessPage",
-      buttonLabel: "Broken Access Scanner",
-    }, 
   ];
 
 

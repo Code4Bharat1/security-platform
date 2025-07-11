@@ -22,15 +22,23 @@ export default function FakeQrCodeDetector() {
     formData.append("qrImage", image);
 
     try {
-      const res = await fetch("/api/fake-qr-code", {
-        method: "POST",
-        body: formData,
-      });
+      const res = await fetch("http://localhost:4180/api/qr/scan", {
+  method: "POST",
+  body: formData,
+});
+
 
       const data = await res.json();
-      setResult(data.message || "✅ Scan complete. No malicious QR found.");
+
+      if (data.status === "fake") {
+        setResult(`⚠️ Fake QR Detected: ${data.message}`);
+      } else if (data.status === "safe") {
+        setResult(`✅ Safe QR Code: ${data.message}`);
+      } else {
+        setResult("❌ Scan failed. Try again.");
+      }
     } catch (err) {
-      setResult("❌ Failed to scan QR Code.");
+      setResult("❌ Failed to connect to server.");
     }
 
     setScanning(false);
@@ -47,7 +55,6 @@ export default function FakeQrCodeDetector() {
       </div>
 
       <div className="bg-white shadow-lg rounded-xl p-6 w-full max-w-lg text-center">
-        {/* 👇 Custom QR Upload Button */}
         <div className="mb-4">
           <label
             htmlFor="qr-upload"
