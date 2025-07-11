@@ -36,7 +36,7 @@ export default function CaptchaAuditTool() {
       <div className="text-center mb-10">
         <ShieldCheck className="mx-auto mb-4 text-green-600" size={48} />
         <h1 className="text-3xl font-bold text-green-800">
-          CAPTCHA Detection & Audit Tool
+          CAPTCHA Detection 
         </h1>
         <p className="text-gray-600 mt-2">
           Detects presence and strength of CAPTCHA on web forms.
