@@ -14,7 +14,7 @@ export default function SeoScoreAnalyzer() {
     setResult(null);
 
     try {
-      const res = await fetch("/api/seo-score-analyzer", {
+      const res = await fetch("http://localhost:4180/api/seo/analyze", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -23,7 +23,11 @@ export default function SeoScoreAnalyzer() {
       });
 
       const data = await res.json();
-      setResult(data.message || "✅ SEO Analysis Complete.");
+      if (res.ok) {
+        setResult({ score: data.score, issues: data.issues });
+      } else {
+        setResult("❌ Failed to analyze SEO.");
+      }
     } catch (err) {
       setResult("❌ Failed to analyze SEO.");
     }
@@ -62,8 +66,21 @@ export default function SeoScoreAnalyzer() {
           {loading ? "Analyzing..." : "Analyze SEO"}
         </button>
 
-        {result && (
-          <div className="mt-6 text-center text-green-700 font-semibold">
+        {result && typeof result === "object" && (
+          <div className="mt-6 bg-green-50 border border-green-200 rounded-lg p-5 text-center shadow-inner">
+            <div className="text-4xl font-bold text-green-800 mb-2">
+              ✅ {result.score}/100
+            </div>
+            <div className="text-green-700 text-sm">
+              {result.issues.length > 0
+                ? `Issues: ${result.issues.join(", ")}`
+                : "No major issues found."}
+            </div>
+          </div>
+        )}
+
+        {typeof result === "string" && (
+          <div className="mt-6 text-center text-red-600 font-semibold">
             {result}
           </div>
         )}
