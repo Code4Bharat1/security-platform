@@ -1,4 +1,4 @@
-"use client";
+'use client';
 
 import { useState } from "react";
 
@@ -14,29 +14,37 @@ export default function SecureCrypt() {
     setLoading(true);
     setResult("");
 
-    const endpoint =
-      mode === "encrypt" ? "/api/securecrypt/encrypt" : "/api/securecrypt/decrypt";
+    const endpoint = mode === "encrypt"
+      ? "http://localhost:4180/api/securecrypt/encrypt"
+      : "http://localhost:4180/api/securecrypt/decrypt";
 
-    const body =
-      mode === "encrypt" ? { text } : { encryptedText: text };
+    const body = mode === "encrypt"
+      ? { text }
+      : { encryptedText: text };
 
     try {
       const res = await fetch(endpoint, {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify(body),
       });
 
       const data = await res.json();
 
       if (mode === "encrypt") {
-        setResult(data.encrypted || "❌ Encryption failed");
+        setResult(
+          data && typeof data.encrypted === "string"
+            ? data.encrypted
+            : "❌ Encryption failed: Invalid response from server."
+        );
       } else {
-        setResult(data.decrypted || "❌ Decryption failed");
+        setResult(
+          data && typeof data.decrypted === "string"
+            ? data.decrypted
+            : "❌ Decryption failed: Invalid response from server."
+        );
       }
-    } catch (err) {
+    } catch {
       setResult("❌ Error contacting server.");
     }
 
@@ -44,10 +52,10 @@ export default function SecureCrypt() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-100 flex flex-col items-center px-4 pt-20">
+    <div className="min-h-screen bg-gray-100 flex flex-col items-center px-2 sm:px-4 pt-10 sm:pt-20">
       <div className="text-center mb-6">
         <img
-          src="/dycrypt.png"
+          src="/securecrypt.png"
           alt="SecureCrypt"
           className="w-16 h-16 mx-auto mb-4"
         />
@@ -68,6 +76,7 @@ export default function SecureCrypt() {
 
         <div className="flex justify-center gap-4 mb-4">
           <button
+            type="button"
             onClick={() => setMode("encrypt")}
             className={`px-4 py-2 rounded-md font-semibold ${
               mode === "encrypt"
@@ -78,6 +87,7 @@ export default function SecureCrypt() {
             Encrypt
           </button>
           <button
+            type="button"
             onClick={() => setMode("decrypt")}
             className={`px-4 py-2 rounded-md font-semibold ${
               mode === "decrypt"
@@ -90,9 +100,12 @@ export default function SecureCrypt() {
         </div>
 
         <button
+          type="button"
           onClick={handleSubmit}
           disabled={loading}
-          className="w-full py-3 rounded-md text-white font-semibold bg-green-700 hover:bg-green-800"
+          className={`w-full py-3 rounded-md text-white font-semibold bg-green-700 hover:bg-green-800 ${
+            loading ? "opacity-50 cursor-not-allowed" : ""
+          }`}
         >
           {loading
             ? mode === "encrypt"
@@ -113,3 +126,5 @@ export default function SecureCrypt() {
     </div>
   );
 }
+// Note: Ensure the backend server is running and accessible at the specified endpoint.
+// Adjust the endpoint URL as needed based on your deployment setup.
