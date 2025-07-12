@@ -212,4 +212,4 @@ const FileCracker = () => {
   );
 };
 
-export default johnRipper;
+export default JohnRipper;
