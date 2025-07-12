@@ -1,71 +1,68 @@
 "use client";
 import { useState } from "react";
-import { GaugeCircle } from "lucide-react";
+import axios from "axios";
 
 export default function WebsiteOptimizationTool() {
   const [url, setUrl] = useState("");
-  const [scanning, setScanning] = useState(false);
-  const [result, setResult] = useState(null);
+  const [info, setInfo] = useState("");
+  const [error, setError] = useState("");
+  const [loading, setLoading] = useState(false);
 
   const handleScan = async () => {
-    if (!url.trim()) return;
+    const trimmedUrl = url.trim();
 
-    setScanning(true);
-    setResult(null);
-
-    try {
-      const res = await fetch("/api/website-optimization", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ url }),
-      });
-
-      const data = await res.json();
-      setResult(data.message || "✅ Optimization check complete.");
-    } catch (err) {
-      setResult("❌ Failed to analyze website.");
+    if (!trimmedUrl || !trimmedUrl.startsWith("http")) {
+      setError("❌ Please enter a valid URL that starts with http or https.");
+      setInfo("");
+      return;
     }
 
-    setScanning(false);
+    try {
+      setLoading(true);
+      setError("");
+      setInfo("");
+
+      console.log("📡 Sending URL to backend:", trimmedUrl);
+
+      const response = await axios.post("http://localhost:4180/api/website-optimization", {
+        url: trimmedUrl,
+      });
+
+      setInfo(response.data.message);
+    } catch (err) {
+      console.error("❌ Error during scan:", err);
+      setError(err.response?.data?.error || "Something went wrong. Please try again.");
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
-    <div className="min-h-screen bg-gray-100 flex flex-col items-center pt-20 px-4">
-      <div className="text-center mb-10">
-        <GaugeCircle className="mx-auto mb-4 text-green-600" size={48} />
-        <h1 className="text-3xl font-bold text-green-800">Website Optimization Tool</h1>
-        <p className="text-gray-600 mt-2">
-          Detects deployment issues like unused code, large assets, and slow-loading elements.
-        </p>
-      </div>
-
-      <div className="bg-white shadow-lg rounded-xl p-6 w-full max-w-lg text-center">
+    <div className="flex items-center justify-center min-h-screen bg-gray-100">
+      <div className="w-full max-w-xl mx-auto p-6 shadow-lg rounded-lg bg-white">
+        <h1 className="text-2xl font-bold mb-4 text-center text-gray-800">
+          🌐 Website Optimization Tool
+        </h1>
         <input
           type="text"
-          placeholder="🔗 Enter website URL..."
           value={url}
           onChange={(e) => setUrl(e.target.value)}
-          className="w-full px-4 py-3 mb-4 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-600 text-gray-800"
+          placeholder="Enter website URL (e.g. https://example.com)"
+          className="w-full p-3 border border-gray-300 rounded mb-4 focus:outline-none focus:ring-2 focus:ring-green-400"
         />
-
         <button
           onClick={handleScan}
-          disabled={scanning || !url}
-          className={`w-full py-3 rounded-md text-white font-semibold transition ${
-            scanning
-              ? "bg-green-400 cursor-not-allowed"
-              : "bg-green-700 hover:bg-green-800"
-          }`}
+          disabled={loading}
+          className="w-full py-3 bg-green-600 text-white font-semibold rounded hover:bg-green-700 transition duration-300 disabled:opacity-50"
         >
-          {scanning ? "Checking..." : "Check Optimization"}
+          {loading ? "Analyzing..." : "Analyze"}
         </button>
 
-        {result && (
-          <div className="mt-6 text-center text-green-700 font-semibold">
-            {result}
-          </div>
+        {error && <p className="mt-4 text-red-500 text-center">{error}</p>}
+        {info && (
+          <pre className="mt-4 p-4 bg-gray-100 border border-gray-300 rounded text-sm whitespace-pre-wrap">
+            {info}
+          </pre>
         )}
       </div>
     </div>

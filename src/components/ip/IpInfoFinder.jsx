@@ -1,6 +1,7 @@
 "use client";
-import { useState } from "react";
+import { useState, useCallback } from "react";
 import { LocateFixed } from "lucide-react";
+import axios from "axios";
 
 export default function IPInfoFinder() {
   const [ip, setIp] = useState("");
@@ -8,33 +9,22 @@ export default function IPInfoFinder() {
   const [info, setInfo] = useState(null);
   const [error, setError] = useState("");
 
-  const handleSubmit = async () => {
-    if (!ip.trim()) return;
-
+  const handleSubmit = useCallback(async (e) => {
+    e.preventDefault();
     setLoading(true);
-    setInfo(null);
-    setError("");
+    setError(null);
 
     try {
-      const res = await fetch("https://zypher-api.code4bharat.com/api/ip-info", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ ip }),
-      });
-
-      const data = await res.json();
-
-      if (data.error) {
-        setError(data.error);
-      } else {
-        setInfo(data);
-      }
+      const res = await axios.post("http://localhost:4180/api/ipinfo/ip-info", { ip });
+      setInfo(res.data);
     } catch (err) {
-      setError("❌ Failed to fetch IP info.");
+      setError(
+        err.response?.data?.error || "Failed to fetch IP info"
+      );
+    } finally {
+      setLoading(false);
     }
-
-    setLoading(false);
-  };
+  }, [ip]);
 
   return (
     <div className="min-h-screen bg-gray-100 flex flex-col items-center pt-20 px-4">
@@ -47,25 +37,26 @@ export default function IPInfoFinder() {
       </div>
 
       <div className="bg-white shadow-lg rounded-xl p-6 w-full max-w-lg text-center">
-        <input
-          type="text"
-          placeholder="Enter IP address..."
-          value={ip}
-          onChange={(e) => setIp(e.target.value)}
-          className="w-full px-4 py-3 mb-4 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-600"
-        />
-
-        <button
-          onClick={handleSubmit}
-          disabled={loading || !ip}
-          className={`w-full py-3 rounded-md text-white font-semibold ${
-            loading
-              ? "bg-green-400 cursor-not-allowed"
-              : "bg-green-700 hover:bg-green-800"
-          }`}
-        >
-          {loading ? "Fetching..." : "Get IP Info"}
-        </button>
+        <form onSubmit={handleSubmit}>
+          <input
+            type="text"
+            placeholder="Enter IP address..."
+            value={ip}
+            onChange={(e) => setIp(e.target.value)}
+            className="w-full px-4 py-3 mb-4 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-600"
+          />
+          <button
+            type="submit"
+            disabled={loading || !ip.trim()}
+            className={`w-full py-3 rounded-md text-white font-semibold ${
+              loading
+                ? "bg-green-400 cursor-not-allowed"
+                : "bg-green-700 hover:bg-green-800"
+            }`}
+          >
+            {loading ? "Fetching..." : "Get IP Info"}
+          </button>
+        </form>
 
         {error && (
           <div className="mt-4 text-red-600 font-semibold">{error}</div>
@@ -73,14 +64,14 @@ export default function IPInfoFinder() {
 
         {info && (
           <div className="mt-6 text-left text-sm text-gray-800">
-            <p><strong>🌍 IP:</strong> {info.ip}</p>
-            <p><strong>📍 Country:</strong> {info.country}</p>
-            <p><strong>🏙️ City:</strong> {info.city}</p>
-            <p><strong>🛰️ ISP:</strong> {info.isp}</p>
-            <p><strong>🌐 Org:</strong> {info.org}</p>
-            <p><strong>🕓 Timezone:</strong> {info.timezone}</p>
-            <p><strong>📡 Latitude:</strong> {info.lat}</p>
-            <p><strong>📡 Longitude:</strong> {info.lon}</p>
+            <p><strong>🌍 IP:</strong> {info?.ip ?? "N/A"}</p>
+            <p><strong>📍 Country:</strong> {info?.country ?? "N/A"}</p>
+            <p><strong>🏙️ City:</strong> {info?.city ?? "N/A"}</p>
+            <p><strong>🛰️ ISP:</strong> {info?.isp ?? "N/A"}</p>
+            <p><strong>🌐 Org:</strong> {info?.org ?? "N/A"}</p>
+            <p><strong>🕓 Timezone:</strong> {info?.timezone ?? "N/A"}</p>
+            <p><strong>📡 Latitude:</strong> {info?.lat ?? "N/A"}</p>
+            <p><strong>📡 Longitude:</strong> {info?.lon ?? "N/A"}</p>
           </div>
         )}
       </div>
