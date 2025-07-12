@@ -15,8 +15,13 @@ export default function SecureCrypt() {
     setResult("");
 
     const endpoint = mode === "encrypt"
+<<<<<<< HEAD
       ? "http://localhost:4180/api/securecrypt/encrypt"
       : "http://localhost:4180/api/securecrypt/decrypt";
+=======
+      ? "https://zypher-api.code4bharat.com/api/securecrypt/encrypt"
+      : "https://zypher-api.code4bharat.com/api/securecrypt/decrypt";
+>>>>>>> 1f6eb7b42daf853eed4d53f210e56075bb463638
 
     const body = mode === "encrypt"
       ? { text }
