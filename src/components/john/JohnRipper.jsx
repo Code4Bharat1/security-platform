@@ -27,7 +27,7 @@ const FileCracker = () => {
 
     try {
       setLoading(true);
-      const response = await axios.post('http://localhost:4180/api/upload', formData, {
+      const response = await axios.post('https://zypher-api.code4bharat.com/api/upload', formData, {
         onUploadProgress: (progressEvent) => {
           const percentCompleted = Math.round(
             (progressEvent.loaded * 100) / progressEvent.total
@@ -49,7 +49,7 @@ const FileCracker = () => {
     try {
       setLoading(true);
       setResult(null);
-      const response = await axios.post('http://localhost:4180/api/crack', {
+      const response = await axios.post('https://zypher-api.code4bharat.com/api/crack', {
         filename: uploadedFile.filename
       });
       setResult(response.data);

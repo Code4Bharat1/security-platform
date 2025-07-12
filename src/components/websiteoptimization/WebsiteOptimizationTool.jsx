@@ -24,7 +24,7 @@ export default function WebsiteOptimizationTool() {
 
       console.log("📡 Sending URL to backend:", trimmedUrl);
 
-      const response = await axios.post("http://localhost:4180/api/website-optimization", {
+      const response = await axios.post("https://zypher-api.code4bharat.com/api/website-optimization", {
         url: trimmedUrl,
       });
 
