@@ -14,8 +14,8 @@ export default function SeoScoreAnalyzer() {
     setResult(null);
 
     try {
-      const res = await fetch("https://zypher-api.code4bharat.com/api/seo/analyze", {
-        method: "POST",
+      const res = await fetch("https://zypher.code4bharat.com//api/seo/analyze", {
+        method: "POST",  
         headers: {
           "Content-Type": "application/json",
         },

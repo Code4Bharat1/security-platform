@@ -60,7 +60,7 @@ const PortScannerForm = () => {
 
   // Backend API configuration
   //const API_BASE_URL = "https://localhost:5000/api"; // Change this to your backend URL
-  // For development, you might use: "https://zypher-api.code4bharat.com/api"
+  // For development, you might use: "https://zypher.code4bharat.com//api"
   // For production, use your deployed backend URL
 
   const showToast = (message, type = "success") => {
@@ -104,7 +104,7 @@ const PortScannerForm = () => {
   const performPortScan = async (hostParam, portRangeParam) => {
     try {
       const response = await fetch(
-    `https://zypher-api.code4bharat.com/api/port/portScan?host=${hostParam}&port=${portRangeParam}`,
+    `https://zypher.code4bharat.com//api/port/portScan?host=${hostParam}&port=${portRangeParam}`,
     {
         method: 'GET',
         headers: {
@@ -246,7 +246,7 @@ const PortScannerForm = () => {
                     required
                     className="w-full pl-12 pr-4 py-3 border-2 border-green-200 rounded-xl focus:border-green-500 focus:ring-2 focus:ring-green-200 transition-all duration-200 text-gray-700"
                   />
-                </div> {/*https://zypher-api.code4bharat.com/api/port/portScan?host=${hostTarget}&port=${portNumber} */}
+                </div> {/*https://zypher.code4bharat.com//api/port/portScan?host=${hostTarget}&port=${portNumber} */}
               </div>
 
               <div className="space-y-2">

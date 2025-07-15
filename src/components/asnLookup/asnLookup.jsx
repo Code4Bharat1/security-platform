@@ -59,7 +59,7 @@ export default function ASNLookupFullPage() {
     setLoading(true);
 
     try {
-      const res = await fetch("https://zypher-api.code4bharat.com/api/asnLookup/lookupasn", {
+      const res = await fetch("https://zypher.code4bharat.com//api/asnLookup/lookupasn", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ ip }),

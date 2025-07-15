@@ -64,7 +64,7 @@ export default function SpeedPage() {
 
   const handleSpeedTest = async (testUrl) => {
     setLoading(true);
-    const res = await fetch("https://zypher-api.code4bharat.com/api/speed/speedtest", {
+    const res = await fetch("https://zypher.code4bharat.com//api/speed/speedtest", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ url: testUrl }),
