@@ -9,7 +9,7 @@ function RogueWifiDetector() {
     e.preventDefault();
     setLoading(true);
     try {
-      const response = await fetch("https://zypher.code4bharat.com//api/rogue-wifi/rogue-wifi-scan", {
+      const response = await fetch("https://zypher-api.code4bharat.com/api/rogue-wifi/rogue-wifi-scan", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
