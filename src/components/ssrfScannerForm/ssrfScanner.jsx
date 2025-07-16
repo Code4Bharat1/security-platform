@@ -12,7 +12,7 @@ export default function SSRFScanner() {
 useEffect(() => {
     const fetchHistory = async () => {
       try {
-        const res = await fetch('https://zypher.code4bharat.com//api/ssrf-checker/history');
+        const res = await fetch('https://zypher-api.code4bharat.com/api/ssrf-checker/history');
         const data = await res.json();
         setHistory(data.scans || []);
       } catch (err) {
@@ -23,7 +23,7 @@ useEffect(() => {
     fetchHistory();
   }, []);
   const fetchHistory = async () => {
-    const res = await fetch('https://zypher.code4bharat.com//api/ssrf-checker/history');
+    const res = await fetch('https://zypher-api.code4bharat.com/api/ssrf-checker/history');
     const data = await res.json();
     setHistory(data.scans || []);
   };
@@ -32,7 +32,7 @@ const handleScan = async (e) => {
   e.preventDefault(); // prevent form reload
 
   try {
-    const res = await fetch('https://zypher.code4bharat.com//api/ssrf-checker/test', {
+    const res = await fetch('https://zypher-api.code4bharat.com/api/ssrf-checker/test', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ targetUrl }),
@@ -47,7 +47,7 @@ const handleScan = async (e) => {
 
 const handleDelete = async (id) => {
   try {
-    const res = await fetch(`https://zypher.code4bharat.com//api/ssrf-checker/delete/${id}`, {
+    const res = await fetch(`https://zypher-api.code4bharat.com/api/ssrf-checker/delete/${id}`, {
       method: 'DELETE',
     });
 
