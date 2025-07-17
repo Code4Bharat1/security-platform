@@ -398,7 +398,7 @@ const ToolCardsPage = () => {
 
   return (
   <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-10 p-3 bg-white">
-    {tools.map((tool) => (
+    {tools.map((tool, index) => (
       <div
         key={tool.slug}
         className="card bg-white p-5 rounded-lg shadow-lg flex border flex-col w-full h-[100%] items-center"
@@ -411,7 +411,7 @@ const ToolCardsPage = () => {
         />
 
         {/* Tool Title */}
-        <h2 className="text-xl font-bold text-green-800 mb-2">{tool.name}</h2>
+        <h2 className="text-xl font-bold text-green-800 mb-2">{index+1}. {tool.name}</h2>
 
         {/* Tool Description */}
         <p className="text-gray-700 text-center mb-6">{tool.description}</p>
