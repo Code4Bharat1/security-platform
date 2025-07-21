@@ -16,7 +16,7 @@ export default function ThirdPartyPermissionScanner() {
     setError("");
 
     try {
-      const res = await fetch("https://zypher.code4bharat.com//api/permission-scan", {
+      const res = await fetch("https://zypher-api.code4bharat.com/api/permission-scan", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

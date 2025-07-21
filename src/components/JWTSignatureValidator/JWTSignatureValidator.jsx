@@ -21,7 +21,7 @@ export default function JWTSignatureValidator() {
 
     try {
       const res = await fetch(
-        "https://zypher.code4bharat.com//api/jwtsign/jwt-signature",
+        "https://zypher-api.code4bharat.com/api/jwtsign/jwt-signature",
         {
           method: "POST",
           headers: { "Content-Type": "application/json" },
