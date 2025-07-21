@@ -22,7 +22,7 @@ export default function FakeQrCodeDetector() {
     formData.append("qrImage", image);
 
     try {
-      const res = await fetch("https://zypher.code4bharat.com//api/qr/scan", {
+      const res = await fetch("https://zypher-api.code4bharat.com/api/qr/scan", {
   method: "POST",
   body: formData,
 });

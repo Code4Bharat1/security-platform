@@ -15,7 +15,7 @@ export default function HashGenerator() {
     setHash("");
 
     try {
-      const res = await fetch("https://zypher.code4bharat.com//api/hash-generator", {
+      const res = await fetch("https://zypher-api.code4bharat.com/api/hash-generator", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

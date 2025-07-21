@@ -33,7 +33,7 @@ const SitemapForm = () => {
       // Add https:// if not provided
       const normalizedUrl = url.startsWith('http') ? url : `https://${url}`;
       
-      const response = await fetch("https://zypher.code4bharat.com//api/sitemap/sitemap-scanner", {
+      const response = await fetch("https://zypher-api.code4bharat.com/api/sitemap/sitemap-scanner", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ url: normalizedUrl, depth }),
