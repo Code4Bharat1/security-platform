@@ -47,7 +47,7 @@ export default function DashboardPage() {
           type="url"
           placeholder="Enter URL to scan"
           value={url}
-          onChange={(e) => setUrl(e.target.value)}
+          onChange={(e) => setUrl(e.target.value.trim())}
           required
           className="border rounded px-4 py-2 w-full"
         />

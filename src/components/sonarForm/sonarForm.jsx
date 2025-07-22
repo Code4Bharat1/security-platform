@@ -36,8 +36,7 @@ export default function SonarForm() {
         className="w-full h-64 p-4 bg-gray-800 rounded-lg border border-gray-700 focus:outline-none"
         placeholder="Paste your code here..."
         value={code}
-        onChange={(e) => setCode(e.target.value)}
-      />
+        onChange={(e) => setCode(e.target.value.trim)}      />
       <button
         onClick={handleAnalyze}
         className="mt-4 px-6 py-2 bg-blue-600 rounded hover:bg-blue-700 transition"

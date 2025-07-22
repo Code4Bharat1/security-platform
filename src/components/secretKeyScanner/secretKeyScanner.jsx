@@ -47,8 +47,7 @@ export default function SecretKeyScanner() {
         className="w-full p-3 rounded border font-mono border-gray-300"
         placeholder="Paste your code or upload a file..."
         value={code}
-        onChange={(e) => setCode(e.target.value)}
-      />
+        onChange={(e) => setCode(e.target.value.trim)}      />
 
       <button
         className="bg-black text-white px-4 py-2 rounded hover:bg-gray-800"

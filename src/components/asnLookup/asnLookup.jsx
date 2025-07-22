@@ -130,8 +130,7 @@ export default function ASNLookupFullPage() {
                       id="ip-input"
                       type="text"
                       value={ip}
-                      onChange={(e) => setIp(e.target.value)}
-                      placeholder="Enter IPv4 or IPv6 address (e.g., 8.8.8.8)"
+                      onChange={(e) => setIp(e.target.value.trim)}                      placeholder="Enter IPv4 or IPv6 address (e.g., 8.8.8.8)"
                       className="w-full pl-12 pr-4 py-3 border-2 border-green-200 rounded-xl focus:outline-none focus:border-green-500 focus:ring-4 focus:ring-green-100 transition-all duration-200 text-gray-700 placeholder-gray-400"
                     />
                     <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 w-5 h-5 text-green-500" />

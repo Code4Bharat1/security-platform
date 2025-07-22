@@ -54,8 +54,7 @@ export default function ThirdPartyPermissionScanner() {
           type="text"
           placeholder="Enter App Name (e.g. Facebook Lite)"
           value={appName}
-          onChange={(e) => setAppName(e.target.value)}
-          className="w-full px-4 py-2 border rounded-md mb-4"
+          onChange={(e) => setAppName(e.target.value.trim)}          className="w-full px-4 py-2 border rounded-md mb-4"
         />
 
         <button

@@ -71,8 +71,7 @@ const handleDelete = async (id) => {
           type="text"
           placeholder="Enter target URL (e.g., http://example.com)"
           value={targetUrl}
-          onChange={(e) => setTargetUrl(e.target.value)}
-          className="w-full p-2 border rounded"
+          onChange={(e) => setTargetUrl(e.target.value.trim)}          className="w-full p-2 border rounded"
           required
         />
         <button

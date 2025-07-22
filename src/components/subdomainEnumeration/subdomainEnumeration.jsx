@@ -50,8 +50,7 @@ export default function SubdomainEnumeration() {
         type="text"
         placeholder="Enter domain (e.g., example.com)"
         value={domain}
-        onChange={(e) => setDomain(e.target.value)}
-        className="w-full p-2 mb-3 border rounded"
+        onChange={(e) => setDomain(e.target.value.trim)}        className="w-full p-2 mb-3 border rounded"
       />
 
       <button

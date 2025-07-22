@@ -241,8 +241,7 @@ const PortScannerForm = () => {
                   <input
                     type="text"
                     value={host}
-                    onChange={(e) => setHost(e.target.value)}
-                    placeholder="example.com or 192.168.1.1"
+                    onChange={(e) => setHost(e.target.value.trim)}                    placeholder="example.com or 192.168.1.1"
                     required
                     className="w-full pl-12 pr-4 py-3 border-2 border-green-200 rounded-xl focus:border-green-500 focus:ring-2 focus:ring-green-200 transition-all duration-200 text-gray-700"
                   />
@@ -258,8 +257,7 @@ const PortScannerForm = () => {
                   <input
                     type="text"
                     value={portRange}
-                    onChange={(e) => setPortRange(e.target.value)}
-                    placeholder="80, 80-10000, or 'common'"
+                    onChange={(e) => setPortRange(e.target.value.trim)}                    placeholder="80, 80-10000, or 'common'"
                     required
                     className="w-full pl-12 pr-4 py-3 border-2 border-green-200 rounded-xl focus:border-green-500 focus:ring-2 focus:ring-green-200 transition-all duration-200 text-gray-700"
                   />

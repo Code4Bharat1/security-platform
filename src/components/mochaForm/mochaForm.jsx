@@ -190,8 +190,7 @@ const MochaTestPage = () => {
                 type="text"
                 id="endpoint"
                 value={endpoint}
-                onChange={(e) => setEndpoint(e.target.value)}
-                placeholder="https://api.example.com/users"
+                onChange={(e) => setEndpoint(e.target.value.trim)}                placeholder="https://api.example.com/users"
                 required
                 className="w-full border-2 border-gray-200 rounded-xl p-4 focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500 transition-all duration-200"
               />
@@ -211,8 +210,7 @@ const MochaTestPage = () => {
                 <select
                   id="method"
                   value={method}
-                  onChange={(e) => setMethod(e.target.value)}
-                  className="w-full border-2 border-gray-200 rounded-xl p-4 focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500 transition-all duration-200"
+                  onChange={(e) => setMethod(e.target.value.trim)}                  className="w-full border-2 border-gray-200 rounded-xl p-4 focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500 transition-all duration-200"
                 >
                   <option value="GET">GET - Retrieve data</option>
                   <option value="POST">POST - Create new data</option>
@@ -231,8 +229,7 @@ const MochaTestPage = () => {
                   type="text"
                   id="testDescription"
                   value={testDescription}
-                  onChange={(e) => setTestDescription(e.target.value)}
-                  placeholder="Describe what this test should do..."
+                  onChange={(e) => setTestDescription(e.target.value.trim)}                  placeholder="Describe what this test should do..."
                   className="w-full border-2 border-gray-200 rounded-xl p-4 focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500 transition-all duration-200"
                 />
               </div>
@@ -246,8 +243,7 @@ const MochaTestPage = () => {
               <textarea
                 id="headers"
                 value={headers}
-                onChange={(e) => setHeaders(e.target.value)}
-                placeholder={getHeadersPlaceholder()}
+                onChange={(e) => setHeaders(e.target.value.trim)}                placeholder={getHeadersPlaceholder()}
                 rows="3"
                 className="w-full border-2 border-gray-200 rounded-xl p-4 focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500 transition-all duration-200 font-mono text-sm"
               />
@@ -262,8 +258,7 @@ const MochaTestPage = () => {
                 <textarea
                   id="body"
                   value={body}
-                  onChange={(e) => setBody(e.target.value)}
-                  placeholder='{\n  "name": "John Doe",\n  "email": "john@example.com"\n}'
+                  onChange={(e) => setBody(e.target.value.trim)}                  placeholder='{\n  "name": "John Doe",\n  "email": "john@example.com"\n}'
                   rows="4"
                   className="w-full border-2 border-gray-200 rounded-xl p-4 focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500 transition-all duration-200 font-mono text-sm"
                 />

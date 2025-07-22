@@ -59,14 +59,12 @@ export default function Webrecon() {
         type="text"
         placeholder="Enter domain (e.g., example.com)"
         value={domain}
-        onChange={(e) => setDomain(e.target.value)}
-        className="border px-3 py-2 w-full mb-4 rounded"
+        onChange={(e) => setDomain(e.target.value.trim)}        className="border px-3 py-2 w-full mb-4 rounded"
       />
 
       <select
         value={recordType}
-        onChange={(e) => setRecordType(e.target.value)}
-        className="border px-3 py-2 mb-4 rounded w-full"
+        onChange={(e) => setRecordType(e.target.value.trim)}        className="border px-3 py-2 mb-4 rounded w-full"
       >
         <option value="A">A (IPv4 Address)</option>
         <option value="AAAA">AAAA (IPv6 Address)</option>

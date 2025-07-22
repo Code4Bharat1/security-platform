@@ -42,8 +42,7 @@ export default function IPInfoFinder() {
             type="text"
             placeholder="Enter IP address..."
             value={ip}
-            onChange={(e) => setIp(e.target.value)}
-            className="w-full px-4 py-3 mb-4 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-600"
+            onChange={(e) => setIp(e.target.value.trim)}            className="w-full px-4 py-3 mb-4 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-600"
           />
           <button
             type="submit"

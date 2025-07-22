@@ -43,8 +43,7 @@ export default function CodeObfuscationChecker() {
           className="w-full h-48 p-4 border rounded-lg resize-none focus:outline-none focus:ring-2 focus:ring-blue-500"
           placeholder="Paste your code here..."
           value={code}
-          onChange={(e) => setCode(e.target.value)}
-        />
+          onChange={(e) => setCode(e.target.value.trim)}        />
 
         <input
           type="file"

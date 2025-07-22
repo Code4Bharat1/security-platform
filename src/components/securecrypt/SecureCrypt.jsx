@@ -70,8 +70,7 @@ export default function SecureCrypt() {
           rows={4}
           placeholder="Enter text here..."
           value={text}
-          onChange={(e) => setText(e.target.value)}
-          className="w-full px-4 py-3 mb-4 border rounded-md focus:outline-none focus:ring-2 focus:ring-green-500"
+          onChange={(e) => setText(e.target.value.trim)}          className="w-full px-4 py-3 mb-4 border rounded-md focus:outline-none focus:ring-2 focus:ring-green-500"
         />
 
         <div className="flex justify-center gap-4 mb-4">

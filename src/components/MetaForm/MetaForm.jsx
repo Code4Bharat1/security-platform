@@ -74,8 +74,7 @@ export default function MetaForm() {
                   type="text"
                   placeholder="Enter website URL (e.g., https://example.com)"
                   value={url}
-                  onChange={(e) => setUrl(e.target.value)}
-                  className="w-full border-2 border-gray-200 rounded-xl p-4 text-lg focus:outline-none focus:ring-4 focus:ring-green-200 focus:border-green-600 transition-all duration-300 pl-4 pr-12"
+                  onChange={(e) => setUrl(e.target.value.trim)}                  className="w-full border-2 border-gray-200 rounded-xl p-4 text-lg focus:outline-none focus:ring-4 focus:ring-green-200 focus:border-green-600 transition-all duration-300 pl-4 pr-12"
                 />
                 <Search className="absolute right-4 top-1/2 transform -translate-y-1/2 h-6 w-6 text-gray-400" />
               </div>

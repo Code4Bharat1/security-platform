@@ -98,8 +98,7 @@ const handleDelete = async (id) => {
           placeholder="Target URL (e.g., https://example.com)"
           className="w-full p-2 border rounded"
           value={targetUrl}
-          onChange={(e) => setTargetUrl(e.target.value)}
-          required
+          onChange={(e) => setTargetUrl(e.target.value.trim)}          required
         />
 
         <input
@@ -107,8 +106,7 @@ const handleDelete = async (id) => {
           placeholder="Authorization header (optional)"
           className="w-full p-2 border rounded"
           value={authHeader}
-          onChange={(e) => setAuthHeader(e.target.value)}
-        />
+          onChange={(e) => setAuthHeader(e.target.value.trim)}        />
 
         <div>
           <label className="block mb-1">Custom Paths</label>
@@ -118,8 +116,7 @@ const handleDelete = async (id) => {
               placeholder="/admin"
               className="p-2 border rounded w-full"
               value={newPath}
-              onChange={(e) => setNewPath(e.target.value)}
-            />
+              onChange={(e) => setNewPath(e.target.value.trim)}            />
             <button
               type="button"
               onClick={handleAddPath}

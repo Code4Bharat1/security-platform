@@ -54,8 +54,7 @@ export default function WhoisLookup() {
           type="text"
           placeholder="Enter domain name (e.g., example.com)"
           value={domain}
-          onChange={(e) => setDomain(e.target.value)}
-          className="border rounded p-2 w-full"
+          onChange={(e) => setDomain(e.target.value.trim)}          className="border rounded p-2 w-full"
         />
         <button
           type="submit"

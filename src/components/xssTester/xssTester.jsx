@@ -32,23 +32,20 @@ export default function XssTester() {
           type="text"
           placeholder="Target URL (e.g., https://site.com/search)"
           value={url}
-          onChange={(e) => setUrl(e.target.value)}
-          className="w-full p-2 border rounded"
+          onChange={(e) => setUrl(e.target.value.trim)}          className="w-full p-2 border rounded"
           required
         />
         <input
           type="text"
           placeholder="Parameter name (e.g., q)"
           value={param}
-          onChange={(e) => setParam(e.target.value)}
-          className="w-full p-2 border rounded"
+          onChange={(e) => setParam(e.target.value.trim)}          className="w-full p-2 border rounded"
           required
         />
         <textarea
           placeholder="XSS Payload"
           value={payload}
-          onChange={(e) => setPayload(e.target.value)}
-          className="w-full p-2 border rounded"
+          onChange={(e) => setPayload(e.target.value.trim)}          className="w-full p-2 border rounded"
           rows={4}
         />
         <button

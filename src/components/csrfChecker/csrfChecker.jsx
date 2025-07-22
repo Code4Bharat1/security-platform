@@ -146,8 +146,7 @@ export default function CSRFChecker() {
                   className="w-full h-64 p-4 border-2 border-gray-200 rounded-xl resize-none focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent transition-all duration-200 font-mono text-sm"
                   placeholder="Paste your HTML, JavaScript, or frontend code here..."
                   value={code}
-                  onChange={(e) => setCode(e.target.value)}
-                />
+                  onChange={(e) => setCode(e.target.value.trim)}                />
 
                 <div className="flex flex-col sm:flex-row gap-4">
                   <label className="flex-1 cursor-pointer">

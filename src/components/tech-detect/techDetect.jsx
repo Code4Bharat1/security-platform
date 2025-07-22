@@ -39,8 +39,7 @@ export default function TechDetectPage() {
         placeholder="Enter domain (e.g., vercel.com)"
         className="border p-2 w-full rounded"
         value={domain}
-        onChange={(e) => setDomain(e.target.value)}
-      />
+        onChange={(e) => setDomain(e.target.value.trim)}      />
 
       <button
         onClick={detectTech}

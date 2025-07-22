@@ -69,8 +69,7 @@ export default function WhatsAppInspector() {
             <input
               type="text"
               value={phone}
-              onChange={(e) => setPhone(e.target.value)}
-              className="w-full px-4 py-2 border rounded-md mb-4"
+              onChange={(e) => setPhone(e.target.value.trim)}              className="w-full px-4 py-2 border rounded-md mb-4"
               placeholder="+91XXXXXXXXXX"
             />
             <button
@@ -90,8 +89,7 @@ export default function WhatsAppInspector() {
             <input
               type="text"
               value={otp}
-              onChange={(e) => setOtp(e.target.value)}
-              className="w-full px-4 py-2 border rounded-md mb-4"
+              onChange={(e) => setOtp(e.target.value.trim)}              className="w-full px-4 py-2 border rounded-md mb-4"
               placeholder="Enter the OTP"
             />
             <button
