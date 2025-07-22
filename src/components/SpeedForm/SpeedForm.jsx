@@ -36,8 +36,7 @@ function SpeedForm({ onTest, data, loading, url, setUrl, handleSubmit }) {
             className="w-full border border-gray-300 rounded-lg p-2 mb-4 focus:outline-none focus:ring-2 focus:ring-green-800 focus:border-green-800"
             placeholder="Enter website URL"
             value={url}
-            onChange={(e) => setUrl(e.target.value)}
-          />
+            onChange={(e) => setUrl(e.target.value.trim)}          />
           <button
             type="submit"
             className="w-full bg-green-800 text-white py-2 px-4 rounded hover:bg-green-700 transition-colors duration-300 flex items-center justify-center gap-2"

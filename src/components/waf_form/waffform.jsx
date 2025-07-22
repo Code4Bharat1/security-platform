@@ -388,8 +388,7 @@ const Wafform = () => {
               id="websiteUrl"
               name="websiteUrl"
               value={url}
-              onChange={(e) => setUrl(e.target.value)}
-              placeholder="https://example.com"
+              onChange={(e) => setUrl(e.target.value.trim)}              placeholder="https://example.com"
               required
               className="flex-grow p-2 focus:outline-none"
             />

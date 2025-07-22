@@ -169,8 +169,7 @@ export default function AnalysisForm() {
             className="w-full h-40 p-4 border border-gray-300 rounded font-mono text-sm"
             placeholder="Paste your JavaScript code here..."
             value={code}
-            onChange={(e) => setCode(e.target.value)}
-          />
+            onChange={(e) => setCode(e.target.value.trim)}          />
         </div>
         
         <div className="flex items-center">

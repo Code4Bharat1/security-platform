@@ -59,8 +59,7 @@ export default function BrokenStreamForm() {
         className="w-full border p-2 rounded mb-4"
         placeholder="Enter full website URL"
         value={url}
-        onChange={(e) => setUrl(e.target.value)}
-        disabled={loading}
+        onChange={(e) => setUrl(e.target.value.trim)}        disabled={loading}
       />
       <button
         onClick={startCheck}

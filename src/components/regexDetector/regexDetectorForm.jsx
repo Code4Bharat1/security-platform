@@ -205,8 +205,7 @@ const regex = new RegExp(userInput); // ⚠️ Unescaped input`);
               className="w-full p-4 rounded-xl border-2 border-gray-200 font-mono text-sm focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent transition-all duration-200 resize-none"
               placeholder="Paste your JavaScript code here..."
               value={code}
-              onChange={(e) => setCode(e.target.value)}
-            />
+              onChange={(e) => setCode(e.target.value.trim)}            />
           </div>
 
           {/* Scan Button */}

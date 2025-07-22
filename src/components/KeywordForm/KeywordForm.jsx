@@ -104,8 +104,7 @@ export default function KeywordPage() {
                   className="w-full pl-12 pr-4 py-4 border-2 border-gray-200 rounded-xl focus:border-green-500 focus:ring-4 focus:ring-green-500/20 transition-all duration-200 text-lg"
                   placeholder="https://example.com"
                   value={url}
-                  onChange={(e) => setUrl(e.target.value)}
-                  disabled={loading}
+                  onChange={(e) => setUrl(e.target.value.trim)}                  disabled={loading}
                   onKeyDown={(e) => {
                     if (e.key === "Enter" && !loading && url.trim()) {
                       handleSubmit(e);

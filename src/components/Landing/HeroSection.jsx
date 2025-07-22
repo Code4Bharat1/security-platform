@@ -152,7 +152,7 @@ export default function HeroSection() {
           </p>
 
           <div className="flex flex-col sm:flex-row gap-4 mb-12 w-full max-w-md mx-auto animate-fade-in-up" style={{ animationDelay: '0.6s' }}>
-            <GradientButton
+            <GradientButtonLink
               large
               className="relative group flex-1 overflow-hidden cursor-pointer"
               onMouseEnter={() => setIsHovered(true)}
@@ -161,7 +161,7 @@ export default function HeroSection() {
               Get Started
               <ArrowRight size={16} className={combineClasses("ml-2 transition-transform duration-300", isHovered && "translate-x-1")} />
               <span className={combineClasses("absolute inset-0 w-full h-full bg-white rounded-md opacity-0 transition-opacity duration-300 -z-10", isHovered && "opacity-10")} />
-            </GradientButton>
+            </GradientButtonLink>
             <OutlineButton large className="flex-1 cursor-pointer">Schedule Demo</OutlineButton>
           </div>
 
@@ -185,7 +185,7 @@ export default function HeroSection() {
               />
             </div>
 
-             <GradientButton
+             <GradientButtonLink
       large
       className="relative group flex-1 overflow-hidden mt-5 cursor-pointer"
       onMouseEnter={() => setIsHovered(true)}
@@ -199,7 +199,7 @@ export default function HeroSection() {
           isHovered && "opacity-10"
         )}
       />
-    </GradientButton>
+    </GradientButtonLink>
           </div>
         </div>
       </section>

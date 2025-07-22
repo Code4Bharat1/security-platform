@@ -44,8 +44,7 @@ export default function SensitiveFileScanner() {
         type="text"
         placeholder="Enter target URL (e.g. https://example.com)"
         value={url}
-        onChange={(e) => setUrl(e.target.value)}
-        className="w-full px-3 py-2 border rounded mb-3"
+        onChange={(e) => setUrl(e.target.value.trim)}        className="w-full px-3 py-2 border rounded mb-3"
       />
       <button
         onClick={handleScan}

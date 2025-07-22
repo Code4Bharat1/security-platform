@@ -39,8 +39,7 @@ export default function TechnologyFingerprinter() {
           placeholder="https://example.com"
           className="flex-1 border border-gray-300 p-2 rounded"
           value={url}
-          onChange={(e) => setUrl(e.target.value)}
-        />
+          onChange={(e) => setUrl(e.target.value.trim)}        />
         <button
           onClick={analyzeTech}
           className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700"

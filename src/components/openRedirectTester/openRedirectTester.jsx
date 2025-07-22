@@ -52,8 +52,7 @@ export default function OpenRedirectTester() {
             type="url"
             placeholder="https://victim.com/login?redirect=https://evil.com"
             value={inputUrl}
-            onChange={(e) => setInputUrl(e.target.value)}
-            className="w-full border border-gray-300 rounded px-3 py-2"
+            onChange={(e) => setInputUrl(e.target.value.trim)}            className="w-full border border-gray-300 rounded px-3 py-2"
             required
           />
         </div>
@@ -67,8 +66,7 @@ export default function OpenRedirectTester() {
             type="text"
             placeholder="redirect"
             value={paramName}
-            onChange={(e) => setParamName(e.target.value)}
-            className="w-full border border-gray-300 rounded px-3 py-2"
+            onChange={(e) => setParamName(e.target.value.trim)}            className="w-full border border-gray-300 rounded px-3 py-2"
           />
           <small className="text-gray-500">Common names: redirect, url, next, dest</small>
         </div>

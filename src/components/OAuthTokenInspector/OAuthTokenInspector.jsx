@@ -168,8 +168,7 @@ export default function OAuthTokenInspector() {
                   className="w-full bg-gradient-to-br from-green-50 to-emerald-50 border-2 border-green-200 focus:border-emerald-500 focus:ring-4 focus:ring-emerald-100 rounded-2xl p-4 text-sm font-mono resize-none transition-all duration-300 placeholder-gray-400"
                   placeholder="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
                   value={token}
-                  onChange={(e) => setToken(e.target.value)}
-                />
+                  onChange={(e) => setToken(e.target.value.trim)}                />
                 <div className="absolute top-3 right-3">
                   <div className="w-2 h-2 bg-emerald-400 rounded-full animate-pulse"></div>
                 </div>

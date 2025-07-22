@@ -35,8 +35,7 @@ function RogueWifiDetector() {
           type="text"
           placeholder="Enter SSID or IP"
           value={input}
-          onChange={(e) => setInput(e.target.value)}
-          style={{
+          onChange={(e) => setInput(e.target.value.trim)}          style={{
             padding: "10px",
             width: "300px",
             borderRadius: "5px",

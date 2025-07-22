@@ -48,8 +48,7 @@ export default function BrokenLinkScanner() {
           type="text"
           placeholder="🔗 Enter website URL..."
           value={url}
-          onChange={(e) => setUrl(e.target.value)}
-          className="w-full px-4 py-3 mb-4 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-600 text-gray-800"
+          onChange={(e) => setUrl(e.target.value.trim)}          className="w-full px-4 py-3 mb-4 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-600 text-gray-800"
         />
 
         <button
