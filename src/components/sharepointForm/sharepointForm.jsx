@@ -29,7 +29,7 @@ const SharePointScanner = () => {
     setScanData(null); // Clear previous results
 
     try {      
-      const response = await fetch("https://zypher-api.code4bharat.com/api/sharepoint/sharepoint-scanner", {
+      const response = await fetch("http://localhost:4180/api/sharepoint/sharepoint-scanner", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ url }),

@@ -19,7 +19,7 @@ export default function BrokenStreamForm() {
       eventSourceRef.current.close();
     }
 
-    const es = new EventSource(`https://zypher-api.code4bharat.com/api/brokenlink/brokenlink-stream?url=${encodeURIComponent(url)}`);
+    const es = new EventSource(`http://localhost:4180/api/brokenlink/brokenlink-stream?url=${encodeURIComponent(url)}`);
     eventSourceRef.current = es;
 
     es.onmessage = (event) => {

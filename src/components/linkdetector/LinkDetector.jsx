@@ -16,7 +16,7 @@ export default function LinkDetector() {
     setError("");
 
     try {
-      const res = await fetch("https://zypher-api.code4bharat.com/api/link-detector/link-scan", {
+      const res = await fetch("http://localhost:4180/api/link-detector/link-scan", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

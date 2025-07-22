@@ -29,7 +29,7 @@ export default function CodeForm() {
     setIsLoading(true);
 
     try {
-      const response = await fetch("https://zypher-api.code4bharat.com/api/analyze/analyzeCode", {
+      const response = await fetch("http://localhost:4180/api/analyze/analyzeCode", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

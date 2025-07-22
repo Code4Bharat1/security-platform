@@ -12,7 +12,7 @@ export default function AISecurityHeaders() {
     setHeaders("");
 
     try {
-      const res = await fetch("https://zypher-api.code4bharat.com/api/aiheaders/suggest-headers", {
+      const res = await fetch("http://localhost:4180/api/aiheaders/suggest-headers", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ context }),

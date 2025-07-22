@@ -9,7 +9,7 @@ export default function CodeObfuscationChecker() {
 
   const handleAnalyze = async () => {
     setLoading(true)
-    const res = await fetch('https://zypher-api.code4bharat.com/api/code/code-obfuscation', {
+    const res = await fetch('http://localhost:4180/api/code/code-obfuscation', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ code })
