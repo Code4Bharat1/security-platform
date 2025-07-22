@@ -32,7 +32,7 @@ export default function FolderThreatScanner() {
       const data = await res.json();
       setResult(data);
     } catch (err) {
-      setResult({ message: "❌ Failed to scan folder.", suspiciousFiles: [] });
+      setResult({ message: "❌ Failed to scan file.", suspiciousFiles: [] });
     }
 
     setScanning(false);
@@ -42,9 +42,9 @@ export default function FolderThreatScanner() {
     <div className="min-h-screen bg-gray-100 flex flex-col items-center pt-20 px-4">
       <div className="text-center mb-10">
         <FolderSearch className="mx-auto mb-4 text-green-600" size={48} />
-        <h1 className="text-3xl font-bold text-green-800">Folder Threat Scanner</h1>
+        <h1 className="text-3xl font-bold text-green-800">File Scanner</h1>
         <p className="text-gray-600 mt-2">
-          Upload a folder to scan for malware or suspicious files.
+          Upload a file to scan for malware or suspicious files.
         </p>
       </div>
 
@@ -53,7 +53,7 @@ export default function FolderThreatScanner() {
           htmlFor="folderInput"
           className="block mb-4 w-full bg-green-600 text-white text-center py-3 rounded-md cursor-pointer hover:bg-green-700 transition-all"
         >
-          📁 Choose Folder
+          📁 Choose File
         </label>
         <input
           type="file"
@@ -74,7 +74,7 @@ export default function FolderThreatScanner() {
               : "bg-green-700 hover:bg-green-800"
           }`}
         >
-          {scanning ? "Scanning..." : "Scan Folder"}
+          {scanning ? "Scanning..." : "Scan File"}
         </button>
 
         {result && (
