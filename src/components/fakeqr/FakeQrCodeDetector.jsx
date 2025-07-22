@@ -22,10 +22,10 @@ export default function FakeQrCodeDetector() {
     formData.append("qrImage", image);
 
     try {
-      const res = await fetch("https://zypher-api.code4bharat.com/api/qr/scan", {
-  method: "POST",
-  body: formData,
-});
+      const res = await fetch("http://localhost:4180/api/qr/scan", {
+        method: "POST",
+        body: formData,
+      });
 
 
       const data = await res.json();
@@ -35,7 +35,7 @@ export default function FakeQrCodeDetector() {
       } else if (data.status === "safe") {
         setResult(`✅ Safe QR Code: ${data.message}`);
       } else {
-        setResult("❌ Scan failed. Try again.");
+        setResult(`❌ Scan failed. Error: ${error}`);
       }
     } catch (err) {
       setResult("❌ Failed to connect to server.");
@@ -74,11 +74,10 @@ export default function FakeQrCodeDetector() {
         <button
           onClick={handleScan}
           disabled={scanning || !image}
-          className={`w-full py-3 rounded-md text-white font-semibold transition ${
-            scanning
+          className={`w-full py-3 rounded-md text-white font-semibold transition ${scanning
               ? "bg-green-400 cursor-not-allowed"
               : "bg-green-700 hover:bg-green-800"
-          }`}
+            }`}
         >
           {scanning ? "Scanning..." : "Scan QR"}
         </button>

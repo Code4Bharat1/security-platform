@@ -7,7 +7,7 @@ export default function SonarForm() {
 
  const handleAnalyze = async () => {           
   try {
-    const res = await fetch("https://zypher-api.code4bharat.com/api/sonar/sonar_analyze", {
+    const res = await fetch("http://localhost:4180/api/sonar/sonar_analyze", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",

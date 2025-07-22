@@ -2,7 +2,6 @@
 
 import FirewallDashboard from "@/components/firewallDashboard/firewallDashboard";
 
-import Navbar from "@/components/layout/navbar";
 import React, { useState } from "react";
 
 export default function DashboardPage() {
@@ -18,7 +17,7 @@ export default function DashboardPage() {
     setData(null);
 
     try {
-      const res = await fetch("https://zypher-api.code4bharat.com/api/waf/waf-scan", {
+      const res = await fetch("http://localhost:4180/api/waf/waf-scan", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ url }),
@@ -39,9 +38,7 @@ export default function DashboardPage() {
   }
 
   return (
-    <div>
-     <Navbar/>
-        <div className="max-w-5xl mx-auto p-6">
+      <div className="max-w-5xl mx-auto p-6">
     
       <h1 className="text-3xl font-bold mb-6">WAF Detection Dashboard</h1>
 
@@ -68,8 +65,6 @@ export default function DashboardPage() {
       )}
 
       {data && <FirewallDashboard data={data}/>}
-    </div>
-    
     </div>
   );
 }

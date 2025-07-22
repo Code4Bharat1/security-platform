@@ -15,15 +15,20 @@ export default function WhoisLookup() {
     if (!domain) {
       setError('Please enter a domain name.');
       return;
+    } else if (domain.includes("https://") || domain.includes("http://")){
+      setError('Enter domain name only');
+      return;
     }
 
     setLoading(true);
 
     try {
-      const res = await fetch('https://zypher-api.code4bharat.com/api/whois/whois-scan', {
+      const res = await fetch('http://localhost:4180/api/whois/whois-scan', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ domain }),
+        body: JSON.stringify({
+          domain: domain
+        }),
       });
 
       const json = await res.json();
@@ -65,44 +70,12 @@ export default function WhoisLookup() {
         <p className="text-red-600 mb-4">{error}</p>
       )}
 
-     {result && (
-  <div className="bg-gray-100 p-4 rounded shadow mt-4 space-y-2 text-sm">
-    <h2 className="text-lg font-semibold">WHOIS Information</h2>
-
-    <p><strong>Domain:</strong> {result.name}</p>
-    <p><strong>Status:</strong> {result.status}</p>
-    <p><strong>Created:</strong> {result.created}</p>
-    <p><strong>Expires:</strong> {result.expires}</p>
-
-    {result.registrar && (
-      <>
-        <h3 className="font-medium mt-3">Registrar Info:</h3>
-        <p><strong>Name:</strong> {result.registrar.name}</p>
-        <p><strong>URL:</strong> <a href={result.registrar.url} target="_blank" rel="noopener noreferrer" className="text-blue-600 underline">{result.registrar.url}</a></p>
-      </>
-    )}
-
-    {result.contacts?.owner?.length > 0 && (
-      <>
-        <h3 className="font-medium mt-3">Owner Info:</h3>
-        <p><strong>Organization:</strong> {result.contacts.owner[0].organization || 'N/A'}</p>
-        <p><strong>Country:</strong> {result.contacts.owner[0].country || 'N/A'}</p>
-      </>
-    )}
-
-    {result.nameservers?.length > 0 && (
-      <>
-        <h3 className="font-medium mt-3">Name Servers:</h3>
-        <ul className="list-disc ml-6">
-          {result.nameservers.map((ns, idx) => (
-            <li key={idx}>{ns}</li>
-          ))}
-        </ul>
-      </>
-    )}
-  </div>
-)}
-
+      {result && (
+        <div className="bg-gray-100 p-4 rounded shadow mt-4 space-y-2 text-base">
+          <h2 className="text-lg font-semibold">WHOIS Information</h2>
+          <textarea readOnly className='w-full h-50' name="whois-Information" value={result} />
+        </div>
+      )}
     </main>
   );
 }
