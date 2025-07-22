@@ -25,7 +25,7 @@ export default function NexposeScanner() {
       const data = await res.json();
       setResult(data.details || "✅ Scan complete. No vulnerabilities found.");
     } catch (err) {
-      setResult("❌ Failed to scan with Nexpose.");
+      setResult("❌ Failed to scan with SQLi Scanner.");
     }
 
     setScanning(false);
@@ -35,7 +35,7 @@ export default function NexposeScanner() {
     <div className="min-h-screen bg-gray-100 flex flex-col items-center pt-20 px-4">
       <div className="text-center mb-10">
         <Radar className="mx-auto mb-4 text-green-600" size={48} />
-        <h1 className="text-3xl font-bold text-green-800">Nexpose Scanner</h1>
+        <h1 className="text-3xl font-bold text-green-800">SQLi Scanner</h1>
         <p className="text-gray-600 mt-2">
           This tool scans websites for SQL Injection vulnerabilities.
         </p>
@@ -59,7 +59,7 @@ export default function NexposeScanner() {
               : "bg-green-700 hover:bg-green-800"
           }`}
         >
-          {scanning ? "Scanning..." : "Start Nexpose Scan"}
+          {scanning ? "Scanning..." : "Start SQli Scan"}
         </button>
 
         {result && (
