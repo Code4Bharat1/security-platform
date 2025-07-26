@@ -29,7 +29,7 @@ export const tools = [
     description: "Scan websites for security weaknesses like XSS or SQL injection.",
     slug: "codeAnalysis",
     buttonLabel: "Scan your codes",
-    type: "blue-team"
+    type: "red-team"
   },
   {
     name: "Subdomain Scanner",
