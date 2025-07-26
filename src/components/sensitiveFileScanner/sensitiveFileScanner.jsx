@@ -19,7 +19,7 @@ export default function SensitiveFileScanner() {
     setResults([]);
 
     try {
-      const res = await fetch('http://localhost:4180/api/sensitive-files/check', {
+      const res = await fetch('/api/sensitive-files/check', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ url }),
@@ -44,7 +44,7 @@ export default function SensitiveFileScanner() {
         type="text"
         placeholder="Enter target URL (e.g. https://example.com)"
         value={url}
-        onChange={(e) => setUrl(e.target.value.trim)}        className="w-full px-3 py-2 border rounded mb-3"
+        onChange={(e) => setUrl(e.target.value.trim())}       className="w-full px-3 py-2 border rounded mb-3"
       />
       <button
         onClick={handleScan}

@@ -8,7 +8,7 @@ export default function SecretKeyScanner() {
 
   const scanSecrets = async () => {
     setLoading(true);
-    const res = await fetch('http://localhost:4180/api/secretKeyScanner/secret-scan', {
+    const res = await fetch('/api/secretKeyScanner/secret-scan', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ code }),
@@ -47,7 +47,7 @@ export default function SecretKeyScanner() {
         className="w-full p-3 rounded border font-mono border-gray-300"
         placeholder="Paste your code or upload a file..."
         value={code}
-        onChange={(e) => setCode(e.target.value.trim)}      />
+        onChange={(e) => setCode(e.target.value.trim())}     />
 
       <button
         className="bg-black text-white px-4 py-2 rounded hover:bg-gray-800"

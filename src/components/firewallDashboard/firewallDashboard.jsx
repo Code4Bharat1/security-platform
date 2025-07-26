@@ -13,7 +13,7 @@ export default function FirewallDashboard({ data }) {
     serverHeader,
     protectionLevel,
   } = data;
-
+  console.log(data)
   // Color codes for protection level
   const protectionColors = {
     None: "text-gray-600 bg-gray-100",

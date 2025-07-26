@@ -69,7 +69,7 @@ const FormPage = () => {
             id="websiteUrl"
             name="websiteUrl"
             value={url}
-            onChange={(e) => setUrl(e.target.value.trim)}            placeholder="https://example.com"
+            onChange={(e) => setUrl(e.target.value.trim())}           placeholder="https://example.com"
             required
             className="w-full border border-gray-300 rounded-lg p-2 mb-4 focus:outline-none focus:ring-2 focus:ring-green-800 focus:border-green-800"
           />

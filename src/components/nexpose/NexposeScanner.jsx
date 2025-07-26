@@ -8,13 +8,13 @@ export default function NexposeScanner() {
   const [result, setResult] = useState(null);
 
   const handleScan = async () => {
-    if (!url.trim()) return;
+    if (!url.trim())} return;
 
     setScanning(true);
     setResult(null);
 
     try {
-      const res = await fetch("http://localhost:4180/api/nexpose", {  // ✅ FIXED
+      const res = await fetch("/api/nexpose", {  // ✅ FIXED
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -46,7 +46,7 @@ export default function NexposeScanner() {
           type="text"
           placeholder="🔗 Enter website URL..."
           value={url}
-          onChange={(e) => setUrl(e.target.value.trim)}          className="w-full px-4 py-3 mb-4 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-600 text-gray-800"
+          onChange={(e) => setUrl(e.target.value.trim())}         className="w-full px-4 py-3 mb-4 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-600 text-gray-800"
         />
 
         <button

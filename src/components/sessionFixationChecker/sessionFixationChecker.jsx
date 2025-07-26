@@ -24,7 +24,7 @@ export default function SessionFixationChecker() {
   };
 
   const handleAnalyze = async () => {
-    if (!code.trim()) {
+    if (!code.trim())} {
       addToast('Please enter some code to analyze', 'error');
       return;
     }
@@ -33,7 +33,7 @@ export default function SessionFixationChecker() {
     setReport(null);
 
     try {
-      const res = await fetch('http://localhost:4180/api/session/sessionFixationChecker', {
+      const res = await fetch('/api/session/sessionFixationChecker', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ code }),
@@ -200,7 +200,7 @@ export default function SessionFixationChecker() {
             <textarea
               rows={14}
               value={code}
-              onChange={(e) => setCode(e.target.value.trim)}              placeholder="Paste your server-side login/session management code here...
+              onChange={(e) => setCode(e.target.value.trim())}             placeholder="Paste your server-side login/session management code here...
 
 Example patterns to check:
 - Session ID regeneration after login

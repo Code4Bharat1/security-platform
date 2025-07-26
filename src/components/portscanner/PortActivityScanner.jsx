@@ -11,7 +11,7 @@ export default function PortActivityScanner() {
     setResult(null);
 
     try {
-      const res = await fetch("http://localhost:4180/api/port-scan"); // Backend call
+      const res = await fetch("/api/port-scan"); // Backend call
       const data = await res.json();
       setResult(data);
     } catch (err) {

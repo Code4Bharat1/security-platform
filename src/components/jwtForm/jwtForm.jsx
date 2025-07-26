@@ -101,7 +101,7 @@ export default function JWTAnalyzer() {
     setBackendResponse(null);
 
     try {
-      const res = await fetch("http://localhost:4180/api/jwt/token", {
+      const res = await fetch("/api/jwt/token", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

@@ -5,7 +5,7 @@ export const tools = [
     description: "Detects and analyzes WAF protection on a website, providing insights into security rules",
     slug: "firewallDashboard",
     buttonLabel: "Check WAF",
-    type: "tech-def"
+    type: "blue-team"
   },
   {
     name: "Vulnerability Scanner",
@@ -13,7 +13,7 @@ export const tools = [
     description: "Scan websites for security weaknesses like XSS or SQL injection.",
     slug: "vuln-scanner",
     buttonLabel: "Scan for Vulnerabilities",
-    type: "tech-def"
+    type: "red-team"
   },
   {
     name: "Jest Scanner",
@@ -21,7 +21,7 @@ export const tools = [
     description: "Scan websites for security weaknesses like XSS or SQL injection.",
     slug: "codeForm",
     buttonLabel: "Jest Scanner",
-    type: "tech-def"
+    type: "red-team"
   },
   {
     name: "Sonar Scanner",
@@ -29,7 +29,7 @@ export const tools = [
     description: "Scan websites for security weaknesses like XSS or SQL injection.",
     slug: "sonarForm",
     buttonLabel: "Sonar Scanner",
-    type: "tech-def"
+    type: "red-team"
   },
   {
     name: "Checkmarx Scanner",
@@ -37,7 +37,7 @@ export const tools = [
     description: "Scan websites for security weaknesses like XSS or SQL injection.",
     slug: "codeAnalysis",
     buttonLabel: "Scan your codes",
-    type: "tech-def"
+    type: "blue-team"
   },
   {
     name: "Subdomain Scanner",
@@ -45,7 +45,7 @@ export const tools = [
     description: "Scan websites for analyzing subdomains and their security posture.",
     slug: "subdomainEnumeration",
     buttonLabel: "Scan your website",
-    type: "tech-def"
+    type: "red-team"
   },
   {
     name: "Website Recon",
@@ -53,7 +53,7 @@ export const tools = [
     description: "Perform an in-depth reconnaissance of a website to identify key metadata, technologies used.",
     slug: "webrecon",
     buttonLabel: "Website Recon",
-    type: "tech-def"
+    type: "red-team"
   },
   {
     name: "Technology Fingerprinter",
@@ -61,7 +61,7 @@ export const tools = [
     description: "un an OWASP ZAP-powered automated security scan to detect vulnerabilities.",
     slug: "fingerPrint",
     buttonLabel: "fingerPrint",
-    type: "tech-def"
+    type: "red-team"
   },
   {
     name: "Brute Force Scanner",
@@ -69,7 +69,7 @@ export const tools = [
     description: "un an OWASP ZAP-powered automated security scan to detect vulnerabilities.",
     slug: "bruteForce",
     buttonLabel: "bruteForce",
-    type: "tech-def"
+    type: "red-team"
   },
   {
     name: "Mocha Testing",
@@ -77,7 +77,7 @@ export const tools = [
     description: "Displays all available Mocha commands, options, and usage details.",
     slug: "mochaForm",
     buttonLabel: "Mocha Testing",
-    type: "tech-def"
+    type: "red-team"
   },
   {
     name: "Sharepoint Scanner",
@@ -85,7 +85,7 @@ export const tools = [
     description: "Analyze SharePoint environments for security misconfigurations, permission issues.",
     slug: "sharepointForm",
     buttonLabel: "Sharepoint Scan",
-    type: "tech-def"
+    type: "blue-team"
   },
   {
     name: "Broken link Checker",
@@ -93,7 +93,7 @@ export const tools = [
     description: "Scans web pages for dead or broken links, helping maintain SEO integrity",
     slug: "brokenStreamForm",
     buttonLabel: "Scan for Vulnerabilities",
-    type: "tech-def"
+    type: "blue-team"
   },
   {
     name: "Wordpress Scanner",
@@ -101,7 +101,7 @@ export const tools = [
     description: "Check for outdated plugins, misconfigurations, and known vulnerabilities.",
     slug: "wordpressForm",
     buttonLabel: "Scan for Wordpress",
-    type: "tech-def"
+    type: "red-team"
   },
   {
     name: "Sitemap Generator",
@@ -109,7 +109,7 @@ export const tools = [
     description: "Creates an XML sitemap to help search engines index a website efficiently",
     slug: "sitemapForm",
     buttonLabel: "Generate Sitemap",
-    type: "tech-def"
+    type: "non-tech"
   },
   {
     name: "API Testing",
@@ -117,7 +117,7 @@ export const tools = [
     description: "Allows users to test API endpoints, validating functionality and security headers",
     slug: "apiForm",
     buttonLabel: "Scan for API",
-    type: "tech-def"
+    type: "red-team"
   },
   {
     name: "Port Scanner",
@@ -125,7 +125,7 @@ export const tools = [
     description: "Allows users to test API endpoints, validating functionality, security headers",
     slug: "portScannerForm",
     buttonLabel: "Check Headers",
-    type: "non-tech"
+    type: "red-team"
   },
   {
     name: "ASN Lookup",
@@ -134,7 +134,7 @@ export const tools = [
     description: "Retrieve details about an Autonomous System Number (ASN).",
     slug: "asnLookup",
     buttonLabel: "ASN Lookup",
-    type: "tech-def"
+    type: "blue-team"
   },
   {
     name: "Clickjacking Tester",
@@ -142,7 +142,7 @@ export const tools = [
     description: " Check for UI redressing vulnerabilities in a webpage.",
     slug: "clickjackingTester",
     buttonLabel: "Clickjacking Tester",
-    type: "non-tech"
+    type: "red-team"
   },
   {
     name: "CSRF Vulnerability Scanner",
@@ -150,7 +150,7 @@ export const tools = [
     description: " Check for UI redressing vulnerabilities in a webpage.",
     slug: "csrfChecker",
     buttonLabel: "CSRF Vulnerability Scanner",
-    type: "tech-def"
+    type: "red-team"
   },
   {
     name: "HTTPS Security Checker",
@@ -158,15 +158,7 @@ export const tools = [
     description: " Validate HTTPS security implementation.",
     slug: "httpsCheckerForm",
     buttonLabel: "HTTPS Security Checker",
-    type: "tech-def"
-  },
-  {
-    name: "IP Geolocation Lookup",
-    image: "ipGeo.png",
-    description: " Validate HTTPS security implementation.",
-    slug: "ipGeo",
-    buttonLabel: "IP Geolocation Lookup",
-    type: "tech-def"
+    type: "blue-team"
   },
   {
     name: "JWT Checker",
@@ -174,7 +166,7 @@ export const tools = [
     description: " Verify JWT authenticity and expiration",
     slug: "jwtForm",
     buttonLabel: "JWT Checker",
-    type: "tech-def"
+    type: "blue-team"
   },
   {
     name: "JWT Signature Validator",
@@ -182,7 +174,7 @@ export const tools = [
     description: "Ensure JWT signature integrity.",
     slug: "JWTSignatureValidator",
     buttonLabel: "JWT Signature Validator",
-    type: "tech-def"
+    type: "blue-team"
   },
   {
     name: "OAuth Token Analyzer",
@@ -190,7 +182,7 @@ export const tools = [
     description: " Inspect OAuth tokens for security risks.",
     slug: "OAuthTokenInspector",
     buttonLabel: "OAuth Token Analyzer",
-    type: "tech-def"
+    type: "blue-team"
   },
   {
     name: " Obfuscation Detector",
@@ -198,7 +190,7 @@ export const tools = [
     description: "Identify obfuscation techniques in code.",
     slug: "obfuscationChecker",
     buttonLabel: "Obfuscation Detector",
-    type: "tech-def"
+    type: "blue-team"
   },
   {
     name: "Open Redirect Tester ",
@@ -206,7 +198,7 @@ export const tools = [
     description: "Find unsafe redirection vulnerabilities.",
     slug: "openRedirectTester",
     buttonLabel: "Open Redirect Tester ",
-    type: "tech-def"
+    type: "red-team"
   },
   {
     name: "Regex Security Validator",
@@ -214,7 +206,7 @@ export const tools = [
     description: "Check regular expressions for security flaws",
     slug: "regexDetector",
     buttonLabel: "Regex Security Validator",
-    type: "tech-def"
+    type: "blue-team"
   },
   {
     name: "Reverse DNS Resolver ",
@@ -222,7 +214,7 @@ export const tools = [
     description: "Retrieve domain names linked to an IP.",
     slug: "reverseDNSLookup",
     buttonLabel: "Reverse DNS Resolver",
-    type: "tech-def"
+    type: "blue-team"
   },
   {
     name: "Secret Key Scanner",
@@ -230,7 +222,7 @@ export const tools = [
     description: "Search for exposed API keys or credentials.",
     slug: "secretKeyScanner",
     buttonLabel: "Secret Key Scanner",
-    type: "tech-def"
+    type: "red-team"
   },
   {
     name: "Session Fixation Tester",
@@ -238,7 +230,7 @@ export const tools = [
     description: "Detect session fixation vulnerabilities",
     slug: "sessionFixationChecker",
     buttonLabel: "Session Fixation Tester",
-    type: "tech-def"
+    type: "red-team"
   },
   {
     name: "Whois Domain Lookup",
@@ -246,7 +238,7 @@ export const tools = [
     description: "Retrieve domain registration and ownership details.",
     slug: "whoisLookup",
     buttonLabel: "Whois Domain Lookup",
-    type: "tech-def"
+    type: "red-team"
   },
   {
     name: "XSS Vulnerability Tester",
@@ -254,7 +246,7 @@ export const tools = [
     description: "Identify Cross-Site Scripting (XSS) risks",
     slug: "xssTester",
     buttonLabel: "XSS Vulnerability Tester",
-    type: "tech-def"
+    type: "red-team"
   },
   {
     name: "Meta Tag Analyzer",
@@ -262,7 +254,7 @@ export const tools = [
     description: "Analyze meta tags like title, description, and keywords.",
     slug: "meta-tag",
     buttonLabel: "Analyze Meta Tags",
-    type: "tech-def"
+    type: "non-tech"
   },
   {
     name: "Keyword Density Checker",
@@ -278,7 +270,7 @@ export const tools = [
     description: "Scans for duplicate WiFi networks with suspicious behavior.",
     slug: "rogue-wifi-detector",
     buttonLabel: "Scan Now",
-    type: "tech-def"
+    type: "blue-team"
   },
   {
     name: "Link Detector",
@@ -294,7 +286,7 @@ export const tools = [
     description: "Encrypts and decrypts text using secure algorithms.",
     slug: "securecrypt",
     buttonLabel: "Encrypt Now",
-    type: "tech-def"
+    type: "blue-team"
   },
   {
     name: "SQLi Scanner",
@@ -302,7 +294,7 @@ export const tools = [
     description: "This tool scans websites for SQL Injection vulnerabilities.",
     slug: "nexpose-scan",
     buttonLabel: "Scan SQLi",
-    type: "tech-def"
+    type: "red-team"
   },
   {
     name: "MDR Monitor",
@@ -310,7 +302,7 @@ export const tools = [
     description: "Monitors and responds to real-time security threats.",
     slug: "mdr-monitor",
     buttonLabel: "Start Monitoring",
-    type: "tech-def"
+    type: "blue-team"
   },
   {
     name: "File Scanner",
@@ -342,12 +334,20 @@ export const tools = [
     description: "Fetches location and network details of an IP address.",
     slug: "ip-address-info-finder",
     buttonLabel: "Find Info",
-    type: "tech-def"
+    type: "non-tech"
   },
   {
-    name: "QR Detector",
+    name: "Unsafe QR Detector",
     image: "QR.png",
     description: "Scans QR codes to detect Fake And Unsafe QR.",
+    slug: "fake-qr-code-detector1",
+    buttonLabel: "Scan QR",
+    type: "non-tech"
+  },
+  {
+    name: "QR Generator",
+    image: "QR.png",
+    description: "Generates QR codes as per your needs.",
     slug: "fake-qr-code-detector",
     buttonLabel: "Scan QR",
     type: "non-tech"
@@ -398,6 +398,6 @@ export const tools = [
     description: "Database Safety Checker With Score.",
     slug: "DB-Security-Check",
     buttonLabel: "Check Security",
-    type: "tech-def"
+    type: "blue-team"
   },
 ];

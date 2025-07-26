@@ -9,14 +9,14 @@ export default function LinkDetector() {
   const [error, setError] = useState("");
 
   const handleScan = async () => {
-    if (!link.trim()) return;
+    if (!link.trim())} return;
 
     setScanning(true);
     setResult(null);
     setError("");
 
     try {
-      const res = await fetch("http://localhost:4180/api/link-detector/link-scan", {
+      const res = await fetch("/api/link-detector/link-scan", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -54,7 +54,7 @@ export default function LinkDetector() {
           type="text"
           placeholder="🔗 Enter link to check..."
           value={link}
-          onChange={(e) => setLink(e.target.value.trim)}          className="w-full px-4 py-3 mb-4 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-600 text-gray-800"
+          onChange={(e) => setLink(e.target.value.trim())}         className="w-full px-4 py-3 mb-4 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-600 text-gray-800"
         />
 
         <button

@@ -24,7 +24,7 @@ export default function WebsiteOptimizationTool() {
 
       console.log("📡 Sending URL to backend:", trimmedUrl);
 
-      const response = await axios.post("http://localhost:4180/api/website-optimization", {
+      const response = await axios.post("/api/website-optimization", {
         url: trimmedUrl,
       });
 
@@ -46,7 +46,7 @@ export default function WebsiteOptimizationTool() {
         <input
           type="text"
           value={url}
-          onChange={(e) => setUrl(e.target.value.trim)}          placeholder="Enter website URL (e.g. https://example.com)"
+          onChange={(e) => setUrl(e.target.value.trim())}         placeholder="Enter website URL (e.g. https://example.com)"
           className="w-full p-3 border border-gray-300 rounded mb-4 focus:outline-none focus:ring-2 focus:ring-green-400"
         />
         <button

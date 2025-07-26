@@ -12,14 +12,14 @@ function ToolsCard() {
   const renderCards = (type) => {
     console.log(type)
     const filterOnType = (list, type) =>  list.filter((item)=> item.type == type)
-    if (type == "tech-def"){
-        const list = filterOnType(tools, "tech-def")
+    if (type == "blue-team"){
+        const list = filterOnType(tools, "blue-team")
         setToolsList(list);
-        setToolsTitle("Tech Defensive");
-    } else if (type == "tech-off"){
-        const list = filterOnType(tools, "tech-off")
+        setToolsTitle("Blue Team");
+    } else if (type == "red-team"){
+        const list = filterOnType(tools, "red-team")
         setToolsList(list);
-        setToolsTitle("Tech Offensive");
+        setToolsTitle("Red Team");
     } else if (type == "tech-for"){
         const list = filterOnType(tools, "tech-for")
         setToolsList(list);
@@ -57,13 +57,13 @@ function ToolsCard() {
           {showTechDetails && (
             <div className="mt-4 space-y-3">
               {/* Red Teaming */}
-              <div className="p-4 bg-red-100 rounded-lg"  onClick={()=>renderCards("tech-off")}>
+              <div className="p-4 bg-red-100 rounded-lg"  onClick={()=>renderCards("red-team")}>
                 <h3 className="font-semibold text-red-700">Red Teaming</h3>
                 <p className="text-sm text-red-600">Offensive security topics, penetration testing, etc.</p>
               </div>
 
               {/* Blue Teaming */}
-              <div className="p-4 bg-blue-100 rounded-lg" onClick={()=>renderCards("tech-def")}>
+              <div className="p-4 bg-blue-100 rounded-lg" onClick={()=>renderCards("blue-team")}>
                 <h3 className="font-semibold text-blue-700">Blue Teaming</h3>
                 <p className="text-sm text-blue-600">Defensive security, monitoring, SIEM, etc.</p>
               </div>

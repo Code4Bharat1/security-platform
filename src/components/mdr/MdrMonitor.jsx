@@ -8,13 +8,13 @@ export default function MdrMonitor() {
   const [data, setData] = useState(null);
 
   const handleMonitor = async () => {
-    if (!url.trim()) return;
+    if (!url.trim())} return;
 
     setLoading(true);
     setData(null);
 
     try {
-      const res = await fetch("http://localhost:4180/api/mdr-monitor", {
+      const res = await fetch("/api/mdr-monitor", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ url }),
@@ -44,7 +44,7 @@ export default function MdrMonitor() {
           type="text"
           placeholder="🔗 Enter website URL..."
           value={url}
-          onChange={(e) => setUrl(e.target.value.trim)}          className="w-full px-4 py-3 mb-4 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-600 text-gray-800"
+          onChange={(e) => setUrl(e.target.value.trim())}         className="w-full px-4 py-3 mb-4 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-600 text-gray-800"
         />
 
         <button

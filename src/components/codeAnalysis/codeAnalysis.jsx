@@ -40,14 +40,14 @@ export default function AnalysisForm() {
     setError("");
     setRawResponse("");
     
-    if (!code.trim()) {
+    if (!code.trim())} {
       setError("Please enter some code to analyze");
       setIsLoading(false);
       return;
     }
 
     try {
-      const res = await fetch("http://localhost:4180/api/analysis/analyze-scan", {
+      const res = await fetch("/api/analysis/analyze-scan", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ code }),
@@ -169,7 +169,7 @@ export default function AnalysisForm() {
             className="w-full h-40 p-4 border border-gray-300 rounded font-mono text-sm"
             placeholder="Paste your JavaScript code here..."
             value={code}
-            onChange={(e) => setCode(e.target.value.trim)}          />
+            onChange={(e) => setCode(e.target.value.trim())}         />
         </div>
         
         <div className="flex items-center">

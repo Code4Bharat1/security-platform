@@ -49,7 +49,7 @@ export default function SecurityChecker() {
                 type="text" 
                 placeholder="Enter website URL" 
                 value={url} 
-                onChange={(e) => setUrl(e.target.value.trim)}                className="w-full p-2 border rounded mt-3"
+                onChange={(e) => setUrl(e.target.value.trim())}               className="w-full p-2 border rounded mt-3"
             />
             <button
   onClick={fetchHeaders}

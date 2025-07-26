@@ -45,7 +45,7 @@ const regex = new RegExp(userInput); // ⚠️ Unescaped input`);
   };
 
   const scanCode = async () => {
-    if (!code.trim()) {
+    if (!code.trim())} {
       addToast('Please enter some code to scan', 'error');
       return;
     }
@@ -56,7 +56,7 @@ const regex = new RegExp(userInput); // ⚠️ Unescaped input`);
     setFixes([]);
     
     try {
-      const res = await fetch('http://localhost:4180/api/regex/regexInjectionDetector', {
+      const res = await fetch('/api/regex/regexInjectionDetector', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ code }),
@@ -205,7 +205,7 @@ const regex = new RegExp(userInput); // ⚠️ Unescaped input`);
               className="w-full p-4 rounded-xl border-2 border-gray-200 font-mono text-sm focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent transition-all duration-200 resize-none"
               placeholder="Paste your JavaScript code here..."
               value={code}
-              onChange={(e) => setCode(e.target.value.trim)}            />
+              onChange={(e) => setCode(e.target.value.trim())}           />
           </div>
 
           {/* Scan Button */}

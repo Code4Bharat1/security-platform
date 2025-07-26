@@ -25,7 +25,7 @@ export default function CSRFChecker() {
   }
 
   const handleAnalyze = async () => {
-    if (!code.trim()) {
+    if (!code.trim())} {
       addToast('Please enter some code to analyze', 'error')
       return
     }
@@ -34,7 +34,7 @@ export default function CSRFChecker() {
     setResult(null)
     
     try {
-      const res = await fetch('http://localhost:4180/api/csrf/csrf-check', {
+      const res = await fetch('/api/csrf/csrf-check', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ code }),
@@ -146,7 +146,7 @@ export default function CSRFChecker() {
                   className="w-full h-64 p-4 border-2 border-gray-200 rounded-xl resize-none focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent transition-all duration-200 font-mono text-sm"
                   placeholder="Paste your HTML, JavaScript, or frontend code here..."
                   value={code}
-                  onChange={(e) => setCode(e.target.value.trim)}                />
+                  onChange={(e) => setCode(e.target.value.trim())}               />
 
                 <div className="flex flex-col sm:flex-row gap-4">
                   <label className="flex-1 cursor-pointer">

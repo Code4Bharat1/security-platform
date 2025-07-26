@@ -8,13 +8,13 @@ export default function SeoScoreAnalyzer() {
   const [result, setResult] = useState(null);
 
   const handleAnalyze = async () => {
-    if (!url.trim()) return;
+    if (!url.trim())} return;
 
     setLoading(true);
     setResult(null);
 
     try {
-      const res = await fetch("http://localhost:4180/api/seo/analyze", {
+      const res = await fetch("/api/seo/analyze", {
         method: "POST",  
         headers: {
           "Content-Type": "application/json",
@@ -50,7 +50,7 @@ export default function SeoScoreAnalyzer() {
           type="text"
           placeholder="🔗 Enter website URL..."
           value={url}
-          onChange={(e) => setUrl(e.target.value.trim)}          className="w-full px-4 py-3 mb-4 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-600 text-gray-800"
+          onChange={(e) => setUrl(e.target.value.trim())}         className="w-full px-4 py-3 mb-4 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-600 text-gray-800"
         />
 
         <button
