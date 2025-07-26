@@ -19,7 +19,7 @@ export default function BrokenStreamForm() {
       eventSourceRef.current.close();
     }
 
-    const es = new EventSource(`http://localhost:4180/api/brokenlink/brokenlink-stream?url=${encodeURIComponent(url)}`);
+    const es = new EventSource(`/api/brokenlink/brokenlink-stream?url=${encodeURIComponent(url)}`);
     eventSourceRef.current = es;
 
     es.onmessage = (event) => {
@@ -59,7 +59,7 @@ export default function BrokenStreamForm() {
         className="w-full border p-2 rounded mb-4"
         placeholder="Enter full website URL"
         value={url}
-        onChange={(e) => setUrl(e.target.value.trim)}        disabled={loading}
+        onChange={(e) => setUrl(e.target.value.trim())}       disabled={loading}
       />
       <button
         onClick={startCheck}

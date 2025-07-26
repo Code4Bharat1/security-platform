@@ -29,7 +29,7 @@ export default function CodeForm() {
     setIsLoading(true);
 
     try {
-      const response = await fetch("http://localhost:4180/api/analyze/analyzeCode", {
+      const response = await fetch("/api/analyze/analyzeCode", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -63,7 +63,7 @@ export default function CodeForm() {
           className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all duration-300 resize-y"
           placeholder="Paste your code here (JavaScript, TypeScript, Python, etc.)"
           value={code}
-          onChange={(e) => setCode(e.target.value.trim)}          rows={10}
+          onChange={(e) => setCode(e.target.value.trim())}         rows={10}
           aria-label="Code input"
         />
       </div>

@@ -1,7 +1,7 @@
-import WhatsAppInspector from "@/components/whatsapp/WhatsAppInspector";
+import WhatsappPrivacyInspector from "@/components/WhatsappPrivacyInspector/WhatsappPrivacyInspector";
 
-export default function WhatsAppPage() {
+export default function WhatsAppPrivacyInspectorPage() {
   return (
-      <WhatsAppInspector />
+      <WhatsappPrivacyInspector />
   );
 }

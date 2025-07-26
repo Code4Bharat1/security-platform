@@ -15,7 +15,7 @@ export default function IPGeoPage() {
 
     setLoading(true);
     try {
-      const res = await fetch("http://localhost:4180/api/ipgeo/lookup", {
+      const res = await fetch("/api/ipgeo/lookup", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ domain }),
@@ -65,7 +65,7 @@ export default function IPGeoPage() {
               placeholder="Enter domain (e.g., openai.com) or IP address"
               className="w-full p-4 pr-12 border-2 border-green-200 rounded-lg focus:border-green-500 focus:outline-none transition-colors duration-200 text-gray-800 placeholder-gray-500"
               value={domain}
-              onChange={(e) => setDomain(e.target.value.trim)}              onKeyPress={handleKeyPress}
+              onChange={(e) => setDomain(e.target.value.trim())}             onKeyPress={handleKeyPress}
             />
             <Search className="absolute right-4 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
           </div>

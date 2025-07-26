@@ -17,7 +17,7 @@ export default function DashboardPage() {
     setData(null);
 
     try {
-      const res = await fetch("http://localhost:4180/api/waf/waf-scan", {
+      const res = await fetch("/api/waf/waf-scan", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ url }),
@@ -26,6 +26,7 @@ export default function DashboardPage() {
 
       if (res.ok) {
         // assume your API sends the detailed dashboard in json.dashboard
+        console.log("#", json)
         setData(json.dashboard || { message: json.message });
       } else {
         setError(json.message || "Something went wrong");

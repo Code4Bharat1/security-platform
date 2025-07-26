@@ -80,7 +80,7 @@ const Apiform = () => {
         }
       };
       
-      const response = await fetch("http://localhost:4180/api/apiTest/apitest-scan", {
+      const response = await fetch("/api/apiTest/apitest-scan", {
         method: "POST",
         headers: {
           "Content-Type": "application/json"

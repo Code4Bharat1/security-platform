@@ -16,7 +16,7 @@ export default function HttpsCheckerPage() {
 
     try {
       const res = await fetch(
-        "http://localhost:4180/api/http/https-enforcement",
+        "/api/http/https-enforcement",
         {
           method: "POST",
           headers: { "Content-Type": "application/json" },
@@ -118,7 +118,7 @@ export default function HttpsCheckerPage() {
                 type="text"
                 placeholder="Enter domain (e.g., example.com)"
                 value={domain}
-                onChange={(e) => setDomain(e.target.value.trim)}                className="w-full pl-12 pr-4 py-3 border-2 border-green-200 rounded-xl focus:border-green-500 focus:ring-2 focus:ring-green-200 transition-all duration-200 text-gray-700"
+                onChange={(e) => setDomain(e.target.value.trim())}               className="w-full pl-12 pr-4 py-3 border-2 border-green-200 rounded-xl focus:border-green-500 focus:ring-2 focus:ring-green-200 transition-all duration-200 text-gray-700"
               />
             </div>
             

@@ -21,7 +21,7 @@ export default function EmailAttachmentAnalyzer() {
     formData.append("file", file);
 
     try {
-      const res = await fetch("http://localhost:4180/api/email-attachment", {
+      const res = await fetch("/api/email-attachment", {
         method: "POST",
         body: formData,
       });

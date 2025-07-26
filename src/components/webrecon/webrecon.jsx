@@ -23,7 +23,7 @@ export default function Webrecon() {
     setError('');
     setResult(null);
 
-    if (!domain.trim()) {
+    if (!domain.trim())} {
       setError('Please enter a domain');
       return;
     }
@@ -31,7 +31,7 @@ export default function Webrecon() {
     setLoading(true);
 
     try {
-      const res = await fetch('http://localhost:4180/api/dns/resolve', {
+      const res = await fetch('/api/dns/resolve', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ domain, type: recordType }),
@@ -59,12 +59,12 @@ export default function Webrecon() {
         type="text"
         placeholder="Enter domain (e.g., example.com)"
         value={domain}
-        onChange={(e) => setDomain(e.target.value.trim)}        className="border px-3 py-2 w-full mb-4 rounded"
+        onChange={(e) => setDomain(e.target.value.trim())}       className="border px-3 py-2 w-full mb-4 rounded"
       />
 
       <select
         value={recordType}
-        onChange={(e) => setRecordType(e.target.value.trim)}        className="border px-3 py-2 mb-4 rounded w-full"
+        onChange={(e) => setRecordType(e.target.value.trim())}       className="border px-3 py-2 mb-4 rounded w-full"
       >
         <option value="A">A (IPv4 Address)</option>
         <option value="AAAA">AAAA (IPv6 Address)</option>

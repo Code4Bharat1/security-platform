@@ -9,14 +9,14 @@ export default function ThirdPartyPermissionScanner() {
   const [error, setError] = useState("");
 
   const handleScan = async () => {
-    if (!appName.trim()) return;
+    if (!appName.trim())} return;
 
     setLoading(true);
     setResult(null);
     setError("");
 
     try {
-      const res = await fetch("http://localhost:4180/api/permission-scan", {
+      const res = await fetch("/api/permission-scan", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -54,7 +54,7 @@ export default function ThirdPartyPermissionScanner() {
           type="text"
           placeholder="Enter App Name (e.g. Facebook Lite)"
           value={appName}
-          onChange={(e) => setAppName(e.target.value.trim)}          className="w-full px-4 py-2 border rounded-md mb-4"
+          onChange={(e) => setAppName(e.target.value.trim())}         className="w-full px-4 py-2 border rounded-md mb-4"
         />
 
         <button

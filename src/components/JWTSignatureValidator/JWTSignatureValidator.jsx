@@ -10,7 +10,7 @@ export default function JWTSignatureValidator() {
 
   const handleValidate = async () => {
     // Basic validation
-    if (!token.trim() || !secret.trim()) {
+    if (!token.trim() || !secret.trim())} {
       setError("Both JWT token and secret key are required");
       return;
     }
@@ -21,7 +21,7 @@ export default function JWTSignatureValidator() {
 
     try {
       const res = await fetch(
-        "http://localhost:4180/api/jwtsign/jwt-signature",
+        "/api/jwtsign/jwt-signature",
         {
           method: "POST",
           headers: { "Content-Type": "application/json" },
@@ -70,7 +70,7 @@ export default function JWTSignatureValidator() {
               <textarea
                 placeholder="Paste your JWT token here (e.g., eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...)"
                 value={token}
-                onChange={(e) => setToken(e.target.value.trim)}                className="w-full border-2 border-green-200 p-4 rounded-xl focus:ring-4 focus:ring-green-100 focus:border-green-400 transition-all duration-200 text-sm font-mono resize-none"
+                onChange={(e) => setToken(e.target.value.trim())}               className="w-full border-2 border-green-200 p-4 rounded-xl focus:ring-4 focus:ring-green-100 focus:border-green-400 transition-all duration-200 text-sm font-mono resize-none"
                 rows={5}
               />
               <div className="absolute top-3 right-3 text-xs text-green-500 bg-green-50 px-2 py-1 rounded-full">
@@ -88,7 +88,7 @@ export default function JWTSignatureValidator() {
               type="text"
               placeholder="Enter your secret key"
               value={secret}
-              onChange={(e) => setSecret(e.target.value.trim)}              className="w-full border-2 border-green-200 p-4 rounded-xl focus:ring-4 focus:ring-green-100 focus:border-green-400 transition-all duration-200 font-mono"
+              onChange={(e) => setSecret(e.target.value.trim())}             className="w-full border-2 border-green-200 p-4 rounded-xl focus:ring-4 focus:ring-green-100 focus:border-green-400 transition-all duration-200 font-mono"
             />
           </div>
 

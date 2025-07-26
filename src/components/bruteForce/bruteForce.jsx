@@ -9,7 +9,7 @@ export default function DirectoryBruteForcer() {
   const startScan = async () => {
     setLoading(true);
     setResults([]);
-    const res = await fetch('http://localhost:4180/api/bruteForce/brute-Force', {
+    const res = await fetch('/api/bruteForce/brute-Force', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ target })
@@ -26,7 +26,7 @@ export default function DirectoryBruteForcer() {
       <input
         type="text"
         value={target}
-        onChange={(e) => setTarget(e.target.value.trim)}        placeholder="https://example.com"
+        onChange={(e) => setTarget(e.target.value.trim())}       placeholder="https://example.com"
         className="border p-2 rounded w-full mb-2"
       />
       <button

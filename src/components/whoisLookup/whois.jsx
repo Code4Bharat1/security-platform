@@ -23,7 +23,7 @@ export default function WhoisLookup() {
     setLoading(true);
 
     try {
-      const res = await fetch('http://localhost:4180/api/whois/whois-scan', {
+      const res = await fetch('/api/whois/whois-scan', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -54,7 +54,8 @@ export default function WhoisLookup() {
           type="text"
           placeholder="Enter domain name (e.g., example.com)"
           value={domain}
-          onChange={(e) => setDomain(e.target.value.trim)}          className="border rounded p-2 w-full"
+          onChange={(e) => setDomain(e.target.value.trim())}       
+          className="border rounded p-2 w-full"
         />
         <button
           type="submit"

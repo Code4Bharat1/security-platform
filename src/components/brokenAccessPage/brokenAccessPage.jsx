@@ -13,7 +13,7 @@ const [scanHistory, setScanHistory] = useState([]);
 useEffect( () =>{
   const fetchHistory = async () => {
    try{
-   const res = await fetch('http://localhost:4180/api/broken-access-control/reports');
+   const res = await fetch('/api/broken-access-control/reports');
    const data = await res.json();
    setScanHistory(data.reports || []);
    }
@@ -28,7 +28,7 @@ useEffect( () =>{
 
 
   const handleAddPath = () => {
-    if (newPath.trim()) {
+    if (newPath.trim())} {
       setCustomPaths([...customPaths, newPath.trim()]);
       setNewPath('');
     }
@@ -39,7 +39,7 @@ useEffect( () =>{
     setResults([]);
 
     try {
-      const res = await fetch('http://localhost:4180/api/broken-access-control/broken-test', {
+      const res = await fetch('/api/broken-access-control/broken-test', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -60,7 +60,7 @@ const handleDelete = async (id) => {
   if (!confirm("Are you sure you want to delete this scan report?")) return;
 
   try {
-    const res = await fetch(`http://localhost:4180/api/broken-access-control/delete/${id}`, {
+    const res = await fetch(`/api/broken-access-control/delete/${id}`, {
       method: 'DELETE',
     });
 
@@ -98,7 +98,7 @@ const handleDelete = async (id) => {
           placeholder="Target URL (e.g., https://example.com)"
           className="w-full p-2 border rounded"
           value={targetUrl}
-          onChange={(e) => setTargetUrl(e.target.value.trim)}          required
+          onChange={(e) => setTargetUrl(e.target.value.trim())}         required
         />
 
         <input
@@ -106,7 +106,7 @@ const handleDelete = async (id) => {
           placeholder="Authorization header (optional)"
           className="w-full p-2 border rounded"
           value={authHeader}
-          onChange={(e) => setAuthHeader(e.target.value.trim)}        />
+          onChange={(e) => setAuthHeader(e.target.value.trim())}       />
 
         <div>
           <label className="block mb-1">Custom Paths</label>
@@ -116,7 +116,7 @@ const handleDelete = async (id) => {
               placeholder="/admin"
               className="p-2 border rounded w-full"
               value={newPath}
-              onChange={(e) => setNewPath(e.target.value.trim)}            />
+              onChange={(e) => setNewPath(e.target.value.trim())}           />
             <button
               type="button"
               onClick={handleAddPath}

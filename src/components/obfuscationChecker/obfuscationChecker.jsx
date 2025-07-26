@@ -9,7 +9,7 @@ export default function CodeObfuscationChecker() {
 
   const handleAnalyze = async () => {
     setLoading(true)
-    const res = await fetch('http://localhost:4180/api/code/code-obfuscation', {
+    const res = await fetch('/api/code/code-obfuscation', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ code })
@@ -43,7 +43,7 @@ export default function CodeObfuscationChecker() {
           className="w-full h-48 p-4 border rounded-lg resize-none focus:outline-none focus:ring-2 focus:ring-blue-500"
           placeholder="Paste your code here..."
           value={code}
-          onChange={(e) => setCode(e.target.value.trim)}        />
+          onChange={(e) => setCode(e.target.value.trim())}       />
 
         <input
           type="file"

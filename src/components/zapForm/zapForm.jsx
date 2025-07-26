@@ -108,7 +108,7 @@ export default function ZapForm() {
                         type="text"
                         placeholder="Enter website URL"
                         value={url}
-                        onChange={(e) => setUrl(e.target.value.trim)}                        className="border border-gray-300 rounded px-4 py-2 w-full max-w-md"
+                        onChange={(e) => setUrl(e.target.value.trim())}                       className="border border-gray-300 rounded px-4 py-2 w-full max-w-md"
                     />
                     <button
                         type="submit"

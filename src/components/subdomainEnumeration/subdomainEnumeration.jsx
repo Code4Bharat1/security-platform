@@ -13,14 +13,14 @@ export default function SubdomainEnumeration() {
     setError('');
     setResults([]);
 
-    if (!domain.trim()) {
+    if (!domain.trim())} {
       setError('Please enter a domain.');
       setLoading(false);
       return;
     }
 
     try {
-      const res = await fetch('http://localhost:4180/api/subdomain/subdomains-scan', {
+      const res = await fetch('/api/subdomain/subdomains-scan', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ domain: domain.trim() }),
@@ -50,7 +50,7 @@ export default function SubdomainEnumeration() {
         type="text"
         placeholder="Enter domain (e.g., example.com)"
         value={domain}
-        onChange={(e) => setDomain(e.target.value.trim)}        className="w-full p-2 mb-3 border rounded"
+        onChange={(e) => setDomain(e.target.value.trim())}       className="w-full p-2 mb-3 border rounded"
       />
 
       <button

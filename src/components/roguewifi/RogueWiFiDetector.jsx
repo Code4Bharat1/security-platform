@@ -9,7 +9,7 @@ function RogueWifiDetector() {
     e.preventDefault();
     setLoading(true);
     try {
-      const response = await fetch("http://localhost:4180/api/rogue-wifi/rogue-wifi-scan", {
+      const response = await fetch("/api/rogue-wifi/rogue-wifi-scan", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -35,7 +35,7 @@ function RogueWifiDetector() {
           type="text"
           placeholder="Enter SSID or IP"
           value={input}
-          onChange={(e) => setInput(e.target.value.trim)}          style={{
+          onChange={(e) => setInput(e.target.value.trim())}         style={{
             padding: "10px",
             width: "300px",
             borderRadius: "5px",

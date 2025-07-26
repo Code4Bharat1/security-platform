@@ -23,7 +23,7 @@ export default function ClickjackingTester() {
     setResult(null);
     try {
       const res = await fetch(
-        "http://localhost:4180/api/clickjacking/jacking",
+        "/api/clickjacking/jacking",
         {
           method: "POST",
           headers: { "Content-Type": "application/json" },
@@ -40,7 +40,7 @@ export default function ClickjackingTester() {
   };
 
   const handleKeyPress = (e) => {
-    if (e.key === "Enter" && url.trim()) {
+    if (e.key === "Enter" && url.trim())} {
       handleTest();
     }
   };
@@ -72,7 +72,7 @@ export default function ClickjackingTester() {
               <input
                 type="text"
                 value={url}
-                onChange={(e) => setUrl(e.target.value.trim)}                onKeyPress={handleKeyPress}
+                onChange={(e) => setUrl(e.target.value.trim())}               onKeyPress={handleKeyPress}
                 placeholder="Enter target URL (e.g. https://example.com)"
                 className="w-full border-2 border-green-200 px-4 py-4 pr-12 rounded-xl focus:border-green-500 focus:outline-none transition-all duration-200 text-gray-800 placeholder-gray-500 text-lg"
               />

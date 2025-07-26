@@ -29,7 +29,7 @@ const SharePointScanner = () => {
     setScanData(null); // Clear previous results
 
     try {      
-      const response = await fetch("http://localhost:4180/api/sharepoint/sharepoint-scanner", {
+      const response = await fetch("/api/sharepoint/sharepoint-scanner", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ url }),
@@ -69,7 +69,7 @@ const SharePointScanner = () => {
             id="sharePointUrl"
             name="sharePointUrl"
             value={url}
-            onChange={(e) => setUrl(e.target.value.trim)}            placeholder="https://company.sharepoint.com/sites/teamsite"
+            onChange={(e) => setUrl(e.target.value.trim())}           placeholder="https://company.sharepoint.com/sites/teamsite"
             required
             className="w-full border border-gray-300 rounded-lg p-2 mb-4 focus:outline-none focus:ring-2 focus:ring-green-800 focus:border-green-800"
           />
