@@ -16,19 +16,11 @@ export const tools = [
     type: "red-team"
   },
   {
-    name: "Jest Scanner",
-    image: "jest.png",
+    name: "Source Code Analyzer",
+    image: "Code.png",
     description: "Scan websites for security weaknesses like XSS or SQL injection.",
-    slug: "codeForm",
-    buttonLabel: "Jest Scanner",
-    type: "red-team"
-  },
-  {
-    name: "Sonar Scanner",
-    image: "sonar-image.png",
-    description: "Scan websites for security weaknesses like XSS or SQL injection.",
-    slug: "sonarForm",
-    buttonLabel: "Sonar Scanner",
+    slug: "Source-Code",
+    buttonLabel: "Check Your Code's",
     type: "red-team"
   },
   {
