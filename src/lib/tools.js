@@ -85,7 +85,7 @@ export const tools = [
     description: "Scans web pages for dead or broken links, helping maintain SEO integrity",
     slug: "brokenStreamForm",
     buttonLabel: "Scan for Vulnerabilities",
-    type: "blue-team"
+    type: "non-tech"
   },
   {
     name: "Wordpress Scanner",
@@ -257,14 +257,6 @@ export const tools = [
     type: "non-tech"
   },
   {
-    name: "Rogue WiFi Detector",
-    image: "wifi.png",
-    description: "Scans for duplicate WiFi networks with suspicious behavior.",
-    slug: "rogue-wifi-detector",
-    buttonLabel: "Scan Now",
-    type: "blue-team"
-  },
-  {
     name: "Link Detector",
     image: "link_dec.png",
     description: "This tool helps detect malicious, suspicious, or unsafe links.",
@@ -278,7 +270,7 @@ export const tools = [
     description: "Encrypts and decrypts text using secure algorithms.",
     slug: "securecrypt",
     buttonLabel: "Encrypt Now",
-    type: "blue-team"
+    type: "non-tech"
   },
   {
     name: "SQLi Scanner",
@@ -390,6 +382,6 @@ export const tools = [
     description: "Database Safety Checker With Score.",
     slug: "DB-Security-Check",
     buttonLabel: "Check Security",
-    type: "blue-team"
+    type: "red-team"
   },
 ];
