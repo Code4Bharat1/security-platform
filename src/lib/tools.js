@@ -130,7 +130,6 @@ export const tools = [
   {
     name: "ASN Lookup",
     image: "asn-logo.png",
-    image: "asn.png",
     description: "Retrieve details about an Autonomous System Number (ASN).",
     slug: "asnLookup",
     buttonLabel: "ASN Lookup",

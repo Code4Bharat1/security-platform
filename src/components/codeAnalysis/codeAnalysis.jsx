@@ -1,5 +1,5 @@
 "use client";
-import React, { useState, useEffect } from "react";
+import { useState } from "react";
 
 export default function AnalysisForm() {
   const [code, setCode] = useState("");
@@ -40,7 +40,7 @@ export default function AnalysisForm() {
     setError("");
     setRawResponse("");
     
-    if (!code.trim())} {
+    if (!code.trim()) {
       setError("Please enter some code to analyze");
       setIsLoading(false);
       return;

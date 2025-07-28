@@ -1,3 +1,4 @@
+"use client"
 import { useState } from "react";
 import {
   Search,
@@ -51,7 +52,7 @@ export default function ASNLookupFullPage() {
     setError("");
     setResult(null);
 
-    if (!ip.trim())} {
+    if (!ip.trim()) {
       setError("Please enter an IP address.");
       return;
     }

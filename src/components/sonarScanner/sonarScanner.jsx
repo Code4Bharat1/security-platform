@@ -13,7 +13,7 @@ export default function SonarScanner() {
   const [selectedLine, setSelectedLine] = useState(null);
 
   const handleSubmit = async () => {
-    if (!code.trim())} return;
+    if (!code.trim()) return;
 
     setLoading(true);
     try {

@@ -28,7 +28,7 @@ useEffect( () =>{
 
 
   const handleAddPath = () => {
-    if (newPath.trim())} {
+    if (newPath.trim()) {
       setCustomPaths([...customPaths, newPath.trim()]);
       setNewPath('');
     }

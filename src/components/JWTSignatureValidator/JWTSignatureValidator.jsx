@@ -1,4 +1,4 @@
-"use client";
+"use client"
 import { useState } from "react";
 
 export default function JWTSignatureValidator() {
@@ -10,7 +10,7 @@ export default function JWTSignatureValidator() {
 
   const handleValidate = async () => {
     // Basic validation
-    if (!token.trim() || !secret.trim())} {
+    if (!token.trim() || !secret.trim()) {
       setError("Both JWT token and secret key are required");
       return;
     }

@@ -8,7 +8,7 @@ export default function SeoScoreAnalyzer() {
   const [result, setResult] = useState(null);
 
   const handleAnalyze = async () => {
-    if (!url.trim())} return;
+    if (!url.trim()) return;
 
     setLoading(true);
     setResult(null);

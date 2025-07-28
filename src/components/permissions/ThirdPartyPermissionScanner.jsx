@@ -9,7 +9,7 @@ export default function ThirdPartyPermissionScanner() {
   const [error, setError] = useState("");
 
   const handleScan = async () => {
-    if (!appName.trim())} return;
+    if (!appName.trim()) return;
 
     setLoading(true);
     setResult(null);

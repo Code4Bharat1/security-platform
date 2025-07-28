@@ -45,7 +45,7 @@ const MochaTestPage = () => {
 
     try {
       let headerObj = {};
-      if (headers.trim())} {
+      if (headers.trim()) {
         try {
           headerObj = JSON.parse(headers);
         } catch (e) {

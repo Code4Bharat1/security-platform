@@ -106,7 +106,7 @@ export default function KeywordPage() {
                   value={url}
                   onChange={(e) => setUrl(e.target.value.trim())}                 disabled={loading}
                   onKeyDown={(e) => {
-                    if (e.key === "Enter" && !loading && url.trim())} {
+                    if (e.key === "Enter" && !loading && url.trim()) {
                       handleSubmit(e);
                     }
                   }}

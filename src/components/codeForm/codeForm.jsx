@@ -1,12 +1,10 @@
-"use client";
+'use client'
 import { useState } from "react";
 import { Code, Send, Loader2 } from "lucide-react";
-import { Light as SyntaxHighlighter } from "react-syntax-highlighter";
-import js from "react-syntax-highlighter/dist/esm/languages/hljs/javascript";
+import { Light as SyntaxHighlighter } from 'react-syntax-highlighter';
+import js from 'react-syntax-highlighter/dist/esm/languages/hljs/javascript';
 
-
-SyntaxHighlighter.registerLanguage("javascript", js)
-
+SyntaxHighlighter.registerLanguage('javascript', js);
 export default function CodeForm() {
   const [code, setCode] = useState("");
   const [result, setResult] = useState(null);

@@ -23,7 +23,7 @@ export default function Webrecon() {
     setError('');
     setResult(null);
 
-    if (!domain.trim())} {
+    if (!domain.trim()) {
       setError('Please enter a domain');
       return;
     }

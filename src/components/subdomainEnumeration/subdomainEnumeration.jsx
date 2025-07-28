@@ -13,7 +13,7 @@ export default function SubdomainEnumeration() {
     setError('');
     setResults([]);
 
-    if (!domain.trim())} {
+    if (!domain.trim()) {
       setError('Please enter a domain.');
       setLoading(false);
       return;
