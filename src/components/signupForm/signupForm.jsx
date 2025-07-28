@@ -46,7 +46,7 @@ export default function SignUp() {
     if (Object.keys(newErrors).length === 0) {
       try {
         setLoading(true);
-        const res = await fetch("https://zypher-api.code4bharat.com/auth/signup", {
+        const res = await fetch("https://zypher-api.code4bharat.com/api/auth/signup", {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',

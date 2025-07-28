@@ -12,7 +12,7 @@ export default function TechDetectPage() {
     if (!domain) return;
 
     try {
-      const res = await fetch("https://zypher-api.code4bharat.com/tech-detect", {
+      const res = await fetch("https://zypher-api.code4bharat.com/api/tech-detect", {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ domain }),
