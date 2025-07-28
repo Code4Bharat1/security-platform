@@ -21,7 +21,7 @@ export default function FileMetadataAnalyzer() {
     formData.append("file", file);
 
     try {
-      const res = await fetch("/api/file-metadata", {
+      const res = await fetch("https://zypher-api.code4bharat.com/file-metadata", {
         method: "POST",
         body: formData,
       });

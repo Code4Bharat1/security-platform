@@ -9,7 +9,7 @@ export default function DirectoryBruteForcer() {
   const startScan = async () => {
     setLoading(true);
     setResults([]);
-    const res = await fetch('/api/bruteForce/brute-Force', {
+    const res = await fetch("https://zypher-api.code4bharat.com/bruteForce/brute-Force", {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ target })

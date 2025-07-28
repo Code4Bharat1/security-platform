@@ -22,7 +22,7 @@ export default function FakeSoftwareDetector() {
     formData.append("file", file);
 
     try {
-      const response = await fetch("/api/fake-software-scan", {
+      const response = await fetch("https://zypher-api.code4bharat.com/fake-software-scan", {
         method: "POST",
         body: formData,
       });

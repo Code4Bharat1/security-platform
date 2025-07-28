@@ -30,7 +30,7 @@ export default function ZapForm() {
 
             console.log("Starting scan for URL:", formattedUrl);
             
-            const startScan = await fetch("/api/zapscan", {
+            const startScan = await fetch("https://zypher-api.code4bharat.com/zapscan", {
                 method: "POST",
                 headers: { 
                     "Content-Type": "application/json",
@@ -61,7 +61,7 @@ export default function ZapForm() {
     
     const fetchScanResults = async () => {
         try {
-            const response = await fetch("/api/zapscan");
+            const response = await fetch("https://zypher-api.code4bharat.com/zapscan");
             
             if (!response.ok) {
                 const errorData = await response.json().catch(() => null);
