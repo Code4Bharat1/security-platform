@@ -10,7 +10,7 @@ export default function ContactPage() {
   async function handleSubmit(e) {
     e.preventDefault();
     try {
-      const res = await fetch('http://localhost:4180/api/contact', { // <-- backend ka URL
+      const res = await fetch('https://zypher.code4bharat.com/api/contact', { // <-- backend ka URL
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ name, email, message }),

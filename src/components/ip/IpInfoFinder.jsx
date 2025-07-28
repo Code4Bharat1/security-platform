@@ -15,7 +15,7 @@ export default function IPInfoFinder() {
     setError(null);
 
     try {
-      const res = await axios.post("/api/ipinfo/ip-info", { ip });
+      const res = await axios.post("https://zypher-api.code4bharat.com/ipinfo/ip-info", { ip });
       setInfo(res.data);
     } catch (err) {
       setError(

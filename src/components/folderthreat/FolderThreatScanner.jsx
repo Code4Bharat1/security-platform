@@ -24,7 +24,7 @@ export default function FolderThreatScanner() {
     });
 
     try {
-      const res = await fetch("/api/folder-scan", {
+      const res = await fetch("https://zypher-api.code4bharat.com/folder-scan", {
         method: "POST",
         body: formData,
       });

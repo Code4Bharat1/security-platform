@@ -13,7 +13,7 @@ const [scanHistory, setScanHistory] = useState([]);
 useEffect( () =>{
   const fetchHistory = async () => {
    try{
-   const res = await fetch('/api/broken-access-control/reports');
+   const res = await fetch("https://zypher-api.code4bharat.com/broken-access-control/reports");
    const data = await res.json();
    setScanHistory(data.reports || []);
    }
@@ -39,7 +39,7 @@ useEffect( () =>{
     setResults([]);
 
     try {
-      const res = await fetch('/api/broken-access-control/broken-test', {
+      const res = await fetch("https://zypher-api.code4bharat.com/broken-access-control/broken-test", {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({

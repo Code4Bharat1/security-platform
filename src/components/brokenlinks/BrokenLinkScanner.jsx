@@ -14,7 +14,7 @@ export default function BrokenLinkScanner() {
     setResult(null);
 
     try {
-      const res = await fetch("/api/broken-link-scan", {
+      const res = await fetch("https://zypher-api.code4bharat.com/broken-link-scan", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

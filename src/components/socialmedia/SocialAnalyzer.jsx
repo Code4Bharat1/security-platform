@@ -16,7 +16,7 @@ export default function SocialAnalyzer() {
     setRisks([]);
 
     try {
-      const res = await fetch("/api/social-analyze", {
+      const res = await fetch("https://zypher-api.code4bharat.com/social-analyze", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
