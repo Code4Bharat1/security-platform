@@ -1,4 +1,3 @@
-import { runJSAnalysis } from "../../../analyzer/jsScanner";
 import AnalysisForm from "@/components/codeAnalysis/codeAnalysis";
 
 export default function Home() {

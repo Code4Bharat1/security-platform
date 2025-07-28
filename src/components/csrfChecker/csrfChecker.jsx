@@ -25,7 +25,7 @@ export default function CSRFChecker() {
   }
 
   const handleAnalyze = async () => {
-    if (!code.trim())} {
+    if (!code.trim()) {
       addToast('Please enter some code to analyze', 'error')
       return
     }

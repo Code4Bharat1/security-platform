@@ -9,7 +9,7 @@ export default function SecureCrypt() {
   const [loading, setLoading] = useState(false);
 
   const handleSubmit = async () => {
-    if (!text.trim())} return;
+    if (!text.trim()) return;
 
     setLoading(true);
     setResult("");

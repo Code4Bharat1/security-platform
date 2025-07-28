@@ -45,7 +45,7 @@ const regex = new RegExp(userInput); // ⚠️ Unescaped input`);
   };
 
   const scanCode = async () => {
-    if (!code.trim())} {
+    if (!code.trim()) {
       addToast('Please enter some code to scan', 'error');
       return;
     }

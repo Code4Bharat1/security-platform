@@ -8,7 +8,7 @@ export default function MdrMonitor() {
   const [data, setData] = useState(null);
 
   const handleMonitor = async () => {
-    if (!url.trim())} return;
+    if (!url.trim()) return;
 
     setLoading(true);
     setData(null);

@@ -9,7 +9,7 @@ export default function LinkDetector() {
   const [error, setError] = useState("");
 
   const handleScan = async () => {
-    if (!link.trim())} return;
+    if (!link.trim()) return;
 
     setScanning(true);
     setResult(null);

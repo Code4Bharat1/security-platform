@@ -8,7 +8,7 @@ export default function NexposeScanner() {
   const [result, setResult] = useState(null);
 
   const handleScan = async () => {
-    if (!url.trim())} return;
+    if (!url.trim()) return;
 
     setScanning(true);
     setResult(null);

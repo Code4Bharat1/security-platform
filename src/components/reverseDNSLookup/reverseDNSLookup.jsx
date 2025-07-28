@@ -125,7 +125,7 @@ export default function ReverseDNSLookup() {
                   type="text"
                   placeholder="e.g., 8.8.8.8 or 2001:4860:4860::8888"
                   value={ip}
-                  onChange={(e) => setIp(e.target.value.trim())}}
+                  onChange={(e) => setIp(e.target.value.trim())}
                   className={`w-full px-4 py-3 pl-12 border-2 rounded-xl transition-all duration-200 focus:outline-none focus:ring-4 ${
                     validationMessage 
                       ? 'border-red-300 focus:border-red-500 focus:ring-red-100' 

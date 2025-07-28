@@ -40,7 +40,7 @@ export default function ClickjackingTester() {
   };
 
   const handleKeyPress = (e) => {
-    if (e.key === "Enter" && url.trim())} {
+    if (e.key === "Enter" && url.trim()) {
       handleTest();
     }
   };
