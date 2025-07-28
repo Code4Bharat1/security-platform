@@ -60,7 +60,7 @@ const PortScannerForm = () => {
 
   // Backend API configuration
   //const API_BASE_URL = "https://localhost:5000/api"; // Change this to your backend URL
-  // For development, you might use: "https://zypher-api.code4bharat.com"
+  // For development, you might use: "https://zypher-api.code4bharat.com/api"
   // For production, use your deployed backend URL
 
   const showToast = (message, type = "success") => {

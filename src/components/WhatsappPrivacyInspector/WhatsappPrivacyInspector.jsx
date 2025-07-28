@@ -41,7 +41,7 @@ export default function WhatsappPrivacyChecker() {
             return;
         }
 
-        await fetch("https://zypher-api.code4bharat.com/whatsapp-privacy-inspector/inspect", {
+        await fetch("https://zypher-api.code4bharat.com/api/whatsapp-privacy-inspector/inspect", {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ files: images }),

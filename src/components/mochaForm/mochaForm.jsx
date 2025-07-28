@@ -71,7 +71,7 @@ const MochaTestPage = () => {
       }
 
       // Call your real Mocha API endpoint
-      const response = await fetch("https://zypher-api.code4bharat.com/mocha/mocha-test", {
+      const response = await fetch("https://zypher-api.code4bharat.com/api/mocha/mocha-test", {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

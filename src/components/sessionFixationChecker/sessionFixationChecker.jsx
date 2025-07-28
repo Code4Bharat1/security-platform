@@ -33,7 +33,7 @@ export default function SessionFixationChecker() {
     setReport(null);
 
     try {
-      const res = await fetch("https://zypher-api.code4bharat.com/session/sessionFixationChecker", {
+      const res = await fetch("https://zypher-api.code4bharat.com/api/session/sessionFixationChecker", {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ code }),

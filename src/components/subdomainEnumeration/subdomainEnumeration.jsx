@@ -20,7 +20,7 @@ export default function SubdomainEnumeration() {
     }
 
     try {
-      const res = await fetch("https://zypher-api.code4bharat.com/subdomain/subdomains-scan", {
+      const res = await fetch("https://zypher-api.code4bharat.com/api/subdomain/subdomains-scan", {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ domain: domain.trim() }),
