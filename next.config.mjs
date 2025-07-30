@@ -12,7 +12,7 @@ const nextConfig = {
               default-src 'self';
               script-src 'self' 'unsafe-eval' 'unsafe-inline' https://trusted-site.com;
               style-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net;
-              img-src 'self' data: https:;
+              img-src 'self' data: https: blob:;
               connect-src 'self' ${isDev ? 'http://localhost:* http://127.0.0.1:*' : 'https://zypher-api.code4bharat.com'};
             `.replace(/\s{2,}/g, ' ').trim()
           },
