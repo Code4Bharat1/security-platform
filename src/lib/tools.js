@@ -17,7 +17,7 @@ export const tools = [
   },
   {
     name: "Source Code Analyzer",
-    image: "Code.png",
+    image: "code.png",
     description: "Scan websites for security weaknesses like XSS or SQL injection.",
     slug: "Source-Code",
     buttonLabel: "Check Your Code's",
@@ -320,17 +320,9 @@ export const tools = [
     type: "non-tech"
   },
   {
-    name: "Unsafe QR Detector",
+    name: "QR Tool",
     image: "QR.png",
-    description: "Scans QR codes to detect Fake And Unsafe QR.",
-    slug: "fake-qr-code-detector1",
-    buttonLabel: "Scan QR",
-    type: "non-tech"
-  },
-  {
-    name: "QR Generator",
-    image: "QR.png",
-    description: "Generates QR codes as per your needs.",
+    description: "Unsafe QR & QR Generater.",
     slug: "fake-qr-code-detector",
     buttonLabel: "Scan QR",
     type: "non-tech"
@@ -355,7 +347,7 @@ export const tools = [
     name: "Keyword Generator",
     image: "keyword-generate.png",
     description: "Extract SEO-Friendly Keyword Suggestions.",
-    slug: "Keyword-Generate",
+    slug: "KeywordGenerator",
     buttonLabel: "Generate Keyword",
     type: "non-tech"
   },
@@ -363,7 +355,7 @@ export const tools = [
     name: "Data Breach",
     image: "DataBreach1.png",
     description: "Find Where Your Email , Phone No. Or Username is Exposed",
-    slug: "my-info",
+    slug: "osint",
     buttonLabel: "Check Info",
     type: "non-tech"
   },
@@ -371,7 +363,7 @@ export const tools = [
     name: "URL Shortener",
     image: "shorted-url.png",
     description: "Make Links Short and Simple.",
-    slug: "Link-Shoretner",
+    slug: "url-shortener",
     buttonLabel: "Shorten URL",
     type: "non-tech"
   },
@@ -379,7 +371,7 @@ export const tools = [
     name: "Database Security Checker",
     image: "DB-Security.png",
     description: "Database Safety Checker With Score.",
-    slug: "DB-Security-Check",
+    slug: "DbSecurityChecker",
     buttonLabel: "Check Security",
     type: "red-team"
   },
