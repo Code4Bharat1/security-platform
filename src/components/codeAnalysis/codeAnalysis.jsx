@@ -47,7 +47,7 @@ export default function AnalysisForm() {
     }
 
     try {
-      const res = await fetch("https://zypher-api.code4bharat.com/api/analysis/analyze-scan", {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_PROD_API_URL}/analysis/analyze-scan`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ code }),

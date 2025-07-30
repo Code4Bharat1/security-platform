@@ -29,7 +29,7 @@ const WordPressScanner = () => {
     setScanData(null); // Clear previous results
 
     try {
-      const response = await fetch("https://zypher-api.code4bharat.com/api/wordpress/wordpress-scan", {
+      const response = await fetch(`${process.env.NEXT_PUBLIC_PROD_API_URL}/wordpress/wordpress-scan`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ url }),

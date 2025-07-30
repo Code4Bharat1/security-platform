@@ -31,7 +31,7 @@ export default function Webrecon() {
     setLoading(true);
 
     try {
-      const res = await fetch("https://zypher-api.code4bharat.com/api/dns/resolve", {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_PROD_API_URL}/dns/resolve`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ domain, type: recordType }),

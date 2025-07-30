@@ -29,7 +29,7 @@ const FormPage = () => {
     setSslData(null); // Clear previous results
 
     try {
-      const response = await fetch("https://zypher-api.code4bharat.com/api/ssl-checker", {
+      const response = await fetch(`${process.env.NEXT_PUBLIC_PROD_API_URL}/ssl-checker`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ url }),

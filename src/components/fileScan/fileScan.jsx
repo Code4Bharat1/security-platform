@@ -24,7 +24,7 @@ export default function FileScan() {
       const formData = new FormData();
       formData.append("file", file);
 
-      const res = await fetch("https://zypher-api.code4bharat.com/api/fileScan", {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_PROD_API_URL}/fileScan`, {
         method: "POST",
         body: formData,
         // NOTE: DO NOT set Content-Type header manually! Let browser set it with boundary.
