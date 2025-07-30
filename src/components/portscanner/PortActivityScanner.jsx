@@ -11,7 +11,7 @@ export default function PortActivityScanner() {
     setResult(null);
 
     try {
-      const res = await fetch("https://zypher-api.code4bharat.com/api/port-scan"); // Backend call
+      const res = await fetch(`${process.env.NEXT_PUBLIC_PROD_API_URL}/port-scan`); // Backend call
       const data = await res.json();
       setResult(data);
     } catch (err) {

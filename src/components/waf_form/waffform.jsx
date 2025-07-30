@@ -37,7 +37,7 @@ const Wafform = () => {
 
     try {
       // Changed to use the GET method with URL parameter to match your API
-      const apiUrl = `/api/WAF?url=${encodeURIComponent(formattedUrl)}`;
+      const apiUrl = `${process.env.NEXT_PUBLIC_PROD_API_URL}/WAF?url=${encodeURIComponent(formattedUrl)}`;
       const response = await fetch(apiUrl);
 
       if (!response.ok) {

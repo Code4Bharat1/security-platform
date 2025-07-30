@@ -22,11 +22,10 @@ export default function FakeQrCodeDetector() {
     formData.append("qrImage", image);
 
     try {
-      const res = await fetch("https://zypher-api.code4bharat.com/api/qr/scan", {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_PROD_API_URL}/qr/scan`, {
         method: "POST",
         body: formData,
       });
-
 
       const data = await res.json();
 
@@ -75,8 +74,8 @@ export default function FakeQrCodeDetector() {
           onClick={handleScan}
           disabled={scanning || !image}
           className={`w-full py-3 rounded-md text-white font-semibold transition ${scanning
-              ? "bg-green-400 cursor-not-allowed"
-              : "bg-green-700 hover:bg-green-800"
+            ? "bg-green-400 cursor-not-allowed"
+            : "bg-green-700 hover:bg-green-800"
             }`}
         >
           {scanning ? "Scanning..." : "Scan QR"}

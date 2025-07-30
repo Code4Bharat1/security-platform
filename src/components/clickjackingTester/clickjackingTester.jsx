@@ -23,7 +23,7 @@ export default function ClickjackingTester() {
     setResult(null);
     try {
       const res = await fetch(
-        "https://zypher-api.code4bharat.com/api/clickjacking/jacking",
+        `${process.env.NEXT_PUBLIC_PROD_API_URL}/clickjacking/jacking`,
         {
           method: "POST",
           headers: { "Content-Type": "application/json" },

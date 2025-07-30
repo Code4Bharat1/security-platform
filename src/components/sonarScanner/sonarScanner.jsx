@@ -17,7 +17,7 @@ export default function SonarScanner() {
 
     setLoading(true);
     try {
-      const res = await fetch("https://zypher-api.code4bharat.com/api/analyzeCode", {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_PROD_API_URL}/analyzeCode`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ code }),
