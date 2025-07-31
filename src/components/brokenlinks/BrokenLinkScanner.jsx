@@ -6,6 +6,8 @@ export default function BrokenLinkScanner() {
   const [url, setUrl] = useState("");
   const [scanning, setScanning] = useState(false);
   const [result, setResult] = useState(null);
+  console.log('Env URL:', process.env.NEXT_PUBLIC_PROD_API_URL);
+
 
   const handleScan = async () => {
     if (!url.trim()) return;
@@ -14,7 +16,7 @@ export default function BrokenLinkScanner() {
     setResult(null);
 
     try {
-      const res = await fetch("https://zypher-api.code4bharat.com/api/broken-link-scan", {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_PROD_API_URL}/broken-link/brokenlink-stream`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

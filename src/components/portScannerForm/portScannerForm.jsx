@@ -104,7 +104,7 @@ const PortScannerForm = () => {
   const performPortScan = async (hostParam, portRangeParam) => {
     try {
       const response = await fetch(
-    `/api/port/portScan?host=${hostParam}&port=${portRangeParam}`,
+    `${process.env.NEXT_PUBLIC_PROD_API_URL}/port/portScan?host=${hostParam}&port=${portRangeParam}`,
     {
         method: 'GET',
         headers: {

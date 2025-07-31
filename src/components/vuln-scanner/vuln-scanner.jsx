@@ -30,7 +30,7 @@ export default function Vulnscanner() {
     setScanData(null);
 
     try {
-      const response = await fetch("https://zypher-api.code4bharat.com/api/scan/run-scan", {
+      const response = await fetch(`${process.env.NEXT_PUBLIC_PROD_API_URL}/scan/run-scan`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ url }),

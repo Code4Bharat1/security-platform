@@ -28,7 +28,7 @@ export default function OAuthTokenInspector() {
 
     try {
       const res = await fetch(
-        "https://zypher-api.code4bharat.com/api/auth/oauthTokenInspector",
+        `${process.env.NEXT_PUBLIC_PROD_API_URL}/auth/oauthTokenInspector`,
         {
           method: "POST",
           headers: { "Content-Type": "application/json" },

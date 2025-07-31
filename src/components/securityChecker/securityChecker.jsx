@@ -10,7 +10,7 @@ export default function SecurityChecker() {
     const fetchHeaders = async () => {
         try {
             setError(null);
-            const response = await fetch(`/api/checkHeaders?url=${url}`);
+            const response = await fetch(`${process.env.NEXT_PUBLIC_PROD_API_URL}/checkHeaders?url=${url}`);
             const data = await response.json();
             
             if (data.securityHeaders) {

@@ -19,7 +19,7 @@ export default function MetaForm() {
 
     setLoading(true);
     try {
-      const res = await fetch("https://zypher-api.code4bharat.com/api/meta/meta-analyze", {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_PROD_API_URL}/meta/meta-analyze`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ url }),

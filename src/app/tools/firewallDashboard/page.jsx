@@ -17,7 +17,7 @@ export default function DashboardPage() {
     setData(null);
 
     try {
-      const res = await fetch("https://zypher-api.code4bharat.com/api/waf/waf-scan", {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_PROD_API_URL}/waf/waf-scan`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ url }),
