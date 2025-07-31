@@ -16,7 +16,7 @@ export default function HttpsCheckerPage() {
 
     try {
       const res = await fetch(
-        "https://zypher-api.code4bharat.com/api/http/https-enforcement",
+        `${process.env.NEXT_PUBLIC_PROD_API_URL}/http/https-enforcement`,
         {
           method: "POST",
           headers: { "Content-Type": "application/json" },

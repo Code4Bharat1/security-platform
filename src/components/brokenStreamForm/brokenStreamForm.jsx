@@ -19,7 +19,7 @@ export default function BrokenStreamForm() {
       eventSourceRef.current.close();
     }
 
-    const es = new EventSource(`/api/brokenlink/brokenlink-stream?url=${encodeURIComponent(url)}`);
+    const es = new EventSource(`${process.env.NEXT_PUBLIC_PROD_API_URL}/brokenlink/brokenlink-stream?url=${encodeURIComponent(url)}`);
     eventSourceRef.current = es;
 
     es.onmessage = (event) => {
@@ -29,10 +29,10 @@ export default function BrokenStreamForm() {
         setProgress((prev) => ({ ...prev, total: data.total }));
       } else if (data.type === 'link') {
         setLinks((prev) => {
-  const exists = prev.some((link) => link.url === data.url);
-  if (exists) return prev;
-  return [...prev, { url: data.url, status: data.status, ok: data.ok }];
-});
+          const exists = prev.some((link) => link.url === data.url);
+          if (exists) return prev;
+          return [...prev, { url: data.url, status: data.status, ok: data.ok }];
+        });
 
         setProgress((prev) => ({ ...prev, done: prev.done + 1 }));
       } else if (data.type === 'done') {
@@ -59,7 +59,7 @@ export default function BrokenStreamForm() {
         className="w-full border p-2 rounded mb-4"
         placeholder="Enter full website URL"
         value={url}
-        onChange={(e) => setUrl(e.target.value.trim())}       disabled={loading}
+        onChange={(e) => setUrl(e.target.value.trim())} disabled={loading}
       />
       <button
         onClick={startCheck}
@@ -86,25 +86,25 @@ export default function BrokenStreamForm() {
       <div className="mt-6 space-y-2">
         {links.map((link, index) => (
           <div
-             key={`${link.url}-${index}`}
+            key={`${link.url}-${index}`}
             className={`p-3 border rounded bg-gray-50
               ${link.ok ? 'text-green-600 border-green-300' : 'text-red-600 border-red-300'}`}
           >
-           <div className="flex items-center space-x-2 mb-1">
-          <span className="text-lg">{link.ok ? '✅' : '❌'}</span>
-        <span className="text-sm font-medium">
-          [Status: {link.status}]
-        </span>
-        </div>
-         <a
-        href={link.url}
-        target="_blank"
-        rel="noopener noreferrer"
-        className="block break-words underline text-sm text-blue-700 hover:text-blue-900"
-      >
-        {link.url}
-      </a>
-      </div>
+            <div className="flex items-center space-x-2 mb-1">
+              <span className="text-lg">{link.ok ? '✅' : '❌'}</span>
+              <span className="text-sm font-medium">
+                [Status: {link.status}]
+              </span>
+            </div>
+            <a
+              href={link.url}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="block break-words underline text-sm text-blue-700 hover:text-blue-900"
+            >
+              {link.url}
+            </a>
+          </div>
         ))}
       </div>
     </main>

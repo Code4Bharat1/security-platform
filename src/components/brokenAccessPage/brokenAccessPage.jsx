@@ -13,7 +13,7 @@ const [scanHistory, setScanHistory] = useState([]);
 useEffect( () =>{
   const fetchHistory = async () => {
    try{
-   const res = await fetch("https://zypher-api.code4bharat.com/api/broken-access-control/reports");
+   const res = await fetch(`${process.env.NEXT_PUBLIC_PROD_API_URL}/broken-access-control/reports`);
    const data = await res.json();
    setScanHistory(data.reports || []);
    }
@@ -39,7 +39,7 @@ useEffect( () =>{
     setResults([]);
 
     try {
-      const res = await fetch("https://zypher-api.code4bharat.com/api/broken-access-control/broken-test", {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_PROD_API_URL}/broken-access-control/broken-test`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -60,7 +60,7 @@ const handleDelete = async (id) => {
   if (!confirm("Are you sure you want to delete this scan report?")) return;
 
   try {
-    const res = await fetch(`/api/broken-access-control/delete/${id}`, {
+    const res = await fetch(`${process.env.NEXT_PUBLIC_PROD_API_URL}/broken-access-control/delete/${id}`, {
       method: 'DELETE',
     });
 

@@ -33,7 +33,7 @@ const SitemapForm = () => {
       // Add https:// if not provided
       const normalizedUrl = url.startsWith('http') ? url : `https://${url}`;
       
-      const response = await fetch("https://zypher-api.code4bharat.com/api/sitemap/sitemap-scanner", {
+      const response = await fetch(`${process.env.NEXT_PUBLIC_PROD_API_URL}/sitemap/sitemap-scanner`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ url: normalizedUrl, depth }),
@@ -113,7 +113,7 @@ const SitemapForm = () => {
 
   return (
     <div className="flex flex-col items-center min-h-screen bg-gray-100 mb-5">
-      <img src="sitemap1.png" alt="sitemap" className="w-35 h-35 mb-4 mt-7" />
+      <img src="/sitemap1.png" alt="sitemap" className="w-35 h-35 mb-4 mt-7" />
       <h1 className="text-3xl md:text-4xl font-bold text-blue-800 mt-3">Optimize Your Website</h1>
       <p className="text-lg text-slate-600 max-w-2xl mx-auto text-center mt-3">
         Our sitemap generator helps search engines find and index all pages on your website.
