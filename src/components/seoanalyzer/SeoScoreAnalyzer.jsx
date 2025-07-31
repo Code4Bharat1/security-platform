@@ -8,32 +8,36 @@ export default function SeoScoreAnalyzer() {
   const [result, setResult] = useState(null);
 
   const handleAnalyze = async () => {
-    if (!url.trim()) return;
+  if (!url.trim()) return;
 
-    setLoading(true);
-    setResult(null);
+  setLoading(true);
+  setResult(null);
 
-    try {
-      const res = await fetch(`${process.env.NEXT_PUBLIC_PROD_API_URL}/seo/analyze`, {
-        method: "POST",  
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ url }),
-      });
+  try {
+    const res = await fetch(`${process.env.NEXT_PUBLIC_PROD_API_URL}/seo/analyze`, {
+      method: "POST",  
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ url }),
+    });
 
-      const data = await res.json();
-      if (res.ok) {
-        setResult({ score: data.score, issues: data.issues });
-      } else {
-        setResult("❌ Failed to analyze SEO.");
-      }
-    } catch (err) {
+    const data = await res.json();
+
+    if (res.ok) {
+      setResult({ score: data.score, issues: data.issues });
+    } else if (data?.message?.includes("ENOTFOUND") || data?.message?.includes("getaddrinfo ENOTFOUND")) {
+      setResult("❌ Website not reachable or does not exist.");
+    } else {
       setResult("❌ Failed to analyze SEO.");
     }
+  } catch (err) {
+    console.error("SEO analysis error:", err);
+    // network level error
+    setResult("❌ Website not reachable or does not exist.");
+  }
 
-    setLoading(false);
-  };
+  setLoading(false);
+};
+
 
   return (
     <div className="min-h-screen bg-gray-100 flex flex-col items-center pt-20 px-4">
