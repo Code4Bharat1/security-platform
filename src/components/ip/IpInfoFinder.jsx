@@ -69,8 +69,8 @@ export default function IPInfoFinder() {
             <p><strong>🛰️ ISP:</strong> {info?.isp ?? "N/A"}</p>
             <p><strong>🌐 Org:</strong> {info?.org ?? "N/A"}</p>
             <p><strong>🕓 Timezone:</strong> {info?.timezone ?? "N/A"}</p>
-            <p><strong>📡 Latitude:</strong> {info?.lat ?? "N/A"}</p>
-            <p><strong>📡 Longitude:</strong> {info?.lon ?? "N/A"}</p>
+            <p><strong>📡 Latitude:</strong> {info?.latitude ?? "N/A"}</p>
+            <p><strong>📡 Longitude:</strong> {info?.longitude ?? "N/A"}</p>
           </div>
         )}
       </div>
