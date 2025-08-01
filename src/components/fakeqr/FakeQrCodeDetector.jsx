@@ -1,7 +1,7 @@
 "use client";
 import { useState } from "react";
 import axios from "axios";
-import { QrCode } from "lucide-react";
+import "bootstrap/dist/css/bootstrap.min.css";
 
 export default function QRTool() {
   const [mode, setMode] = useState("select");
@@ -10,104 +10,75 @@ export default function QRTool() {
   const [result, setResult] = useState(null);
   const [loading, setLoading] = useState(false);
 
-  const API_BASE = process.env.NEXT_PUBLIC_PROD_API_URL || "http://localhost:4180/api";
+  const API = "http://localhost:4180/api/qr";
 
   const handleGenerate = async () => {
     if (!qrInput) return;
-
     setLoading(true);
     setResult(null);
 
     try {
-      const formData = new URLSearchParams();
-      formData.append("text", qrInput);
-
-      const response = await axios.post(`${API_BASE}/qr/generate`, formData, {
-        responseType: "blob",
-        headers: {
-          "Content-Type": "application/x-www-form-urlencoded",
-        },
-      });
-
-      const qrUrl = URL.createObjectURL(response.data);
-      setResult({ type: "image", data: qrUrl });
-    } catch (err) {
-      console.error(err);
-      setResult({ type: "error", data: "Failed to generate QR." });
+      const res = await axios.post(`${API}/generate`, { url: qrInput }, { responseType: "blob" });
+      const blobUrl = URL.createObjectURL(res.data);
+      setResult({ type: "image", data: blobUrl });
+    } catch {
+      setResult({ type: "error", data: "QR generation failed." });
     }
-
     setLoading(false);
   };
 
   const handleScan = async () => {
     if (!qrImage) return;
-
     setLoading(true);
     setResult(null);
-
     const formData = new FormData();
     formData.append("qrImage", qrImage);
 
     try {
-      const response = await axios.post(`${API_BASE}/qr/scan`, formData, {
+      const res = await axios.post(`${API}/scan`, formData, {
         headers: { "Content-Type": "multipart/form-data" },
       });
-
-      setResult({
-        type: "text",
-        data: `${response.data.status.toUpperCase()}: ${response.data.message}`,
-      });
-    } catch (err) {
-      console.error(err);
-      setResult({ type: "error", data: "Scan failed." });
+      setResult({ type: "text", data: res.data.report });
+    } catch {
+      setResult({ type: "error", data: "QR scan failed." });
     }
-
     setLoading(false);
   };
 
   return (
-    <div className="min-h-screen bg-gray-100 flex flex-col items-center pt-20 px-4">
-      <div className="text-center mb-10">
-        <QrCode className="mx-auto mb-4 text-green-600" size={48} />
-        <h1 className="text-3xl font-bold text-green-800">QR Code Tool</h1>
-        <p className="text-gray-600 mt-2">
-          Scan or generate QR codes securely with your own backend.
-        </p>
-      </div>
+    <div className="container py-5">
+      <h2 className="text-center mb-4 text-success fw-bold">QR Code Scanner / Generator</h2>
 
-      <div className="mb-6">
+      <div className="mb-4 text-center">
         <select
+          className="form-select w-auto mx-auto"
           value={mode}
           onChange={(e) => {
             setMode(e.target.value);
-            setResult(null);
             setQrInput("");
             setQrImage(null);
+            setResult(null);
           }}
-          className="p-3 border border-green-700 rounded-md"
         >
-          <option value="select">🧭 Select Mode</option>
-          <option value="scan">🔍 Scan QR Code</option>
-          <option value="generate">🛠️ Generate QR Code</option>
+          <option value="select">Select Option</option>
+          <option value="generate">Generate QR</option>
+          <option value="scan">Scan QR</option>
         </select>
       </div>
 
       {mode === "generate" && (
-        <div className="bg-white shadow-lg rounded-xl p-6 w-full max-w-lg text-center">
-          <h2 className="text-xl font-bold text-green-700 mb-4">Generate QR</h2>
+        <div className="card p-4 mb-4">
           <input
             type="text"
-            placeholder="Enter text or URL"
+            className="form-control mb-3"
+            placeholder="Enter URL to encode"
             value={qrInput}
             onChange={(e) => setQrInput(e.target.value)}
-            className="w-full border border-gray-300 rounded-md p-3 mb-4"
           />
           <button
+            className="btn btn-success"
+            disabled={!qrInput || loading}
             onClick={handleGenerate}
-            disabled={loading || !qrInput}
-            className={`w-full py-3 rounded-md text-white font-semibold transition ${
-              loading ? "bg-green-400 cursor-not-allowed" : "bg-green-700 hover:bg-green-800"
-            }`}
           >
             {loading ? "Generating..." : "Generate QR"}
           </button>
@@ -115,30 +86,17 @@ export default function QRTool() {
       )}
 
       {mode === "scan" && (
-        <div className="bg-white shadow-lg rounded-xl p-6 w-full max-w-lg text-center">
-          <h2 className="text-xl font-bold text-green-700 mb-4">Scan QR</h2>
-          <label
-            htmlFor="qr-upload"
-            className="block w-full bg-green-700 text-white py-3 rounded-md font-semibold cursor-pointer hover:bg-green-800 mb-4"
-          >
-            📷 Upload QR Image
-          </label>
+        <div className="card p-4 mb-4">
           <input
-            id="qr-upload"
             type="file"
+            className="form-control mb-3"
             accept="image/*"
             onChange={(e) => setQrImage(e.target.files[0])}
-            className="hidden"
           />
-          {qrImage && (
-            <p className="text-gray-700 mb-2 font-medium">File: {qrImage.name}</p>
-          )}
           <button
+            className="btn btn-success"
+            disabled={!qrImage || loading}
             onClick={handleScan}
-            disabled={loading || !qrImage}
-            className={`w-full py-3 rounded-md text-white font-semibold transition ${
-              loading ? "bg-green-400 cursor-not-allowed" : "bg-green-700 hover:bg-green-800"
-            }`}
           >
             {loading ? "Scanning..." : "Scan QR"}
           </button>
@@ -146,16 +104,17 @@ export default function QRTool() {
       )}
 
       {result && (
-        <div className="mt-6 bg-white rounded-lg shadow p-4 w-full max-w-lg text-center">
+        <div className="card p-4 mt-4">
           {result.type === "image" && (
-            <img src={result.data} alt="Generated QR" className="mx-auto" />
+            <img
+              src={result.data}
+              alt="QR Code"
+              className="img-thumbnail mx-auto d-block"
+              style={{ maxWidth: "180px" }}
+            />
           )}
-          {result.type === "text" && (
-            <p className="text-green-700 font-semibold">{result.data}</p>
-          )}
-          {result.type === "error" && (
-            <p className="text-red-600 font-semibold">{result.data}</p>
-          )}
+          {result.type === "text" && <pre className="text-success">{result.data}</pre>}
+          {result.type === "error" && <div className="text-danger">{result.data}</div>}
         </div>
       )}
     </div>
