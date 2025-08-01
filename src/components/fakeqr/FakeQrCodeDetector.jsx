@@ -162,10 +162,8 @@ const App = () => {
       const data = await response.json();
 
       if (data.status === "success") {
-        const qrImageSrc = data.data.startsWith("data:")
-          ? data.data
-          : `data:image/png;base64,${data.data.slice(data.data.indexOf("\n"),data.data.length)}`;
-
+        const qrImageSrc = data.data.replaceAll("\r\n", "\n");
+        console.log(qrImageSrc)
         setImageSrc(qrImageSrc);
         setScanResult(data.message || "QR code generated successfully.");
       } else {
@@ -294,11 +292,9 @@ const App = () => {
                 {loading ? "Generating..." : "Generate"}
               </button>
               {imageSrc && (
-                <img
-                  src={imageSrc}
-                  alt="Captured or uploaded"
-                  className="max-h-64 mx-auto mb-4 rounded border"
-                />
+                <pre style={{ fontFamily: 'Fira Code, Courier New, monospace', lineHeight:1.1, letterSpacing: '-0.08ch'}} className="text-xl">
+                  {imageSrc}
+                </pre>
               )}
               {generateResult && (
                 <div className="bg-yellow-100 border-l-4 border-yellow-500 p-4 mt-4">
