@@ -152,14 +152,6 @@ export const tools = [
     type: "blue-team"
   },
   {
-    name: "JWT Checker",
-    image: "jwt_checker.png",
-    description: " Verify JWT authenticity and expiration",
-    slug: "jwtForm",
-    buttonLabel: "JWT Checker",
-    type: "blue-team"
-  },
-  {
     name: "JWT Signature Validator",
     image: "jwt_signature.png",
     description: "Ensure JWT signature integrity.",
