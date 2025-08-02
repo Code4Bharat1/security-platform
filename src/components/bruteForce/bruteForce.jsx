@@ -7,16 +7,28 @@ export default function DirectoryBruteForcer() {
   const [loading, setLoading] = useState(false);
 
   const startScan = async () => {
+    if (!target) return;
     setLoading(true);
     setResults([]);
-    const res = await fetch(`${process.env.NEXT_PUBLIC_PROD_API_URL}/bruteForce/brute-Force`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ target })
-    });
 
-    const data = await res.json();
-    setResults(data.results);
+    try {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_PROD_API_URL}/bruteForce/brute-Force`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ target })
+      });
+
+      const data = await res.json();
+      if (res.ok) {
+        setResults(data.results || []);
+      } else {
+        setResults([{ path: '-', status: '-', result: data.error || 'Error' }]);
+      }
+    } catch (err) {
+      console.error('Scan failed:', err);
+      setResults([{ path: '-', status: '-', result: '⚠️ Scan failed' }]);
+    }
+
     setLoading(false);
   };
 
@@ -26,7 +38,8 @@ export default function DirectoryBruteForcer() {
       <input
         type="text"
         value={target}
-        onChange={(e) => setTarget(e.target.value.trim())}       placeholder="https://example.com"
+        onChange={(e) => setTarget(e.target.value.trim())}
+        placeholder="https://example.com"
         className="border p-2 rounded w-full mb-2"
       />
       <button
