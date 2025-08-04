@@ -10,7 +10,7 @@ function ToolsCard() {
   const [toolsTitle, setToolsTitle] = useState("");
   useEffect(() => {
     const savedTab = localStorage.getItem('lastTab');
-
+    if (!savedTab) return;
     console.log(savedTab.replace(" ", "-").toLowerCase())
     if (savedTab) renderCards(savedTab.replace(" ", "-").toLowerCase());
   }, []);
