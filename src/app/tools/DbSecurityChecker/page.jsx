@@ -26,7 +26,7 @@ export default function DbSecurityChecker() {
     setLoading(true);
     setResult(null);
     try {
-      const res = await fetch("http://localhost:4180/api/dbscan/scan", {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_PROD_API_URL}/api/dbscan/scan`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(form)
