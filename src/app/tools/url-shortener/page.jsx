@@ -16,6 +16,7 @@ export default function UrlShortener() {
 
     try {
       const url = `${process.env.NEXT_PUBLIC_PROD_API_URL.replace("/api", "")}/shorten`
+      console.log(url)
       const res = await fetch(`${url}`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
