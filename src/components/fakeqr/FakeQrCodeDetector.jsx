@@ -55,7 +55,7 @@ const CameraCapture = ({ onCapture }) => {
   );
 };
 
-const App = () => {
+const FakeQRCodeDetectorAndQRGenerator = () => {
   const [tab, setTab] = useState("scanner"); // 'scanner' or 'generator'
   const [inputMethod, setInputMethod] = useState("upload"); // 'upload' or 'camera'
   const [imageSrc, setImageSrc] = useState(null);
@@ -309,4 +309,4 @@ const App = () => {
   );
 };
 
-export default App;
+export default FakeQRCodeDetectorAndQRGenerator;
