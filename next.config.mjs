@@ -13,7 +13,7 @@ const nextConfig = {
               script-src 'self' 'unsafe-eval' 'unsafe-inline' https://trusted-site.com;
               style-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net;
               img-src 'self' data: https: blob:;
-              connect-src 'self 'https://zypher-api.code4bharat.com';
+              connect-src 'self' https://zypher-api.code4bharat.com;
             `.replace(/\s{2,}/g, ' ').trim()
           },
           { key: 'Strict-Transport-Security', value: 'max-age=31536000; includeSubDomains; preload' },
