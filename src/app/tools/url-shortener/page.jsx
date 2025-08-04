@@ -26,7 +26,7 @@ export default function UrlShortener() {
       const data = await res.json();
       if (res.ok) {
         // ✅ Show short URL with professional prefix
-        const professionalUrl = `${url}/${data.code}`;
+        const professionalUrl = `${url.replace("/shorten", "")}/${data.code}`;
         setShortUrl(professionalUrl);
       } else {
         setError(data.message || "Failed to shorten URL.");
