@@ -11,7 +11,7 @@ export default function KeywordGenerator() {
     setLoading(true);
     setKeywords([]);
     try {
-      const res = await fetch(`${process.env.NEXT_PUBLIC_PROD_API_URL}/api/keywords/generate`, {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_PROD_API_URL}/keywords/generate`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ url })

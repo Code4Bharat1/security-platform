@@ -38,7 +38,7 @@ export default function SecurityChecker() {
 
     return (
         <div className="flex flex-col items-center min-h-screen bg-gray-100 mb-5">
-            <img src="verify.png" alt="verify" className="w-16 h-20 mb-4 mt-7" />
+            <img src="/verify.png" alt="verify" className="w-16 h-20 mb-4 mt-7" />
             <h1 className="text-3xl md:text-4xl font-bold text-slate-800 mt-3">Protect Your Website</h1>
       <p className="text-lg text-slate-600 max-w-2xl mx-auto text-center mt-3">
         Our advanced security scanner identifies vulnerabilities before attackers can exploit them.

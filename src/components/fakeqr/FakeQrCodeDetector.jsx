@@ -106,10 +106,8 @@ const FakeQRCodeDetectorAndQRGenerator = () => {
     setScanResult("");
 
     try {
-      const res = await fetch(imageSrc);
-      const blob = await res.blob();
       const formData = new FormData();
-      formData.append("qrImage", blob, "qr-image.jpg");
+      formData.append("qrImage", imageSrc.file, "qr-image.jpg");
 
       const response = await fetch(`${process.env.NEXT_PUBLIC_PROD_API_URL}/qr/scan`, { // replace with your backend URL
         method: "POST",
@@ -117,7 +115,8 @@ const FakeQRCodeDetectorAndQRGenerator = () => {
       });
 
       const data = await response.json();
-      setScanResult(`${data.data}\n\n${data.message}`);
+      console.log(data)
+      setScanResult(`${data.message}\n\n${data.data}`);
 
       // if (data.status === "fake") {
       //   setScanResult(`⚠️ Fake QR Detected: ${data.message}`);
@@ -246,7 +245,7 @@ const FakeQRCodeDetectorAndQRGenerator = () => {
 
             {imageSrc && (
               <img
-                src={imageSrc}
+                src={imageSrc.url}
                 alt="Captured or uploaded"
                 className="max-h-64 mx-auto mb-4 rounded border"
               />
@@ -263,9 +262,9 @@ const FakeQRCodeDetectorAndQRGenerator = () => {
             </div>
 
             {scanResult && (
-              <div className="bg-yellow-100 border-l-4 border-yellow-500 p-4 mt-4">
+              <pre className="bg-yellow-100 border-l-4 border-yellow-500 p-4 mt-4">
                 {scanResult}
-              </div>
+              </pre>
             )}
           </>
         )}

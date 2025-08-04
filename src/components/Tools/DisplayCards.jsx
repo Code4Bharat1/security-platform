@@ -14,7 +14,7 @@ const ToolCardsPage = ({toolsList, title}) => {
         >
           {/* Tool Image/Icon */}
           <img
-            src={`/${tool.image}`}
+            src={`${tool.image}`}
             alt={tool.name}
             className={`${tool.className || 'w-16 h-16'} object-contain mb-4 mt-7`}
           />

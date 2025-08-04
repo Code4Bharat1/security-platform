@@ -1,7 +1,7 @@
 export const tools = [
   {
     name: "WAF Scanner",
-    image: "waf1.png",
+    image: "/waf1.png",
     description: "Detects and analyzes WAF protection on a website, providing insights into security rules",
     slug: "firewallDashboard",
     buttonLabel: "Check WAF",
@@ -9,7 +9,7 @@ export const tools = [
   },
   {
     name: "Vulnerability Scanner",
-    image: "vuln_scanner.png",
+    image: "/vuln_scanner.png",
     description: "Scan websites for security weaknesses like XSS or SQL injection.",
     slug: "vuln-scanner",
     buttonLabel: "Scan for Vulnerabilities",
@@ -17,7 +17,7 @@ export const tools = [
   },
   {
     name: "Source Code Analyzer",
-    image: "code.png",
+    image: "/code.png",
     description: "Scan websites for security weaknesses like XSS or SQL injection.",
     slug: "Source-Code",
     buttonLabel: "Check Your Code's",
@@ -25,7 +25,7 @@ export const tools = [
   },
   {
     name: "Checkmarx Scanner",
-    image: "checkmarx.png",
+    image: "/checkmarx.png",
     description: "Scan websites for security weaknesses like XSS or SQL injection.",
     slug: "codeAnalysis",
     buttonLabel: "Scan your codes",
@@ -33,7 +33,7 @@ export const tools = [
   },
   {
     name: "Subdomain Scanner",
-    image: "subdomain.png",
+    image: "/subdomain.png",
     description: "Scan websites for analyzing subdomains and their security posture.",
     slug: "subdomainEnumeration",
     buttonLabel: "Scan your website",
@@ -49,7 +49,7 @@ export const tools = [
   },
   {
     name: "Technology Fingerprinter",
-    image: "fingerprint.png",
+    image: "/fingerprint.png",
     description: "un an OWASP ZAP-powered automated security scan to detect vulnerabilities.",
     slug: "fingerPrint",
     buttonLabel: "fingerPrint",
@@ -73,7 +73,7 @@ export const tools = [
   },
   {
     name: "Sharepoint Scanner",
-    image: "sharepoint.png",
+    image: "/sharepoint.png",
     description: "Analyze SharePoint environments for security misconfigurations, permission issues.",
     slug: "sharepointForm",
     buttonLabel: "Sharepoint Scan",
@@ -81,7 +81,7 @@ export const tools = [
   },
   {
     name: "Broken link Checker",
-    image: "brokenlink1.png",
+    image: "/brokenlink1.png",
     description: "Scans web pages for dead or broken links, helping maintain SEO integrity",
     slug: "brokenStreamForm",
     buttonLabel: "Scan for Vulnerabilities",
@@ -97,7 +97,7 @@ export const tools = [
   },
   {
     name: "Sitemap Generator",
-    image: "sitemap1.png",
+    image: "/sitemap1.png",
     description: "Creates an XML sitemap to help search engines index a website efficiently",
     slug: "sitemapForm",
     buttonLabel: "Generate Sitemap",
@@ -105,7 +105,7 @@ export const tools = [
   },
   {
     name: "API Testing",
-    image: "api.png",
+    image: "/api.png",
     description: "Allows users to test API endpoints, validating functionality and security headers",
     slug: "apiForm",
     buttonLabel: "Scan for API",
@@ -113,7 +113,7 @@ export const tools = [
   },
   {
     name: "Port Scanner",
-    image: "port_scan.png",
+    image: "/port_scan.png",
     description: "Allows users to test API endpoints, validating functionality, security headers",
     slug: "portScannerForm",
     buttonLabel: "Check Headers",
@@ -129,7 +129,7 @@ export const tools = [
   },
   {
     name: "Clickjacking Tester",
-    image: "clickjacking.png",
+    image: "/clickjacking.png",
     description: " Check for UI redressing vulnerabilities in a webpage.",
     slug: "clickjackingTester",
     buttonLabel: "Clickjacking Tester",
@@ -137,7 +137,7 @@ export const tools = [
   },
   {
     name: "CSRF Vulnerability Scanner",
-    image: "csrf.png",
+    image: "/csrf.png",
     description: " Check for UI redressing vulnerabilities in a webpage.",
     slug: "csrfChecker",
     buttonLabel: "CSRF Vulnerability Scanner",
@@ -153,7 +153,7 @@ export const tools = [
   },
   {
     name: "JWT Signature Validator",
-    image: "jwt_signature.png",
+    image: "/jwt_signature.png",
     description: "Ensure JWT signature integrity.",
     slug: "JWTSignatureValidator",
     buttonLabel: "JWT Signature Validator",
@@ -161,7 +161,7 @@ export const tools = [
   },
   {
     name: "OAuth Token Analyzer",
-    image: "oauth.png",
+    image: "/oauth.png",
     description: " Inspect OAuth tokens for security risks.",
     slug: "OAuthTokenInspector",
     buttonLabel: "OAuth Token Analyzer",
@@ -169,7 +169,7 @@ export const tools = [
   },
   {
     name: " Obfuscation Detector",
-    image: "obfuscation.png",
+    image: "/obfuscation.png",
     description: "Identify obfuscation techniques in code.",
     slug: "obfuscationChecker",
     buttonLabel: "Obfuscation Detector",
@@ -185,7 +185,7 @@ export const tools = [
   },
   {
     name: "Regex Security Validator",
-    image: "regex.png",
+    image: "/regex.png",
     description: "Check regular expressions for security flaws",
     slug: "regexDetector",
     buttonLabel: "Regex Security Validator",
@@ -193,7 +193,7 @@ export const tools = [
   },
   {
     name: "Reverse DNS Resolver ",
-    image: "reverse_dns.png",
+    image: "/reverse_dns.png",
     description: "Retrieve domain names linked to an IP.",
     slug: "reverseDNSLookup",
     buttonLabel: "Reverse DNS Resolver",
@@ -201,7 +201,7 @@ export const tools = [
   },
   {
     name: "Secret Key Scanner",
-    image: "secret_key_scanner.png",
+    image: "/secret_key_scanner.png",
     description: "Search for exposed API keys or credentials.",
     slug: "secretKeyScanner",
     buttonLabel: "Secret Key Scanner",
@@ -209,7 +209,7 @@ export const tools = [
   },
   {
     name: "Session Fixation Tester",
-    image: "session_fixation.png",
+    image: "/session_fixation.png",
     description: "Detect session fixation vulnerabilities",
     slug: "sessionFixationChecker",
     buttonLabel: "Session Fixation Tester",
@@ -217,7 +217,7 @@ export const tools = [
   },
   {
     name: "Whois Domain Lookup",
-    image: "whois.png",
+    image: "/whois.png",
     description: "Retrieve domain registration and ownership details.",
     slug: "whoisLookup",
     buttonLabel: "Whois Domain Lookup",
@@ -225,7 +225,7 @@ export const tools = [
   },
   {
     name: "XSS Vulnerability Tester",
-    image: "xss.png",
+    image: "/xss.png",
     description: "Identify Cross-Site Scripting (XSS) risks",
     slug: "xssTester",
     buttonLabel: "XSS Vulnerability Tester",
@@ -233,7 +233,7 @@ export const tools = [
   },
   {
     name: "Meta Tag Analyzer",
-    image: "meta_tag.png",
+    image: "/meta_tag.png",
     description: "Analyze meta tags like title, description, and keywords.",
     slug: "meta-tag",
     buttonLabel: "Analyze Meta Tags",
@@ -241,7 +241,7 @@ export const tools = [
   },
   {
     name: "Keyword Density Checker",
-    image: "keyword_checker.png",
+    image: "/keyword_checker.png",
     description: "Analyze keyword frequency for SEO structuring on website.",
     slug: "keyword-checker",
     buttonLabel: "Check Keyword Density",
@@ -249,7 +249,7 @@ export const tools = [
   },
   {
     name: "Link Detector",
-    image: "link_dec.png",
+    image: "/link_dec.png",
     description: "This tool helps detect malicious, suspicious, or unsafe links.",
     slug: "check-link",
     buttonLabel: "Check Link",
@@ -257,7 +257,7 @@ export const tools = [
   },
   {
     name: "SecureCrypt",
-    image: "dycrypt.png",
+    image: "/dycrypt.png",
     description: "Encrypts and decrypts text using secure algorithms.",
     slug: "securecrypt",
     buttonLabel: "Encrypt Now",
@@ -265,7 +265,7 @@ export const tools = [
   },
   {
     name: "SQLi Scanner",
-    image: "sql_injection.png",
+    image: "/sql_injection.png",
     description: "This tool scans websites for SQL Injection vulnerabilities.",
     slug: "nexpose-scan",
     buttonLabel: "Scan SQLi",
@@ -273,7 +273,7 @@ export const tools = [
   },
   {
     name: "MDR Monitor",
-    image: "MDR.png",
+    image: "/MDR.png",
     description: "Monitors and responds to real-time security threats.",
     slug: "mdr-monitor",
     buttonLabel: "Start Monitoring",
@@ -289,7 +289,7 @@ export const tools = [
   },
   {
     name: "WhatsApp Privacy Inspector",
-    image: "wp.png",
+    image: "/wp.png",
     description: "Checks WhatsApp settings for potential privacy risks.",
     slug: "whatsapp-privacy-inspector",
     buttonLabel: "Inspect Now",
@@ -297,7 +297,7 @@ export const tools = [
   },
   {
     name: "Email Attachment Analyzer",
-    image: "email.png",
+    image: "/email.png",
     description: "Scans email attachments for malware or hidden threats.",
     slug: "email-attachment-analyzer",
     buttonLabel: "Analyze File",
@@ -305,7 +305,7 @@ export const tools = [
   },
   {
     name: " IP Address Info Finder",
-    image: "ip.png",
+    image: "/ip.png",
     description: "Fetches location and network details of an IP address.",
     slug: "ip-address-info-finder",
     buttonLabel: "Find Info",
@@ -313,7 +313,7 @@ export const tools = [
   },
   {
     name: "QR Tool",
-    image: "QR.png",
+    image: "/QR.png",
     description: "Unsafe QR & QR Generater.",
     slug: "fake-qr-code-detector",
     buttonLabel: "Scan QR",
@@ -321,7 +321,7 @@ export const tools = [
   },
   {
     name: "Website Optimization Tool",
-    image: "optimization.png",
+    image: "/optimization.png",
     description: "Detects deployment issues like unused code, large assets, and slow-loading elements.",
     slug: "website-optimization-tool",
     buttonLabel: "Check Optimization",
@@ -345,7 +345,7 @@ export const tools = [
   },
   {
     name: "Data Breach",
-    image: "DataBreach1.png",
+    image: "/DataBreach1.png",
     description: "Find Where Your Email , Phone No. Or Username is Exposed",
     slug: "osint",
     buttonLabel: "Check Info",

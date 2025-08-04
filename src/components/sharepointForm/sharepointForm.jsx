@@ -54,7 +54,7 @@ const SharePointScanner = () => {
 
   return (
     <div className="flex flex-col items-center min-h-screen bg-gray-100 mb-5">
-      <img src="sharepoint.png" alt="sharepoint security" className="w-45 h-20 mb-4 mt-7" />
+      <img src="/sharepoint.png" alt="sharepoint security" className="w-45 h-20 mb-4 mt-7" />
       <h1 className="text-3xl md:text-4xl font-bold text-slate-800 mt-3">Secure Your SharePoint</h1>
       <p className="text-lg text-slate-600 max-w-2xl mx-auto text-center mt-3">
         Our SharePoint security scanner identifies configuration issues, permission problems, and security vulnerabilities before they can be exploited.
