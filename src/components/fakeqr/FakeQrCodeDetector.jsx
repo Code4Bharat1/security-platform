@@ -65,8 +65,12 @@ const FakeQRCodeDetectorAndQRGenerator = () => {
   const [qrText, setQrText] = useState("");
 
   // Called when user uploads file or captures from camera
-  const handleImage = (dataUrl) => {
-    setImageSrc(dataUrl);
+  const handleImage = (file) => {
+    
+    setImageSrc({
+      file,
+      url: URL.createObjectURL(file),
+    });
     setScanResult(""); // clear old result
   };
 
@@ -77,11 +81,7 @@ const FakeQRCodeDetectorAndQRGenerator = () => {
 
     const file = e.target.files[0];
     if (!file) return;
-    const reader = new FileReader();
-    reader.onload = () => {
-      handleImage(reader.result);
-    };
-    reader.readAsDataURL(file);
+    handleImage(file);
   };
 
   // Handle drag and drop file upload
@@ -92,11 +92,7 @@ const FakeQRCodeDetectorAndQRGenerator = () => {
 
     if (e.dataTransfer.files.length > 0) {
       const file = e.dataTransfer.files[0];
-      const reader = new FileReader();
-      reader.onload = () => {
-        handleImage(reader.result);
-      };
-      reader.readAsDataURL(file);
+      handleImage(file);
     }
   };
 
