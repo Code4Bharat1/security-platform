@@ -13,9 +13,11 @@ export default function UrlShortener() {
     setLoading(true);
     setError("");
     setShortUrl("");
+    const url = `${process.env.NEXT_PUBLIC_PROD_API_URL.replace("/api", "")}/shorten`
 
     try {
-      const res = await fetch("http://localhost:4180/shorten", {
+      console.log(url)
+      const res = await fetch(`${url}`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ originalUrl }),
@@ -24,7 +26,7 @@ export default function UrlShortener() {
       const data = await res.json();
       if (res.ok) {
         // ✅ Show short URL with professional prefix
-        const professionalUrl = `http://localhost:4180/${data.code}`;
+        const professionalUrl = `${url.replace("/shorten", "")}/${data.code}`;
         setShortUrl(professionalUrl);
       } else {
         setError(data.message || "Failed to shorten URL.");

@@ -1,4 +1,6 @@
 'use client'
+
+import axios from "axios";
 import { useState } from "react";
 import { Search, Loader2, ChevronDown, ChevronUp, RefreshCw, Shield, ShieldAlert, Code, Share2 } from 'lucide-react';
 
@@ -17,6 +19,15 @@ const Apiform = () => {
   const [activeTab, setActiveTab] = useState("headers");
   const [showAdvanced, setShowAdvanced] = useState(false);
   
+  // Generate random example URLs
+// Deterministic examples for SSR (no randomness during render)
+const EXAMPLES = [
+  "https://httpbin.org/get",
+  "https://jsonplaceholder.typicode.com/posts/1",
+];
+const DEFAULT_EXAMPLE = EXAMPLES[0];
+
+  
   const validateUrl = (url) => {
     // Enhanced URL validation - handles URLs with or without protocol
     const urlPattern = new RegExp(
@@ -32,81 +43,111 @@ const Apiform = () => {
   };
   
   const handleSubmit = async (e) => {
-    e.preventDefault();
-    
-    // Ensure URL has protocol
-    let formattedUrl = formData.url;
-    if (!formattedUrl.startsWith('http://') && !formattedUrl.startsWith('https://')) {
-      formattedUrl = 'https://' + formattedUrl;
-    }
-    
-    if (!validateUrl(formattedUrl)) {
-      setError("❌ Please enter a valid API URL.");
+  e.preventDefault();
+
+  // Ensure URL has protocol
+  let formattedUrl = formData.url.trim();
+  if (formattedUrl && !/^https?:\/\//i.test(formattedUrl)) {
+    formattedUrl = "https://" + formattedUrl;
+  }
+  // Validate URL
+  try {
+    new URL(formattedUrl); // throws if invalid
+  } catch {
+    setError("❌ Please enter a valid API URL (e.g., https://api.example.com/resource).");
+    return;
+  }
+
+  setError("");
+  setLoading(true);
+  setResults(null);
+
+  // Parse headers
+  let headers = {};
+  try {
+    headers = formData.headers ? JSON.parse(formData.headers) : {};
+    if (headers && typeof headers !== "object") throw new Error();
+  } catch {
+    setLoading(false);
+    setError('❌ Invalid JSON in headers field. Example: { "Authorization": "Bearer <token>" }');
+    return;
+  }
+
+  // Parse body for non-GET
+  let body = {};
+  if (formData.method !== "GET") {
+    try {
+      body = formData.body ? JSON.parse(formData.body) : {};
+      if (body && typeof body !== "object") throw new Error();
+    } catch {
+      setLoading(false);
+      setError('❌ Invalid JSON in body field. Example: { "key": "value" }');
       return;
     }
-    
-    setError("");
-    setLoading(true);
-    setResults(null);
-    
-    try {
-      // Parse headers and body
-      let headers = {};
-      let body = {};
-      
-      try {
-        headers = formData.headers ? JSON.parse(formData.headers) : {};
-      } catch (err) {
-        setError("❌ Invalid JSON in headers field.");
-        setLoading(false);
-        return;
-      }
-      
-      try {
-        body = formData.body && formData.method !== "GET" ? JSON.parse(formData.body) : {};
-      } catch (err) {
-        setError("❌ Invalid JSON in body field.");
-        setLoading(false);
-        return;
-      }
-      
-      const requestData = {
-        url: formattedUrl,
-        method: formData.method,
-        headers,
-        body,
-        options: {
-          timeout: parseInt(formData.timeout)
-        }
-      };
-      
-      const response = await fetch(`${process.env.NEXT_PUBLIC_PROD_API_URL}/apiTest/apitest-scan`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json"
-        },
-        body: JSON.stringify(requestData)
-      });
-      
-      if (!response.ok) {
-        throw new Error(`HTTP error! Status: ${response.status}`);
-      }
-      
-      const result = await response.json();
-      
-      if (result.error) {
-        setError(`⚠️ ${result.error}`);
-        return;
-      }
-      
-      setResults(result);
-    } catch (error) {
-      console.error("Error:", error);
-      setError(`⚠️ ${error.message || "Something went wrong. Please try again."}`);
-    } finally {
-      setLoading(false);
-    }
+  }
+
+  const requestData = {
+    url: formattedUrl,
+    method: formData.method,
+    headers,
+    body,
+    options: { timeout: parseInt(formData.timeout, 10) || 5000 },
   };
+
+  const backendUrl =
+    process.env.NEXT_PUBLIC_PROD_API_URL ||
+    process.env.NEXT_PUBLIC_API_URL ||
+    "http://localhost:4180";
+  const fullUrl = `${backendUrl.replace(/\/$/, "")}/api/apiTest/apitest-scan`;
+
+  try {
+    const { data } = await axios.post(fullUrl, requestData, {
+      headers: { "Content-Type": "application/json" },
+      timeout: 30000, // 30s timeout for the backend call
+      withCredentials: false,
+    });
+
+    if (data?.error) {
+      setError(`⚠️ ${data.error}`);
+      return;
+    }
+    setResults(data);
+  } catch (err) {
+    console.error("API Test Error:", err);
+
+    let errorMessage = "Something went wrong. Please try again.";
+    if (axios.isAxiosError(err)) {
+      if (err.code === "ECONNABORTED") {
+        errorMessage = "Request timed out. Please try again.";
+      } else if (err.response) {
+        const { status, statusText, data } = err.response;
+        const serverMsg = data?.error || data?.message || "";
+        if (status === 404) {
+          errorMessage =
+            serverMsg ||
+            "Backend endpoint not found. Check if your backend is running and the endpoint path is correct.";
+        } else if (status === 500) {
+          errorMessage = serverMsg || "Internal server error. Please check your backend logs.";
+        } else {
+          errorMessage = serverMsg || `Server error: ${status} ${statusText || ""}`.trim();
+        }
+      } else if (err.request) {
+        errorMessage =
+          "Cannot connect to backend. Please ensure your backend is running and CORS is configured.";
+      } else if (err.message) {
+        errorMessage = err.message;
+      }
+    } else if (err?.message) {
+      errorMessage = err.message;
+    }
+
+    setError(`⚠️ ${errorMessage}`);
+  } finally {
+    setLoading(false);
+  }
+};
+
+
   
   const getSeverityColor = (score) => {
     if (score > 80) return "text-green-600";
@@ -167,21 +208,43 @@ const Apiform = () => {
           API Security Analysis
         </h1>
         
+        Test  your api
+        <div className="mb-4 p-3 bg-blue-50 border border-blue-200 rounded-lg">
+          <div className="text-sm text-blue-700">
+            {/* <strong>Backend URL:</strong> {process.env.NEXT_PUBLIC_PROD_API_URL || process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4180'} */}
+          </div>
+          <div className="text-xs text-blue-600 mt-1">
+            Make sure your url is running and accessible 
+          </div>
+        </div>
+        
         <form onSubmit={handleSubmit}>
           <div className="mb-4">
             <label htmlFor="url" className="block text-sm font-medium text-gray-700 mb-1">
               API Endpoint URL
             </label>
-            <input
-              type="text"
-              id="url"
-              name="url"
-              value={formData.url}
-              onChange={handleInputChange}
-              placeholder="https://api.example.com/endpoint"
-              required
-              className="w-full border border-gray-300 rounded-lg p-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
-            />
+            <div className="relative">
+              <input
+                type="text"
+                id="url"
+                name="url"
+                value={formData.url}
+                onChange={handleInputChange}
+                placeholder={DEFAULT_EXAMPLE}
+                required
+                className="w-full border border-gray-300 rounded-lg p-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+              />
+              <button
+                type="button"
+                onClick={() => setFormData({...formData, url: getRandomExample()})}
+                className="absolute right-2 top-1/2 transform -translate-y-1/2 text-blue-600 hover:text-blue-800 text-sm"
+              >
+                Random
+              </button>
+            </div>
+            <div className="text-xs text-gray-500 mt-1">
+              Try: jsonplaceholder.typicode.com/posts/1 or httpbin.org/get
+            </div>
           </div>
           
           <div className="mb-4">
@@ -230,6 +293,7 @@ const Apiform = () => {
                 value={formData.body}
                 onChange={handleInputChange}
                 rows="3"
+                placeholder='{\n  "key": "value"\n}'
                 className="w-full border border-gray-300 rounded-lg p-2 font-mono text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
               />
             </div>
@@ -275,7 +339,11 @@ const Apiform = () => {
             )}
           </div>
           
-          {error && <p className="text-red-600 text-sm mb-4">{error}</p>}
+          {error && (
+            <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-lg">
+              <p className="text-red-600 text-sm">{error}</p>
+            </div>
+          )}
           
           <button
             type="submit"
@@ -293,7 +361,7 @@ const Apiform = () => {
             <h2 className="text-xl font-bold text-blue-700 mb-2">Request Preview</h2>
             <div className="mb-3">
               <div className="flex justify-between items-center mb-1">
-                <div className="font-semibold">{formData.method} {formData.url || "https://api.example.com/endpoint"}</div>
+                <div className="font-semibold">{formData.method} {formData.url || DEFAULT_EXAMPLE}</div>
               </div>
               
               <div className="mt-3">

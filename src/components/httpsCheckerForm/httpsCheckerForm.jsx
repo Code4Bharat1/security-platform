@@ -10,30 +10,86 @@ export default function HttpsCheckerPage() {
   const [error, setError] = useState("");
 
   const handleCheck = async () => {
+    if (!domain) {
+      setError("Please enter a domain name");
+      return;
+    }
+
+    // Basic domain validation
+    const domainRegex = /^[a-zA-Z0-9][a-zA-Z0-9-]{1,61}[a-zA-Z0-9]\.[a-zA-Z]{2,}$/;
+    const cleanDomain = domain.replace(/^https?:\/\//, '').replace(/\/$/, '');
+    
+    if (!domainRegex.test(cleanDomain)) {
+      setError("Please enter a valid domain name (e.g., example.com)");
+      return;
+    }
+
     setLoading(true);
     setError("");
     setResult(null);
 
     try {
+      const apiUrl =
+  process.env.NEXT_PUBLIC_PROD_API_URL ||
+  process.env.NEXT_PUBLIC_API_URL ||
+  "http://localhost:4180"; // fallback for local testing
+
+      
+      if (!apiUrl) {
+        setError("API URL is not configured. Please set NEXT_PUBLIC_PROD_API_URL environment variable.");
+        return;
+      }
+
       const res = await fetch(
-        `${process.env.NEXT_PUBLIC_PROD_API_URL}/http/https-enforcement`,
+        `${apiUrl}/api/http/https-enforcement`,
         {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ target: domain }),
+          body: JSON.stringify({ target: cleanDomain }),
         }
       );
 
       const data = await res.json();
+      
+      if (!res.ok) {
+        if (res.status === 404) {
+          setError("Domain not found. Please check the domain name and try again.");
+        } else {
+          setError(`API error (${res.status}): ${data.error || res.statusText}`);
+        }
+        return;
+      }
+
       if (data.success) {
         setResult(data);
       } else {
-        setError(data.error || "Unknown error");
+        // Check if the error indicates domain not found
+        if (data.error && (
+          data.error.toLowerCase().includes('not found') ||
+          data.error.toLowerCase().includes('does not exist') ||
+          data.error.toLowerCase().includes('invalid domain') ||
+          data.error.toLowerCase().includes('nxdomain')
+        )) {
+          setError("Domain not found. Please check the domain name and try again.");
+        } else {
+          setError(data.error || "Unknown error occurred");
+        }
       }
     } catch (err) {
-      setError("Failed to fetch results");
+      console.error("Error during HTTPS check:", err);
+      if (err.name === 'TypeError' && err.message.includes('fetch')) {
+        setError("Unable to connect to the API. Please check your internet connection.");
+      } else {
+        setError(`Network error: ${err.message}`);
+      }
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleKeyPress = (e) => {
+    if (e.key === 'Enter') {
+      handleCheck();
     }
   };
 
@@ -59,7 +115,7 @@ export default function HttpsCheckerPage() {
     } else if (result.hstsMaxAge && result.hstsMaxAge < 15768000) {
       recs.push({
         icon: <AlertTriangle className="w-5 h-5 text-yellow-500" />,
-        text: `The HSTS max-age is set to ${result.hstsMaxAge} seconds, which is below the recommended 6 months.`,
+        text: `The HSTS max-age is set to ${result.hstsMaxAge.toLocaleString()} seconds, which is below the recommended 6 months (15,768,000 seconds).`,
         type: "warning"
       });
     }
@@ -118,7 +174,9 @@ export default function HttpsCheckerPage() {
                 type="text"
                 placeholder="Enter domain (e.g., example.com)"
                 value={domain}
-                onChange={(e) => setDomain(e.target.value.trim())}               className="w-full pl-12 pr-4 py-3 border-2 border-green-200 rounded-xl focus:border-green-500 focus:ring-2 focus:ring-green-200 transition-all duration-200 text-gray-700"
+                onChange={(e) => setDomain(e.target.value.trim())}
+                onKeyPress={handleKeyPress}
+                className="w-full pl-12 pr-4 py-3 border-2 border-green-200 rounded-xl focus:border-green-500 focus:ring-2 focus:ring-green-200 transition-all duration-200 text-gray-700 outline-none"
               />
             </div>
             
@@ -205,14 +263,14 @@ export default function HttpsCheckerPage() {
                 </div>
 
                 {/* HSTS Max Age */}
-                {result.hstsEnabled && (
+                {result.hstsEnabled && result.hstsMaxAge && (
                   <div className="flex items-center justify-between p-4 bg-gradient-to-r from-green-50 to-emerald-50 rounded-xl border border-green-200">
                     <div className="flex items-center gap-3">
                       <Shield className="w-6 h-6 text-green-500" />
                       <span className="font-medium text-gray-700">HSTS Max-Age</span>
                     </div>
                     <span className="px-3 py-1 bg-green-100 text-green-800 rounded-full text-sm font-semibold">
-                      {result.hstsMaxAge ? `${result.hstsMaxAge.toLocaleString()} seconds` : "N/A"}
+                      {result.hstsMaxAge.toLocaleString()} seconds
                     </span>
                   </div>
                 )}
