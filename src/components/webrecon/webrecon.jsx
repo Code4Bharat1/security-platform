@@ -53,7 +53,7 @@ export default function Webrecon() {
   
  return (
     <main className="p-6 max-w-xl mx-auto">
-      <h1 className="text-2xl font-bold mb-4">DNS Lookup Tool</h1>
+      <h1 className="text-2xl font-bold mb-4">Website Recon Tool</h1>
 
       <input
         type="text"
