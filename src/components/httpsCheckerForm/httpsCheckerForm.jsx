@@ -29,10 +29,7 @@ export default function HttpsCheckerPage() {
     setResult(null);
 
     try {
-      const apiUrl =
-  process.env.NEXT_PUBLIC_PROD_API_URL ||
-  process.env.NEXT_PUBLIC_API_URL ||
-  "http://localhost:4180"; // fallback for local testing
+      const apiUrl =process.env.NEXT_PUBLIC_PROD_API_URL
 
       
       if (!apiUrl) {
@@ -41,7 +38,7 @@ export default function HttpsCheckerPage() {
       }
 
       const res = await fetch(
-        `${apiUrl}/api/http/https-enforcement`,
+        `${apiUrl}/http/https-enforcement`,
         {
           method: "POST",
           headers: { "Content-Type": "application/json" },
