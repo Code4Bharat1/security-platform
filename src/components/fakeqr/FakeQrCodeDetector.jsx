@@ -55,7 +55,7 @@ const CameraCapture = ({ onCapture }) => {
   );
 };
 
-const App = () => {
+const FakeQRCodeDetectorAndQRGenerator = () => {
   const [tab, setTab] = useState("scanner"); // 'scanner' or 'generator'
   const [inputMethod, setInputMethod] = useState("upload"); // 'upload' or 'camera'
   const [imageSrc, setImageSrc] = useState(null);
@@ -65,8 +65,12 @@ const App = () => {
   const [qrText, setQrText] = useState("");
 
   // Called when user uploads file or captures from camera
-  const handleImage = (dataUrl) => {
-    setImageSrc(dataUrl);
+  const handleImage = (file) => {
+    
+    setImageSrc({
+      file,
+      url: URL.createObjectURL(file),
+    });
     setScanResult(""); // clear old result
   };
 
@@ -77,11 +81,7 @@ const App = () => {
 
     const file = e.target.files[0];
     if (!file) return;
-    const reader = new FileReader();
-    reader.onload = () => {
-      handleImage(reader.result);
-    };
-    reader.readAsDataURL(file);
+    handleImage(file);
   };
 
   // Handle drag and drop file upload
@@ -92,11 +92,7 @@ const App = () => {
 
     if (e.dataTransfer.files.length > 0) {
       const file = e.dataTransfer.files[0];
-      const reader = new FileReader();
-      reader.onload = () => {
-        handleImage(reader.result);
-      };
-      reader.readAsDataURL(file);
+      handleImage(file);
     }
   };
 
@@ -110,10 +106,8 @@ const App = () => {
     setScanResult("");
 
     try {
-      const res = await fetch(imageSrc);
-      const blob = await res.blob();
       const formData = new FormData();
-      formData.append("qrImage", blob, "qr-image.jpg");
+      formData.append("qrImage", imageSrc.file, "qr-image.jpg");
 
       const response = await fetch(`${process.env.NEXT_PUBLIC_PROD_API_URL}/qr/scan`, { // replace with your backend URL
         method: "POST",
@@ -121,7 +115,8 @@ const App = () => {
       });
 
       const data = await response.json();
-      setScanResult(`${data.data}\n\n${data.message}`);
+      console.log(data)
+      setScanResult(`${data.message}\n\n${data.data}`);
 
       // if (data.status === "fake") {
       //   setScanResult(`⚠️ Fake QR Detected: ${data.message}`);
@@ -250,7 +245,7 @@ const App = () => {
 
             {imageSrc && (
               <img
-                src={imageSrc}
+                src={imageSrc.url}
                 alt="Captured or uploaded"
                 className="max-h-64 mx-auto mb-4 rounded border"
               />
@@ -267,9 +262,9 @@ const App = () => {
             </div>
 
             {scanResult && (
-              <div className="bg-yellow-100 border-l-4 border-yellow-500 p-4 mt-4">
+              <pre className="bg-yellow-100 border-l-4 border-yellow-500 p-4 mt-4">
                 {scanResult}
-              </div>
+              </pre>
             )}
           </>
         )}
@@ -309,4 +304,4 @@ const App = () => {
   );
 };
 
-export default App;
+export default FakeQRCodeDetectorAndQRGenerator;
