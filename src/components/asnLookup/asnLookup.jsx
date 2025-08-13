@@ -72,10 +72,15 @@ export default function ASNLookupFullPage() {
         setError(data.error || "Unknown error");
         showToast("Failed to lookup ASN information", "error");
       } else {
-        setResult(data.asnInfo);
+        // console.log(data)
+        let formatedData = data.data.replace(/(^|\n)#.*$/gm, "");
+        formatedData = formatedData.replaceAll("\n\n", "")
+        // console.log({formatedData})
+        setResult(formatedData);
         showToast("ASN information retrieved successfully!", "success");
       }
     } catch (err) {
+      console.log(err)
       setError("Failed to fetch ASN data.");
       showToast("Network error occurred", "error");
     }
@@ -182,7 +187,7 @@ export default function ASNLookupFullPage() {
                   </h3>
                 </div>
 
-                <div className="grid gap-4">
+                {/* <div className="grid gap-4">
                   <div className="bg-white/70 backdrop-blur-sm rounded-xl p-4 border border-green-100">
                     <div className="flex items-center gap-3">
                       <div className="w-10 h-10 bg-green-100 rounded-lg flex items-center justify-center">
@@ -254,7 +259,8 @@ export default function ASNLookupFullPage() {
                       </div>
                     </div>
                   </div>
-                </div>
+                </div> */}
+                <textarea readOnly wrap="off" className='w-full h-50 ' name="whois-Information" value={result} />
               </div>
             )}
           </div>
