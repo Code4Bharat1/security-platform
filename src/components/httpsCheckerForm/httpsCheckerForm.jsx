@@ -30,9 +30,7 @@ export default function HttpsCheckerPage() {
 
     try {
       const apiUrl =
-  process.env.NEXT_PUBLIC_PROD_API_URL ||
-  process.env.NEXT_PUBLIC_API_URL ||
-  "http://localhost:4180"; // fallback for local testing
+  process.env.NEXT_PUBLIC_PROD_API_URL // fallback for local testing
 
       
       if (!apiUrl) {
