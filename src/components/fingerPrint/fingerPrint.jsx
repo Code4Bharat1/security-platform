@@ -78,6 +78,8 @@ export default function TechnologyFingerprinter() {
 
   return (
     <div className="p-6 max-w-4xl mx-auto">
+      <img src="/fingerprint.png" alt="verify" className="w-16 h-20 mb-4 mt-7" />
+
       <h2 className="text-2xl font-bold mb-4">🔍 Technology Fingerprinter</h2>
 
       <div className="flex gap-2 mb-4">

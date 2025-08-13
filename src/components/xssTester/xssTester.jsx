@@ -26,6 +26,8 @@ export default function XssTester() {
 
   return (
     <div className="max-w-3xl mx-auto p-4 space-y-4">
+      <img src="/xss.png" alt="XSS Tester" className="w-16 h-20 mb-4 mt-7" />
+
       <h1 className="text-2xl font-bold">🧪 XSS Payload Tester</h1>
       <form onSubmit={handleTest} className="space-y-4 max-w-3xl">
         <input

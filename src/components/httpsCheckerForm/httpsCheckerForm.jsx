@@ -148,6 +148,7 @@ export default function HttpsCheckerPage() {
       <div className="max-w-2xl mx-auto pt-10">
         {/* Header */}
         <div className="text-center mb-8">
+          <img src="/https-security.png" alt="verify" className="w-16 h-20 mb-4 mt-7" />
           <div className="flex justify-center items-center gap-3 mb-4">
             <div className="p-3 bg-green-100 rounded-full">
               <Lock className="w-8 h-8 text-green-600" />

@@ -58,6 +58,7 @@ export default function BrokenStreamForm() {
 
   return (
     <main className="p-6 max-w-3xl mx-auto">
+      <img src="/brokenlink1.png" alt="verify" className="w-16 h-20 mb-4 mt-7" />
       <h1 className="text-3xl font-bold mb-4">🔗 Broken Link Checker (Streaming)</h1>
       <input
         className="w-full border p-2 rounded mb-4"

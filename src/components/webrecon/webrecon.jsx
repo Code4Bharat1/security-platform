@@ -49,6 +49,7 @@ export default function Webrecon() {
   
  return (
     <main className="p-6 max-w-xl mx-auto">
+      <img src="/web-recon.png" alt="web-recon image" className="w-16 h-20 mb-4 mt-7" />
       <h1 className="text-2xl font-bold mb-4">Website Recon</h1>
 
       <div className="flex gap-2 mb-4">
