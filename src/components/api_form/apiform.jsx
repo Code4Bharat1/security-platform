@@ -94,10 +94,7 @@ const DEFAULT_EXAMPLE = EXAMPLES[0];
     options: { timeout: parseInt(formData.timeout, 10) || 5000 },
   };
 
-  const backendUrl =
-    process.env.NEXT_PUBLIC_PROD_API_URL ||
-    process.env.NEXT_PUBLIC_API_URL ||
-    "http://localhost:4180";
+  const backendUrl = process.env.NEXT_PUBLIC_PROD_API_URL
   const fullUrl = `${backendUrl.replace(/\/$/, "")}/api/apiTest/apitest-scan`;
 
   try {

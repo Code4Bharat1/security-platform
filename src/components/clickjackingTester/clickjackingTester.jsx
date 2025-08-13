@@ -182,11 +182,11 @@ export default function ClickjackingTester() {
           <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-6">
             <div className="flex justify-between items-center">
               <p className="text-sm text-blue-700">
-                <strong>Debug Info:</strong> API URL = {process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4180 (default)'}
+                <strong>Debug Info:</strong> API URL = {process.env.NEXT_PUBLIC_PROD_API_URL || 'http://localhost:4180 (default)'}
               </p>
               <button
                 onClick={async () => {
-                  const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4180';
+                  const apiBaseUrl = process.env.NEXT_PUBLIC_PROD_API_URL || 'http://localhost:4180';
                   try {
                     console.log(`Testing connection to: ${apiBaseUrl}`);
                     const response = await axios.get(apiBaseUrl);
