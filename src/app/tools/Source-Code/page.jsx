@@ -17,7 +17,7 @@ export default function SourceCodeAnalyzer() {
       reader.onload = async (e) => {
         finalCode = e.target.result;
 
-        const res = await fetch("http://localhost:4180/api/analyze-code", {
+        const res = await fetch("http://localhost:4180/api/analyze/analyzeCode", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ code: finalCode }),
@@ -29,7 +29,7 @@ export default function SourceCodeAnalyzer() {
       };
       reader.readAsText(file);
     } else {
-      const res = await fetch("http://localhost:4180/api/analyze-code", {
+      const res = await fetch("http://localhost:4180/api/analyze/analyzeCode", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ code }),
