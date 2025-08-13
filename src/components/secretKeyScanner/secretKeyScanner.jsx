@@ -20,6 +20,7 @@ export default function SecretKeyScanner() {
 
   return (
     <div className="max-w-4xl mx-auto p-4 space-y-4">
+      <img src="/secret_key_scanner.png" alt="verify" className="w-16 h-20 mb-4 mt-7" />
       <h1 className="text-2xl font-bold"> Secret Key Exposure Scanner</h1>
 
       <input

@@ -47,6 +47,8 @@ export default function WhoisLookup() {
 
   return (
     <main className="max-w-xl mx-auto p-6">
+      <img src="/whois.png" alt="WHOIS image" className="w-16 h-20 mb-4 mt-7" />
+
       <h1 className="text-2xl font-bold mb-4">WHOIS Lookup</h1>
 
       <form onSubmit={handleLookup} className="mb-4">

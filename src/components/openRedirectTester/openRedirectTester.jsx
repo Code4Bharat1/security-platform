@@ -41,6 +41,7 @@ export default function OpenRedirectTester() {
 
   return (
     <div className="max-w-xl mx-auto p-4">
+      <img src="/open-redirect.png" alt="verify" className="w-16 h-20 mb-4 mt-7" />
       <h1 className="text-2xl font-bold mb-4">Open Redirect Tester</h1>
       <form onSubmit={handleTest} className="space-y-4">
         <div>

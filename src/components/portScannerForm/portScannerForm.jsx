@@ -199,6 +199,7 @@ const PortScannerForm = () => {
       <div className="max-w-6xl mx-auto">
         {/* Hero Section */}
         <div className="text-center py-12">
+          <img src="/port_scan.png" alt="verify" className="w-16 h-20 mb-4 mt-7" />
           <div className="flex justify-center items-center gap-3 mb-6">
             <div className="p-4 bg-green-100 rounded-full">
               <Shield className="w-12 h-12 text-green-600" />

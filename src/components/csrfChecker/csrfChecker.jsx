@@ -124,6 +124,7 @@ export default function CSRFChecker() {
       <div className="container mx-auto px-4 py-8 max-w-6xl">
         {/* Header */}
         <div className="text-center mb-8">
+          <img src="/csrf.png" alt="verify" className="w-16 h-20 mb-4 mt-7" />
           <div className="flex items-center justify-center gap-3 mb-4">
             <Shield className="w-8 h-8 text-green-600" />
             <h1 className="text-4xl font-bold text-gray-800">CSRF Security Analyzer</h1>
