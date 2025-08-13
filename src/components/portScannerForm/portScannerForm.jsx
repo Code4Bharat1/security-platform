@@ -101,10 +101,10 @@ const PortScannerForm = () => {
   };
 
   // API call function
-  const performPortScan = async (hostParam) => {
+  const performPortScan = async (hostParam, portRangeParam) => {
     try {
       const response = await fetch(
-    `${process.env.NEXT_PUBLIC_PROD_API_URL}/port/portScan?host=${hostParam}`,
+    `${process.env.NEXT_PUBLIC_PROD_API_URL}/port/portScan?host=${hostParam}&port=${portRangeParam}`,
     {
         method: 'GET',
         headers: {
@@ -114,7 +114,6 @@ const PortScannerForm = () => {
 
       if (!response.ok) {
         const errorData = await response.json();
-        console.log(errorData)
         throw new Error(errorData.message || `HTTP error! status: ${response.status}`);
       }
 
@@ -135,13 +134,20 @@ const PortScannerForm = () => {
       return;
     }
 
+    if (!validatePortRange(portRange)) {
+      setError(
+        "Please enter a valid port or port range (e.g., 80 or 80-10000) or 'common'."
+      );
+      return;
+    }
+
     setError("");
     setLoading(true);
     setScanResults(null);
 
     try {
       // Call the actual backend API
-      const results = await performPortScan(host);
+      const results = await performPortScan(host, portRange);
       
       // Set the results from the backend
       setScanResults(results);
@@ -153,7 +159,6 @@ const PortScannerForm = () => {
           openPorts !== 1 ? "s" : ""
         } on ${host}`
       );
-      console.log(results)
     } catch (error) {
       console.error("Error:", error);
       setError(`${error.message || "Something went wrong. Please try again."}`);
@@ -222,12 +227,12 @@ const PortScannerForm = () => {
               <h2 className="text-2xl font-bold text-gray-800">Port Scanner</h2>
             </div>
             <p className="text-gray-600">
-              Enter your target host to begin scanning
+              Enter your target host and port range to begin scanning
             </p>
           </div>
 
           <div className="space-y-6">
-            <div className="">
+            <div className="grid md:grid-cols-2 gap-6">
               <div className="space-y-2">
                 <label className="block text-sm font-semibold text-gray-700">
                   Hostname or IP Address
@@ -237,11 +242,31 @@ const PortScannerForm = () => {
                   <input
                     type="text"
                     value={host}
-                    onChange={(e) => setHost(e.target.value.trim())} placeholder="example.com or 192.168.1.1"
+                    onChange={(e) => setHost(e.target.value.trim())}                   placeholder="example.com or 192.168.1.1"
                     required
                     className="w-full pl-12 pr-4 py-3 border-2 border-green-200 rounded-xl focus:border-green-500 focus:ring-2 focus:ring-green-200 transition-all duration-200 text-gray-700"
                   />
                 </div> {/*/api/port/portScan?host=${hostTarget}&port=${portNumber} */}
+              </div>
+
+              <div className="space-y-2">
+                <label className="block text-sm font-semibold text-gray-700">
+                  Port or Port Range
+                </label>
+                <div className="relative">
+                  <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-green-500" />
+                  <input
+                    type="text"
+                    value={portRange}
+                    onChange={(e) => setPortRange(e.target.value.trim())}                   placeholder="80, 80-10000, or 'common'"
+                    required
+                    className="w-full pl-12 pr-4 py-3 border-2 border-green-200 rounded-xl focus:border-green-500 focus:ring-2 focus:ring-green-200 transition-all duration-200 text-gray-700"
+                  />
+                </div>
+                <p className="text-sm text-gray-500">
+                  Single port (80), range (80-10000), or 'common' for well-known
+                  ports
+                </p>
               </div>
             </div>
 
@@ -383,10 +408,18 @@ const PortScannerForm = () => {
                             </td>
                             <td className="px-6 py-4 whitespace-nowrap">
                               <span
-                                className={`inline-flex items-center gap-1 px-3 py-1 rounded-full text-sm font-semibold bg-green-100 text-green-800"`}
+                                className={`inline-flex items-center gap-1 px-3 py-1 rounded-full text-sm font-semibold ${
+                                  details.open
+                                    ? "bg-green-100 text-green-800"
+                                    : "bg-red-100 text-red-800"
+                                }`}
                               >
-                                <CheckCircle className="w-4 h-4" />
-                                Open
+                                {details.open ? (
+                                  <CheckCircle className="w-4 h-4" />
+                                ) : (
+                                  <XCircle className="w-4 h-4" />
+                                )}
+                                {details.open ? "Open" : "Closed"}
                               </span>
                             </td>
                             <td className="px-6 py-4 whitespace-nowrap font-medium text-gray-700">

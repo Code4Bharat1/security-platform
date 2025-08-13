@@ -27,10 +27,6 @@ export default function BrokenStreamForm() {
 
       if (data.type === 'total') {
         setProgress((prev) => ({ ...prev, total: data.total }));
-        console.log(progress)
-        if (data.total == 0 ){
-          c
-        }
       } else if (data.type === 'link') {
         setLinks((prev) => {
           const exists = prev.some((link) => link.url === data.url);
