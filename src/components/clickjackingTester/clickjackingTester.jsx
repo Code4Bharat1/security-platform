@@ -80,8 +80,8 @@ export default function ClickjackingTester() {
     setIframeVisible(false);
 
     // Build the full API URL
-    const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4180';
-    const fullApiUrl = `${apiBaseUrl}/api/clickjacking/jacking`;
+    const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL;
+    const fullApiUrl = `${apiBaseUrl}/clickjacking/jacking`;
     
     console.log("Making request to:", fullApiUrl);
     console.log("Request payload:", { url: normalizedUrl });
