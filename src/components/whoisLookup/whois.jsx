@@ -207,6 +207,8 @@ export default function WhoisLookup() {
 
   return (
     <main className="max-w-4xl mx-auto p-6">
+      <img src="/whois.png" alt="WHOIS image" className="w-16 h-20 mb-4 mt-7" />
+
       <h1 className="text-2xl font-semibold mb-4 flex items-center gap-2">
         <Globe className="h-6 w-6" /> WHOIS Lookup (Enhanced)
       </h1>

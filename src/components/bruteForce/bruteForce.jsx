@@ -50,6 +50,7 @@ export default function DirectoryBruteForcer() {
 
   return (
     <div className="p-4 max-w-5xl mx-auto">
+      <img src="/brute-force.png" alt="verify" className="w-16 h-20 mb-4 mt-7" />
       <h2 className="text-xl font-bold mb-4">🔍 Directory/File Brute Forcer</h2>
 
       <div className="flex flex-col gap-2 mb-3">
