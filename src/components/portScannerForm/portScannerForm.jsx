@@ -1,490 +1,375 @@
 "use client";
-import { useState, useEffect } from "react";
-import {
-  Search,
-  Loader2,
-  ShieldAlert,
-  Server,
-  Globe,
-  Shield,
-  CheckCircle,
-  XCircle,
-  AlertTriangle,
-  X,
-} from "lucide-react";
 
-const Toast = ({ message, type = "success", onClose }) => {
-  useEffect(() => {
-    const timer = setTimeout(() => {
-      onClose();
-    }, 4000);
+import { useMemo, useState } from "react";
+// Optional icons (install: npm i lucide-react). Safe to remove if not used.
+let Globe, Search, ShieldCheck;
+try {
+  ({ Globe, Search, ShieldCheck } = require("lucide-react"));
+} catch { /* fallback */ }
 
-    return () => clearTimeout(timer);
-  }, [onClose]);
+// Set your API base (must include /api if your server mounts there)
+const API = (process.env.NEXT_PUBLIC_PROD_API_URL ).replace(/\/+$/, "");
 
-  return (
-    <div className="fixed top-4 right-4 z-50 animate-in slide-in-from-right duration-300">
-      <div
-        className={`p-4 rounded-xl shadow-lg border flex items-center gap-3 min-w-80 ${
-          type === "success"
-            ? "bg-green-50 border-green-200 text-green-800"
-            : "bg-red-50 border-red-200 text-red-800"
-        }`}
-      >
-        <div className="flex items-center gap-3 flex-1">
-          {type === "success" ? (
-            <CheckCircle className="w-5 h-5 text-green-600" />
-          ) : (
-            <XCircle className="w-5 h-5 text-red-600" />
-          )}
-          <span className="font-medium">{message}</span>
-        </div>
-        <button
-          onClick={onClose}
-          className="p-1 hover:bg-white/50 rounded-full transition-colors"
-        >
-          <X className="w-4 h-4" />
-        </button>
-      </div>
-    </div>
-  );
-};
+/** "20" -> {mode:"single",port:20}
+ *  "60-2000" -> {mode:"range",start:60,end:2000}
+ *  "common" -> {mode:"set",ports:[...]}
+ */
+function parsePortInput(input) {
+  const s = String(input || "").trim().toLowerCase();
+  if (!s) return null;
 
-const PortScannerForm = () => {
+  if (s === "common") {
+    return { mode: "set", ports: [21,22,23,25,53,80,110,143,443,445,3306,3389,8080,8443] };
+  }
+
+  const range = s.match(/^(\d{1,5})\s*-\s*(\d{1,5})$/);
+  if (range) {
+    const start = parseInt(range[1], 10);
+    const end = parseInt(range[2], 10);
+    if (start >= 1 && end <= 65535 && start <= end) return { mode: "range", start, end };
+    return null;
+  }
+
+  const single = parseInt(s, 10);
+  if (!isNaN(single) && single >= 1 && single <= 65535) return { mode: "single", port: single };
+
+  return null;
+}
+
+export default function PortScannerForm() {
   const [host, setHost] = useState("");
-  const [portRange, setPortRange] = useState("");
-  const [error, setError] = useState("");
-  const [scanResults, setScanResults] = useState(null);
+  const [portInput, setPortInput] = useState(""); // "20", "60-2000", "common"
   const [loading, setLoading] = useState(false);
-  const [toast, setToast] = useState(null);
+  const [result, setResult] = useState(null);
+  const [error, setError] = useState("");
 
-  // Backend API configuration
-  //const API_BASE_URL = "https://localhost:5000/api"; // Change this to your backend URL
-  // For development, you might use: "https://zypher-api.code4bharat.com/api"
-  // For production, use your deployed backend URL
+  const handleSubmit = async (e) => {
+    e?.preventDefault?.();
+    if (!host || !portInput || loading) return;
 
-  const showToast = (message, type = "success") => {
-    setToast({ message, type });
-  };
+    setLoading(true);
+    setError("");
+    setResult(null);
 
-  const hideToast = () => {
-    setToast(null);
-  };
-
-  const validateHost = (host) => {
-    const hostnamePattern = new RegExp(
-      "^(([a-zA-Z\\d]([a-zA-Z\\d-]*[a-zA-Z\\d])*)\\.)+[a-zA-Z]{2,}(:\\d+)?(\\/.*)?$",
-      "i"
-    );
-    const ipPattern = new RegExp(
-      "^((25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\\.){3}(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$",
-      "i"
-    );
-    return hostnamePattern.test(host) || ipPattern.test(host);
-  };
-
-  const validatePortRange = (range) => {
-    const singlePortPattern = /^\d{1,5}$/;
-    const portRangePattern = /^\d{1,5}-\d{1,5}$/;
-    const commonPortsPattern = /^common$/i;
-
-    if (commonPortsPattern.test(range)) {
-      return true;
-    } else if (singlePortPattern.test(range)) {
-      const port = parseInt(range, 10);
-      return port > 0 && port <= 65535;
-    } else if (portRangePattern.test(range)) {
-      const [start, end] = range.split("-").map((p) => parseInt(p, 10));
-      return start > 0 && end <= 65535 && start < end;
-    }
-    return false;
-  };
-
-  // API call function
-  const performPortScan = async (hostParam, portRangeParam) => {
     try {
-      const response = await fetch(
-    `${process.env.NEXT_PUBLIC_PROD_API_URL}/port/portScan?host=${hostParam}&port=${portRangeParam}`,
-    {
-        method: 'GET',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-      });
+      const parsed = parsePortInput(portInput);
+      if (!parsed) throw new Error("Invalid port input. Use '80', '60-2000', or 'common'.");
 
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.message || `HTTP error! status: ${response.status}`);
+      let qs = new URLSearchParams({ host });
+
+      if (parsed.mode === "single") {
+        qs.set("port", String(parsed.port));
+      } else if (parsed.mode === "range") {
+        qs.set("startPort", String(parsed.start));
+        qs.set("endPort", String(parsed.end));
+      } else if (parsed.mode === "set") {
+        // “common”: union of individual singles
+        const gathered = [];
+        for (const p of parsed.ports) {
+          const q = new URLSearchParams({ host, port: String(p) }).toString();
+          const r = await fetch(`${API}/port/port-scan?${q}`);
+          if (!r.ok) throw new Error(`HTTP ${r.status}`);
+          const d = await r.json();
+          gathered.push(...Object.values(d.ports));
+        }
+        const byPort = {};
+        for (const p of gathered) byPort[p.port] = p;
+        const portsObj = Object.fromEntries(Object.values(byPort).map((p) => [p.port, p]));
+        const total = Object.keys(portsObj).length;
+        const openCount = Object.values(portsObj).filter((p) => p.open).length;
+        setResult({
+          host,
+          ports: portsObj,
+          openPorts: Object.values(portsObj).filter(p => p.open).map(p => p.port),
+          suspicious: Object.values(portsObj).filter(p => p.open && p.risk === "High").map(p => p.port),
+          summary: { total, open: openCount, riskAssessment: openCount > total * 0.3 ? "High" : (openCount > total * 0.1 ? "Medium" : "Low") },
+          recommendations: [],
+        });
+        setLoading(false);
+        return;
       }
 
-      const data = await response.json();
-      return data;
-    }
-    
-    catch (error) {
-      console.error('API Error:', error);
-      throw error;
-    }
-  };
-
-  const handleSubmit = async () => {
-
-    if (!validateHost(host)) {
-      setError("Please enter a valid hostname or IP address.");
-      return;
-    }
-
-    if (!validatePortRange(portRange)) {
-      setError(
-        "Please enter a valid port or port range (e.g., 80 or 80-10000) or 'common'."
-      );
-      return;
-    }
-
-    setError("");
-    setLoading(true);
-    setScanResults(null);
-
-    try {
-      // Call the actual backend API
-      const results = await performPortScan(host, portRange);
-      
-      // Set the results from the backend
-      setScanResults(results);
-
-      // Show success toast
-      const openPorts = results.summary?.open || 0;
-      showToast(
-        `✅ Scan completed successfully! Found ${openPorts} open port${
-          openPorts !== 1 ? "s" : ""
-        } on ${host}`
-      );
-    } catch (error) {
-      console.error("Error:", error);
-      setError(`${error.message || "Something went wrong. Please try again."}`);
-      showToast("❌ Scan failed. Please try again.", "error");
+      // single/range call
+      const res = await fetch(`${API}/port/port-scan?${qs.toString()}`);
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
+      const data = await res.json();
+      setResult(data);
+    } catch (err) {
+      setError(err?.message || "Scan failed.");
     } finally {
       setLoading(false);
     }
   };
 
-  const getRiskColor = (risk) => {
-    switch (risk) {
-      case "High":
-        return "text-red-600";
-      case "Medium":
-        return "text-yellow-600";
-      case "Low":
-        return "text-green-600";
-      default:
-        return "text-gray-600";
-    }
+  const rows = useMemo(() => {
+    if (!result?.ports) return [];
+    return Object.values(result.ports).map((p) => ({
+      port: p.port,
+      status: p.open ? "Open" : "Closed",
+      service: p.service,
+      risk: p.risk,
+      description: p.description,
+    }));
+  }, [result]);
+
+  const downloadPDF = async () => {
+    if (!result) return;
+    const { jsPDF } = await import("jspdf");
+    const autoTable = (await import("jspdf-autotable")).default;
+
+    const doc = new jsPDF({ unit: "pt", format: "a4" });
+
+    doc.setFontSize(14);
+    doc.text("Port Scan Report", 40, 40);
+
+    const s = result.summary || {};
+    const lines = [
+      `Target Host: ${result.host || "-"}`,
+      `Open Ports: ${s.open ?? "-"} / ${s.total ?? "-"}`,
+      `Risk Level: ${s.riskAssessment || "-"}`,
+      ...(result.recommendations?.length ? [`Recommendations: ${result.recommendations.join(" ")}`] : []),
+    ];
+    doc.setFontSize(10);
+    lines.forEach((ln, i) => doc.text(ln, 40, 60 + i * 14));
+
+    const columns = rows[0] ? Object.keys(rows[0]) : ["port","status","service","risk","description"];
+    const body = (rows.length ? rows : Object.values(result.ports || {}).map(p => ({
+      port: p.port, status: p.open ? "Open" : "Closed", service: p.service, risk: p.risk, description: p.description
+    }))).map(r => columns.map(c => String(r[c] ?? "")));
+
+    autoTable(doc, {
+      startY: 60 + lines.length * 14 + 12,
+      head: [columns],
+      body,
+      styles: { fontSize: 8, cellPadding: 4, overflow: "linebreak" },
+    });
+
+    doc.save(`port-scan-${result.host || "target"}.pdf`);
   };
 
-  const getRiskBadgeColor = (risk) => {
-    switch (risk) {
-      case "High":
-        return "bg-red-100 text-red-800";
-      case "Medium":
-        return "bg-yellow-100 text-yellow-800";
-      case "Low":
-        return "bg-green-100 text-green-800";
-      default:
-        return "bg-gray-100 text-gray-800";
-    }
-  };
+  const submitDisabled = loading || !host.trim() || !portInput.trim();
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-green-50 via-emerald-50 to-teal-50 p-4">
-      {/* Toast Notification */}
-      {toast && (
-        <Toast message={toast.message} type={toast.type} onClose={hideToast} />
-      )}
-
-      <div className="max-w-6xl mx-auto">
-        {/* Hero Section */}
-        <div className="text-center py-12">
-          <div className="flex justify-center items-center gap-3 mb-6">
-            <div className="p-4 bg-green-100 rounded-full">
-              <Shield className="w-12 h-12 text-green-600" />
-            </div>
-            <h1 className="text-4xl md:text-5xl font-bold bg-gradient-to-r from-green-600 to-emerald-600 bg-clip-text text-transparent">
-              Network Security Scanner
-            </h1>
-          </div>
-          <p className="text-xl text-gray-600 max-w-3xl mx-auto leading-relaxed">
-            Identify open ports and potential security vulnerabilities on your
-            network infrastructure
-          </p>
+    <div className="min-h-screen w-full bg-emerald-50/60">
+      {/* Hero */}
+      <header className="mx-auto max-w-5xl px-4 pt-12 pb-6 text-center">
+        <div className="mx-auto mb-3 inline-flex h-12 w-12 items-center justify-center rounded-full bg-emerald-100 ring-1 ring-emerald-200">
+          {ShieldCheck ? <ShieldCheck className="h-6 w-6 text-emerald-600" /> : <span className="text-emerald-600">🛡️</span>}
         </div>
+        <h1 className="text-3xl sm:text-4xl font-extrabold text-emerald-700 tracking-tight">
+          Network Security Scanner
+        </h1>
+        <p className="mt-2 text-sm sm:text-base text-emerald-900/70">
+          Identify open ports and potential security vulnerabilities on your network infrastructure
+        </p>
+      </header>
 
-        {/* Main Scanner Card */}
-        <div className="bg-white shadow-2xl rounded-3xl p-8 border border-green-100 mb-8">
-          <div className="text-center mb-8">
-            <div className="flex justify-center items-center gap-3 mb-4">
-              <Server className="w-8 h-8 text-green-600" />
-              <h2 className="text-2xl font-bold text-gray-800">Port Scanner</h2>
+      {/* Card */}
+      <div className="mx-auto max-w-5xl px-4 pb-10">
+        <div className="rounded-2xl bg-white shadow-xl ring-1 ring-emerald-100/60">
+          {/* Card header */}
+          <div className="border-b border-emerald-100 px-6 py-4 text-center">
+            <div className="mx-auto inline-flex items-center gap-2 text-emerald-700 font-semibold">
+              {Search ? <Search className="h-5 w-5" /> : <span>🔎</span>}
+              <span>Port Scanner</span>
             </div>
-            <p className="text-gray-600">
-              Enter your target host and port range to begin scanning
-            </p>
+            <p className="mt-1 text-xs text-emerald-900/70">Enter your target host and port range to begin scanning</p>
           </div>
 
-          <div className="space-y-6">
-            <div className="grid md:grid-cols-2 gap-6">
-              <div className="space-y-2">
-                <label className="block text-sm font-semibold text-gray-700">
+          {/* Form */}
+          <div className="px-6 py-6">
+            <form onSubmit={handleSubmit} className="grid grid-cols-1 gap-3 sm:grid-cols-6">
+              {/* Host */}
+              <div className="sm:col-span-3">
+                <label className="mb-1 block text-xs font-medium text-emerald-900/80">
                   Hostname or IP Address
                 </label>
                 <div className="relative">
-                  <Globe className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-green-500" />
+                  <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3">
+                    {Globe ? <Globe className="h-4 w-4 text-emerald-500" /> : <span className="text-emerald-500">🌐</span>}
+                  </div>
                   <input
-                    type="text"
+                    className="w-full rounded-lg border border-emerald-200 bg-white pl-9 pr-3 py-2 text-sm outline-none ring-0 placeholder:text-emerald-900/40 focus:border-emerald-400 focus:ring focus:ring-emerald-200"
+                    placeholder="example.com or 192.168.1.1"
                     value={host}
-                    onChange={(e) => setHost(e.target.value.trim())}                   placeholder="example.com or 192.168.1.1"
+                    onChange={(e) => setHost(e.target.value)}
                     required
-                    className="w-full pl-12 pr-4 py-3 border-2 border-green-200 rounded-xl focus:border-green-500 focus:ring-2 focus:ring-green-200 transition-all duration-200 text-gray-700"
+                    aria-label="Hostname or IP"
                   />
-                </div> {/*/api/port/portScan?host=${hostTarget}&port=${portNumber} */}
+                </div>
               </div>
 
-              <div className="space-y-2">
-                <label className="block text-sm font-semibold text-gray-700">
+              {/* Port / Range */}
+              <div className="sm:col-span-3">
+                <label className="mb-1 block text-xs font-medium text-emerald-900/80">
                   Port or Port Range
                 </label>
                 <div className="relative">
-                  <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-green-500" />
+                  <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3">
+                    {Search ? <Search className="h-4 w-4 text-emerald-500" /> : <span className="text-emerald-500">🔍</span>}
+                  </div>
                   <input
-                    type="text"
-                    value={portRange}
-                    onChange={(e) => setPortRange(e.target.value.trim())}                   placeholder="80, 80-10000, or 'common'"
+                    className="w-full rounded-lg border border-emerald-200 bg-white pl-9 pr-3 py-2 text-sm outline-none ring-0 placeholder:text-emerald-900/40 focus:border-emerald-400 focus:ring focus:ring-emerald-200"
+                    placeholder="80, 80-10000, or 'common'"
+                    value={portInput}
+                    onChange={(e) => setPortInput(e.target.value)}
                     required
-                    className="w-full pl-12 pr-4 py-3 border-2 border-green-200 rounded-xl focus:border-green-500 focus:ring-2 focus:ring-green-200 transition-all duration-200 text-gray-700"
+                    aria-label="Port input"
                   />
                 </div>
-                <p className="text-sm text-gray-500">
-                  Single port (80), range (80-10000), or 'common' for well-known
-                  ports
+                <p className="mt-1 text-[11px] text-emerald-900/60">
+                  Single port (80), range (80-10000), or <span className="font-mono">'common'</span> for well‑known ports
                 </p>
               </div>
-            </div>
 
-            {error && (
-              <div className="p-4 bg-red-50 border border-red-200 rounded-xl">
-                <div className="flex items-center gap-2">
-                  <XCircle className="w-5 h-5 text-red-500" />
-                  <span className="text-red-700 font-medium">{error}</span>
-                </div>
+              {/* CTA */}
+              <div className="sm:col-span-6">
+                <button
+                  type="submit"
+                  disabled={submitDisabled}
+                  className={`group w-full rounded-lg bg-emerald-600 px-4 py-3 text-sm font-semibold text-white shadow-md transition
+                    hover:bg-emerald-700 hover:shadow-lg focus:outline-none focus:ring-2 focus:ring-emerald-300
+                    ${submitDisabled ? "opacity-70 cursor-not-allowed" : ""}`}
+                  aria-busy={loading}
+                >
+                  <span className="inline-flex items-center justify-center gap-2">
+                    {Search ? <Search className="h-4 w-4" /> : <span>🔎</span>}
+                    {loading ? "Scanning..." : "Start Port Scan"}
+                  </span>
+                </button>
               </div>
-            )}
+            </form>
 
-            <button
-              type="button"
-              onClick={handleSubmit}
-              disabled={loading}
-              className="w-full bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 disabled:from-gray-300 disabled:to-gray-400 text-white font-semibold py-4 px-6 rounded-xl transition-all duration-200 transform hover:scale-[1.02] disabled:scale-100 shadow-lg hover:shadow-xl"
-            >
-              {loading ? (
-                <div className="flex items-center justify-center gap-2">
-                  <Loader2 className="w-6 h-6 animate-spin" />
-                  Scanning Network...
-                </div>
-              ) : (
-                <div className="flex items-center justify-center gap-2">
-                  <Search className="w-6 h-6" />
-                  Start Port Scan
-                </div>
-              )}
-            </button>
+            {/* Error */}
+            {error && <p className="mt-3 text-sm text-red-600">{error}</p>}
           </div>
         </div>
 
-        {/* Loading State */}
-        {loading && (
-          <div className="bg-white shadow-xl rounded-2xl p-8 border border-green-100">
-            <div className="flex flex-col items-center justify-center py-12">
-              <div className="relative">
-                <div className="w-16 h-16 border-4 border-green-200 rounded-full animate-spin border-t-green-600"></div>
-                <Server className="w-8 h-8 text-green-600 absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2" />
-              </div>
-              <h3 className="text-xl font-semibold text-gray-800 mt-6 mb-2">
-                Scanning Network Ports
-              </h3>
-              <p className="text-gray-600">
-                Analyzing {host} for open ports...
-              </p>
+        {/* Summary cards (keep older stat layout) */}
+        {result?.summary && (
+          <div className="mt-6 grid grid-cols-1 gap-3 sm:grid-cols-4">
+            <StatCard label="Target Host" value={result.host} />
+            <div className="flex items-center rounded-lg border border-emerald-200 bg-emerald-50 p-3">
+              <button
+                onClick={downloadPDF}
+                className="w-full rounded-md bg-gray-900 px-3 py-2 text-sm text-white hover:bg-black"
+              >
+                Download PDF Report
+              </button>
             </div>
+            <StatCard label="Open Ports" value={`${result.summary.open} / ${result.summary.total}`} highlight />
+            <StatCard label="Risk Level" value={result.summary.riskAssessment} highlight />
           </div>
         )}
 
-        {/* Results Section */}
-        {!loading && scanResults && (
-          <div className="bg-white shadow-2xl rounded-3xl p-8 border border-green-100">
-            <div className="flex items-center gap-3 mb-8">
-              <CheckCircle className="w-8 h-8 text-green-600" />
-              <h2 className="text-2xl font-bold text-gray-800">Scan Results</h2>
-            </div>
+        {/* Export + PDF */}
+        {result && (
+          <div className="mt-4 flex flex-wrap items-center gap-2">
+            <button onClick={downloadPDF} className="rounded-md bg-gray-900 px-4 py-2 text-sm text-white hover:bg-black">
+              Download PDF Report
+            </button>
+            <ExportBar baseName={`port-scan-${result?.host || "target"}`} rows={rows} />
+          </div>
+        )}
 
-            {/* Summary Cards */}
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
-              <div className="bg-gradient-to-r from-green-50 to-emerald-50 p-5 rounded-xl border border-green-200">
-                <p className="text-sm font-medium text-gray-600 mb-1">
-                  Target Host
-                </p>
-                <p className="text-lg font-bold text-gray-800 truncate">
-                  {scanResults.host}
-                </p>
-              </div>
-              <div className="bg-gradient-to-r from-green-50 to-emerald-50 p-5 rounded-xl border border-green-200">
-                <p className="text-sm font-medium text-gray-600 mb-1">
-                  Scan Time
-                </p>
-                <p className="text-lg font-bold text-gray-800">
-                  {scanResults.scanTime ? new Date(scanResults.scanTime).toLocaleString() : 'N/A'}
-                </p>
-              </div>
-              <div className="bg-gradient-to-r from-green-50 to-emerald-50 p-5 rounded-xl border border-green-200">
-                <p className="text-sm font-medium text-gray-600 mb-1">
-                  Open Ports
-                </p>
-                <p className="text-lg font-bold text-yellow-600">
-                  {scanResults.summary?.open || 0} / {scanResults.summary?.total || 0}
-                </p>
-              </div>
-              <div className="bg-gradient-to-r from-green-50 to-emerald-50 p-5 rounded-xl border border-green-200">
-                <p className="text-sm font-medium text-gray-600 mb-1">
-                  Risk Level
-                </p>
-                <span
-                  className={`text-lg font-bold ${getRiskColor(
-                    scanResults.summary?.riskAssessment || 'Unknown'
-                  )}`}
-                >
-                  {scanResults.summary?.riskAssessment || 'Unknown'}
-                </span>
-              </div>
-            </div>
-
-            {/* Port Details Table */}
-            {scanResults.ports && Object.keys(scanResults.ports).length > 0 && (
-              <div className="mb-8">
-                <h3 className="text-xl font-bold text-gray-800 mb-4 flex items-center gap-2">
-                  <Server className="w-6 h-6 text-green-600" />
-                  Port Details
-                </h3>
-                <div className="overflow-x-auto bg-gray-50 rounded-xl">
-                  <table className="min-w-full divide-y divide-gray-200">
-                    <thead className="bg-gradient-to-r from-green-100 to-emerald-100">
-                      <tr>
-                        <th className="px-6 py-4 text-left text-sm font-bold text-gray-700 uppercase tracking-wider">
-                          Port
-                        </th>
-                        <th className="px-6 py-4 text-left text-sm font-bold text-gray-700 uppercase tracking-wider">
-                          Status
-                        </th>
-                        <th className="px-6 py-4 text-left text-sm font-bold text-gray-700 uppercase tracking-wider">
-                          Service
-                        </th>
-                        <th className="px-6 py-4 text-left text-sm font-bold text-gray-700 uppercase tracking-wider">
-                          Risk Level
-                        </th>
-                        <th className="px-6 py-4 text-left text-sm font-bold text-gray-700 uppercase tracking-wider">
-                          Description
-                        </th>
-                      </tr>
-                    </thead>
-                    <tbody className="bg-white divide-y divide-gray-200">
-                      {Object.entries(scanResults.ports).map(
-                        ([port, details]) => (
-                          <tr
-                            key={port}
-                            className={`${
-                              details.open ? "bg-green-50" : "hover:bg-gray-50"
-                            } transition-colors`}
-                          >
-                            <td className="px-6 py-4 whitespace-nowrap font-semibold text-gray-900">
-                              {port}
-                            </td>
-                            <td className="px-6 py-4 whitespace-nowrap">
-                              <span
-                                className={`inline-flex items-center gap-1 px-3 py-1 rounded-full text-sm font-semibold ${
-                                  details.open
-                                    ? "bg-green-100 text-green-800"
-                                    : "bg-red-100 text-red-800"
-                                }`}
-                              >
-                                {details.open ? (
-                                  <CheckCircle className="w-4 h-4" />
-                                ) : (
-                                  <XCircle className="w-4 h-4" />
-                                )}
-                                {details.open ? "Open" : "Closed"}
-                              </span>
-                            </td>
-                            <td className="px-6 py-4 whitespace-nowrap font-medium text-gray-700">
-                              {details.service || 'Unknown'}
-                            </td>
-                            <td className="px-6 py-4 whitespace-nowrap">
-                              <span
-                                className={`inline-flex items-center px-3 py-1 rounded-full text-sm font-semibold ${getRiskBadgeColor(
-                                  details.risk || 'Unknown'
-                                )}`}
-                              >
-                                {details.risk || 'Unknown'}
-                              </span>
-                            </td>
-                            <td className="px-6 py-4 text-sm text-gray-600">
-                              {details.description || 'No description available'}
-                            </td>
-                          </tr>
-                        )
-                      )}
-                    </tbody>
-                  </table>
-                </div>
-              </div>
-            )}
-
-            {/* Security Recommendations */}
-            {scanResults.recommendations &&
-              scanResults.recommendations.length > 0 && (
-                <div className="p-6 bg-gradient-to-r from-yellow-50 to-orange-50 border border-yellow-200 rounded-xl mb-6">
-                  <div className="flex items-center gap-2 mb-4">
-                    <ShieldAlert className="w-6 h-6 text-yellow-600" />
-                    <h4 className="text-lg font-bold text-yellow-800">
-                      Security Recommendations
-                    </h4>
-                  </div>
-                  <div className="space-y-3">
-                    {scanResults.recommendations.map(
-                      (recommendation, index) => (
-                        <div
-                          key={index}
-                          className="flex items-start gap-3 p-3 bg-white rounded-lg"
-                        >
-                          <AlertTriangle className="w-5 h-5 text-yellow-500 mt-0.5 flex-shrink-0" />
-                          <p className="text-gray-700">{recommendation}</p>
-                        </div>
-                      )
-                    )}
-                  </div>
-                </div>
-              )}
-
-            {/* Action Button */}
-            <div className="text-center">
-              <button
-                onClick={() => setScanResults(null)}
-                className="bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 text-white font-semibold py-3 px-8 rounded-xl transition-all duration-200 transform hover:scale-105 shadow-lg hover:shadow-xl"
-              >
-                Run New Scan
-              </button>
-            </div>
+        {/* Results table */}
+        {rows.length > 0 && (
+          <div className="mt-4 overflow-x-auto rounded-md border border-emerald-100">
+            <table className="min-w-full text-sm">
+              <thead className="bg-emerald-50">
+                <tr>
+                  {Object.keys(rows[0]).map((h) => (
+                    <th key={h} className="border-b border-emerald-100 px-3 py-2 text-left font-medium text-emerald-900/80">
+                      {h}
+                    </th>
+                  ))}
+                </tr>
+              </thead>
+              <tbody>
+                {rows.map((r, i) => (
+                  <tr key={`${r.port}-${i}`} className={i % 2 ? "bg-white" : "bg-emerald-50/40"}>
+                    {Object.keys(rows[0]).map((h) => (
+                      <td key={h} className="border-b border-emerald-100 px-3 py-2 align-top">
+                        {String(r[h])}
+                      </td>
+                    ))}
+                  </tr>
+                ))}
+              </tbody>
+            </table>
           </div>
         )}
       </div>
     </div>
   );
-};
+}
 
-export default PortScannerForm;
+function StatCard({ label, value, highlight }) {
+  return (
+    <div className="rounded-lg border border-emerald-200 bg-emerald-50 p-3">
+      <div className="text-[11px] text-emerald-900/70">{label}</div>
+      <div className={`text-base font-semibold ${highlight ? "text-amber-700" : "text-emerald-900"}`}>
+        {value ?? "—"}
+      </div>
+    </div>
+  );
+}
+
+/* ---------- Small export bar with JSON/CSV/PDF ---------- */
+function ExportBar({ baseName, rows }) {
+  const downloadJSON = () => {
+    const blob = new Blob([JSON.stringify(rows, null, 2)], { type: "application/json" });
+    triggerDownload(blob, `${baseName}.json`);
+  };
+  const downloadCSV = () => {
+    const csv = toCsv(rows);
+    const blob = new Blob([csv], { type: "text/csv" });
+    triggerDownload(blob, `${baseName}.csv`);
+  };
+  const downloadPDF = async () => {
+    const { jsPDF } = await import("jspdf");
+    const autoTable = (await import("jspdf-autotable")).default;
+    const doc = new jsPDF({ unit: "pt", format: "a4" });
+    doc.text(baseName, 40, 40);
+    const columns = rows[0] ? Object.keys(rows[0]) : [];
+    const body = rows.map((r) => columns.map((c) => String(r[c] ?? "")));
+    autoTable(doc, {
+      startY: 60,
+      head: [columns],
+      body,
+      styles: { fontSize: 8, cellPadding: 4, overflow: "linebreak" },
+    });
+    doc.save(`${baseName}.pdf`);
+  };
+  return (
+    <div className="flex items-center gap-2">
+      <button onClick={downloadJSON} className="rounded-md bg-gray-900 px-3 py-2 text-sm text-white hover:bg-black">
+        JSON
+      </button>
+      <button onClick={downloadCSV} className="rounded-md bg-gray-900 px-3 py-2 text-sm text-white hover:bg-black">
+        CSV
+      </button>
+      <button onClick={downloadPDF} className="rounded-md bg-gray-900 px-3 py-2 text-sm text-white hover:bg-black">
+        PDF
+      </button>
+    </div>
+  );
+}
+
+function toCsv(rows) {
+  if (!rows?.length) return "";
+  const headers = Object.keys(rows[0]);
+  const esc = (v) => JSON.stringify(v ?? "");
+  const lines = [headers.join(",")];
+  for (const r of rows) lines.push(headers.map((h) => esc(r[h])).join(","));
+  return lines.join("\n");
+}
+
+function triggerDownload(blob, filename) {
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = filename;
+  a.click();
+  URL.revokeObjectURL(url);
+}
