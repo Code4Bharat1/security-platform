@@ -39,7 +39,7 @@ export default function HttpsCheckerPage() {
       }
 
       const res = await fetch(
-        `${apiUrl}/api/http/https-enforcement`,
+        `${apiUrl}/http/https-enforcement`,
         {
           method: "POST",
           headers: { "Content-Type": "application/json" },
