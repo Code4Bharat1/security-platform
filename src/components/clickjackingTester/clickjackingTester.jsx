@@ -18,7 +18,7 @@ import {
 
 /* ============================== Helpers ============================== */
 
-const API_BASE = (process.env.NEXT_PUBLIC_API_URL || "http://localhost:4180/api").replace(
+const API_BASE = (process.env.NEXT_PUBLIC_PROD_API_URL).replace(
   /\/+$/,
   ""
 );
