@@ -37,7 +37,7 @@ export default function Cards() {
                     Flags potential online fraud by previous records
                 </p>
 
-                <form className="space-y-6">
+                <div className="space-y-6">
                     <div>
                         <h2 className="text-sm font-medium text-gray-700 mb-2">
                             Identify By:
@@ -69,7 +69,7 @@ export default function Cards() {
                     >
                         Visit
                     </button>
-                </form>
+                </div>
             </div>
         </div>
     );
