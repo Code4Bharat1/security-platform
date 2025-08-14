@@ -99,6 +99,7 @@ export default function ReverseDNSLookup() {
       {toast && <Toast message={toast.message} type={toast.type} onClose={closeToast} />}
       
       <div className="max-w-2xl mx-auto">
+        <img src="/reverse_dns.png" alt="verify" className="w-16 h-20 mb-4 mt-7" />
         {/* Header */}
         <div className="text-center mb-8">
           <div className="inline-flex items-center justify-center w-16 h-16 bg-gradient-to-r from-green-500 to-emerald-600 rounded-full mb-4 shadow-lg">

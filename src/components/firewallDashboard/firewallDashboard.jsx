@@ -23,6 +23,7 @@ export default function FirewallDashboard({ data }) {
 
   return (
     <div className="max-w-5xl mx-auto p-6 bg-white rounded-lg shadow-md font-sans">
+      <img src="/waf1.png" alt="verify" className="w-16 h-20 mb-4 mt-7" />
       <h2 className="text-2xl font-bold mb-4">Firewall Detection Report</h2>
 
       <div className="mb-4">

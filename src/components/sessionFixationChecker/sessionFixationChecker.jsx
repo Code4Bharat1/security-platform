@@ -215,6 +215,7 @@ export default function SessionFixationChecker() {
       </div>
 
       <div className="container mx-auto px-4 py-8 max-w-5xl">
+        <img src="/session_fixation.png" alt="verify" className="w-16 h-20 mb-4 mt-7" />
         <div className="text-center mb-8">
           <div className="flex items-center justify-center gap-3 mb-4">
             <Lock className="w-8 h-8 text-green-600" />

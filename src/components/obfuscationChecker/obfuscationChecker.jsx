@@ -36,6 +36,7 @@ export default function CodeObfuscationChecker() {
 
   return (
     <div className="p-6 max-w-4xl mx-auto">
+      <img src="/obfuscation.png" alt="verify" className="w-16 h-20 mb-4 mt-7" />
       <h1 className="text-3xl font-bold mb-6">Code Obfuscation Checker</h1>
 
       <div className="space-y-4 mb-6">

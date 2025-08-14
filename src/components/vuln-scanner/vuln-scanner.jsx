@@ -155,7 +155,7 @@ export default function Vulnscanner() {
 
   return (
     <div className="flex flex-col items-center justify-center min-h-screen bg-gray-100 p-4 mb-5">
-      <img src="/verify.png" alt="verify" className="w-16 h-20 mb-4 mt-7" />
+      <img src="/vuln_scanner.png" alt="verify" className="w-16 h-20 mb-4 mt-7" />
       <h1 className="text-3xl md:text-4xl font-bold text-slate-800 mt-3">
         Protect Your Website
       </h1>

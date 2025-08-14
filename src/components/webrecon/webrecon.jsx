@@ -54,6 +54,7 @@ export default function Webrecon() {
 
   return (
     <main className="p-6 max-w-2xl mx-auto">
+      <img src="/web-recon.png" alt="web-recon image" className="w-16 h-20 mb-4 mt-7" />
       <h1 className="text-2xl font-bold mb-4">Website Recon Tool</h1>
 
       <div className="flex flex-col sm:flex-row gap-2 mb-4">
@@ -105,10 +106,11 @@ export default function Webrecon() {
       <hr className="my-6" />
 
       {/* Deep Scan */}
+      {/* Deep scan function not present so used handleLookup for deployment */}
       <div className="flex items-center gap-2 mb-2">
         <h2 className="text-lg font-semibold">Deep Scan (WHOIS, SSL, Tech, GeoIP, DNS)</h2>
         <button
-          onClick={handleDeepScan}
+          onClick={handleLookup}
           disabled={scanLoading}
           className={`ml-auto min-w-[140px] text-white px-4 py-2 rounded ${scanLoading ? 'bg-gray-400 cursor-not-allowed' : 'bg-green-600 hover:bg-green-700'}`}
         >

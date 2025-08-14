@@ -32,8 +32,8 @@ export default function TechDetectPage() {
 
   return (
     <div className="p-6 max-w-xl mx-auto">
+      <img src="/fingerprint.png" alt="verify" className="w-16 h-20 mb-4 mt-7" />
       <h1 className="text-xl font-bold mb-4">Technology Detection</h1>
-
       <input
         type="text"
         placeholder="Enter domain (e.g., vercel.com)"
