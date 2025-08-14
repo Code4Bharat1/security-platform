@@ -19,7 +19,7 @@ export default function Cards() {
 
         console.log(selectedOption)
         let link = "";
-        if (selectedOption in ["upi-id", "mobile", "email", "back-acc", "social-media"]){
+        if (["upi-id", "mobile", "email", "back-acc", "social-media"].includes(selectedOption)){
             link = "https://cybercrime.gov.in/Webform/suspect_search_repository.aspx"
         } else {
             link = "https://cybercrime.gov.in/Webform/suspect_search_websites.aspx";;
