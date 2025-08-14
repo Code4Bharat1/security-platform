@@ -95,7 +95,7 @@ const DEFAULT_EXAMPLE = EXAMPLES[0];
   };
 
   const backendUrl = process.env.NEXT_PUBLIC_PROD_API_URL
-  const fullUrl = `${backendUrl.replace(/\/$/, "")}/api/apiTest/apitest-scan`;
+  const fullUrl = `${backendUrl.replace(/\/$/, "")}/apiTest/apitest-scan`;
 
   try {
     const { data } = await axios.post(fullUrl, requestData, {
