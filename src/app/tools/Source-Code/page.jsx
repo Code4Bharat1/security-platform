@@ -7,36 +7,54 @@ export default function SourceCodeAnalyzer() {
   const [result, setResult] = useState(null);
   const [loading, setLoading] = useState(false);
 
+  // Utility to read file as text
+  const readFileAsText = (file) => {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onload = (e) => resolve(e.target.result);
+      reader.onerror = reject;
+      reader.readAsText(file);
+    });
+  };
+
   const handleSubmit = async () => {
+    setResult(null); // Clear previous results
     setLoading(true);
 
-    let finalCode = code;
+    try {
+      let finalCode = code.trim();
 
-    if (file) {
-      const reader = new FileReader();
-      reader.onload = async (e) => {
-        finalCode = e.target.result;
+      // Input validation
+      if (!file && finalCode === "") {
+        alert("Please paste code or upload a file.");
+        setLoading(false);
+        return;
+      }
 
-        const res = await fetch(`${process.env.NEXT_PUBLIC_PROD_API_URL}/analyze/analyzeCode`, {
+      // If file is uploaded, read it
+      if (file) {
+        finalCode = await readFileAsText(file);
+      }
+
+      const res = await fetch(
+        `${process.env.NEXT_PUBLIC_PROD_API_URL}/analyze/analyzeCode`,
+        {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ code: finalCode }),
-        });
+        }
+      );
 
-        const data = await res.json();
-        setResult(data);
-        setLoading(false);
-      };
-      reader.readAsText(file);
-    } else {
-      const res = await fetch(`${process.env.NEXT_PUBLIC_PROD_API_URL}/analyze/analyzeCode`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ code }),
-      });
+      if (!res.ok) {
+        throw new Error(`API error: ${res.statusText}`);
+      }
 
       const data = await res.json();
       setResult(data);
+    } catch (err) {
+      console.error("Error analyzing code:", err);
+      setResult({ issues: ["❌ An error occurred while analyzing the code."] });
+    } finally {
       setLoading(false);
     }
   };
@@ -57,7 +75,7 @@ export default function SourceCodeAnalyzer() {
         onChange={(e) => setCode(e.target.value)}
       ></textarea>
 
-      {/* OR File Upload */}
+      {/* File Upload */}
       <div className="mb-4">
         <label className="block font-semibold mb-2">Or Upload File:</label>
         <input
@@ -70,7 +88,7 @@ export default function SourceCodeAnalyzer() {
         />
       </div>
 
-      {/* Submit */}
+      {/* Submit Button */}
       <button
         onClick={handleSubmit}
         disabled={loading}
@@ -79,15 +97,15 @@ export default function SourceCodeAnalyzer() {
         {loading ? "Scanning..." : "Check Your Code"}
       </button>
 
-      {/* Results */}
+      {/* Result */}
       {result && (
         <div className="mt-6 bg-gray-50 p-4 rounded-md">
           <h3 className="font-bold text-lg mb-2">Scan Result:</h3>
-          {result.issues.length === 0 ? (
+          {result.issues?.length === 0 ? (
             <p className="text-green-600">✅ No vulnerabilities found!</p>
           ) : (
             <ul className="list-disc pl-5 text-red-600 space-y-1">
-              {result.issues.map((issue, index) => (
+              {result.issues?.map((issue, index) => (
                 <li key={index}>{issue}</li>
               ))}
             </ul>
