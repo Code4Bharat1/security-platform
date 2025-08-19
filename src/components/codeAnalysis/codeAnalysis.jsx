@@ -1,7 +1,10 @@
 'use client';
 import { useMemo, useState } from 'react';
-import jsPDF from 'jspdf';
+import { jsPDF } from 'jspdf';            // FIXED: named import
 import autoTable from 'jspdf-autotable';
+
+// Build a sane API base: prefer env, else /api, trim trailing slashes
+const API_BASE = (process.env.NEXT_PUBLIC_PROD_API_URL || '/api').replace(/\/+$/, '');
 
 export default function AnalyzerPage() {
   const [code, setCode] = useState('');
@@ -78,16 +81,29 @@ el.textContent = someUserInput; // safe
     setIsLoading(true);
     setError('');
     setRawResponse('');
+    setIssues([]);
     try {
-      const res = await fetch(`${process.env.NEXT_PUBLIC_PROD_API_URL}/analysis/analyze-scan`, {
+      const res = await fetch(`${API_BASE}/analysis/analyze-scan`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ code, language }),
       });
+
       const text = await res.text();
       setRawResponse(text);
-      if (!res.ok) throw new Error(`HTTP ${res.status}`);
-      const data = JSON.parse(text);
+
+      if (!res.ok) {
+        // backend may send HTML on 404 — bubble up a readable error
+        throw new Error(`HTTP ${res.status} ${res.statusText}`);
+      }
+
+      let data;
+      try {
+        data = JSON.parse(text);
+      } catch {
+        throw new Error('Server did not return JSON. Check API base URL / route wiring.');
+      }
+
       setIssues(Array.isArray(data.issues) ? data.issues : []);
       setRiskScore(Number(data.riskScore) || 0);
       setRiskBand(String(data.riskBand || 'Safe'));
@@ -161,9 +177,9 @@ el.textContent = someUserInput; // safe
         0: { cellWidth: 24 },
         1: { cellWidth: 36 },
         2: { cellWidth: 64 },
-        3: { cellWidth: 48 },
-        4: { cellWidth: 180 },
-        5: { cellWidth: 208 },
+        3: { cellWidth: 60 },
+        4: { cellWidth: 170 },
+        5: { cellWidth: 200 },
       },
     });
 
