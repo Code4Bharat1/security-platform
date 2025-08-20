@@ -1,0 +1,8 @@
+@import "tailwindcss";
+
+.font-anton{
+    font-family: 'Anton', sans-serif;
+}
+.font-inter{
+    font-family: 'Inter', sans-serif;
+}
