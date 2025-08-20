@@ -31,85 +31,75 @@ export default function ContactPage() {
 
   return (
     <div className="min-h-screen w-full bg-black text-white overflow-x-hidden relative">
-      {/* ===== Top breadcrumb (optional) ===== */}
-      <div
-        className="relative h-16 md:h-20 w-full overflow-hidden"
-        style={{
-          backgroundImage: `url('/images/contact-hero.jpg')`,
-          backgroundSize: 'cover',
-          backgroundPosition: 'center',
-        }}
-      >
-        <div className="absolute inset-0 bg-gradient-to-r from-fuchsia-700/40 via-purple-700/30 to-indigo-800/40" />
-        <div className="absolute inset-x-0 bottom-0 h-[6px] bg-black/90" />
-        <div className="relative z-10 flex h-full items-center justify-center">
-          <nav className="flex items-center gap-5 text-xs md:text-sm font-semibold tracking-widest text-white uppercase">
-            <Link href="/" className="hover:text-white/90">Home</Link>
-            <div className="relative flex items-center gap-1">
-              <span className="absolute -top-3 left-1/2 -translate-x-1/2 flex gap-1">
-                <span className="h-1 w-1 rounded-full bg-white/90" />
-                <span className="h-1 w-1 rounded-full bg-white/90" />
-                <span className="h-1 w-1 rounded-full bg-white/90" />
-              </span>
-              <span className="tracking-[0.3em] select-none">››››</span>
-            </div>
+      {/* ===== Banner: HOME >>> CONTACT over Rectangle.png ===== */}
+      <header className="relative w-full h-[64px] sm:h-[72px] md:h-[92px]">
+        <div
+          className="absolute inset-0 bg-cover bg-center"
+          style={{ backgroundImage: "url('/contact/Rectangle.png')" }}
+        />
+        <div className="absolute inset-x-0 bottom-0 h-4 bg-black/70 blur-[6px]" />
+        <div className="absolute inset-0 z-10 flex items-center justify-center">
+          <nav className="flex items-center gap-5 sm:gap-8 md:gap-10 text-white uppercase font-extrabold tracking-widest text-base sm:text-xl md:text-2xl drop-shadow-[0_2px_6px_rgba(0,0,0,.6)]">
+            <Link href="/" className="hover:opacity-90">Home</Link>
+            <span aria-hidden className="select-none tracking-[0.35em]">››››</span>
             <span className="pointer-events-none">Contact</span>
           </nav>
         </div>
+        <div className="absolute -top-1 left-1/2 -translate-x-1/2 z-10 hidden sm:flex gap-1">
+          <span className="h-1 w-1 rounded-full bg-white/100" />
+          <span className="h-1 w-1 rounded-full bg-white/200" />
+          <span className="h-1 w-1 rounded-full bg-white/100" />
+        </div>
+      </header>
+
+      {/* ===== Background ellipses (images) ===== */}
+      <div className="absolute inset-0 z-0 pointer-events-none">
+        {/* Desktop / tablet */}
+        <div className="hidden md:block">
+          <img src="/contact/Ellipse%20120.png" alt="" className="absolute -left-10 top-24 w-44 h-44 object-contain opacity-90" />
+          <img src="/contact/Ellipse%20122.png" alt="" className="absolute left-1/2 -translate-x-1/2 top-20 w-60 h-60 object-contain opacity-80" />
+          <img src="/contact/Ellipse%20121.png" alt="" className="absolute -right-20 top-40 w-56 h-56 object-contain opacity-90" />
+          <img src="/contact/Ellipse%20123.png" alt="" className="absolute left-4 bottom-10 w-64 h-64 object-contain opacity-85" />
+          <img src="/contact/Ellipse%20124.png" alt="" className="absolute right-14 bottom-6 w-60 h-60 object-contain opacity-85" />
+        </div>
+        {/* Mobile */}
+        <div className="block md:hidden">
+          <img src="/contact/Ellipse%20120.png" alt="" className="absolute left-3 top-24 w-28 h-28 object-contain opacity-80" />
+          <img src="/contact/Ellipse%20122.png" alt="" className="absolute right-3 top-16 w-32 h-32 object-contain opacity-80" />
+          <img src="/contact/Ellipse%20124.png" alt="" className="absolute left-6 bottom-10 w-36 h-36 object-contain opacity-80" />
+        </div>
       </div>
 
-      {/* ===== Background circles inside black bg (STATIC) ===== */}
-      {/* Background circles inside black bg (STATIC) */}
-{/* Background circles inside black bg (STATIC, more visible) */}
-<div className="absolute inset-0 z-0 pointer-events-none">
-  {/* Purple glow */}
-  <div className="absolute left-10 top-24 h-80 w-80 rounded-full bg-purple-400/70 blur-2xl" />
-  
-  {/* Pink glow */}
-  <div className="absolute right-16 bottom-28 h-72 w-72 rounded-full bg-purple-400/70 blur-2xl" />
-  
-  {/* Blue glow */}
-  <div className="absolute right-10 top-20 h-72 w-72 rounded-full bg-blue-400/70 blur-2xl" />
-  
-  {/* Violet glow */}
-  <div className="absolute left-20 bottom-16 h-64 w-64 rounded-full bg-violet-400/70 blur-2xl" />
-</div>
-
-
-
-      {/* ===== Main canvas: push the form to the right ===== */}
-      <div className="relative mx-auto w-full max-w-6xl px-4 py-12">
-        <div className="relative flex min-h-[70vh] items-start justify-end">
-          {/* === MAIN FORM (Right side) === */}
+      {/* ===== Main section ===== */}
+      <div className="relative mx-auto w-full max-w-5xl px-4 sm:px-6 py-10 sm:py-14 md:py-16">
+        <div className="relative flex min-h-[50vh] items-start justify-end">
+          {/* === Main form === */}
           <div className="relative z-0 w-full max-w-xl rounded-[22px] p-[2px]
-                          bg-[linear-gradient(to_bottom,#A580FF_0%,#A580FF_65%,#000000_100%)]
+                          bg-[linear-gradient(to_bottom,#A580FF_0%,#A580FF_35%,#000000_100%)]
                           shadow-[0_35px_90px_-25px_rgba(124,58,237,.5)] overflow-visible">
-            <div className="relative rounded-[20px] bg-transparent px-6 py-12 md:px-8 md:py-14">
-              
-              {/* === OVERLAPPING CONTACT DETAILS (30% overlap left) — desktop only === */}
+            {/* inner padding (smaller on mobile) */}
+            <div className="relative rounded-[20px] bg-transparent px-5 py-8 sm:px-8 sm:py-12 md:px-10 md:py-16">
+
+              {/* === Overlapping Contact Details (desktop only) === */}
               <div className="hidden md:block">
-                <div className="absolute -left-[30%] top-[10%] z-10 w-[300px]">
-                  <div className="rounded-[18px] p-[2px]
+                <div className="absolute -left-[60%] top-[10%] z-10 w-[340px] md:w-[360px] h-[560px] md:h-[330px]">
+                  <div className="h-full rounded-[18px] p-[2px]
                                   bg-[linear-gradient(to_bottom,#A580FF_0%,#A580FF_65%,#000000_100%)]
                                   shadow-[0_25px_70px_-25px_rgba(124,58,237,.55)]">
-                    <div className="rounded-[16px] bg-transparent p-5">
-                      <h3 className="mb-3 text-lg font-semibold">Contact Details</h3>
+                    <div className="h-full rounded-[16px] bg-transparent p-5">
+                      <h3 className="mb-3 text-lg font-bold text-black">Contact Details</h3>
                       <div className="mb-4 h-[2px] w-28 bg-white/20" />
                       <ul className="space-y-3 text-[13.5px] text-white/90">
                         <li className="flex items-center gap-2">
-                          <span className="inline-flex h-6 w-6 items-center justify-center rounded-md bg-white/10">✉</span>
-                          <a href="mailto:director@nexcorealliance.com" className="hover:text-white">
-                            director@nexcorealliance.com
-                          </a>
+                          <img src="/contact/mail.png" alt="Mail" className="h-6 w-6 shrink-0 object-contain" />
+                          <a href="mailto:director@nexcorealliance.com" className="hover:text-white">director@nexcorealliance.com</a>
                         </li>
                         <li className="flex items-center gap-2">
-                          <span className="inline-flex h-6 w-6 items-center justify-center rounded-md bg-white/10">☎</span>
-                          <a href="tel:+919594430295" className="hover:text-white">
-                            +91 95944 30295
-                          </a>
+                          <img src="/contact/call.png" alt="Call" className="h-6 w-6 shrink-0 object-contain" />
+                          <a href="tel:+919594430295" className="hover:text-white">+91 95944 30295</a>
                         </li>
                         <li className="flex items-start gap-2">
-                          <span className="mt-0.5 inline-flex h-6 w-6 items-center justify-center rounded-md bg-white/10">📍</span>
+                          <img src="/contact/distance.png" alt="Location" className="h-6 w-6 mt-0.5 shrink-0 object-contain" />
                           <span>Off BKC, Mumbai, India 400070</span>
                         </li>
                       </ul>
@@ -118,59 +108,59 @@ export default function ContactPage() {
                 </div>
               </div>
 
-              {/* === FORM === */}
-              <form onSubmit={handleSubmit} className="space-y-6">
+              {/* === Form fields === */}
+              <form onSubmit={handleSubmit} className="space-y-5 sm:space-y-6">
                 <div>
-                  <label className="mb-1 block text-sm font-medium text-white/70">Name</label>
+                  <label className="mb-1 block text-base sm:text-lg font-bold text-black">Name</label>
                   <input
                     type="text"
                     value={name}
                     onChange={(e) => setName(e.target.value)}
                     placeholder="Enter Your Name"
-                    className="w-full rounded-md border border-white/20 bg-black/30 px-3 py-2 
-                               text-sm text-white placeholder-white/40 outline-none focus:border-purple-300"
+                    className="w-full rounded-md border border-white/20 bg-white px-3 py-3 text-sm sm:text-base
+                               text-black placeholder-black/40 outline-none focus:border-purple-300"
                     required
                   />
                 </div>
                 <div>
-                  <label className="mb-1 block text-sm font-medium text-white/70">Phone Number</label>
+                  <label className="mb-1 block text-base sm:text-lg font-bold text-black">Phone Number</label>
                   <input
                     type="tel"
                     value={phone}
                     onChange={(e) => setPhone(e.target.value)}
                     placeholder="Enter Your Phone Number"
-                    className="w-full rounded-md border border-white/20 bg-black/30 px-3 py-2 
-                               text-sm text-white placeholder-white/40 outline-none focus:border-purple-300"
+                    className="w-full rounded-md border border-white/20 bg-white px-3 py-3 text-sm sm:text-base
+                               text-black placeholder-black/40 outline-none focus:border-purple-300"
                   />
                 </div>
                 <div>
-                  <label className="mb-1 block text-sm font-medium text-white/70">E-Mail Id</label>
+                  <label className="mb-1 block text-base sm:text-lg font-bold text-black">E-Mail Id</label>
                   <input
                     type="email"
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
                     placeholder="Enter Your E-Mail id"
-                    className="w-full rounded-md border border-white/20 bg-black/30 px-3 py-2 
-                               text-sm text-white placeholder-white/40 outline-none focus:border-purple-300"
+                    className="w-full rounded-md border border-black/20 bg-white px-3 py-3 text-sm sm:text-base
+                               text-black placeholder-black/40 outline-none focus:border-purple-300"
                     required
                   />
                 </div>
                 <div>
-                  <label className="mb-1 block text-sm font-medium text-white/70">Message</label>
+                  <label className="mb-1 block text-base sm:text-lg font-bold text-black">Message</label>
                   <textarea
-                    rows={7}
+                    rows={6}
                     value={message}
                     onChange={(e) => setMessage(e.target.value)}
                     placeholder="Enter your message"
-                    className="w-full resize-y rounded-md border border-white/20 bg-black/30 px-3 py-2 
-                               text-sm text-white placeholder-white/40 outline-none focus:border-purple-300"
+                    className="w-full resize-y rounded-md border border-white/20 bg-white px-3 py-3 text-sm sm:text-base
+                               text-black placeholder-black/40 outline-none focus:border-purple-300"
                     required
                   />
                 </div>
-                <div className="pt-2">
+                <div className="pt-1">
                   <button
                     type="submit"
-                    className="mx-auto block w-48 rounded-md bg-black py-2 text-sm font-semibold text-white shadow-md hover:bg-[#1b1b1b]"
+                    className="mx-auto block w-full sm:w-48 rounded-md bg-black py-3 text-sm sm:text-base font-semibold text-white shadow-md hover:bg-[#1b1b1b]"
                   >
                     Send Message
                   </button>
@@ -181,25 +171,27 @@ export default function ContactPage() {
             </div>
           </div>
 
-          {/* Mobile: show details below (no overlap) */}
+          {/* === Mobile contact details (stacked) === */}
           <div className="mt-8 w-full md:hidden">
-            <div className="rounded-[18px] p-[2px]
-                            bg-[linear-gradient(to_bottom,#A580FF_0%,#A580FF_65%,#000000_100%)]">
+            <div className="rounded-[18px] p-[2px] bg-[linear-gradient(to_bottom,#A580FF_0%,#A580FF_65%,#000000_100%)]">
               <div className="rounded-[16px] bg-transparent p-5">
-                <h3 className="mb-3 text-lg font-semibold">Contact Details</h3>
+                <h3 className="mb-3 text-lg font-semibold text-black">Contact Details</h3>
                 <div className="mb-4 h-[2px] w-28 bg-white/20" />
                 <ul className="space-y-3 text-[13.5px] text-white/90">
-                  <li className="flex items-center gap-2">✉
+                  <li className="flex items-center gap-2">
+                    <img src="/contact/mail.png" alt="Mail" className="h-6 w-6 shrink-0 object-contain" />
                     <a href="mailto:director@nexcorealliance.com" className="ml-2 hover:text-white">
                       director@nexcorealliance.com
                     </a>
                   </li>
-                  <li className="flex items-center gap-2">☎
+                  <li className="flex items-center gap-2">
+                    <img src="/contact/call.png" alt="Call" className="h-6 w-6 shrink-0 object-contain" />
                     <a href="tel:+919594430295" className="ml-2 hover:text-white">
                       +91 95944 30295
                     </a>
                   </li>
-                  <li className="flex items-start gap-2">📍
+                  <li className="flex items-start gap-2">
+                    <img src="/contact/distance.png" alt="Location" className="h-6 w-6 mt-0.5 shrink-0 object-contain" />
                     <span className="ml-2">Off BKC, Mumbai, India 400070</span>
                   </li>
                 </ul>
