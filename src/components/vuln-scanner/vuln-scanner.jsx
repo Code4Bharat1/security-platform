@@ -1,6 +1,9 @@
 "use client";
 import React, { useEffect, useMemo, useState } from "react";
 import { Loader2, Search as SearchIcon, Clock, Shield, History, Cookie, FileText, BarChart } from "lucide-react";
+import { jsPDF } from "jspdf";
+import autoTable from "jspdf-autotable";
+
 
 export default function Vulnscanner() {
   const [url, setUrl] = useState("");
@@ -104,6 +107,78 @@ export default function Vulnscanner() {
         return "text-gray-600";
     }
   };
+    const generatePDF = () => {
+  const doc = new jsPDF();
+  
+  // Set title
+  doc.setFontSize(18);
+  doc.text("Vulnerability Scan Report", 20, 20);
+
+  // Add domain and timestamp
+  doc.setFontSize(12);
+  doc.text(`Domain: ${scanData.domain}`, 20, 30);
+  doc.text(`Scan Date: ${new Date(scanData.timestamp).toLocaleString()}`, 20, 40);
+
+  // Add a table for key scan data
+  autoTable(doc, {
+    startY: 50,
+    head: [["Header", "Value"]],
+    body: [
+      ["Risk Level", scanData.riskLevel?.toUpperCase()],
+      ["Vulnerabilities", scanData.vulnerabilityCount || 0],
+      ["SSL Valid", scanData.ssl?.valid ? "VALID" : "INVALID"],
+      ["Response Time", `${scanData.timespan} ms`],
+    ],
+  });
+
+  // Add vulnerabilities to the PDF (if any)
+  if (scanData.vulnerabilities?.length > 0) {
+    const vulnerabilityData = scanData.vulnerabilities.map((v) => [
+      v.severity?.toUpperCase(),
+      v.type?.replace(/_/g, " "),
+      v.description,
+      v.recommendation || "—",
+    ]);
+
+    autoTable(doc, {
+      startY: doc.lastAutoTable.finalY + 10,
+      head: ["Severity", "Type", "Description", "Recommendation"],
+      body: vulnerabilityData,
+    });
+  }
+
+  // Add SSL details to the PDF
+  if (scanData.ssl) {
+    autoTable(doc, {
+      startY: doc.lastAutoTable.finalY + 10,
+      head: [["SSL Details", "Value"]],
+      body: [
+        ["Status", scanData.ssl.valid ? "Valid" : "Invalid"],
+        ["Issuer", scanData.ssl.issuer || "Unknown"],
+        ["Valid From", scanData.ssl.validFrom || "N/A"],
+        ["Valid To", scanData.ssl.validTo || "N/A"],
+        ["Days Remaining", scanData.ssl.daysRemaining || "N/A"],
+      ],
+    });
+  }
+
+  // Add HTTP Headers to the PDF
+  if (scanData.headers) {
+    const headersData = Object.entries(scanData.headers)
+      .filter(([k]) => !["rawHeaders", "httpVersion", "statusCode", "statusMessage", "cookies", "csp", "_benchmark"].includes(k))
+      .map(([k, v]) => [k, v]);
+
+    autoTable(doc, {
+      startY: doc.lastAutoTable.finalY + 10,
+      head: [["Header", "Value"]],
+      body: headersData,
+    });
+  }
+
+  // Save the PDF
+  doc.save("scan_report.pdf");
+};
+
 
   const renderRawHeaders = (raw) => {
     // raw is an array like [k,v,k,v,...]
@@ -732,6 +807,17 @@ export default function Vulnscanner() {
                 )}
               </div>
             )}
+
+             {/* Download PDF Button */}
+            <div className="flex justify-end mb-6">
+              <button
+                onClick={generatePDF}
+                className="bg-blue-600 text-white py-2 px-4 rounded hover:bg-blue-500"
+              >
+                Download PDF Report
+              </button>
+            </div>
+
 
             {/* History */}
             {activeTab === "history" && (
