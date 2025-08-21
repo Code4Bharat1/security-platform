@@ -44,7 +44,7 @@ export default function Branches() {
                     {/* Branch Lists */}
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-2 text-white text-sm sm:text-base my-6 sm:my-10">
                         {/* Domestic Branches */}
-                        <div className="bg-slate-800 p-3 sm:p-4 lg:p-5 rounded-lg shadow-md border border-[#956af8]">
+                        <div className="bg-[#1e293b] p-3 sm:p-4 lg:p-5 rounded-lg shadow-md border border-[#956af8]">
                             <h3 className="text-lg sm:text-xl font-semibold mb-3 text-[#956af8] ">Domestic Branches</h3>
                             <ul className="list-disc list-inside space-y-1">
                                 <li>Mumbai, Maharashtra</li>
@@ -56,7 +56,7 @@ export default function Branches() {
                         </div>
 
                         {/* International Branches */}
-                        <div className="bg-slate-800 p-3 sm:p-4 lg:p-5 rounded-lg shadow-md border border-[#956af8]">
+                        <div className="bg-[#1e293b] p-3 sm:p-4 lg:p-5 rounded-lg shadow-md border border-[#956af8]">
                             <h3 className="text-lg sm:text-xl font-semibold mb-3 text-[#956af8]">International Branches</h3>
                             <ul className="list-disc list-inside space-y-1">
                                 <li>Dubai, UAE</li>
