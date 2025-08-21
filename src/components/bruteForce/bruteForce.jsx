@@ -1,10 +1,11 @@
 'use client';
 import { useState } from 'react';
+import { jsPDF } from 'jspdf';
+import autoTable from 'jspdf-autotable';
 
 export default function DirectoryBruteForcer() {
   const [target, setTarget] = useState('');
   const [recursive, setRecursive] = useState(true);
-  const [maxDepth, setMaxDepth] = useState(2);
   const [results, setResults] = useState([]);
   const [meta, setMeta] = useState(null);
   const [loading, setLoading] = useState(false);
@@ -20,23 +21,22 @@ export default function DirectoryBruteForcer() {
       const res = await fetch(`${process.env.NEXT_PUBLIC_PROD_API_URL}/bruteForce/brute-Force`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ target: cleanTarget, recursive, maxDepth }),
+        body: JSON.stringify({ target: cleanTarget, recursive }),
       });
       const data = await res.json();
       if (res.ok) {
         setResults(data.results || []);
         setMeta(data.meta || null);
       } else {
-        setResults([{ path: '-', status: '-', result: data.error || 'Error', depth: '-' }]);
+        setResults([{ path: '-', status: '-', result: data.error || 'Error' }]);
       }
     } catch (err) {
-      setResults([{ path: '-', status: '-', result: '⚠️ Scan failed', depth: '-' }]);
+      setResults([{ path: '-', status: '-', result: '⚠️ Scan failed' }]);
     } finally {
       setLoading(false);
     }
   };
 
-  const formatDate = (v) => (v ? new Date(v).toLocaleString() : '-');
   const formatDuration = (ms) => {
     if (ms === 0) return '0 ms';
     if (!ms && ms !== 0) return '-';
@@ -46,6 +46,20 @@ export default function DirectoryBruteForcer() {
     const m = Math.floor(s / 60);
     const r = (s % 60).toFixed(1);
     return `${m}m ${r}s`;
+  };
+
+  const downloadPDF = () => {
+    const doc = new jsPDF();
+    doc.text(`Directory Brute Force Scan for ${target}`, 10, 10);
+    autoTable(doc, {
+      head: [['Path', 'Status', 'Result']],
+      body: results.map(({ path, status, result }) => [path, status, result]),
+    });
+    doc.save('directory-brute-force-results.pdf');
+  };
+
+  const viewFoundSite = (path) => {
+    window.open(`${target}${path}`, '_blank');
   };
 
   return (
@@ -71,20 +85,6 @@ export default function DirectoryBruteForcer() {
             <span>Recursive</span>
           </label>
 
-          <label className="flex items-center gap-2">
-            <span>Max depth</span>
-            <select
-              value={maxDepth}
-              onChange={(e) => setMaxDepth(Number(e.target.value))}
-              className="border rounded p-1"
-            >
-              <option value={0}>0 (seed only)</option>
-              <option value={1}>1</option>
-              <option value={2}>2</option>
-              <option value={3}>3</option>
-            </select>
-          </label>
-
           <button
             onClick={startScan}
             className="ml-auto bg-blue-600 text-white px-4 py-2 rounded disabled:opacity-60"
@@ -102,62 +102,53 @@ export default function DirectoryBruteForcer() {
             <p className="font-semibold">{meta.recursive ? 'Yes' : 'No'}</p>
           </div>
           <div>
-            <p className="text-sm text-gray-600">Max depth (selected)</p>
-            <p className="font-semibold">{meta.maxDepth}</p>
-          </div>
-          <div>
-            <p className="text-sm text-gray-600">Max depth reached</p>
-            <p className="font-semibold">{meta.maxDepthReached ?? '-'}</p>
-          </div>
-          <div>
             <p className="text-sm text-gray-600">Requests sent</p>
             <p className="font-semibold">{meta.totalRequests ?? '-'}</p>
-          </div>
-          <div>
-            <p className="text-sm text-gray-600">Skipped due to depth</p>
-            <p className="font-semibold">{meta.skippedDueToDepth ?? 0}</p>
           </div>
           <div>
             <p className="text-sm text-gray-600">Duration</p>
             <p className="font-semibold">{formatDuration(meta.durationMs)}</p>
           </div>
-          {/* <div className="col-span-2">
-            <p className="text-sm text-gray-600">Started</p>
-            <p className="font-medium">{formatDate(meta.startedAt)}</p>
-          </div>
-          <div className="col-span-2">
-            <p className="text-sm text-gray-600">Finished</p>
-            <p className="font-medium">{formatDate(meta.finishedAt)}</p>
-          </div> */}
         </div>
       )}
 
       {results.length > 0 && (
-        <table className="min-w-full text-sm mt-4 border border-gray-200">
-          <thead className="bg-gray-100 text-left">
-            <tr>
-              <th className="px-4 py-2">Path</th>
-              <th className="px-4 py-2">Depth</th>
-              <th className="px-4 py-2">Status</th>
-              <th className="px-4 py-2">Result</th>
-            </tr>
-          </thead>
-          <tbody>
-            {results.map((item, i) => (
-              <tr key={i} className="border-t border-gray-200">
-                {/* Optional visual indent based on depth */}
-                <td className="px-4 py-2">
-                  <span style={{ paddingLeft: `${Math.min(item.depth || 0, 6) * 12}px` }}>
-                    {item.path}
-                  </span>
-                </td>
-                <td className="px-4 py-2">{item.depth ?? '-'}</td>
-                <td className="px-4 py-2">{item.status}</td>
-                <td className="px-4 py-2">{item.result}</td>
+        <div>
+          <button
+            onClick={downloadPDF}
+            className="mt-5 w-full bg-green-600 hover:bg-green-700 text-white py-2 rounded"
+          >
+            Download PDF
+          </button>
+
+          <table className="min-w-full text-sm mt-4 border border-gray-200">
+            <thead className="bg-gray-100 text-left">
+              <tr>
+                <th className="px-4 py-2">Path</th>
+                <th className="px-4 py-2">Status</th>
+                <th className="px-4 py-2">Result</th>
+                <th className="px-4 py-2">View Site</th>
               </tr>
-            ))}
-          </tbody>
-        </table>
+            </thead>
+            <tbody>
+              {results.map((item, i) => (
+                <tr key={i} className="border-t border-gray-200">
+                  <td className="px-4 py-2">{item.path}</td>
+                  <td className="px-4 py-2">{item.status}</td>
+                  <td className="px-4 py-2">{item.result}</td>
+                  <td className="px-4 py-2">
+                    <button
+                      onClick={() => viewFoundSite(item.path)}
+                      className="text-blue-600 hover:underline"
+                    >
+                      View
+                    </button>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
       )}
     </div>
   );
