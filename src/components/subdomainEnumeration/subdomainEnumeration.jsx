@@ -1,6 +1,8 @@
 'use client';
 
 import { useState } from 'react';
+import { jsPDF } from 'jspdf';
+import autoTable from 'jspdf-autotable';
 
 export default function SubdomainEnumeration() {
   const [domain, setDomain] = useState('');
@@ -8,6 +10,7 @@ export default function SubdomainEnumeration() {
   const [stats, setStats] = useState(null); // { total, startedAt, finishedAt, durationMs }
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+  const [imageSrc, setImageSrc] = useState(null); // To store the image URL of the website
 
   const formatDate = (iso) => {
     if (!iso) return '-';
@@ -34,6 +37,7 @@ export default function SubdomainEnumeration() {
     setError('');
     setResults([]);
     setStats(null);
+    setImageSrc(null); // Reset image when starting a new search
 
     const cleanDomain = domain.trim().toLowerCase();
     if (!cleanDomain) {
@@ -76,6 +80,25 @@ export default function SubdomainEnumeration() {
     } finally {
       setLoading(false);
     }
+  };
+
+  const downloadPDF = () => {
+    const doc = new jsPDF();
+    doc.text(`Subdomain Enumeration for ${domain}`, 10, 10);
+    autoTable(doc, {
+      head: [['Subdomain']],
+      body: results.map(({ subdomain }) => [subdomain]),
+    });
+    doc.save('subdomain-enumeration.pdf');
+  };
+
+  const handleSubdomainClick = (subdomain) => {
+    const img = new Image();
+    img.src = `https://${subdomain}/favicon.ico`;
+
+    // Set the image source or fallback if the favicon doesn't load
+    img.onload = () => setImageSrc(img.src);
+    img.onerror = () => setImageSrc('/fallback-image.png'); // Replace with a default image URL
   };
 
   return (
@@ -133,12 +156,23 @@ export default function SubdomainEnumeration() {
                   target="_blank"
                   rel="noopener noreferrer"
                   className="text-blue-600 hover:underline"
+                  onClick={(e) => {
+                    e.preventDefault();
+                    handleSubdomainClick(subdomain);
+                  }}
                 >
                   {subdomain}
                 </a>
               </li>
             ))}
           </ul>
+
+          <button
+            onClick={downloadPDF}
+            className="mt-5 w-full bg-green-600 hover:bg-green-700 text-white py-2 rounded"
+          >
+            Download PDF
+          </button>
         </div>
       )}
     </div>
