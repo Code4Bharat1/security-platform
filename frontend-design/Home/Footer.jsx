@@ -3,8 +3,8 @@ import { useState } from 'react';
 
 const Footer = () => {
     const Section = ({ title, links }) => (
-        <div className="w-full md:w-auto mb-4 md:mb-0 md:px-16">
-            <h3 className="w-full text-left text-lg font-bold md:font-semibold">
+        <div className="w-full md:w-auto mb-4 md:mb-0 md:px-16 font-inter">
+            <h3 className="w-full text-left text-lg font-bold md:font-bold text-black">
                 {title}
             </h3>
             <ul className="mt-2 md:mt-4 space-y-2">
@@ -22,7 +22,7 @@ const Footer = () => {
 
 
     return (
-        <footer className="bg-[#8e5de3] text-white pt-10 md:px-0">
+        <footer className="bg-[#9d7af0] text-white pt-10 md:px-0 font-inter">
             <div className="max-w-7xl mx-auto grid md:grid-cols-4 gap-8 px-6 md:px-16">
                 {/* Left Section */}
                 <div className="md:col-span-1">
