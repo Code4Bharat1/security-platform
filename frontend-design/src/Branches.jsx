@@ -20,26 +20,32 @@ const LOCATIONS = [
     { name: "Kuwait", coordinates: [47.4818, 29.3759] },
     { name: "Oman", coordinates: [58.3829, 23.5880] },
     { name: "Sharjah", coordinates: [55.4038, 25.3463] },
-    { name: "South Africa", coordinates: [22.9375, -30.5595] }, // This is outside Asia but added by your request
+    { name: "South Africa", coordinates: [22.9375, -30.5595] }, // Outside Asia
 ];
 
 export default function Branches() {
     return (
-        <div className="my-5 min-h-screen px-4 sm:px-8 lg:mx-20 font-inter text-white font-inter">
+        <div className="my-5 min-h-screen px-4 sm:px-8 lg:mx-10 font-inter text-white">
             <h1 className="mx-auto text-white text-2xl sm:text-4xl lg:text-5xl font-bold mb-8 sm:mb-5 text-center">
                 <span className="text-[#9d7af0]">About Us</span> | Security Platform
             </h1>
-            <div className="flex justify-evenly bg-black my-10">
+
+            <div className="flex flex-col lg:flex-row lg:gap-10 justify-between bg-black my-10">
+                {/* Text Section */}
                 <div className="grow">
-                    <h2 className="my-10 text-2xl sm:text-3xl md:text-5xl font-inter font-bold underline underline-offset-8 md:underline-offset-12 decoration-[#956af8]">
+                    <h2 className="mt-6 mb-4 sm:mt-10 sm:mb-6 text-2xl sm:text-4xl lg:text-5xl font-bold underline underline-offset-8 md:underline-offset-12 decoration-[#956af8]">
                         Branch
                     </h2>
-                    <p className="flex items-center">Security Platform is a premier cybersecurity and IT services company headquartered in:</p>
-                    {/* Lists section */}
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6 text-white text-sm sm:text-base mr-5 my-10 ">
+
+                    <p className="flex items-center mb-4 text-sm sm:text-base md:text-lg">
+                        Security Platform is a premier cybersecurity and IT services company headquartered in:
+                    </p>
+
+                    {/* Branch Lists */}
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-2 text-white text-sm sm:text-base my-6 sm:my-10">
                         {/* Domestic Branches */}
-                        <div className="bg-slate-800 p-4 rounded-lg shadow-md border border-[#956af8]">
-                            <h3 className="text-lg font-semibold mb-3 text-[#956af8]">Domestic Branches (India)</h3>
+                        <div className="bg-slate-800 p-3 sm:p-4 lg:p-5 rounded-lg shadow-md border border-[#956af8]">
+                            <h3 className="text-lg sm:text-xl font-semibold mb-3 text-[#956af8] ">Domestic Branches</h3>
                             <ul className="list-disc list-inside space-y-1">
                                 <li>Mumbai, Maharashtra</li>
                                 <li>Assam</li>
@@ -50,8 +56,8 @@ export default function Branches() {
                         </div>
 
                         {/* International Branches */}
-                        <div className="bg-slate-800 p-4 rounded-lg shadow-md border border-[#956af8]">
-                            <h3 className="text-lg font-semibold mb-3 text-[#956af8]">International Branches</h3>
+                        <div className="bg-slate-800 p-3 sm:p-4 lg:p-5 rounded-lg shadow-md border border-[#956af8]">
+                            <h3 className="text-lg sm:text-xl font-semibold mb-3 text-[#956af8]">International Branches</h3>
                             <ul className="list-disc list-inside space-y-1">
                                 <li>Dubai, UAE</li>
                                 <li>Sharjah, UAE</li>
@@ -62,14 +68,16 @@ export default function Branches() {
                         </div>
                     </div>
                 </div>
+
+                {/* Map Section */}
                 <div className="bg-white rounded-md shadow-md p-2 w-[100%]">
                     <ComposableMap
                         projection="geoMercator"
                         projectionConfig={{
-                            center: [75, 15], // Centered on South Asia
-                            scale: 700,
+                            center: [60, 15], // Centered on South Asia
+                            scale: 300,
                         }}
-                        style={{ width: "100%", height: "auto" }}
+                        style={{ width: "100%" }}
                     >
                         <Geographies geography={geoUrl}>
                             {({ geographies }) =>
@@ -79,8 +87,8 @@ export default function Branches() {
                                         geography={geo}
                                         style={{
                                             default: {
-                                                fill: "#1e293b", // slate-800
-                                                stroke: "#334155", // slate-700 borders
+                                                fill: "#1e293b",
+                                                stroke: "#334155",
                                                 outline: "none",
                                             },
                                             hover: {
@@ -103,7 +111,7 @@ export default function Branches() {
                             const fontSize = 10;
                             const paddingX = 6;
                             const paddingY = 2;
-                            const textWidth = name.length * (fontSize * 0.6); // Rough estimate for width
+                            const textWidth = name.length * (fontSize * 0.6); // Estimate width
 
                             return (
                                 <Marker key={name} coordinates={coordinates}>
@@ -111,13 +119,13 @@ export default function Branches() {
                                         {/* Circular marker */}
                                         <circle r={4} fill="#9d7af0" stroke="white" strokeWidth={1} />
 
-                                        {/* Background box behind text */}
+                                        {/* Background box */}
                                         <rect
                                             x={xOffset - paddingX}
                                             y={yOffset - fontSize}
                                             width={textWidth + paddingX * 2}
                                             height={fontSize + paddingY * 2}
-                                            fill="#1e293b" // slate-800
+                                            fill="#1e293b"
                                             stroke="#9d7af0"
                                             strokeWidth={0.8}
                                             rx={4}
@@ -143,7 +151,6 @@ export default function Branches() {
                     </ComposableMap>
                 </div>
             </div>
-
         </div>
     );
 }
