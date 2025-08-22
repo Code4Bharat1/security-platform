@@ -130,6 +130,7 @@ export default function OAuthTokenInspector() {
       )}
       <div className="max-w-5xl mx-auto">
         {/* Header */}
+        <img src="/oauth.png" alt="verify" className="w-16 h-20 mb-4 mt-7" />
         <div className="text-center mb-8 pt-8">
           <div className="inline-flex items-center justify-center w-16 h-16 bg-gradient-to-r from-emerald-500 to-green-600 rounded-2xl mb-4 shadow-lg">
             <svg

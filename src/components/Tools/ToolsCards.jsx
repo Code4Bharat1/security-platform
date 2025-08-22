@@ -27,8 +27,8 @@ function ToolsCard() {
       const list = filterOnType(tools, "red-team")
       setToolsList(list);
       setToolsTitle("Red Team");
-    } else if (type == "tech-forensic") {
-      const list = filterOnType(tools, "tech-forensic")
+    } else if (type == "forensic") {
+      const list = filterOnType(tools, "forensic")
       setToolsList(list);
       setToolsTitle("Tech Forensic");
     } else {
@@ -76,7 +76,7 @@ function ToolsCard() {
               </div>
 
               {/* Forensic */}
-              <div className="p-4 bg-purple-100 rounded-lg cursor-pointer" onClick={() => renderCards("tech-forensic")}>
+              <div className="p-4 bg-purple-100 rounded-lg cursor-pointer" onClick={() => renderCards("forensic")}>
                 <h3 className="font-semibold text-purple-700">Forensic</h3>
                 <p className="text-sm text-purple-600">Digital forensic investigation techniques and tools.</p>
               </div>

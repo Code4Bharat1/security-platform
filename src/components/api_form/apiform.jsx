@@ -94,11 +94,8 @@ const DEFAULT_EXAMPLE = EXAMPLES[0];
     options: { timeout: parseInt(formData.timeout, 10) || 5000 },
   };
 
-  const backendUrl =
-    process.env.NEXT_PUBLIC_PROD_API_URL ||
-    process.env.NEXT_PUBLIC_API_URL ||
-    "http://localhost:4180";
-  const fullUrl = `${backendUrl.replace(/\/$/, "")}/api/apiTest/apitest-scan`;
+  const backendUrl = process.env.NEXT_PUBLIC_PROD_API_URL
+  const fullUrl = `${backendUrl.replace(/\/$/, "")}/apiTest/apitest-scan`;
 
   try {
     const { data } = await axios.post(fullUrl, requestData, {
@@ -195,6 +192,7 @@ const DEFAULT_EXAMPLE = EXAMPLES[0];
   
   return (
     <div className="flex flex-col items-center min-h-screen bg-gray-100 mb-5">
+      <img src="/api.png" alt="verify" className="w-16 h-20 mb-4 mt-7" />
       <div className="w-16 h-20 flex items-center justify-center bg-blue-700 rounded-lg mb-4 mt-7">
         <Shield className="w-12 h-12 text-white" />
       </div>

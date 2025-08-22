@@ -9,20 +9,18 @@ export default function CSRFChecker() {
   const [loading, setLoading] = useState(false)
   const [toasts, setToasts] = useState([])
 
+  const API_BASE =
+    process.env.NEXT_PUBLIC_PROD_API_URL ||
+    process.env.NEXT_PUBLIC_API_URL ||
+    '' // leave blank if you use a Next.js rewrite proxy
+
   const addToast = (message, type = 'info') => {
     const id = Date.now()
-    const toast = { id, message, type }
-    setToasts(prev => [...prev, toast])
-    
-    // Auto remove after 5 seconds
-    setTimeout(() => {
-      setToasts(prev => prev.filter(t => t.id !== id))
-    }, 5000)
+    setToasts(prev => [...prev, { id, message, type }])
+    setTimeout(() => setToasts(prev => prev.filter(t => t.id !== id)), 5000)
   }
 
-  const removeToast = (id) => {
-    setToasts(prev => prev.filter(t => t.id !== id))
-  }
+  const removeToast = (id) => setToasts(prev => prev.filter(t => t.id !== id))
 
   const handleAnalyze = async () => {
     if (!code.trim()) {
@@ -32,27 +30,28 @@ export default function CSRFChecker() {
 
     setLoading(true)
     setResult(null)
-    
+
     try {
-      const res = await fetch(`${process.env.NEXT_PUBLIC_PROD_API_URL}/csrf/csrf-check`, {
+      const endpoint = `${API_BASE ? API_BASE.replace(/\/$/, '') : ''}/csrf/csrf-check`
+      const res = await fetch(endpoint, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ code }),
       })
 
       if (!res.ok) {
-        const errData = await res.json()
+        const errData = await res.json().catch(() => ({}))
         throw new Error(errData.error || 'Failed to analyze code')
       }
 
       const data = await res.json()
       setResult(data)
-      
-      if (data.vulnerable) {
-        addToast('CSRF vulnerabilities detected! Check the results below.', 'warning')
-      } else {
-        addToast('Great! No critical CSRF issues found.', 'success')
-      }
+      addToast(
+        data.vulnerable
+          ? 'CSRF vulnerabilities detected! Check the results below.'
+          : 'Great! No critical CSRF issues found.',
+        data.vulnerable ? 'warning' : 'success'
+      )
     } catch (err) {
       addToast(`Analysis failed: ${err.message}`, 'error')
     } finally {
@@ -63,20 +62,16 @@ export default function CSRFChecker() {
   const handleFileUpload = (e) => {
     const file = e.target.files[0]
     if (!file) return
-
     if (!file.name.match(/\.(html|js|jsx|ts|tsx)$/i)) {
       addToast('Please upload a valid code file (.html, .js, .jsx, .ts, .tsx)', 'error')
       return
     }
-
     const reader = new FileReader()
-    reader.onload = (e) => {
-      setCode(e.target.result)
+    reader.onload = (ev) => {
+      setCode(ev.target.result)
       addToast(`File "${file.name}" loaded successfully`, 'success')
     }
-    reader.onerror = () => {
-      addToast('Failed to read file', 'error')
-    }
+    reader.onerror = () => addToast('Failed to read file', 'error')
     reader.readAsText(file)
   }
 
@@ -88,7 +83,6 @@ export default function CSRFChecker() {
       default: return <Shield className="w-5 h-5 text-blue-600" />
     }
   }
-
   const getToastBg = (type) => {
     switch (type) {
       case 'success': return 'bg-green-50 border-green-200'
@@ -100,20 +94,14 @@ export default function CSRFChecker() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-green-50 to-emerald-100">
-      {/* Toast Container */}
+      {/* Toasts */}
       <div className="fixed top-4 right-4 z-50 space-y-2">
         {toasts.map(toast => (
-          <div
-            key={toast.id}
-            className={`${getToastBg(toast.type)} border rounded-lg p-4 shadow-lg backdrop-blur-sm max-w-sm animate-in slide-in-from-right duration-300`}
-          >
+          <div key={toast.id} className={`${getToastBg(toast.type)} border rounded-lg p-4 shadow-lg backdrop-blur-sm max-w-sm animate-in slide-in-from-right duration-300`}>
             <div className="flex items-start gap-3">
               {getToastIcon(toast.type)}
               <p className="text-sm text-gray-700 flex-1">{toast.message}</p>
-              <button
-                onClick={() => removeToast(toast.id)}
-                className="text-gray-400 hover:text-gray-600 transition-colors"
-              >
+              <button onClick={() => removeToast(toast.id)} className="text-gray-400 hover:text-gray-600 transition-colors">
                 <X className="w-4 h-4" />
               </button>
             </div>
@@ -124,6 +112,7 @@ export default function CSRFChecker() {
       <div className="container mx-auto px-4 py-8 max-w-6xl">
         {/* Header */}
         <div className="text-center mb-8">
+          <img src="/csrf.png" alt="verify" className="w-16 h-20 mb-4 mt-7" />
           <div className="flex items-center justify-center gap-3 mb-4">
             <Shield className="w-8 h-8 text-green-600" />
             <h1 className="text-4xl font-bold text-gray-800">CSRF Security Analyzer</h1>
@@ -131,10 +120,10 @@ export default function CSRFChecker() {
           <p className="text-gray-600 text-lg">Identify and prevent Cross-Site Request Forgery vulnerabilities in your code</p>
         </div>
 
-        {/* Main Content */}
+        {/* Main */}
         <div className="bg-white rounded-2xl shadow-xl p-8 mb-8">
           <div className="grid lg:grid-cols-2 gap-8">
-            {/* Code Input Section */}
+            {/* Left: Input */}
             <div className="space-y-6">
               <h2 className="text-2xl font-semibold text-gray-800 flex items-center gap-2">
                 <Upload className="w-6 h-6 text-green-600" />
@@ -146,16 +135,12 @@ export default function CSRFChecker() {
                   className="w-full h-64 p-4 border-2 border-gray-200 rounded-xl resize-none focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent transition-all duration-200 font-mono text-sm"
                   placeholder="Paste your HTML, JavaScript, or frontend code here..."
                   value={code}
-                  onChange={(e) => setCode(e.target.value.trim())}               />
+                  onChange={(e) => setCode(e.target.value)}
+                />
 
                 <div className="flex flex-col sm:flex-row gap-4">
                   <label className="flex-1 cursor-pointer">
-                    <input
-                      type="file"
-                      accept=".html,.js,.jsx,.ts,.tsx"
-                      onChange={handleFileUpload}
-                      className="hidden"
-                    />
+                    <input type="file" accept=".html,.js,.jsx,.ts,.tsx" onChange={handleFileUpload} className="hidden" />
                     <div className="flex items-center justify-center gap-2 px-4 py-3 border-2 border-dashed border-green-300 rounded-xl hover:border-green-400 hover:bg-green-50 transition-all duration-200">
                       <Upload className="w-5 h-5 text-green-600" />
                       <span className="text-green-700 font-medium">Upload File</span>
@@ -166,54 +151,75 @@ export default function CSRFChecker() {
                     onClick={handleAnalyze}
                     disabled={loading}
                     className={`px-8 py-3 rounded-xl font-semibold text-white transition-all duration-200 transform hover:scale-105 ${
-                      loading 
-                        ? 'bg-gray-400 cursor-not-allowed' 
-                        : 'bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 shadow-lg hover:shadow-xl'
+                      loading ? 'bg-gray-400 cursor-not-allowed'
+                              : 'bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 shadow-lg hover:shadow-xl'
                     }`}
                   >
                     {loading ? (
                       <div className="flex items-center gap-2">
-                        <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                        <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
                         Analyzing...
                       </div>
-                    ) : (
-                      'Analyze Code'
-                    )}
+                    ) : 'Analyze Code'}
                   </button>
                 </div>
               </div>
             </div>
 
-            {/* Results Section */}
+            {/* Right: Results */}
             <div className="space-y-6">
               <h2 className="text-2xl font-semibold text-gray-800 flex items-center gap-2">
                 <CheckCircle className="w-6 h-6 text-green-600" />
                 Security Analysis
               </h2>
 
+              {/* ---- Score Card goes INSIDE the component, before the details ---- */}
+              {result && (
+                <div className="mb-2 grid md:grid-cols-2 gap-4">
+                  <div className="rounded-xl p-6 border-2 bg-white">
+                    <div className="text-gray-800 font-bold text-lg">Security Score</div>
+                    <div className={`mt-2 text-4xl font-extrabold ${
+                      result.score >= 80 ? 'text-green-600' : result.score >= 50 ? 'text-yellow-600' : 'text-red-600'
+                    }`}>
+                      {result.score}/100
+                    </div>
+                    <div className="mt-1 text-sm text-gray-600">
+                      Risk Level: <span className="font-semibold">{result.riskLevel}</span>
+                    </div>
+                  </div>
+
+                  <div className="rounded-xl p-6 border-2 bg-white">
+                    <div className="text-gray-800 font-bold text-lg mb-2">Checks Breakdown</div>
+                    <ul className="space-y-1 text-sm">
+                      <li className="flex items-center gap-2">
+                        <span>{result.breakdown?.tokenPresentOK ? '✅' : '❌'}</span> Token present (+30)
+                      </li>
+                      <li className="flex items-center gap-2">
+                        <span>{result.breakdown?.cookieSameSiteOK ? '✅' : '❌'}</span> Cookie SameSite (+30)
+                      </li>
+                      <li className="flex items-center gap-2">
+                        <span>{result.breakdown?.originRefererOK ? '✅' : '❌'}</span> Origin/Referrer policy (+30)
+                      </li>
+                      <li className="flex items-center gap-2">
+                        <span>{result.breakdown?.tokenRandomnessOK ? '✅' : '❌'}</span> Token randomness (+10)
+                      </li>
+                    </ul>
+                  </div>
+                </div>
+              )}
+
               {result ? (
                 <div className={`rounded-xl p-6 border-2 ${
-                  result.vulnerable 
-                    ? 'bg-red-50 border-red-200' 
-                    : 'bg-green-50 border-green-200'
+                  result.vulnerable ? 'bg-red-50 border-red-200' : 'bg-green-50 border-green-200'
                 }`}>
                   <div className={`flex items-center gap-3 mb-4 text-lg font-bold ${
                     result.vulnerable ? 'text-red-700' : 'text-green-700'
                   }`}>
-                    {result.vulnerable ? (
-                      <>
-                        <AlertTriangle className="w-6 h-6" />
-                        Vulnerabilities Detected
-                      </>
-                    ) : (
-                      <>
-                        <CheckCircle className="w-6 h-6" />
-                        Code Secure
-                      </>
-                    )}
+                    {result.vulnerable ? (<><AlertTriangle className="w-6 h-6" />Vulnerabilities Detected</>)
+                                       : (<><CheckCircle className="w-6 h-6" />Code Secure</>)}
                   </div>
 
-                  {result.issues && result.issues.length > 0 && (
+                  {result.issues?.length > 0 && (
                     <div className="mb-6">
                       <h3 className="font-semibold text-gray-800 mb-3">Issues Found:</h3>
                       <ul className="space-y-2">

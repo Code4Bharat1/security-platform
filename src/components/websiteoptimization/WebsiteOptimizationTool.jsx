@@ -40,6 +40,7 @@ export default function WebsiteOptimizationTool() {
   return (
     <div className="flex items-center justify-center min-h-screen bg-gray-100">
       <div className="w-full max-w-xl mx-auto p-6 shadow-lg rounded-lg bg-white">
+        <img src="/optimization.png" alt="verify" className="w-16 h-20 mb-4 mt-7" />
         <h1 className="text-2xl font-bold mb-4 text-center text-gray-800">
           🌐 Website Optimization Tool
         </h1>
