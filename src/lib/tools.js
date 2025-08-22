@@ -367,12 +367,44 @@ export const tools = [
     buttonLabel: "Check Security",
     type: "red-team"
   },
+   {
+    name: "PDF",
+    image: "PDF.png",
+    description: "Create Your PDF.",
+    slug: "PDF",
+    buttonLabel: "Create PDF",
+    type: "non-tech"
+  },
+   {
+    name: "Wireshark",
+    image: "Wireshark.png",
+    description: "Description Wireshark ......",
+    slug: "Wireshark",
+    buttonLabel: "Use Wireshark",
+    type: "blue-team"
+  },
+   {
+    name: "Chrome Extention",
+    image: "chrome.png",
+    description: "Description Chrome Extention ....",
+    slug: "Chrome-Extention",
+    buttonLabel: "Use Chrome Extention",
+    type: "non-tech"
+  },
   {
-    name: "Cyber Fraud Identifier",
-    image: "/cyber-fraud-identifier.png",
-    description: "Flags potential online fraud by previous records",
-    slug: "cyber-fraud-identifier",
-    buttonLabel: "Identify Fraudster",
-    type: "forensic"
+    name: "Password Strength Checker",
+    image: "password-checker.png",
+    description: "Description Passsword Strenght Checker....",
+    slug: "Passsword-Checker",
+    buttonLabel: "Check Your Password",
+    type: "non-tech"
+  },
+   {
+    name: "Data Leak",
+    image: "data-leak.png",
+    description: "Description Data Leak....",
+    slug: "Data-Leak",
+    buttonLabel: "Find Data Leak",
+    type: "blue-team"
   },
 ];
