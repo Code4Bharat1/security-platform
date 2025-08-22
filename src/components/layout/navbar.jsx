@@ -45,12 +45,12 @@ const Navbar = () => {
   const isActive = (route) => pathname === route;
 
   const navLinkClasses = (route) =>
-    `hover:text-[#9d7af0] transition-colors duration-200 ${
-      isActive(route) ? 'border-b-2 border-[#9d7af0]' : ''
+    `hover:text-[#9d7af0] transition-colors duration-200 ${isActive(route) ? 'border-b-2 border-[#9d7af0]' : ''
     }`;
 
   return (
-    <nav className="bg-black flex items-center justify-between md:justify-start md:gap-10 z-50 text-white font-semibold font-inter text-base px-4 sm:px-6 lg:px-8 py-3">
+    <nav className="bg-black flex items-center justify-between md:justify-start z-50 text-white font-semibold font-inter text-base px-2 sm:px-4 lg:px-5 py-2">
+
       {/* Hamburger */}
       <button
         className="md:hidden"
@@ -86,12 +86,13 @@ const Navbar = () => {
       </Link>
 
       {/* Desktop nav */}
-      <ul className="hidden md:flex md:justify-center md:items-center md:w-full md:gap-10">
-        <li><Link href="/" className={navLinkClasses('/')}>Home</Link></li>
+      <ul className="hidden md:flex md:gap-10 justify-center items-center absolute left-0 right-0 w-screen px-6 lg:px-12">
+        
+        <li><Link href="/" className={navLinkClasses('/')}>Base</Link></li>
         <li><Link href="/about" className={navLinkClasses('/about')}>About Us</Link></li>
         <li><Link href="/tools" className={navLinkClasses('/tools')}>Toolkit</Link></li>
         <li><Link href="/services" className={navLinkClasses('/services')}>Services</Link></li>
-        <li><Link href="/contact" className={navLinkClasses('/contact')}>Contact</Link></li>
+        <li><Link href="/contact" className={navLinkClasses('/contact')}>Connect</Link></li>
       </ul>
 
       {/* Mobile nav */}
@@ -128,10 +129,10 @@ const Navbar = () => {
           </div>
         ) : (
           <Link
-            href="/login"
-            className="px-4 sm:px-6 py-1.5 sm:py-2 bg-[#9d7af0] text-white rounded-lg hover:bg-[#a67fea] transition duration-200 text-sm sm:text-base"
+            href="/gain-access"
+            className="px-4 sm:px-6 py-1.5 sm:py-2 bg-[#9d7af0] text-white rounded-lg hover:bg-[#a67fea] transition duration-200 text-sm sm:text-base text-nowrap"
           >
-            Login
+            Gain Access
           </Link>
         )}
       </div>
