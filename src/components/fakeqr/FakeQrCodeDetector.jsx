@@ -174,8 +174,13 @@ const FakeQRCodeDetectorAndQRGenerator = () => {
 
   return (
     <div className="min-h-screen bg-gray-100 flex items-center justify-center p-4">
+      
       <div className="bg-white shadow-xl rounded-lg max-w-2xl w-full p-6">
         {/* Tabs */}
+        <div>
+        <img src="/QR.png" alt="verify" className="w-16 h-20 mb-4 mt-7 mx-auto" />
+
+        </div>
         <div className="flex justify-center mb-6 space-x-4">
           <button
             onClick={() => {

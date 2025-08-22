@@ -41,7 +41,7 @@ export const tools = [
   },
   {
     name: "Website Recon",
-    image: "web-recon.png",
+    image: "/web-recon.png",
     description: "Perform an in-depth reconnaissance of a website to identify key metadata, technologies used.",
     slug: "webrecon",
     buttonLabel: "Website Recon",
@@ -57,7 +57,7 @@ export const tools = [
   },
   {
     name: "Brute Force Scanner",
-    image: "brute-force.png",
+    image: "/brute-force.png",
     description: "un an OWASP ZAP-powered automated security scan to detect vulnerabilities.",
     slug: "bruteForce",
     buttonLabel: "bruteForce",
@@ -65,20 +65,20 @@ export const tools = [
   },
   {
     name: "Mocha Testing",
-    image: "mocha-logo.png",
+    image: "/mocha-logo.png",
     description: "Displays all available Mocha commands, options, and usage details.",
     slug: "mochaForm",
     buttonLabel: "Mocha Testing",
     type: "red-team"
   },
-  {
-    name: "Sharepoint Scanner",
-    image: "/sharepoint.png",
-    description: "Analyze SharePoint environments for security misconfigurations, permission issues.",
-    slug: "sharepointForm",
-    buttonLabel: "Sharepoint Scan",
-    type: "blue-team"
-  },
+  // {
+  //   name: "Sharepoint Scanner",
+  //   image: "/sharepoint.png",
+  //   description: "Analyze SharePoint environments for security misconfigurations, permission issues.",
+  //   slug: "sharepointForm",
+  //   buttonLabel: "Sharepoint Scan",
+  //   type: "blue-team"
+  // },
   {
     name: "Broken link Checker",
     image: "/brokenlink1.png",
@@ -89,7 +89,7 @@ export const tools = [
   },
   {
     name: "Wordpress Scanner",
-    image: "wordpress-secure.png",
+    image: "/wordpress-secure.png",
     description: "Check for outdated plugins, misconfigurations, and known vulnerabilities.",
     slug: "wordpressForm",
     buttonLabel: "Scan for Wordpress",
@@ -119,14 +119,14 @@ export const tools = [
     buttonLabel: "Check Headers",
     type: "red-team"
   },
-  {
-    name: "ASN Lookup",
-    image: "asn-logo.png",
-    description: "Retrieve details about an Autonomous System Number (ASN).",
-    slug: "asnLookup",
-    buttonLabel: "ASN Lookup",
-    type: "blue-team"
-  },
+  // {
+  //   name: "ASN Lookup",
+  //   image: "/asn-logo.png",
+  //   description: "Retrieve details about an Autonomous System Number (ASN).",
+  //   slug: "asnLookup",
+  //   buttonLabel: "ASN Lookup",
+  //   type: "blue-team"
+  // },
   {
     name: "Clickjacking Tester",
     image: "/clickjacking.png",
@@ -145,7 +145,7 @@ export const tools = [
   },
   {
     name: "HTTPS Security Checker",
-    image: "https-security.png",
+    image: "/https-security.png",
     description: " Validate HTTPS security implementation.",
     slug: "httpsCheckerForm",
     buttonLabel: "HTTPS Security Checker",
@@ -177,7 +177,7 @@ export const tools = [
   },
   {
     name: "Open Redirect Tester ",
-    image: "open-redirect.png",
+    image: "/open-redirect.png",
     description: "Find unsafe redirection vulnerabilities.",
     slug: "openRedirectTester",
     buttonLabel: "Open Redirect Tester ",
@@ -281,7 +281,7 @@ export const tools = [
   },
   {
     name: "File Scanner",
-    image: "folder-scan.png",
+    image: "/folder-scan.png",
     description: "Scans files for malware or suspicious files.",
     slug: "folder-threat-scanner",
     buttonLabel: "Scan File",
@@ -329,7 +329,7 @@ export const tools = [
   },
   {
     name: "SEO Score Analyzer Tool",
-    image: "seo-score.png",
+    image: "/seo-score.png",
     description: "Analyzes website SEO and provides improvement tips.",
     slug: "seo-score-analyzer-tool",
     buttonLabel: "Analyze SEO",
@@ -337,7 +337,7 @@ export const tools = [
   },
   {
     name: "Keyword Generator",
-    image: "keyword-generate.png",
+    image: "/keyword-generate.png",
     description: "Extract SEO-Friendly Keyword Suggestions.",
     slug: "KeywordGenerator",
     buttonLabel: "Generate Keyword",
@@ -353,7 +353,7 @@ export const tools = [
   },
   {
     name: "URL Shortener",
-    image: "shorted-url.png",
+    image: "/shorted-url.png",
     description: "Make Links Short and Simple.",
     slug: "url-shortener",
     buttonLabel: "Shorten URL",
@@ -361,7 +361,7 @@ export const tools = [
   },
   {
     name: "Database Security Checker",
-    image: "DB-Security.png",
+    image: "/DB-Security.png",
     description: "Database Safety Checker With Score.",
     slug: "DbSecurityChecker",
     buttonLabel: "Check Security",
