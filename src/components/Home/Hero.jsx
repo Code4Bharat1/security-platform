@@ -5,13 +5,13 @@ export default function Hero() {
             <img
                 src="/hero-glow-eclipes.png"
                 alt="Glow"
-                className="h-[200px] md:h-[300px] mx-auto"
+                className="h-[150px] md:h-[300px] mx-auto -my-[2%]"
             />
 
             <img
                 src="/hero-half-circle.png"
                 alt="Half Circle"
-                className="mx-auto px-20 mt-[-3rem] md:mt-[-5rem]"
+                className="mx-auto px-20 mt-[-3rem] md:mt-[-5rem] "
             />
 
             {/* Content */}

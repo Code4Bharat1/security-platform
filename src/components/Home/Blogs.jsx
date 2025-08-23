@@ -10,7 +10,7 @@ export default function Blogs() {
       <div className="w-full h-[2px] bg-[#9d7af0] mt-6 md:mt-10"></div>
 
       {/* Blog cards section with gradient background */}
-      <div className="px-4 sm:px-6 md:px-10 mt-10 min-h-[70vh] bg-gradient-to-tr from-[#9d7af0] to-white py-10 flex">
+      <div className="px-4 sm:px-6 md:px-10 mt-10 min-h-[70vh] max-h-screen bg-gradient-to-tr from-[#9d7af0] to-white py-10 flex">
         <div className="flex flex-wrap justify-center gap-6 sm:gap-8 lg:gap-10 w-full max-w-screen-xl mx-auto">
           {/* Blog Card 1 */}
           <BlogCard

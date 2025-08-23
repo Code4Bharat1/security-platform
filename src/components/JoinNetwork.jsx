@@ -4,7 +4,7 @@ import Link from 'next/link';
 import { Eye, EyeOff } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 
-export default function SignUp() {
+export default function JoinNetwork() {
   // State to manage form data
   const [formData, setFormData] = useState({
     fname: '',
@@ -224,7 +224,7 @@ export default function SignUp() {
               loading ? 'opacity-50 cursor-not-allowed' : ''
             }`}
           >
-            {loading ? 'Signing Up...' : 'Sign Up'}
+            {loading ? 'Adding to Whitelist...' : 'Join the Network'}
           </button>
         </form>
 
@@ -240,7 +240,7 @@ export default function SignUp() {
 
         <p className="text-center text-sm text-gray-100 mt-6">
           Already have an account?{' '}
-          <Link href="/login" className="text-[#9d7af0] font-medium hover:underline">
+          <Link href="/gain-access" className="text-[#9d7af0] font-medium hover:underline">
             Gain Access here.
           </Link>
         </p>
