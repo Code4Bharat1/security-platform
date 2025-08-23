@@ -12,7 +12,7 @@ export default function ContactPage() {
   async function handleSubmit(e) {
     e.preventDefault();
     try {
-      const res = await fetch('https://zypher.code4bharat.com/api/contact', {
+      const res = await fetch('https://zypher-api.code4bharat.com/api/contact', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ name, email, message, phone }),
@@ -31,45 +31,6 @@ export default function ContactPage() {
 
   return (
     <div className="min-h-screen w-full bg-black text-white overflow-x-hidden relative">
-      {/* ===== Banner: HOME >>> CONTACT over Rectangle.png ===== */}
-      <header className="relative w-full h-[50px] sm:h-[60px] md:h-[72px]">
-        <div
-          className="absolute inset-0 bg-cover bg-center"
-          style={{ backgroundImage: "url('/contact/Rectangle.png')" }}
-        />
-        <div className="absolute inset-x-0 bottom-0 h-1 bg-black/70 blur-[6px]" />
-        <div className="absolute inset-0 z-10 flex items-center justify-center">
-          <nav className="flex items-center gap-5 sm:gap-8 md:gap-10 text-white uppercase font-extrabold tracking-widest text-base sm:text-xl md:text-2xl drop-shadow-[0_2px_6px_rgba(0,0,0,.6)]">
-            <Link href="/" className="hover:opacity-90">Home</Link>
-            <span aria-hidden className="select-none tracking-[0.35em]">››››</span>
-            <span className="pointer-events-none">Contact</span>
-          </nav>
-        </div>
-        <div className="absolute -top-1 left-1/2 -translate-x-1/2 z-10 hidden sm:flex gap-1">
-          <span className="h-1 w-1 rounded-full bg-white/100" />
-          <span className="h-1 w-1 rounded-full bg-white/200" />
-          <span className="h-1 w-1 rounded-full bg-white/100" />
-        </div>
-      </header>
-
-      {/* ===== Background ellipses (images) - Reduced by 20% ===== */}
-      <div className="absolute inset-0 z-0 pointer-events-none">
-        {/* Desktop / tablet - Reduced from original sizes */}
-        <div className="hidden md:block">
-          <img src="/contact/Ellipse%20120.png" alt="" className="absolute -left-10 top-24 w-35 h-35 object-contain opacity-90" />
-          <img src="/contact/Ellipse%20122.png" alt="" className="absolute left-1/2 -translate-x-1/2 top-20 w-48 h-48 object-contain opacity-80" />
-          <img src="/contact/Ellipse%20121.png" alt="" className="absolute -right-20 top-40 w-45 h-45 object-contain opacity-90" />
-          <img src="/contact/Ellipse%20123.png" alt="" className="absolute left-4 bottom-10 w-51 h-51 object-contain opacity-85" />
-          <img src="/contact/Ellipse%20124.png" alt="" className="absolute right-14 bottom-6 w-48 h-48 object-contain opacity-85" />
-        </div>
-        {/* Mobile - Reduced from original sizes */}
-        <div className="block md:hidden">
-          <img src="/contact/Ellipse%20120.png" alt="" className="absolute left-3 top-24 w-22 h-22 object-contain opacity-80" />
-          <img src="/contact/Ellipse%20122.png" alt="" className="absolute right-3 top-16 w-26 h-26 object-contain opacity-80" />
-          <img src="/contact/Ellipse%20124.png" alt="" className="absolute left-6 bottom-10 w-29 h-29 object-contain opacity-80" />
-        </div>
-      </div>
-
       {/* ===== Main section ===== */}
 <div className="relative mx-auto w-full max-w-5xl px-4 sm:px-6 py-10 sm:py-14 md:py-16">
         <div className="relative flex min-h-[50vh] items-start justify-end">
