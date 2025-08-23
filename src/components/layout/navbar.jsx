@@ -15,6 +15,7 @@ const Navbar = () => {
       const storedUser = localStorage.getItem('user');
       if (storedUser) {
         const parsedUser = JSON.parse(storedUser);
+        console.log(1)
         setUserName(parsedUser.name || parsedUser.email || 'User');
       }
     }
@@ -49,7 +50,7 @@ const Navbar = () => {
     }`;
 
   return (
-    <nav className="bg-black flex items-center justify-between md:justify-start z-50 text-white font-semibold font-inter text-base px-2 sm:px-4 lg:px-5 py-2">
+    <nav className="relative bg-black flex items-center justify-between md:justify-start z-50 text-white font-semibold font-inter text-base px-2 sm:px-4 lg:px-5 py-2">
 
       {/* Hamburger */}
       <button
@@ -97,7 +98,7 @@ const Navbar = () => {
 
       {/* Mobile nav */}
       {menuOpen && (
-        <ul className="flex flex-col items-center gap-6 mt-4 md:hidden bg-[#1a1a1a] py-6 w-full rounded-lg">
+        <ul className="absolute top-[100%] left-[0] py-3 flex flex-col items-center gap-6 md:hidden bg-black w-full rounded-lg">
           <li><Link href="/home" className={navLinkClasses('/home')}>Home</Link></li>
           <li><Link href="/about" className={navLinkClasses('/about')}>About Us</Link></li>
           <li><Link href="/tools" className={navLinkClasses('/tools')}>Tools</Link></li>
