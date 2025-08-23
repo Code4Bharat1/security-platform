@@ -35,18 +35,10 @@ const Footer = () => {
 
                     {/* Placeholder Social Icons */}
                     <div className="flex space-x-4 mt-4">
-                        <div className="w-10 h-10 bg-gradient-to-br from-yellow-400 to-pink-500 rounded-lg flex items-center justify-center text-white font-bold text-xl">
-                            I
-                        </div>
-                        <div className="w-10 h-10 bg-[#3b5998] rounded-lg flex items-center justify-center text-white font-bold text-xl">
-                            f
-                        </div>
-                        <div className="w-10 h-10 bg-black rounded-lg flex items-center justify-center text-white font-bold text-xl">
-                            x
-                        </div>
-                        <div className="w-10 h-10 bg-[#0e76a8] rounded-lg flex items-center justify-center text-white font-bold text-xl">
-                            in
-                        </div>
+                        <a className="w-10 h-10 bg-gradient-to-br from-yellow-400 to-pink-500 rounded-lg flex items-center justify-center text-white font-bold text-xl" href="https://www.instagram.com/nexcorealliancellp/">I</a>
+                        <a className="w-10 h-10 bg-[#3b5998] rounded-lg flex items-center justify-center text-white font-bold text-xl" href="https://www.facebook.com/profile.php?id=61570113656994">f</a>
+                        <a className="w-10 h-10 bg-black rounded-lg flex items-center justify-center text-white font-bold text-xl" href="https://https://x.com/Code4Bharat">x</a>
+                        <a className="w-10 h-10 bg-[#0e76a8] rounded-lg flex items-center justify-center text-white font-bold text-xl" href="https://www.linkedin.com/company/nexcore-alliance">in</a>
                     </div>
                 </div>
 

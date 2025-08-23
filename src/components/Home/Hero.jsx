@@ -5,7 +5,7 @@ export default function Hero() {
             <img
                 src="/hero-glow-eclipes.png"
                 alt="Glow"
-                className="h-[150px] md:h-[300px] mx-auto -my-[2%]"
+                className="h-[150px] md:h-[300px] mx-auto -my-2"
             />
 
             <img

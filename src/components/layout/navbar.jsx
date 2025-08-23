@@ -50,7 +50,7 @@ const Navbar = () => {
     }`;
 
   return (
-    <nav className="relative bg-black flex items-center justify-between md:justify-start z-50 text-white font-semibold font-inter text-base px-2 sm:px-4 lg:px-5 py-2">
+    <nav className="relative bg-transparent flex items-center justify-between md:justify-start z-50 text-white font-semibold font-inter text-base px-2 sm:px-4 lg:px-5 py-2">
 
       {/* Hamburger */}
       <button
@@ -93,7 +93,7 @@ const Navbar = () => {
         <li><Link href="/about" className={navLinkClasses('/about')}>About Us</Link></li>
         <li><Link href="/tools" className={navLinkClasses('/tools')}>Toolkit</Link></li>
         <li><Link href="/services" className={navLinkClasses('/services')}>Services</Link></li>
-        <li><Link href="/contact" className={navLinkClasses('/contact')}>Connect</Link></li>
+        <li><Link href="/connect" className={navLinkClasses('/connect')}>Connect</Link></li>
       </ul>
 
       {/* Mobile nav */}
