@@ -1,10 +1,8 @@
-import SignIn from '@/components/signinForm/signinForm'
-
+import GainAccess from '@/components/GainAcess'
 
 export default function Page() {
   return (
-      <SignIn/>
+      <GainAccess/>
   )
 }
-
 

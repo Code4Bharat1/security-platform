@@ -4,7 +4,7 @@ import { Eye, EyeOff } from 'lucide-react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 
-export default function SignInPage() {
+export default function GainAccess() {
   const [formData, setFormData] = useState({ email: '', password: '' });
   const [errors, setErrors] = useState({});
   const [showPassword, setShowPassword] = useState(false);
@@ -111,7 +111,7 @@ export default function SignInPage() {
               loading ? 'opacity-50 cursor-not-allowed' : ''
             }`}
           >
-            {loading ? 'Signing In...' : 'Sign In'}
+            {loading ? 'Autheticating...' : 'Gain Access'}
           </button>
         </form>
 
