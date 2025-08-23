@@ -1,8 +1,8 @@
-import SignUp from '@/components/signupForm/signupForm'
+import JoinNetwork from '@/components/JoinNetwork'
 
 export default function Page() {
   return (
-      <SignUp/>
+      <JoinNetwork/>
   )
 }
 
