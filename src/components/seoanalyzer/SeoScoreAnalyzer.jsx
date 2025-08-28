@@ -1,91 +1,170 @@
 "use client";
-import { useState } from "react";
-import { BarChart3 } from "lucide-react";
+
+import React, { useState } from "react";
 
 export default function SeoScoreAnalyzer() {
   const [url, setUrl] = useState("");
-  const [loading, setLoading] = useState(false);
   const [result, setResult] = useState(null);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
 
-  const handleAnalyze = async () => {
-  if (!url.trim()) return;
-
-  setLoading(true);
-  setResult(null);
-
-  try {
-    const res = await fetch(`${process.env.NEXT_PUBLIC_PROD_API_URL}/seo/analyze`, {
-      method: "POST",  
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ url }),
-    });
-
-    const data = await res.json();
-
-    if (res.ok) {
-      setResult({ score: data.score, issues: data.issues });
-    } else if (data?.message?.includes("ENOTFOUND") || data?.message?.includes("getaddrinfo ENOTFOUND")) {
-      setResult("❌ Website not reachable or does not exist.");
-    } else {
-      setResult("❌ Failed to analyze SEO.");
+  const analyzeSEO = async () => {
+    if (!url) {
+      setError("⚠️ Please enter a valid URL");
+      return;
     }
-  } catch (err) {
-    console.error("SEO analysis error:", err);
-    // network level error
-    setResult("❌ Website not reachable or does not exist.");
-  }
+    setLoading(true);
+    setError("");
+    setResult(null);
 
-  setLoading(false);
-};
+    try {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/seo/analyze`, {
+  method: "POST",
+  headers: { "Content-Type": "application/json" },
+  body: JSON.stringify({ url }),
+});
 
+
+
+      const data = await response.json();
+
+      if (response.ok) {
+        setResult(data);
+      } else {
+        setError(data.message || "Something went wrong!");
+      }
+    } catch (err) {
+      setError("🚨 Failed to connect with backend!");
+    } finally {
+      setLoading(false);
+    }
+  };
 
   return (
-    <div className="min-h-screen bg-gray-100 flex flex-col items-center pt-20 px-4">
-      <img src="/seo-score.png" alt="verify" className="w-16 h-20 mb-4 mt-7" />
-      <div className="text-center mb-10">
-        <BarChart3 className="mx-auto mb-4 text-green-600" size={48} />
-        <h1 className="text-3xl font-bold text-green-800">SEO Score Analyzer Tool</h1>
-        <p className="text-gray-600 mt-2">
-          Analyzes website SEO and provides improvement tips.
-        </p>
-      </div>
+    <div className="min-h-screen bg-gray-900 flex flex-col items-center justify-center p-6">
+      <div className="w-full max-w-3xl bg-gray-800 text-white rounded-2xl shadow-xl p-8 border border-gray-700">
+        {/* Header */}
+        <h1 className="text-3xl font-bold text-center mb-6">
+          🔍 SEO Score Analyzer
+        </h1>
 
-      <div className="bg-white shadow-lg rounded-xl p-6 w-full max-w-lg text-center">
-        <input
-          type="text"
-          placeholder="🔗 Enter website URL..."
-          value={url}
-          onChange={(e) => setUrl(e.target.value.trim())}         className="w-full px-4 py-3 mb-4 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-600 text-gray-800"
-        />
+        {/* Input Section */}
+        <div className="flex gap-3 mb-6">
+          <input
+            type="text"
+            value={url}
+            onChange={(e) => setUrl(e.target.value)}
+            placeholder="Enter website URL (e.g. https://example.com)"
+            className="flex-1 border border-gray-600 bg-gray-700 text-white p-3 rounded-lg focus:ring-2 focus:ring-blue-500"
+          />
+          <button
+            onClick={analyzeSEO}
+            disabled={loading}
+            className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-lg transition disabled:bg-gray-500"
+          >
+            {loading ? "Analyzing..." : "Analyze"}
+          </button>
+        </div>
 
-        <button
-          onClick={handleAnalyze}
-          disabled={loading || !url}
-          className={`w-full py-3 rounded-md text-white font-semibold transition ${
-            loading
-              ? "bg-green-400 cursor-not-allowed"
-              : "bg-green-700 hover:bg-green-800"
-          }`}
-        >
-          {loading ? "Analyzing..." : "Analyze SEO"}
-        </button>
+        {/* Error Message */}
+        {error && (
+          <p className="text-red-400 font-medium mb-4 bg-red-900/40 p-3 rounded-lg">
+            {error}
+          </p>
+        )}
 
-        {result && typeof result === "object" && (
-          <div className="mt-6 bg-green-50 border border-green-200 rounded-lg p-5 text-center shadow-inner">
-            <div className="text-4xl font-bold text-green-800 mb-2">
-              ✅ {result.score}/100
-            </div>
-            <div className="text-green-700 text-sm">
-              {result.issues.length > 0
-                ? `Issues: ${result.issues.join(", ")}`
-                : "No major issues found."}
-            </div>
+        {/* Loader */}
+        {loading && (
+          <div className="flex justify-center items-center py-6">
+            <div className="w-10 h-10 border-4 border-blue-500 border-dashed rounded-full animate-spin"></div>
           </div>
         )}
 
-        {typeof result === "string" && (
-          <div className="mt-6 text-center text-red-600 font-semibold">
-            {result}
+        {/* Results */}
+        {result && (
+          <div className="space-y-6">
+            {/* Score Card */}
+            <div className="bg-gray-700 rounded-xl p-6 flex flex-col items-center shadow-md">
+              <h2 className="text-xl font-semibold mb-2">SEO Score</h2>
+              <div className="relative w-32 h-32">
+                <svg className="w-32 h-32">
+                  <circle
+                    className="text-gray-600"
+                    strokeWidth="10"
+                    stroke="currentColor"
+                    fill="transparent"
+                    r="50"
+                    cx="64"
+                    cy="64"
+                  />
+                  <circle
+                    className="text-green-400"
+                    strokeWidth="10"
+                    strokeDasharray={2 * Math.PI * 50}
+                    strokeDashoffset={
+                      2 * Math.PI * 50 -
+                      ((result.score || 0) / 100) * (2 * Math.PI * 50)
+                    }
+                    strokeLinecap="round"
+                    stroke="currentColor"
+                    fill="transparent"
+                    r="50"
+                    cx="64"
+                    cy="64"
+                  />
+                </svg>
+                <span className="absolute inset-0 flex items-center justify-center text-2xl font-bold">
+                  {result.score || 0}
+                </span>
+              </div>
+            </div>
+
+            {/* Info Section */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div className="bg-gray-700 p-5 rounded-xl shadow-md">
+                <h3 className="text-lg font-semibold mb-2">📌 Title</h3>
+                <p className="text-gray-300">
+                  {result.title || "N/A"}
+                </p>
+              </div>
+              <div className="bg-gray-700 p-5 rounded-xl shadow-md">
+                <h3 className="text-lg font-semibold mb-2">
+                  📝 Meta Description
+                </h3>
+                <p className="text-gray-300">
+                  {result.metaDescription || "N/A"}
+                </p>
+              </div>
+            </div>
+
+            {/* Strengths & Weaknesses */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div className="bg-green-900/40 p-5 rounded-xl shadow-md border border-green-600">
+                <h3 className="text-lg font-semibold mb-3">✅ Strengths</h3>
+                <ul className="list-disc pl-5 space-y-1 text-green-300">
+                  {result.summary?.strengths?.length > 0 ? (
+                    result.summary.strengths.map((item, index) => (
+                      <li key={index}>{item}</li>
+                    ))
+                  ) : (
+                    <li>N/A</li>
+                  )}
+                </ul>
+              </div>
+
+              <div className="bg-red-900/40 p-5 rounded-xl shadow-md border border-red-600">
+                <h3 className="text-lg font-semibold mb-3">❌ Weaknesses</h3>
+                <ul className="list-disc pl-5 space-y-1 text-red-300">
+                  {result.summary?.weaknesses?.length > 0 ? (
+                    result.summary.weaknesses.map((item, index) => (
+                      <li key={index}>{item}</li>
+                    ))
+                  ) : (
+                    <li>N/A</li>
+                  )}
+                </ul>
+              </div>
+            </div>
           </div>
         )}
       </div>
