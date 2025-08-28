@@ -1,152 +1,321 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useEffect, useMemo, useState } from "react";
+import { jsPDF } from "jspdf";
+import autoTable from "jspdf-autotable";
+
+/* ---------- small helpers ---------- */
+const safeName = (str) =>
+  String(str || "token").toLowerCase().replace(/[^a-z0-9._-]/gi, "_").slice(0, 60);
+
+const fmtDateTime = (epoch) =>
+  epoch == null ? "—" : new Date(epoch * 1000).toLocaleString();
+
+function fmtDuration(s) {
+  if (s == null) return "—";
+  const neg = s < 0;
+  s = Math.abs(s);
+  const d = Math.floor(s / 86400);
+  const h = Math.floor((s % 86400) / 3600);
+  const m = Math.floor((s % 3600) / 60);
+  const sec = Math.floor(s % 60);
+  const parts = [];
+  if (d) parts.push(`${d}d`);
+  if (h || d) parts.push(`${h}h`);
+  if (m || h || d) parts.push(`${m}m`);
+  parts.push(`${sec}s`);
+  return (neg ? "-" : "") + parts.join(" ");
+}
+
+/* Basic client-side score if backend doesn't provide one */
+function computeScore(payload = {}, issues = []) {
+  let score = 100;
+  const breakdown = [];
+
+  const penalize = (label, pts) => {
+    score -= pts;
+    breakdown.push({ label, delta: -pts });
+  };
+
+  if (!("exp" in payload)) penalize("Missing exp", 25);
+  if (!("iat" in payload)) penalize("Missing iat", 10);
+  if (!("iss" in payload)) penalize("Missing iss", 10);
+  if (!("sub" in payload)) penalize("Missing sub", 5);
+
+  if (payload.exp && Date.now() >= payload.exp * 1000) penalize("Token expired", 30);
+
+  issues.forEach((i) => {
+    if (String(i).toLowerCase().includes("alg: none")) penalize("alg: none", 50);
+  });
+
+  score = Math.max(0, Math.min(100, score));
+  return { score, breakdown };
+}
+
+/* Build endpoint safely whether env contains /api or not */
+const API_BASE = (process.env.NEXT_PUBLIC_PROD_API_URL || "").replace(/\/$/, "");
+const USE_API_PREFIX = !/\/api$/i.test(API_BASE);
+const ENDPOINT = `${API_BASE}${USE_API_PREFIX ? "/api" : ""}/auth/oauthTokenInspector`;
 
 export default function OAuthTokenInspector() {
   const [token, setToken] = useState("");
   const [loading, setLoading] = useState(false);
   const [result, setResult] = useState(null);
   const [toast, setToast] = useState(null);
+  const [now, setNow] = useState(() => Math.floor(Date.now() / 1000));
 
-  // Auto-hide toast after 4 seconds
+  /* live clock for countdown */
   useEffect(() => {
-    if (toast) {
-      const timer = setTimeout(() => {
-        setToast(null);
-      }, 4000);
-      return () => clearTimeout(timer);
-    }
+    const id = setInterval(() => setNow(Math.floor(Date.now() / 1000)), 1000);
+    return () => clearInterval(id);
+  }, []);
+
+  /* auto-hide toast */
+  useEffect(() => {
+    if (!toast) return;
+    const t = setTimeout(() => setToast(null), 4000);
+    return () => clearTimeout(t);
   }, [toast]);
 
-  const showToast = (message, type = "success") => {
-    setToast({ message, type });
-  };
+  const showToast = (message, type = "success") => setToast({ message, type });
 
+  /* Call API */
   const analyzeToken = async () => {
     setLoading(true);
     setResult(null);
-
     try {
-      const res = await fetch(
-        `${process.env.NEXT_PUBLIC_PROD_API_URL}/auth/oauthTokenInspector`,
-        {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ token }),
-        }
-      );
-
-      const data = await res.json();
+      const res = await fetch(ENDPOINT, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ token }),
+      });
+      const data = await res.json().catch(() => ({}));
       setResult(data);
-
-      if (data.error) {
-        showToast("Token analysis failed. Please check your token.", "error");
+      if (!res.ok || data?.error) {
+        showToast(data?.error || `Analysis failed (${res.status})`, "error");
       } else {
         showToast("Token analyzed successfully! ✨", "success");
       }
-    } catch {
-      const errorResult = { error: "Something went wrong. Please try again." };
-      setResult(errorResult);
+    } catch (e) {
+      setResult({ error: "Connection error. Is the API running?" });
       showToast("Connection error. Please try again.", "error");
     } finally {
       setLoading(false);
     }
   };
 
+  /* Derive meta either from API (if provided) or from payload */
+  const payload = result?.payload || {};
+  const issues = result?.issues || [];
+
+  const expEpoch = result?.meta?.expEpoch ?? payload?.exp ?? null;
+  const iatEpoch = result?.meta?.iatEpoch ?? payload?.iat ?? null;
+
+  const isExpired =
+    result?.meta?.isExpired ?? (expEpoch ? now >= expEpoch : null);
+
+  const lifetimePercentUsed = useMemo(() => {
+    if (result?.meta?.lifetimePercentUsed != null) return result.meta.lifetimePercentUsed;
+    if (expEpoch != null && iatEpoch != null && expEpoch > iatEpoch) {
+      const used = Math.min(Math.max(now - iatEpoch, 0), expEpoch - iatEpoch);
+      return Math.round((used / (expEpoch - iatEpoch)) * 100);
+    }
+    return null;
+  }, [result?.meta?.lifetimePercentUsed, expEpoch, iatEpoch, now]);
+
+  const timeRemaining = useMemo(() => {
+    if (expEpoch == null) return null;
+    return expEpoch - now;
+  }, [expEpoch, now]);
+
+  const scoreObj = useMemo(() => {
+    if (result?.meta?.securityScore != null) {
+      return {
+        score: result.meta.securityScore,
+        breakdown: result.meta.scoreBreakdown || [],
+      };
+    }
+    return computeScore(payload, issues);
+  }, [result?.meta?.securityScore, result?.meta?.scoreBreakdown, payload, issues]);
+
+  const score = scoreObj.score;
+  const scoreBarColor =
+    score >= 80 ? "bg-emerald-500" : score >= 60 ? "bg-amber-500" : "bg-red-500";
+
+  const progressColor =
+    timeRemaining == null
+      ? "bg-gray-300"
+      : isExpired
+      ? "bg-red-500"
+      : (lifetimePercentUsed ?? 0) >= 80
+      ? "bg-amber-500"
+      : "bg-emerald-500";
+
+  /* ---------- Exports ---------- */
+  const handleDownloadTxt = () => {
+    if (!result || result.error) return;
+    const lines = [
+      "OAuth Token Report",
+      `Generated: ${new Date().toLocaleString()}`,
+      "",
+      "== Summary ==",
+      `Issued At: ${fmtDateTime(iatEpoch)}`,
+      `Expires At: ${fmtDateTime(expEpoch)}`,
+      `Time Remaining: ${
+        expEpoch == null ? "—" : isExpired ? "expired" : fmtDuration(timeRemaining)
+      }`,
+      `Security Score: ${score}/100`,
+      "",
+      "== Issues ==",
+      ...(issues.length ? issues : ["None"]),
+      "",
+      "== Payload ==",
+      JSON.stringify(payload, null, 2),
+      "",
+      "== Score Breakdown ==",
+      ...(scoreObj.breakdown.length
+        ? scoreObj.breakdown.map(
+            (b) => `- ${b.label}${b.delta ? ` (${b.delta})` : ""}`
+          )
+        : ["—"]),
+      "",
+    ].join("\n");
+
+    const nameFrom = payload.iss || payload.sub || payload.jti;
+    const filename = `OAuth_Report_${safeName(nameFrom)}.txt`;
+
+    const blob = new Blob([lines], { type: "text/plain;charset=utf-8" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = filename;
+    a.click();
+    URL.revokeObjectURL(url);
+  };
+
+  const handleDownloadPdf = () => {
+    if (!result || result.error) return;
+
+    const doc = new jsPDF({ unit: "pt", format: "a4" });
+    const M = 40;
+    let y = 56;
+
+    const add = (t, size = 12, style = "normal") => {
+      doc.setFont("helvetica", style);
+      doc.setFontSize(size);
+      doc.text(String(t), M, y);
+      y += 18;
+    };
+
+    // Title
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(18);
+    doc.text("OAuth Token Report", M, y);
+    y += 26;
+
+    add(`Generated: ${new Date().toLocaleString()}`);
+
+    // Summary
+    autoTable(doc, {
+      startY: y,
+      head: [["Field", "Value"]],
+      body: [
+        ["Issued At", fmtDateTime(iatEpoch)],
+        ["Expires At", fmtDateTime(expEpoch)],
+        [
+          "Time Remaining",
+          expEpoch == null ? "—" : isExpired ? "expired" : fmtDuration(timeRemaining),
+        ],
+        ["Security Score", `${score}/100`],
+      ],
+      styles: { font: "helvetica", fontSize: 10 },
+      headStyles: { fillColor: [16, 185, 129] },
+      margin: { left: M, right: M },
+    });
+    y = doc.lastAutoTable.finalY + 18;
+
+    // Issues
+    autoTable(doc, {
+      startY: y,
+      head: [["Issues"]],
+      body: (issues.length ? issues : ["None"]).map((i) => [i]),
+      styles: { fontSize: 10 },
+      margin: { left: M, right: M },
+    });
+    y = doc.lastAutoTable.finalY + 18;
+
+    // Score breakdown
+    if (scoreObj.breakdown.length) {
+      autoTable(doc, {
+        startY: y,
+        head: [["Item", "Delta"]],
+        body: scoreObj.breakdown.map((b) => [b.label, String(b.delta ?? "")]),
+        styles: { fontSize: 10 },
+        margin: { left: M, right: M },
+      });
+      y = doc.lastAutoTable.finalY + 18;
+    }
+
+    // Payload
+    add("Payload", 13, "bold");
+    const payloadStr = JSON.stringify(payload ?? {}, null, 2);
+    const lines = doc.splitTextToSize(payloadStr, 515);
+    lines.forEach((ln) => {
+      if (y > 780) {
+        doc.addPage();
+        y = 56;
+      }
+      doc.text(ln, M, y);
+      y += 14;
+    });
+
+    const nameFrom = payload.iss || payload.sub || payload.jti;
+    const filename = `OAuth_Report_${safeName(nameFrom)}.pdf`;
+    doc.save(filename);
+  };
+
+  /* ---------- UI ---------- */
   return (
     <div className="min-h-screen bg-gradient-to-br from-emerald-50 via-green-50 to-teal-50 p-4 relative">
-      {/* Toast Notification */}
+      {/* Toast */}
       {toast && (
         <div className="fixed top-6 right-6 z-50 animate-in slide-in-from-right duration-300">
           <div
-            className={`
-            px-6 py-4 rounded-2xl shadow-2xl border backdrop-blur-sm transform transition-all duration-300
-            ${
+            className={`px-6 py-4 rounded-2xl shadow-2xl border backdrop-blur-sm ${
               toast.type === "success"
                 ? "bg-emerald-50/90 border-emerald-200 text-emerald-800"
                 : "bg-red-50/90 border-red-200 text-red-800"
-            }
-          `}
+            }`}
           >
-            <div className="flex items-center space-x-3">
+            <div className="flex items-center gap-3">
               <div
-                className={`
-                w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0
-                ${toast.type === "success" ? "bg-emerald-100" : "bg-red-100"}
-              `}
+                className={`w-8 h-8 rounded-full flex items-center justify-center ${
+                  toast.type === "success" ? "bg-emerald-100" : "bg-red-100"
+                }`}
               >
-                {toast.type === "success" ? (
-                  <svg
-                    className="w-4 h-4 text-emerald-600"
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M5 13l4 4L19 7"
-                    />
-                  </svg>
-                ) : (
-                  <svg
-                    className="w-4 h-4 text-red-600"
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M6 18L18 6M6 6l12 12"
-                    />
-                  </svg>
-                )}
+                {toast.type === "success" ? "✓" : "×"}
               </div>
               <span className="font-medium">{toast.message}</span>
               <button
                 onClick={() => setToast(null)}
-                className="ml-2 text-gray-400 hover:text-gray-600 transition-colors"
+                className="ml-2 text-gray-400 hover:text-gray-600"
               >
-                <svg
-                  className="w-4 h-4"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M6 18L18 6M6 6l12 12"
-                  />
-                </svg>
+                ×
               </button>
             </div>
           </div>
         </div>
       )}
+
       <div className="max-w-5xl mx-auto">
-        {/* Header */}
-        <img src="/oauth.png" alt="verify" className="w-16 h-20 mb-4 mt-7" />
+        {/* Header — REPLACED ICON with your image */}
+        {/* <img src="/oauth.png" alt="OAUTH2" className="w-16 h-20 mb-4 mt-7" /> */}
         <div className="text-center mb-8 pt-8">
-          <div className="inline-flex items-center justify-center w-16 h-16 bg-gradient-to-r from-emerald-500 to-green-600 rounded-2xl mb-4 shadow-lg">
-            <svg
-              className="w-8 h-8 text-white"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.031 9-11.622 0-1.042-.133-2.052-.382-3.016z"
-              />
-            </svg>
-          </div>
+          <img
+            src="/oauth.png"
+            alt="OAuth2"
+            className="w-16 h-16 rounded-2xl mx-auto mb-4 shadow-lg"
+          />
           <h1 className="text-4xl font-bold bg-gradient-to-r from-emerald-600 to-green-700 bg-clip-text text-transparent mb-2">
             OAuth Token Inspector
           </h1>
@@ -155,71 +324,52 @@ export default function OAuthTokenInspector() {
           </p>
         </div>
 
-        {/* Main Card */}
+        {/* Card */}
         <div className="bg-white/80 backdrop-blur-sm shadow-xl rounded-3xl border border-green-100 overflow-hidden">
           <div className="p-8">
-            {/* Token Input */}
+            {/* Input */}
             <div className="mb-6">
               <label className="block text-sm font-semibold text-gray-700 mb-3">
                 Paste Your OAuth Token (JWT)
               </label>
-              <div className="relative">
-                <textarea
-                  rows={6}
-                  className="w-full bg-gradient-to-br from-green-50 to-emerald-50 border-2 border-green-200 focus:border-emerald-500 focus:ring-4 focus:ring-emerald-100 rounded-2xl p-4 text-sm font-mono resize-none transition-all duration-300 placeholder-gray-400"
-                  placeholder="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
-                  value={token}
-                  onChange={(e) => setToken(e.target.value.trim())}               />
-                <div className="absolute top-3 right-3">
-                  <div className="w-2 h-2 bg-emerald-400 rounded-full animate-pulse"></div>
-                </div>
-              </div>
+              <textarea
+                rows={6}
+                className="w-full bg-gradient-to-br from-green-50 to-emerald-50 border-2 border-green-200 focus:border-emerald-500 focus:ring-4 focus:ring-emerald-100 rounded-2xl p-4 text-sm font-mono resize-none transition-all"
+                placeholder="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
+                value={token}
+                onChange={(e) => setToken(e.target.value)}
+              />
             </div>
 
-            {/* Analyze Button */}
-            <button
-              onClick={analyzeToken}
-              disabled={!token.trim() || loading}
-              className="w-full py-4 bg-gradient-to-r from-emerald-500 to-green-600 hover:from-emerald-600 hover:to-green-700 disabled:from-gray-300 disabled:to-gray-400 text-white font-bold rounded-2xl transition-all duration-300 transform hover:scale-[1.02] disabled:scale-100 shadow-lg hover:shadow-xl disabled:shadow-none"
-            >
-              <div className="flex items-center justify-center space-x-2">
-                {loading ? (
-                  <>
-                    <svg
-                      className="animate-spin w-5 h-5"
-                      fill="none"
-                      stroke="currentColor"
-                      viewBox="0 0 24 24"
-                    >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth={2}
-                        d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"
-                      />
-                    </svg>
-                    <span>Analyzing Token...</span>
-                  </>
-                ) : (
-                  <>
-                    <svg
-                      className="w-5 h-5"
-                      fill="none"
-                      stroke="currentColor"
-                      viewBox="0 0 24 24"
-                    >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth={2}
-                        d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
-                      />
-                    </svg>
-                    <span>Inspect Token</span>
-                  </>
-                )}
-              </div>
-            </button>
+            {/* Actions */}
+            <div className="flex flex-col sm:flex-row gap-3">
+              <button
+                onClick={analyzeToken}
+                disabled={!token.trim() || loading}
+                className="flex-1 py-4 bg-gradient-to-r from-emerald-500 to-green-600 hover:from-emerald-600 hover:to-green-700 disabled:from-gray-300 disabled:to-gray-400 text-white font-bold rounded-2xl transition-all duration-300"
+              >
+                {loading ? "Analyzing Token..." : "Inspect Token"}
+              </button>
+
+              <button
+                type="button"
+                onClick={handleDownloadPdf}
+                disabled={!result || result.error}
+                className="px-4 py-4 rounded-2xl border border-emerald-600 text-emerald-700 hover:bg-emerald-50 disabled:border-gray-300 disabled:text-gray-400"
+                title={!result ? "Run analysis first" : "Download PDF report"}
+              >
+                📄 Download PDF
+              </button>
+              <button
+                type="button"
+                onClick={handleDownloadTxt}
+                disabled={!result || result.error}
+                className="px-4 py-4 rounded-2xl border border-emerald-600 text-emerald-700 hover:bg-emerald-50 disabled:border-gray-300 disabled:text-gray-400"
+                title={!result ? "Run analysis first" : "Download TXT report"}
+              >
+                📝 Download TXT
+              </button>
+            </div>
           </div>
 
           {/* Results */}
@@ -227,134 +377,100 @@ export default function OAuthTokenInspector() {
             <div className="border-t border-green-100 bg-gradient-to-br from-green-25 to-emerald-25 p-8 space-y-6">
               {result.error ? (
                 <div className="bg-gradient-to-r from-red-50 to-pink-50 border-l-4 border-red-400 p-6 rounded-2xl shadow-sm">
-                  <div className="flex items-start space-x-3">
-                    <div className="w-8 h-8 bg-red-100 rounded-full flex items-center justify-center flex-shrink-0">
-                      <svg
-                        className="w-4 h-4 text-red-600"
-                        fill="none"
-                        stroke="currentColor"
-                        viewBox="0 0 24 24"
-                      >
-                        <path
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                          strokeWidth={2}
-                          d="M6 18L18 6M6 6l12 12"
-                        />
-                      </svg>
-                    </div>
-                    <div>
-                      <h3 className="font-bold text-red-800 mb-1">
-                        Error Occurred
-                      </h3>
-                      <p className="text-red-700">{result.error}</p>
-                    </div>
-                  </div>
+                  <h3 className="font-bold text-red-800 mb-1">Error Occurred</h3>
+                  <p className="text-red-700">{result.error}</p>
                 </div>
               ) : (
                 <>
-                  {/* Decoded Payload */}
-                  <div className="bg-gradient-to-br from-emerald-50 to-green-50 border border-emerald-200 rounded-2xl p-6 shadow-sm">
-                    <div className="flex items-center space-x-3 mb-4">
-                      <div className="w-10 h-10 bg-emerald-100 rounded-xl flex items-center justify-center">
-                        <svg
-                          className="w-5 h-5 text-emerald-600"
-                          fill="none"
-                          stroke="currentColor"
-                          viewBox="0 0 24 24"
-                        >
-                          <path
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                            strokeWidth={2}
-                            d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"
-                          />
-                        </svg>
-                      </div>
-                      <h2 className="text-xl font-bold text-emerald-800">
-                        Decoded Payload
-                      </h2>
+                  {/* Summary cards */}
+                  <div className="grid gap-4 md:grid-cols-2">
+                    <div className="p-4 rounded-xl border border-emerald-100 bg-emerald-50">
+                      <div className="text-sm text-emerald-700 mb-1">Issued At</div>
+                      <div className="font-semibold">{fmtDateTime(iatEpoch)}</div>
                     </div>
-                    <div className="bg-white/70 rounded-xl p-4 border border-emerald-100">
-                      <pre className="overflow-x-auto text-sm text-gray-800 font-mono leading-relaxed">
-                        {JSON.stringify(result.payload, null, 2)}
-                      </pre>
+                    <div className="p-4 rounded-xl border border-emerald-100 bg-emerald-50">
+                      <div className="text-sm text-emerald-700 mb-1">Expires At</div>
+                      <div className="font-semibold">{fmtDateTime(expEpoch)}</div>
+                    </div>
+                    <div className="p-4 rounded-xl border border-emerald-100 bg-emerald-50">
+                      <div className="text-sm text-emerald-700 mb-2">Time Remaining</div>
+                      <div className="font-semibold">
+                        {expEpoch == null
+                          ? "—"
+                          : isExpired
+                          ? "Expired"
+                          : fmtDuration(timeRemaining)}
+                      </div>
+                      {lifetimePercentUsed != null && (
+                        <div className="mt-3 h-2 w-full bg-gray-200 rounded-full overflow-hidden">
+                          <div
+                            className={`${progressColor} h-2`}
+                            style={{ width: `${Math.min(Math.max(lifetimePercentUsed, 0), 100)}%` }}
+                          />
+                        </div>
+                      )}
+                    </div>
+                    <div className="p-4 rounded-xl border border-emerald-100 bg-emerald-50">
+                      <div className="flex items-center justify-between mb-2">
+                        <div className="text-sm text-emerald-700">Token Security Score</div>
+                        <div className="text-xs text-gray-500">{score}/100</div>
+                      </div>
+                      <div className="h-2 w-full bg-gray-200 rounded-full overflow-hidden">
+                        <div className={`${scoreBarColor} h-2`} style={{ width: `${score}%` }} />
+                      </div>
+                      {!!scoreObj.breakdown.length && (
+                        <ul className="mt-3 text-sm text-gray-700 list-disc ml-5 space-y-1">
+                          {scoreObj.breakdown.map((b, i) => (
+                            <li key={i}>
+                              {b.label} {b.delta ? `(${b.delta})` : ""}
+                            </li>
+                          ))}
+                        </ul>
+                      )}
                     </div>
                   </div>
 
-                  {/* Security Issues */}
-                  {result.issues.length > 0 ? (
+                  {/* Issues */}
+                  {issues.length > 0 ? (
                     <div className="bg-gradient-to-br from-amber-50 to-yellow-50 border border-amber-200 rounded-2xl p-6 shadow-sm">
-                      <div className="flex items-center space-x-3 mb-4">
-                        <div className="w-10 h-10 bg-amber-100 rounded-xl flex items-center justify-center">
-                          <svg
-                            className="w-5 h-5 text-amber-600"
-                            fill="none"
-                            stroke="currentColor"
-                            viewBox="0 0 24 24"
-                          >
-                            <path
-                              strokeLinecap="round"
-                              strokeLinejoin="round"
-                              strokeWidth={2}
-                              d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.732 16.5c-.77.833.192 2.5 1.732 2.5z"
-                            />
-                          </svg>
-                        </div>
-                        <h2 className="text-xl font-bold text-amber-800">
-                          Security Issues Detected
-                        </h2>
-                      </div>
-                      <div className="space-y-3">
-                        {result.issues.map((issue, index) => (
+                      <h2 className="text-lg font-bold text-amber-800 mb-3">
+                        Security Issues Detected
+                      </h2>
+                      <div className="space-y-2">
+                        {issues.map((issue, idx) => (
                           <div
-                            key={index}
-                            className="flex items-start space-x-3 p-3 bg-white/70 rounded-xl border border-amber-100"
+                            key={idx}
+                            className="p-3 bg-white/70 rounded-xl border border-amber-100"
                           >
-                            <div className="w-2 h-2 bg-amber-500 rounded-full mt-2 flex-shrink-0"></div>
-                            <p className="text-amber-800 font-medium">
-                              {issue}
-                            </p>
+                            {issue}
                           </div>
                         ))}
                       </div>
                     </div>
                   ) : (
                     <div className="bg-gradient-to-br from-green-50 to-emerald-50 border border-green-200 rounded-2xl p-6 shadow-sm">
-                      <div className="flex items-center space-x-3">
-                        <div className="w-10 h-10 bg-green-100 rounded-xl flex items-center justify-center">
-                          <svg
-                            className="w-5 h-5 text-green-600"
-                            fill="none"
-                            stroke="currentColor"
-                            viewBox="0 0 24 24"
-                          >
-                            <path
-                              strokeLinecap="round"
-                              strokeLinejoin="round"
-                              strokeWidth={2}
-                              d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"
-                            />
-                          </svg>
-                        </div>
-                        <div>
-                          <h3 className="text-xl font-bold text-green-800 mb-1">
-                            Token Validated
-                          </h3>
-                          <p className="text-green-700">
-                            No major security issues found in this token.
-                          </p>
-                        </div>
-                      </div>
+                      <h3 className="text-lg font-bold text-green-800 mb-1">
+                        Token Validated
+                      </h3>
+                      <p className="text-green-700">No major security issues found.</p>
                     </div>
                   )}
+
+                  {/* Payload */}
+                  <div className="bg-white/80 rounded-2xl p-6 border border-emerald-100">
+                    <h2 className="text-lg font-bold text-emerald-800 mb-3">
+                      Decoded Payload
+                    </h2>
+                    <pre className="overflow-x-auto text-sm text-gray-800 font-mono leading-relaxed">
+                      {JSON.stringify(payload, null, 2)}
+                    </pre>
+                  </div>
                 </>
               )}
             </div>
           )}
         </div>
 
-        {/* Footer */}
         <div className="text-center mt-8 text-gray-500 text-sm">
           <p>Secure token analysis • Built with modern security practices</p>
         </div>
