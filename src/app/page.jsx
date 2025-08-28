@@ -1,15 +1,10 @@
 'use client'
 
 
-import CardsList from "@/components/Landing/SmallToolList";
-import HeroSection from "@/components/Landing/HeroSection";
+import Home from '@/components/Home/Home'
 
-
-export default function Home() {
+export default function Landing() {
   return (
-  <div>
-    <HeroSection/>
-    <CardsList/>
-  </div>
+    <Home></Home>
   );
 }

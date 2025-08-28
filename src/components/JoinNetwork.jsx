@@ -2,8 +2,10 @@
 import { useState } from 'react';
 import Link from 'next/link';
 import { Eye, EyeOff } from 'lucide-react';
+import { useRouter } from 'next/navigation';
 
-export default function SignUp() {
+export default function JoinNetwork() {
+  // State to manage form data
   const [formData, setFormData] = useState({
     fname: '',
     lname: '',
@@ -12,25 +14,35 @@ export default function SignUp() {
     confirmPassword: '',
   });
 
+  // State to manage form validation errors and success/error messages
   const [errors, setErrors] = useState({});
   const [message, setMessage] = useState('');
+  
+  // State to manage password visibility
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  
+  // State for terms acceptance and loading status
   const [accepted, setAccepted] = useState(false);
   const [loading, setLoading] = useState(false);
+  
+  const router = useRouter();
 
+  // Handle changes to form inputs
   const handleChange = (e) => {
     setFormData({
       ...formData,
       [e.target.name]: e.target.value,
     });
-    setErrors({ ...errors, [e.target.name]: '' });
+    setErrors({ ...errors, [e.target.name]: '' }); // Clear the error for the changed field
   };
 
+  // Handle form submission
   const handleSubmit = async (e) => {
     e.preventDefault();
     const newErrors = {};
 
+    // Basic form validation
     if (!formData.fname) newErrors.fname = 'First name is required';
     if (!formData.lname) newErrors.lname = 'Last name is required';
     if (!formData.email) newErrors.email = 'Email is required';
@@ -43,6 +55,7 @@ export default function SignUp() {
     setErrors(newErrors);
     setMessage('');
 
+    // If there are no validation errors, proceed with signup
     if (Object.keys(newErrors).length === 0) {
       try {
         setLoading(true);
@@ -59,6 +72,7 @@ export default function SignUp() {
         });
 
         const result = await res.json();
+        // Check if the response was successful and show appropriate message
         if (res.ok) {
           setMessage('Signup successful! Please login.');
         } else {
@@ -74,63 +88,81 @@ export default function SignUp() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-[#3498db]">
-      <div className="bg-white rounded-md shadow-md p-8 w-full max-w-md">
-        <h2 className="text-3xl font-bold mb-2 text-gray-800">Sign Up</h2>
-        <p className="text-sm text-gray-600 mb-4">
-          Please fill in this form to create an account!
+    <div className="min-h-screen flex items-center justify-center bg-black p-4">
+      <div className="bg-[#1e293b] text-white rounded-2xl shadow-lg p-8 w-full max-w-md">
+        <h2 className="text-4xl font-extrabold mb-2 text-gray-200 text-center">Create an Account</h2>
+        <p className="text-sm text-gray-100 mb-6 text-center">
+          Please enter your details to create an account
         </p>
+
         <form onSubmit={handleSubmit}>
           <div className="flex gap-3 mb-4">
             <div className="w-1/2">
+              <label className="block text-gray-100 text-sm font-medium mb-1">First Name</label>
               <input
                 type="text"
                 name="fname"
                 placeholder="First Name"
                 value={formData.fname}
                 onChange={handleChange}
-                className={`w-full px-3 py-2 border ${errors.fname ? 'border-red-500' : 'border-gray-300'} rounded-md bg-gray-100 focus:outline-none focus:ring-2 focus:ring-[#3498db]`}
+                className={`w-full px-4 py-2 border ${
+                  errors.fname ? 'border-red-500' : 'border-gray-300'
+                } rounded-lg bg-gray-100 focus:outline-none focus:ring-2 focus:ring-[#9d7af0] text-black`}
+                autoComplete="given-name"
               />
               {errors.fname && <p className="text-red-500 text-sm mt-1">{errors.fname}</p>}
             </div>
             <div className="w-1/2">
+              <label className="block text-gray-100 text-sm font-medium mb-1">Last Name</label>
               <input
                 type="text"
                 name="lname"
                 placeholder="Last Name"
                 value={formData.lname}
                 onChange={handleChange}
-                className={`w-full px-3 py-2 border ${errors.lname ? 'border-red-500' : 'border-gray-300'} rounded-md bg-gray-100 focus:outline-none focus:ring-2 focus:ring-[#3498db]`}
+                className={`w-full px-4 py-2 border ${
+                  errors.lname ? 'border-red-500' : 'border-gray-300'
+                } rounded-lg bg-gray-100 focus:outline-none focus:ring-2 focus:ring-[#9d7af0] text-black`}
+                autoComplete="family-name"
               />
               {errors.lname && <p className="text-red-500 text-sm mt-1">{errors.lname}</p>}
             </div>
           </div>
 
           <div className="mb-4">
+            <label className="block text-gray-100 text-sm font-medium mb-1">Email</label>
             <input
               type="email"
               name="email"
-              placeholder="Email"
+              placeholder="Enter your email"
               value={formData.email}
               onChange={handleChange}
-              className={`w-full px-3 py-2 border ${errors.email ? 'border-red-500' : 'border-gray-300'} rounded-md bg-gray-100 focus:outline-none focus:ring-2 focus:ring-[#3498db]`}
+              className={`w-full px-4 py-2 border ${
+                errors.email ? 'border-red-500' : 'border-gray-300'
+              } rounded-lg bg-gray-100 focus:outline-none focus:ring-2 focus:ring-[#9d7af0] text-black`}
+              autoComplete="email"
             />
             {errors.email && <p className="text-red-500 text-sm mt-1">{errors.email}</p>}
           </div>
 
           <div className="mb-4 relative">
+            <label className="block text-white text-sm font-medium mb-1">Password</label>
             <input
               type={showPassword ? 'text' : 'password'}
               name="password"
-              placeholder="Password"
+              placeholder="Enter your password"
               value={formData.password}
               onChange={handleChange}
-              className={`w-full px-3 py-2 border ${errors.password ? 'border-red-500' : 'border-gray-300'} rounded-md bg-gray-100 focus:outline-none focus:ring-2 focus:ring-[#3498db]`}
+              className={`w-full px-4 py-2 border ${
+                errors.password ? 'border-red-500' : 'border-gray-300'
+              } rounded-lg bg-gray-100 focus:outline-none focus:ring-2 focus:ring-[#9d7af0] text-black`}
+              autoComplete="new-password"
             />
             <button
               type="button"
-              onClick={() => setShowPassword(!showPassword)}
-              className="absolute right-3 top-2.5 text-gray-600"
+              onClick={() => setShowPassword((prev) => !prev)}
+              className="absolute right-3 top-10 text-gray-600"
+              aria-label="Toggle password visibility"
             >
               {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
             </button>
@@ -138,39 +170,46 @@ export default function SignUp() {
           </div>
 
           <div className="mb-4 relative">
+            <label className="block text-white text-sm font-medium mb-1">Confirm Password</label>
             <input
               type={showConfirmPassword ? 'text' : 'password'}
               name="confirmPassword"
-              placeholder="Confirm Password"
+              placeholder="Confirm your password"
               value={formData.confirmPassword}
               onChange={handleChange}
-              className={`w-full px-3 py-2 border ${errors.confirmPassword ? 'border-red-500' : 'border-gray-300'} rounded-md bg-gray-100 focus:outline-none focus:ring-2 focus:ring-[#3498db]`}
+              className={`w-full px-4 py-2 border ${
+                errors.confirmPassword ? 'border-red-500' : 'border-gray-300'
+              } rounded-lg bg-gray-100 focus:outline-none focus:ring-2 focus:ring-[#9d7af0] text-black`}
+              autoComplete="new-password"
             />
             <button
               type="button"
-              onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-              className="absolute right-3 top-2.5 text-gray-600"
+              onClick={() => setShowConfirmPassword((prev) => !prev)}
+              className="absolute right-3 top-10 text-gray-600"
+              aria-label="Toggle password visibility"
             >
               {showConfirmPassword ? <EyeOff size={20} /> : <Eye size={20} />}
             </button>
-            {errors.confirmPassword && <p className="text-red-500 text-sm mt-1">{errors.confirmPassword}</p>}
+            {errors.confirmPassword && (
+              <p className="text-red-500 text-sm mt-1">{errors.confirmPassword}</p>
+            )}
           </div>
 
           <div className="flex items-center mb-4">
             <input
               type="checkbox"
               id="terms"
-              className="mr-2"
+              className="mr-2 h-4 w-4 rounded border-gray-300 text-[#9d7af0] focus:ring-[#9d7af0]"
               checked={accepted}
               onChange={() => setAccepted(!accepted)}
             />
-            <label htmlFor="terms" className="text-sm text-gray-700">
+            <label htmlFor="terms" className="text-sm text-gray-100">
               I accept the{' '}
-              <a href="#" className="text-[#3498db] hover:underline">
+              <a href="#" className="text-[#9d7af0] font-medium hover:underline">
                 Terms of Use
               </a>{' '}
               &{' '}
-              <a href="#" className="text-[#3498db] hover:underline">
+              <a href="#" className="text-[#9d7af0] font-medium hover:underline">
                 Privacy Policy
               </a>
               .
@@ -181,22 +220,28 @@ export default function SignUp() {
           <button
             type="submit"
             disabled={loading}
-            className={`w-full text-center text-sm text-white mt-6 bg-[#3498db] py-3 rounded-md hover:bg-blue-600 transition ${loading ? 'opacity-50 cursor-not-allowed' : ''}`}
+            className={`w-full text-center text-white mt-6 bg-[#9d7af0] py-3 rounded-lg hover:bg-[#a67fea] transition font-semibold ${
+              loading ? 'opacity-50 cursor-not-allowed' : ''
+            }`}
           >
-            {loading ? 'Signing Up...' : 'Sign Up'}
+            {loading ? 'Adding to Whitelist...' : 'Join the Network'}
           </button>
         </form>
 
         {message && (
-          <p className={`mt-4 text-center font-medium ${message.includes('success') ? 'text-green-600' : 'text-red-500'}`}>
+          <p
+            className={`mt-4 text-center font-medium ${
+              message.includes('success') ? 'text-green-500' : 'text-red-500'
+            }`}
+          >
             {message}
           </p>
         )}
 
-        <p className="text-center text-sm text-white mt-6 bg-gray-400 py-3 rounded-b-md">
+        <p className="text-center text-sm text-gray-100 mt-6">
           Already have an account?{' '}
-          <Link href="/login" className="text-white underline font-medium">
-            Login here.
+          <Link href="/gain-access" className="text-[#9d7af0] font-medium hover:underline">
+            Gain Access here.
           </Link>
         </p>
       </div>

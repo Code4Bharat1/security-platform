@@ -1,7 +1,7 @@
 export const tools = [
   {
     name: "WAF Scanner",
-    image: "/waf1.png",
+    image: "/tools/card-images/waf1.png",
     description: "Detects and analyzes WAF protection on a website, providing insights into security rules",
     slug: "firewallDashboard",
     buttonLabel: "Check WAF",
@@ -9,7 +9,7 @@ export const tools = [
   },
   {
     name: "Vulnerability Scanner",
-    image: "/vuln_scanner.png",
+    image: "/tools/card-images/vuln_scanner.png",
     description: "Scan websites for security weaknesses like XSS or SQL injection.",
     slug: "vuln-scanner",
     buttonLabel: "Scan for Vulnerabilities",
@@ -17,7 +17,7 @@ export const tools = [
   },
   {
     name: "Source Code Analyzer",
-    image: "/code.png",
+    image: "/tools/card-images/tools/card-images/ode.png",
     description: "Scan websites for security weaknesses like XSS or SQL injection.",
     slug: "Source-Code",
     buttonLabel: "Check Your Code's",
@@ -25,7 +25,7 @@ export const tools = [
   },
   {
     name: "Checkmarx Scanner",
-    image: "/checkmarx.png",
+    image: "/tools/card-images/tools/card-images/heckmarx.png",
     description: "Scan websites for security weaknesses like XSS or SQL injection.",
     slug: "codeAnalysis",
     buttonLabel: "Scan your codes",
@@ -33,7 +33,7 @@ export const tools = [
   },
   {
     name: "Subdomain Scanner",
-    image: "/subdomain.png",
+    image: "/tools/card-images/subdomain.png",
     description: "Scan websites for analyzing subdomains and their security posture.",
     slug: "subdomainEnumeration",
     buttonLabel: "Scan your website",
@@ -41,7 +41,7 @@ export const tools = [
   },
   {
     name: "Website Recon",
-    image: "/web-recon.png",
+    image: "/tools/card-images/web-recon.png",
     description: "Perform an in-depth reconnaissance of a website to identify key metadata, technologies used.",
     slug: "webrecon",
     buttonLabel: "Website Recon",
@@ -49,7 +49,7 @@ export const tools = [
   },
   {
     name: "Technology Fingerprinter",
-    image: "/fingerprint.png",
+    image: "/tools/card-images/fingerprint.png",
     description: "un an OWASP ZAP-powered automated security scan to detect vulnerabilities.",
     slug: "fingerPrint",
     buttonLabel: "fingerPrint",
@@ -57,7 +57,7 @@ export const tools = [
   },
   {
     name: "Brute Force Scanner",
-    image: "/brute-force.png",
+    image: "/tools/card-images/brute-force.png",
     description: "un an OWASP ZAP-powered automated security scan to detect vulnerabilities.",
     slug: "bruteForce",
     buttonLabel: "bruteForce",
@@ -65,13 +65,61 @@ export const tools = [
   },
   {
     name: "Mocha Testing",
-    image: "/mocha-logo.png",
+    image: "/tools/card-images/mocha-logo.png",
     description: "Displays all available Mocha commands, options, and usage details.",
     slug: "mochaForm",
     buttonLabel: "Mocha Testing",
     type: "red-team"
   },
-  // {
+  {
+    name: "Broken link Checker",
+    image: "/tools/card-images/brokenlink1.png",
+    description: "Scans web pages for dead or broken links, helping maintain SEO integrity",
+    slug: "brokenStreamForm",
+    buttonLabel: "Scan for Vulnerabilities",
+    type: "non-tech"
+  },
+  {
+    name: "Wordpress Scanner",
+    image: "/tools/card-images/wordpress-secure.png",
+    description: "Check for outdated plugins, misconfigurations, and known vulnerabilities.",
+    slug: "wordpressForm",
+    buttonLabel: "Scan for Wordpress",
+    type: "red-team"
+  },
+  {
+    name: "Sitemap Generator",
+    image: "/tools/card-images/sitemap1.png",
+    description: "Creates an XML sitemap to help search engines index a website efficiently",
+    slug: "sitemapForm",
+    buttonLabel: "Generate Sitemap",
+    type: "non-tech"
+  },
+  {
+    name: "API Testing",
+    image: "/tools/card-images/api.png",
+    description: "Allows users to test API endpoints, validating functionality and security headers",
+    slug: "apiForm",
+    buttonLabel: "Scan for API",
+    type: "red-team"
+  },
+  {
+    name: "Port Scanner",
+    image: "/tools/card-images/port_scan.png",
+    description: "Allows users to test API endpoints, validating functionality, security headers",
+    slug: "portScannerForm",
+    buttonLabel: "Check Headers",
+    type: "red-team"
+  },
+    // {
+  //   name: "ASN Lookup",
+  //   image: "/asn-logo.png",
+  //   description: "Retrieve details about an Autonomous System Number (ASN).",
+  //   slug: "asnLookup",
+  //   buttonLabel: "ASN Lookup",
+  //   type: "blue-team"
+  // },
+    // {
   //   name: "Sharepoint Scanner",
   //   image: "/sharepoint.png",
   //   description: "Analyze SharePoint environments for security misconfigurations, permission issues.",
@@ -80,56 +128,8 @@ export const tools = [
   //   type: "blue-team"
   // },
   {
-    name: "Broken link Checker",
-    image: "/brokenlink1.png",
-    description: "Scans web pages for dead or broken links, helping maintain SEO integrity",
-    slug: "brokenStreamForm",
-    buttonLabel: "Scan for Vulnerabilities",
-    type: "non-tech"
-  },
-  {
-    name: "Wordpress Scanner",
-    image: "/wordpress-secure.png",
-    description: "Check for outdated plugins, misconfigurations, and known vulnerabilities.",
-    slug: "wordpressForm",
-    buttonLabel: "Scan for Wordpress",
-    type: "red-team"
-  },
-  {
-    name: "Sitemap Generator",
-    image: "/sitemap1.png",
-    description: "Creates an XML sitemap to help search engines index a website efficiently",
-    slug: "sitemapForm",
-    buttonLabel: "Generate Sitemap",
-    type: "non-tech"
-  },
-  {
-    name: "API Testing",
-    image: "/api.png",
-    description: "Allows users to test API endpoints, validating functionality and security headers",
-    slug: "apiForm",
-    buttonLabel: "Scan for API",
-    type: "red-team"
-  },
-  {
-    name: "Port Scanner",
-    image: "/port_scan.png",
-    description: "Allows users to test API endpoints, validating functionality, security headers",
-    slug: "portScannerForm",
-    buttonLabel: "Check Headers",
-    type: "red-team"
-  },
-  // {
-  //   name: "ASN Lookup",
-  //   image: "/asn-logo.png",
-  //   description: "Retrieve details about an Autonomous System Number (ASN).",
-  //   slug: "asnLookup",
-  //   buttonLabel: "ASN Lookup",
-  //   type: "blue-team"
-  // },
-  {
     name: "Clickjacking Tester",
-    image: "/clickjacking.png",
+    image: "/tools/card-images/tools/card-images/lickjacking.png",
     description: " Check for UI redressing vulnerabilities in a webpage.",
     slug: "clickjackingTester",
     buttonLabel: "Clickjacking Tester",
@@ -137,7 +137,7 @@ export const tools = [
   },
   {
     name: "CSRF Vulnerability Scanner",
-    image: "/csrf.png",
+    image: "/tools/card-images/tools/card-images/srf.png",
     description: " Check for UI redressing vulnerabilities in a webpage.",
     slug: "csrfChecker",
     buttonLabel: "CSRF Vulnerability Scanner",
@@ -145,7 +145,7 @@ export const tools = [
   },
   {
     name: "HTTPS Security Checker",
-    image: "/https-security.png",
+    image: "/tools/card-images/https-security.png",
     description: " Validate HTTPS security implementation.",
     slug: "httpsCheckerForm",
     buttonLabel: "HTTPS Security Checker",
@@ -153,7 +153,7 @@ export const tools = [
   },
   {
     name: "JWT Signature Validator",
-    image: "/jwt_signature.png",
+    image: "/tools/card-images/jwt_signature.png",
     description: "Ensure JWT signature integrity.",
     slug: "JWTSignatureValidator",
     buttonLabel: "JWT Signature Validator",
@@ -161,7 +161,7 @@ export const tools = [
   },
   {
     name: "OAuth Token Analyzer",
-    image: "/oauth.png",
+    image: "/tools/card-images/oauth.png",
     description: " Inspect OAuth tokens for security risks.",
     slug: "OAuthTokenInspector",
     buttonLabel: "OAuth Token Analyzer",
@@ -169,7 +169,7 @@ export const tools = [
   },
   {
     name: " Obfuscation Detector",
-    image: "/obfuscation.png",
+    image: "/tools/card-images/obfuscation.png",
     description: "Identify obfuscation techniques in code.",
     slug: "obfuscationChecker",
     buttonLabel: "Obfuscation Detector",
@@ -177,7 +177,7 @@ export const tools = [
   },
   {
     name: "Open Redirect Tester ",
-    image: "/open-redirect.png",
+    image: "/tools/card-images/open-redirect.png",
     description: "Find unsafe redirection vulnerabilities.",
     slug: "openRedirectTester",
     buttonLabel: "Open Redirect Tester ",
@@ -185,7 +185,7 @@ export const tools = [
   },
   {
     name: "Regex Security Validator",
-    image: "/regex.png",
+    image: "/tools/card-images/regex.png",
     description: "Check regular expressions for security flaws",
     slug: "regexDetector",
     buttonLabel: "Regex Security Validator",
@@ -193,7 +193,7 @@ export const tools = [
   },
   {
     name: "Reverse DNS Resolver ",
-    image: "/reverse_dns.png",
+    image: "/tools/card-images/reverse_dns.png",
     description: "Retrieve domain names linked to an IP.",
     slug: "reverseDNSLookup",
     buttonLabel: "Reverse DNS Resolver",
@@ -201,7 +201,7 @@ export const tools = [
   },
   {
     name: "Secret Key Scanner",
-    image: "/secret_key_scanner.png",
+    image: "/tools/card-images/secret_key_scanner.png",
     description: "Search for exposed API keys or credentials.",
     slug: "secretKeyScanner",
     buttonLabel: "Secret Key Scanner",
@@ -209,7 +209,7 @@ export const tools = [
   },
   {
     name: "Session Fixation Tester",
-    image: "/session_fixation.png",
+    image: "/tools/card-images/session_fixation.png",
     description: "Detect session fixation vulnerabilities",
     slug: "sessionFixationChecker",
     buttonLabel: "Session Fixation Tester",
@@ -217,7 +217,7 @@ export const tools = [
   },
   {
     name: "Whois Domain Lookup",
-    image: "/whois.png",
+    image: "/tools/card-images/whois.png",
     description: "Retrieve domain registration and ownership details.",
     slug: "whoisLookup",
     buttonLabel: "Whois Domain Lookup",
@@ -225,7 +225,7 @@ export const tools = [
   },
   {
     name: "XSS Vulnerability Tester",
-    image: "/xss.png",
+    image: "/tools/card-images/xss.png",
     description: "Identify Cross-Site Scripting (XSS) risks",
     slug: "xssTester",
     buttonLabel: "XSS Vulnerability Tester",
@@ -233,7 +233,7 @@ export const tools = [
   },
   {
     name: "Meta Tag Analyzer",
-    image: "/meta_tag.png",
+    image: "/tools/card-images/meta_tag.png",
     description: "Analyze meta tags like title, description, and keywords.",
     slug: "meta-tag",
     buttonLabel: "Analyze Meta Tags",
@@ -241,7 +241,7 @@ export const tools = [
   },
   {
     name: "Keyword Density Checker",
-    image: "/keyword_checker.png",
+    image: "/tools/card-images/keyword_checker.png",
     description: "Analyze keyword frequency for SEO structuring on website.",
     slug: "keyword-checker",
     buttonLabel: "Check Keyword Density",
@@ -249,7 +249,7 @@ export const tools = [
   },
   {
     name: "Link Detector",
-    image: "/link_dec.png",
+    image: "/tools/card-images/link_dec.png",
     description: "This tool helps detect malicious, suspicious, or unsafe links.",
     slug: "check-link",
     buttonLabel: "Check Link",
@@ -257,7 +257,7 @@ export const tools = [
   },
   {
     name: "SecureCrypt",
-    image: "/dycrypt.png",
+    image: "/tools/card-images/dycrypt.png",
     description: "Encrypts and decrypts text using secure algorithms.",
     slug: "securecrypt",
     buttonLabel: "Encrypt Now",
@@ -265,7 +265,7 @@ export const tools = [
   },
   {
     name: "SQLi Scanner",
-    image: "/sql_injection.png",
+    image: "/tools/card-images/sql_injection.png",
     description: "This tool scans websites for SQL Injection vulnerabilities.",
     slug: "nexpose-scan",
     buttonLabel: "Scan SQLi",
@@ -273,7 +273,7 @@ export const tools = [
   },
   {
     name: "MDR Monitor",
-    image: "/MDR.png",
+    image: "/tools/card-images/MDR.png",
     description: "Monitors and responds to real-time security threats.",
     slug: "mdr-monitor",
     buttonLabel: "Start Monitoring",
@@ -281,7 +281,7 @@ export const tools = [
   },
   {
     name: "File Scanner",
-    image: "/folder-scan.png",
+    image: "/tools/card-images/folder-scan.png",
     description: "Scans files for malware or suspicious files.",
     slug: "folder-threat-scanner",
     buttonLabel: "Scan File",
@@ -289,7 +289,7 @@ export const tools = [
   },
   {
     name: "WhatsApp Privacy Inspector",
-    image: "/wp.png",
+    image: "/tools/card-images/wp.png",
     description: "Checks WhatsApp settings for potential privacy risks.",
     slug: "whatsapp-privacy-inspector",
     buttonLabel: "Inspect Now",
@@ -297,7 +297,7 @@ export const tools = [
   },
   {
     name: "Email Attachment Analyzer",
-    image: "/email.png",
+    image: "/tools/card-images/email.png",
     description: "Scans email attachments for malware or hidden threats.",
     slug: "email-attachment-analyzer",
     buttonLabel: "Analyze File",
@@ -305,7 +305,7 @@ export const tools = [
   },
   {
     name: " IP Address Info Finder",
-    image: "/ip.png",
+    image: "/tools/card-images/ip.png",
     description: "Fetches location and network details of an IP address.",
     slug: "ip-address-info-finder",
     buttonLabel: "Find Info",
@@ -313,7 +313,7 @@ export const tools = [
   },
   {
     name: "QR Tool",
-    image: "/QR.png",
+    image: "/tools/card-images/QR.png",
     description: "Unsafe QR & QR Generater.",
     slug: "fake-qr-code-detector",
     buttonLabel: "Scan QR",
@@ -321,7 +321,7 @@ export const tools = [
   },
   {
     name: "Website Optimization Tool",
-    image: "/optimization.png",
+    image: "/tools/card-images/optimization.png",
     description: "Detects deployment issues like unused code, large assets, and slow-loading elements.",
     slug: "website-optimization-tool",
     buttonLabel: "Check Optimization",
@@ -329,7 +329,7 @@ export const tools = [
   },
   {
     name: "SEO Score Analyzer Tool",
-    image: "/seo-score.png",
+    image: "/tools/card-images/seo-score.png",
     description: "Analyzes website SEO and provides improvement tips.",
     slug: "seo-score-analyzer-tool",
     buttonLabel: "Analyze SEO",
@@ -337,7 +337,7 @@ export const tools = [
   },
   {
     name: "Keyword Generator",
-    image: "/keyword-generate.png",
+    image: "/tools/card-images/keyword-generate.png",
     description: "Extract SEO-Friendly Keyword Suggestions.",
     slug: "KeywordGenerator",
     buttonLabel: "Generate Keyword",
@@ -345,7 +345,7 @@ export const tools = [
   },
   {
     name: "Data Breach",
-    image: "/DataBreach1.png",
+    image: "/tools/card-images/DataBreach1.png",
     description: "Find Where Your Email , Phone No. Or Username is Exposed",
     slug: "osint",
     buttonLabel: "Check Info",
@@ -353,7 +353,7 @@ export const tools = [
   },
   {
     name: "URL Shortener",
-    image: "/shorted-url.png",
+    image: "/tools/card-images/shorted-url.png",
     description: "Make Links Short and Simple.",
     slug: "url-shortener",
     buttonLabel: "Shorten URL",
@@ -361,7 +361,7 @@ export const tools = [
   },
   {
     name: "Database Security Checker",
-    image: "/DB-Security.png",
+    image: "/tools/card-images/DB-Security.png",
     description: "Database Safety Checker With Score.",
     slug: "DbSecurityChecker",
     buttonLabel: "Check Security",
@@ -375,14 +375,18 @@ export const tools = [
     buttonLabel: "Create PDF",
     type: "non-tech"
   },
-   {
-    name: "Wireshark",
-    image: "Wireshark.png",
-    description: "Description Wireshark ......",
-    slug: "Wireshark",
-    buttonLabel: "Use Wireshark",
+   
+
+  {
+    name: "Domain-to-IP",
+    image: "domain.png",
+    description: "Description ......",
+    slug: "domain-to-ip",
+    buttonLabel: "Use ",
     type: "blue-team"
   },
+
+
    {
     name: "Chrome Extention",
     image: "chrome.png",
@@ -395,7 +399,7 @@ export const tools = [
     name: "Password Strength Checker",
     image: "password-checker.png",
     description: "Description Passsword Strenght Checker....",
-    slug: "Passsword-Checker",
+    slug: "password-checker",
     buttonLabel: "Check Your Password",
     type: "non-tech"
   },
