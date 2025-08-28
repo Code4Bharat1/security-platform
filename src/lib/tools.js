@@ -375,14 +375,18 @@ export const tools = [
     buttonLabel: "Create PDF",
     type: "non-tech"
   },
-   {
-    name: "Wireshark",
-    image: "Wireshark.png",
-    description: "Description Wireshark ......",
-    slug: "Wireshark",
-    buttonLabel: "Use Wireshark",
+   
+
+  {
+    name: "Domain-to-IP",
+    image: "domain.png",
+    description: "Description ......",
+    slug: "domain-to-ip",
+    buttonLabel: "Use ",
     type: "blue-team"
   },
+
+
    {
     name: "Chrome Extention",
     image: "chrome.png",
@@ -395,7 +399,7 @@ export const tools = [
     name: "Password Strength Checker",
     image: "password-checker.png",
     description: "Description Passsword Strenght Checker....",
-    slug: "Passsword-Checker",
+    slug: "password-checker",
     buttonLabel: "Check Your Password",
     type: "non-tech"
   },
