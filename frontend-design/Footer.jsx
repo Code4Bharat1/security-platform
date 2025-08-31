@@ -1,10 +1,7 @@
-// Footer.jsx
-import { useState } from 'react';
-
 const Footer = () => {
     const Section = ({ title, links }) => (
         <div className="w-full md:w-auto mb-4 md:mb-0 md:px-16 font-inter">
-            <h3 className="w-full text-left text-lg font-bold md:font-bold text-black">
+            <h3 className="w-full text-left text-lg font-bold md:font-bold text-white">
                 {title}
             </h3>
             <ul className="mt-2 md:mt-4 space-y-2">
@@ -22,7 +19,7 @@ const Footer = () => {
 
 
     return (
-        <footer className="bg-[#9d7af0] text-white pt-10 md:px-0 font-inter">
+        <footer className="relative z-0 bg-[#9d7af0]/30 backdrop-blur-xl border border-white/20 shadow-lg transition-all duration-300 transform text-white pt-10 md:px-0 font-inter">
             <div className="max-w-7xl mx-auto grid md:grid-cols-4 gap-8 px-6 md:px-16">
                 {/* Left Section */}
                 <div className="md:col-span-1">
@@ -97,7 +94,7 @@ const Footer = () => {
             </div>
 
             {/* Footer Bottom */}
-            <div className="flex justify-center flex-col md:flex-row border-t border-white/30 mt-10 text-center text-sm text-[#9d7af0] bg-white md:py-3">
+            <div className="flex justify-center flex-col md:flex-row mt-10 text-center text-sm text-[#9d7af0] bg-white md:py-3 border-b-5 border-b-black">
                 <div>©2025<span className='hidden md:inline'>&nbsp;|&nbsp;</span></div>
                 <div>
                     Developed By&nbsp;<span className="font-bold text-black">Code4Bharat</span><span className='hidden md:inline'>&nbsp;|&nbsp;</span>

@@ -1,20 +1,18 @@
-import Navbar from './Navbar'
 import Hero from './Hero'
-import Certificates from './Certifications'
+import Certifications from './Certifications'
 import WhyUs from './WhyUs'
 import ToolsCard from './ToolsCard'
 import Blogs from './Blogs'
-import Footer from './Footer'
+import Services from './Services'
 function App() {
   return (
-    <div className='bg-black'>
-      <Navbar></Navbar>
+    <div>
       <Hero></Hero>
-      <Certificates></Certificates>
       <WhyUs></WhyUs>
+      <Certifications></Certifications>
       <ToolsCard></ToolsCard>
       <Blogs></Blogs>
-      <Footer></Footer>
+      <Services></Services>
     </div>
   )
 }

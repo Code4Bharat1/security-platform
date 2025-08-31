@@ -407,4 +407,12 @@ export const tools = [
     buttonLabel: "Find Data Leak",
     type: "blue-team"
   },
+  {
+    name: "Cyber Fraud Identifier",
+    image: "/cyber-fraud-identifier.png",
+    description: "Flags potential online fraud by previous records",
+    slug: "cyber-fraud-identifier",
+    buttonLabel: "Identify Fraudster",
+    type: "forensic"
+  },
 ];

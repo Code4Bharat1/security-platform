@@ -42,7 +42,8 @@ export default function GainAccess() {
           alert('Login successful! ✅');
           localStorage.setItem('token', result.token);
           localStorage.setItem('user', JSON.stringify(result.user));
-          router.push('/');
+          window.location.href = '/';
+
         } else {
           alert(result.message || 'Login failed');
         }

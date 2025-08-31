@@ -1,25 +1,21 @@
 export default function Hero() {
     return (
-        <div className="font-inter h-screen relative overflow-hidden">
-            {/* Background Glow */}
-            <img
-                src="/hero-glow-eclipes.png"
-                alt="Glow"
-                className="h-[200px] md:h-[300px] mx-auto mt-10 md:mt-0"
-            />
-
-            <img
-                src="/hero-half-circle.png"
-                alt="Half Circle"
-                className="mx-auto px-20 mt-[-3rem] md:mt-[-5rem]"
-            />
+        <div className="font-inter overflow-hidden h-screen">
+            <video
+                className="absolute top-0 left-0 w-screen h-[110%] object-cover"
+                autoPlay
+                loop
+                muted
+                playsInline
+            >
+                <source src="/4.mp4" type="video/mp4" />
+                Your browser does not support the video tag.
+            </video>
 
             {/* Content */}
-            <div className="relative grid place-items-center text-white text-center px-4 md:px-0 mt-[-3rem] md:mt-[-10rem]">
-                {/* Decorative half circle image behind text */}
-
+            <div className="relative flex items-center text-white text-center px-4 md:px-0 h-full">
                 {/* Text on top of image */}
-                <div className="col-start-1 row-start-1 max-w-3xl">
+                <div className="max-w-3xl mx-auto">
                     <h1 className="text-2xl sm:text-3xl md:text-5xl font-bold leading-snug">
                         Protecting Your Digital Assets in
                         <br />
@@ -32,10 +28,10 @@ export default function Hero() {
                     </p>
 
                     <div className="flex flex-col sm:flex-row justify-center gap-4 sm:gap-10 mt-8 text-base md:text-xl">
-                        <button className="px-6 py-3 bg-[#9d7af0] rounded-lg w-full sm:w-[20ch]">
+                        <button className="cursor-pointer px-2 py-3 bg rounded-lg w-full sm:w-[15ch] hover:bg-blue-950/50 hover:text-white bg-[#9d7af0]/50 backdrop-blur-xl shadow-lg ring-1 ring-black/5">
                             Get Started
                         </button>
-                        <button className="px-6 py-3 bg-white text-black rounded-lg w-full sm:w-[20ch]">
+                        <button className="cursor-pointer px-2 py-3 text-black rounded-lg w-full sm:w-[15ch] text-nowrap hover:bg-blue-950/50 hover:text-white  bg-white/80 backdrop-blur-2xl shadow-lg ring-1 ring-black/5">
                             Schedule Meeting
                         </button>
                     </div>
