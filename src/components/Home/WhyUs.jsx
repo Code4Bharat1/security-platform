@@ -1,50 +1,55 @@
 export default function WhyUs() {
   return (
-    <div className="px-2 sm:px-6 md:px-16">
-      <h2 className="text-white text-2xl sm:text-4xl font-inter font-bold mb-4 text-center sm:text-left">
-        Why Choose Security Platform<br />
-        <span className="underline underline-offset-8 decoration-from-font decoration-[#9d7af0]">
-          For Cyber Security?
-        </span>
-      </h2>
+    <div className="flex flex-col w-full lg:h-screen min-h-screen bg-[url('/15.jpg')] bg-no-repeat bg-cover px-4 sm:px-8 md:px-20 py-5">
+        <h2 className="text-white text-2xl sm:text-3xl md:text-4xl font-inter font-bold mb-10 text-center sm:text-left leading-tight">
+          Why Choose Security Platform<br />
+          <span className="underline underline-offset-4 decoration-from-font decoration-[#9d7af0]">
+            For Cyber Security?
+          </span>
+        </h2>
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6 p-4 md:bg-[url('/why-us/bg-circle.png')] bg-center bg-no-repeat bg-contain">
-        {/* Block 1 */}
-        <div className="flex flex-col items-center text-center rounded-lg bg-gradient-to-b from-[#9d7af0] to-black text-white py-4 px-3">
-          <img className="mb-3 w-16 sm:w-24" src="/why-us/hub.png" alt="All-in-one Cyber Security hub" />
-          <h3 className="text-lg sm:text-xl font-semibold mb-1">All-in-one Cyber Security hub</h3>
-          <p className="text-xs sm:text-sm">
-            A single platform with every essential<br />tool to protect your digital presence.
-          </p>
-        </div>
-
-        {/* Block 2 */}
-        <div className="flex flex-col items-center text-center rounded-lg bg-gradient-to-b from-[#9d7af0] to-black text-white py-4 px-3">
-          <img className="mb-3 w-16 sm:w-24" src="/why-us/shield-lock.png" alt="Advanced Threat Detection" />
-          <h3 className="text-lg sm:text-xl font-semibold mb-1">Advanced Threat Detection</h3>
-          <p className="text-xs sm:text-sm">
-            AI-powered monitoring that identifies<br />and stops threats before they can harm<br />your systems.
-          </p>
-        </div>
-
-        {/* Block 3 */}
-        <div className="flex flex-col items-center text-center rounded-lg bg-gradient-to-b from-[#9d7af0] to-black text-white py-4 px-3">
-          <img className="mb-3 w-16 sm:w-24" src="/why-us/expert.png" alt="Cyber Security Experts" />
-          <h3 className="text-lg sm:text-xl font-semibold mb-1">Cyber Security Experts</h3>
-          <p className="text-xs sm:text-sm">
-            Skilled professionals delivering trusted<br />solutions for any security challenge.
-          </p>
-        </div>
-
-        {/* Block 4 */}
-        <div className="flex flex-col items-center text-center rounded-lg bg-gradient-to-b from-[#9d7af0] to-black text-white py-4 px-3">
-          <img className="mb-3 w-16 sm:w-24" src="/why-us/jamboard-kiosk.png" alt="Custom Solution" />
-          <h3 className="text-lg sm:text-xl font-semibold mb-1">Custom Solution</h3>
-          <p className="text-xs sm:text-sm">
-            We create security solutions<br />made just for you.
-          </p>
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 h-full w-5/6 mx-auto">
+          {/* Block Template */}
+          {[
+            {
+              icon: "/why-us/hub.png",
+              title: "All-in-one Cyber Security Hub",
+              desc: "A single platform with every tool to protect your digital presence.",
+            },
+            {
+              icon: "/why-us/shield-lock.png",
+              title: "Advanced Threat Detection",
+              desc: "AI monitoring stops threats before they can harm your systems.",
+            },
+            {
+              icon: "/why-us/expert.png",
+              title: "Cyber Security Experts",
+              desc: "Skilled professionals delivering trusted solutions for you.",
+            },
+            {
+              icon: "/why-us/jamboard-kiosk.png",
+              title: "Custom Solutions",
+              desc: "Security solutions tailor-made for your organization.",
+            },
+          ].map((block, index) => (
+            <div
+              key={index}
+              className="flex flex-col items-center justify-center text-center rounded-lg bg-white/10 backdrop-blur-xl border border-white/20 text-white p-4 sm:p-6 shadow-lg transition-transform duration-300 transform hover:scale-105 hover:shadow-[0_0_20px_rgba(255,255,255,0.3)]"
+            >
+              <img
+                className="mb-4 w-12 sm:w-16"
+                src={block.icon}
+                alt={block.title}
+              />
+              <h3 className="text-base sm:text-lg font-semibold mb-2">
+                {block.title}
+              </h3>
+              <p className="text-sm sm:text-base leading-snug">
+                {block.desc}
+              </p>
+            </div>
+          ))}
         </div>
       </div>
-    </div>
   );
 }

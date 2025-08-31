@@ -1,21 +1,27 @@
 export default function Certificates() {
   return (
-    <div className="mx-4 sm:mx-10 md:mx-20 h-screen px-4 sm:px-10 md:px-20 rounded-[50px] md:rounded-[100px] bg-gradient-to-b from-[#9d7af0] to-black">
-      <h2 className="text-center text-white text-3xl md:text-5xl pt-7 font-inter font-bold">
-        Certifications
-      </h2>
+    <div className="relative">
+      {/* Flipped Background Image */}
+      <div className="absolute top-0 left-0 w-full h-full bg-[url('/15.jpg')] bg-no-repeat bg-cover scale-y-[-1] z-0" />
 
-      <div className="flex flex-col md:flex-row items-center justify-evenly gap-10 mt-10">
-        <img
-          src="/aicpa-cert.png"
-          className="w-4/5 sm:w-3/4 md:w-[45%] lg:w-[35%] xl:w-[30%] max-w-full"
-          alt="AICPA Certificate"
-        />
-        <img
-          src="/iso-cert.png"
-          className="w-4/5 sm:w-3/4 md:w-[45%] lg:w-[35%] xl:w-[30%] max-w-full"
-          alt="ISO Certificate"
-        />
+      {/* Content div over the background */}
+      <div className="relative z-10 w-full h-full flex flex-col items-center justify-around px-4 py-10">
+        <h2 className="text-center text-white text-2xl sm:text-3xl md:text-4xl font-inter font-bold">
+          Certifications
+        </h2>
+
+        <div className="flex flex-col md:flex-row items-center justify-evenly gap-10 mt-10 w-full max-w-6xl ">
+          <img
+            src="/aicpa-cert.png"
+            className="w-4/5 md:w-[40%] max-w-full hover:scale-110 duration-200 transition-all"
+            alt="AICPA Certificate"
+          />
+          <img
+            src="/iso-cert.png"
+            className="w-4/5 md:w-[40%] max-w-full hover:scale-110 duration-200 transition-all"
+            alt="ISO Certificate"
+          />
+        </div>
       </div>
     </div>
   );

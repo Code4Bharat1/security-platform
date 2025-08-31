@@ -1,7 +1,7 @@
 const Footer = () => {
     const Section = ({ title, links }) => (
         <div className="w-full md:w-auto mb-4 md:mb-0 md:px-16 font-inter">
-            <h3 className="w-full text-left text-lg font-bold md:font-black text-black underline decoration-2">
+            <h3 className="w-full text-left text-lg font-bold md:font-bold text-white">
                 {title}
             </h3>
             <ul className="mt-2 md:mt-4 space-y-2">
@@ -19,7 +19,7 @@ const Footer = () => {
 
 
     return (
-        <footer className="bg-[#9d7af0] text-white pt-10 md:px-0 font-inter">
+        <footer className="relative z-0 bg-[#9d7af0]/30 backdrop-blur-xl border border-white/20 shadow-lg transition-all duration-300 transform text-white pt-10 md:px-0 font-inter">
             <div className="max-w-7xl mx-auto grid md:grid-cols-4 gap-8 px-6 md:px-16">
                 {/* Left Section */}
                 <div className="md:col-span-1">
@@ -35,10 +35,18 @@ const Footer = () => {
 
                     {/* Placeholder Social Icons */}
                     <div className="flex space-x-4 mt-4">
-                        <a className="w-10 h-10 bg-gradient-to-br from-yellow-400 to-pink-500 rounded-lg flex items-center justify-center text-white font-bold text-xl" href="https://www.instagram.com/nexcorealliancellp/">I</a>
-                        <a className="w-10 h-10 bg-[#3b5998] rounded-lg flex items-center justify-center text-white font-bold text-xl" href="https://www.facebook.com/profile.php?id=61570113656994">f</a>
-                        <a className="w-10 h-10 bg-black rounded-lg flex items-center justify-center text-white font-bold text-xl" href="https://https://x.com/Code4Bharat">x</a>
-                        <a className="w-10 h-10 bg-[#0e76a8] rounded-lg flex items-center justify-center text-white font-bold text-xl" href="https://www.linkedin.com/company/nexcore-alliance">in</a>
+                        <div className="w-10 h-10 bg-gradient-to-br from-yellow-400 to-pink-500 rounded-lg flex items-center justify-center text-white font-bold text-xl">
+                            I
+                        </div>
+                        <div className="w-10 h-10 bg-[#3b5998] rounded-lg flex items-center justify-center text-white font-bold text-xl">
+                            f
+                        </div>
+                        <div className="w-10 h-10 bg-black rounded-lg flex items-center justify-center text-white font-bold text-xl">
+                            x
+                        </div>
+                        <div className="w-10 h-10 bg-[#0e76a8] rounded-lg flex items-center justify-center text-white font-bold text-xl">
+                            in
+                        </div>
                     </div>
                 </div>
 
@@ -86,7 +94,7 @@ const Footer = () => {
             </div>
 
             {/* Footer Bottom */}
-            <div className="flex justify-center flex-col md:flex-row border-t border-white/30 mt-10 text-center text-sm text-[#9d7af0] bg-white md:py-3">
+            <div className="flex justify-center flex-col md:flex-row mt-10 text-center text-sm text-[#9d7af0] bg-white md:py-3 border-b-5 border-b-black">
                 <div>©2025<span className='hidden md:inline'>&nbsp;|&nbsp;</span></div>
                 <div>
                     Developed By&nbsp;<span className="font-bold text-black">Code4Bharat</span><span className='hidden md:inline'>&nbsp;|&nbsp;</span>

@@ -23,13 +23,11 @@ export default function RootLayout({ children }) {
   return (
     <html lang="en" className="bg-black">
       <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased  bg-black`}
+        className={`${geistSans.variable} ${geistMono.variable} bg-black`}
       >
-        <Navbar />
-        <main className="min-h-screen flex-grow">
+          <Navbar />
           {children}
-        </main>
-        <Footer />
+          <Footer />
       </body>
     </html>
   );
