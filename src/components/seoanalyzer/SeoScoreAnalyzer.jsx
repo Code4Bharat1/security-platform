@@ -18,7 +18,7 @@ export default function SeoScoreAnalyzer() {
     setResult(null);
 
     try {
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/seo/analyze`, {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_PROD_API_URL}/seo/analyze`, {
   method: "POST",
   headers: { "Content-Type": "application/json" },
   body: JSON.stringify({ url }),
@@ -26,14 +26,15 @@ export default function SeoScoreAnalyzer() {
 
 
 
-      const data = await response.json();
+      const data = await res.json();
 
-      if (response.ok) {
+      if (res.ok) {
         setResult(data);
       } else {
         setError(data.message || "Something went wrong!");
       }
     } catch (err) {
+      console.log (err)
       setError("🚨 Failed to connect with backend!");
     } finally {
       setLoading(false);
