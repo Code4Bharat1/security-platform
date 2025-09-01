@@ -18,11 +18,11 @@ export default function FileThreatScanner() {
     setResults([]);
 
     const formData = new FormData();
-    files.forEach((file) => formData.append("files", file));
+    files.forEach((file) => formData.append("file", file));
 
     try {
       const res = await fetch(
-        `${process.env.NEXT_PUBLIC_PROD_API_URL}/file-scan`,
+        `${process.env.NEXT_PUBLIC_PROD_API_URL}/file/scan`,
         {
           method: "POST",
           body: formData,

@@ -190,7 +190,7 @@ export default function LinkDetector() {
     });
 
     const suspRows = [
-      ["Keywords", (r.suspicious?.keywordsFound || []).join(", ") || "-"],
+      ["Keywords", (r.suspicious?.keywordsFound || []).join(", ") || "Not Found"],
       ["Typosquat of", r.suspicious?.typosquatOf || "-"],
       ["Shortener Expanded", r.suspicious?.shortenerExpanded ? "Yes" : "No"],
       ["Suspicious Domain", r.suspicious?.suspiciousDomain ? "Yes" : "No"],
@@ -390,7 +390,7 @@ export default function LinkDetector() {
                   <details>
                     <summary className="cursor-pointer font-semibold text-gray-800">Suspicious Indicators</summary>
                     <div className="mt-2">
-                      <p><span className="font-semibold">Keywords:</span> {(result.suspicious?.keywordsFound || []).join(", ") || "-"}</p>
+                      <p><span className="font-semibold">Keywords:</span> {(result.suspicious?.keywordsFound || []).join(", ") || "Not Found"}</p>
                       <p><span className="font-semibold">Typosquat of:</span> {result.suspicious?.typosquatOf || "-"}</p>
                       <p><span className="font-semibold">Shortener:</span> {result.suspicious?.shortenerExpanded ? "Yes" : "No"}</p>
                       <p><span className="font-semibold">Suspicious Domain:</span> {result.suspicious?.suspiciousDomain ? "Yes" : "No"}</p>

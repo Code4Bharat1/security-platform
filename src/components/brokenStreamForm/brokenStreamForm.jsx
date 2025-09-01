@@ -16,6 +16,27 @@ export default function BrokenStreamPage() {
     []
   );
 
+  // Helper to handle URL copying
+  async function copyToClipboard(text) {
+    try {
+      if (navigator.clipboard && window.isSecureContext) {
+        await navigator.clipboard.writeText(text);
+      } else {
+        // Fallback for non-HTTPS contexts
+        const ta = document.createElement('textarea');
+        ta.value = text;
+        ta.style.position = 'fixed';
+        ta.style.left = '-9999px';
+        document.body.appendChild(ta);
+        ta.select();
+        document.execCommand('copy');
+        document.body.removeChild(ta);
+      }
+    } catch (e) {
+      alert('Copy failed. You can copy manually.');
+    }
+  }
+
   function startCheck() {
     if (!url) return;
 
@@ -62,11 +83,36 @@ export default function BrokenStreamPage() {
     };
   }
 
-  // ---------- Exports ----------
+  // Function to compute severity (Critical, Warning, OK, Redirect)
+  function computedSeverity(item) {
+    if (item.finalUrl && item.finalUrl !== item.url) return 'redirect';
+    if (Number(item.status) >= 400) return 'critical';
+    return 'ok'; // healthy links
+  }
+
+  // Helper for status badge styling
+  function severityBadge(sev) {
+    const base = 'px-2 py-0.5 rounded text-xs font-semibold';
+    if (sev === 'critical') return `${base} bg-red-100 text-red-700 border border-red-300`;
+    if (sev === 'redirect') return `${base} bg-yellow-100 text-yellow-700 border border-yellow-300`;
+    return `${base} bg-green-100 text-green-700 border border-green-300`; // ok/healthy
+  }
+
+  // Helper for status tinting
+  function statusTint(sev) {
+    if (sev === 'critical') return 'border-red-700 bg-red-950/40 text-red-200';
+    if (sev === 'redirect')
+      return 'border-yellow-700 bg-yellow-950/40 text-yellow-200';
+    return 'border-green-700 bg-green-950/40 text-green-200'; // healthy
+  }
+
+  // ---------- Export Functions ----------
+
   function csvEscape(v) {
     const s = `${v ?? ''}`;
     return /[",\n]/.test(s) ? `"${s.replace(/"/g, '""')}"` : s;
   }
+
   function downloadBlob(content, name, type) {
     const blob = new Blob([content], { type });
     const url = URL.createObjectURL(blob);
@@ -75,9 +121,6 @@ export default function BrokenStreamPage() {
     a.download = name;
     a.click();
     URL.revokeObjectURL(url);
-  }
-  function safe(s) {
-    return (s || '').replace(/\s+/g, ' ').trim();
   }
 
   function downloadCSV() {
@@ -96,7 +139,7 @@ export default function BrokenStreamPage() {
       'Suggestion',
     ];
     const rows = items.map((i) => [
-      safe(i.anchorText),
+      i.anchorText,
       i.url,
       i.finalUrl || '',
       i.status,
@@ -210,19 +253,6 @@ export default function BrokenStreamPage() {
     doc.save('broken-links.pdf');
   }
 
-  function severityBadge(sev) {
-    const base = 'px-2 py-0.5 rounded text-xs font-semibold';
-    if (sev === 'critical') return `${base} bg-red-100 text-red-700 border border-red-300`;
-    if (sev === 'warning') return `${base} bg-yellow-100 text-yellow-700 border border-yellow-300`;
-    return `${base} bg-green-100 text-green-700 border border-green-300`;
-  }
-
-  function statusTint(sev) {
-    if (sev === 'critical') return 'border-red-700 bg-red-950/40 text-red-200';
-    if (sev === 'warning') return 'border-yellow-700 bg-yellow-950/40 text-yellow-200';
-    return 'border-green-700 bg-green-950/40 text-green-200';
-  }
-
   return (
     <main className="min-h-screen bg-neutral-950 text-slate-100 px-4">
       <div className="max-w-6xl mx-auto pt-16">
@@ -315,58 +345,69 @@ export default function BrokenStreamPage() {
         )}
 
         <div className="mt-6 grid md:grid-cols-2 gap-3">
-          {items.map((i, idx) => (
-            <div key={`${i.url}-${idx}`} className={`p-3 border rounded ${statusTint(i.severity)}`}>
-              <div className="flex items-center gap-2">
-                <span className={severityBadge(i.severity)}>{i.severity}</span>
-                <span className="text-sm font-medium">
-                  [{i.status} {i.statusText}]
-                </span>
-                <span className="ml-auto text-xs px-2 py-0.5 rounded bg-neutral-900 border border-neutral-700">
-                  {i.scope}
-                </span>
-                <span className="text-xs px-2 py-0.5 rounded bg-neutral-900 border border-neutral-700">
-                  {i.location}
-                </span>
-              </div>
-              <div className="mt-2 text-sm">
-                <div className="text-slate-300">
-                  <b>Anchor:</b> {i.anchorText || '-'}
+          {items.map((i, idx) => {
+            const sev = computedSeverity(i);
+            return (
+              <div
+                key={`${i.url}-${idx}`}
+                className={`p-3 border rounded ${statusTint(sev)}`}
+              >
+                <div className="flex items-center gap-2">
+                  <span className={severityBadge(sev)}>{sev}</span>
+                  <span className="text-sm font-medium">
+                    [{i.status} {i.statusText}]
+                  </span>
+                  <span className="ml-auto text-xs px-2 py-0.5 rounded bg-neutral-900 border border-neutral-700">
+                    {i.scope}
+                  </span>
+                  <span className="text-xs px-2 py-0.5 rounded bg-neutral-900 border border-neutral-700">
+                    {i.location}
+                  </span>
                 </div>
-                <a
-                  href={i.url}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="underline break-words text-blue-300 hover:text-blue-200"
-                >
-                  {i.url}
-                </a>
-                {i.finalUrl && i.finalUrl !== i.url && (
-                  <div className="mt-1">
-                    <b>Final:</b>{' '}
-                    <a className="underline break-words" href={i.finalUrl} target="_blank" rel="noreferrer">
-                      {i.finalUrl}
-                    </a>{' '}
-                    ({i.redirectHops} hops)
+                <div className="mt-2 text-sm">
+                  <div className="text-slate-300">
+                    <b>Anchor:</b> {i.anchorText || '-'}
                   </div>
-                )}
-                <div className="text-slate-300 mt-1">
-                  <b>Found on:</b> {i.sourcePath || '-'} | <b>Priority:</b> {i.priorityScore}
+                  <a
+                    href={i.url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="underline break-words text-blue-300 hover:text-blue-200"
+                  >
+                    {i.url}
+                  </a>
+                  {i.finalUrl && i.finalUrl !== i.url && (
+                    <div className="mt-1">
+                      <b>Final:</b>{' '}
+                      <a
+                        className="underline break-words"
+                        href={i.finalUrl}
+                        target="_blank"
+                        rel="noreferrer"
+                      >
+                        {i.finalUrl}
+                      </a>{' '}
+                      ({i.redirectHops} hops)
+                    </div>
+                  )}
+                  <div className="text-slate-300 mt-1">
+                    <b>Found on:</b> {i.sourcePath || '-'} | <b>Priority:</b> {i.priorityScore}
+                  </div>
+                  {i.suggestion && (
+                    <div className="mt-1">
+                      <b>Suggestion:</b> {i.suggestion}{' '}
+                      <button
+                        onClick={() => copyToClipboard(i.finalUrl || i.url)}
+                        className="ml-2 text-xs underline"
+                      >
+                        Copy URL
+                      </button>
+                    </div>
+                  )}
                 </div>
-                {i.suggestion && (
-                  <div className="mt-1">
-                    <b>Suggestion:</b> {i.suggestion}{' '}
-                    <button
-                      onClick={() => navigator.clipboard.writeText(i.url)}
-                      className="ml-2 text-xs underline"
-                    >
-                      Copy URL
-                    </button>
-                  </div>
-                )}
               </div>
-            </div>
-          ))}
+            );
+          })}
         </div>
       </div>
     </main>
