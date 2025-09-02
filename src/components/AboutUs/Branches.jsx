@@ -18,7 +18,7 @@ export default function Branches() {
         <span className="text-[#9d7af0]">About Us</span> | Security Platform
       </h1>
 
-      <div className="flex flex-col lg:flex-row lg:gap-10 justify-between bg-black/70 backdrop-blur-sm my-10 relative z-10 rounded-xl p-6">
+      <div className="flex flex-col lg:flex-row lg:gap-10 justify-between my-10 relative z-10 rounded-xl p-6">
         {/* Text Section */}
         <div className="grow">
           <h2 className="mt-6 mb-4 sm:mt-10 sm:mb-6 text-2xl sm:text-4xl lg:text-5xl font-bold underline underline-offset-8 md:underline-offset-12 decoration-[#956af8]">
