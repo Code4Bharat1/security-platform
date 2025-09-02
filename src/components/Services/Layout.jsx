@@ -18,7 +18,7 @@ function DescHero({ data }) {
                 muted
                 playsInline
             >
-                <source src="/4.mp4" type="video/mp4" />
+                <source src="/AV.mp4" type="video/mp4" />
                 Your browser does not support the video tag.
             </video>
             {/* Content */}
@@ -60,7 +60,7 @@ function OurApproch({ data }) {
     return (
         <div className="">
             <h2 className="text-2xl sm:text-4xl md:text-6xl font-inter font-bold underline underline-offset-8 md:underline-offset-12 decoration-[#9d7af0]/70 shadow-lg text-white mt-10 mb-20 mx-5 text-center">
-                Our Approch
+                Our Approach
             </h2>
             {/* Section 1: Grid Layout */}
             {(
