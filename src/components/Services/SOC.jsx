@@ -3,7 +3,8 @@ export default function SOCPage() {
     const heroData = 
         {
             title: "Security Operations Center",
-            desc: `Our Security Operations Center (SOC) provides 24/7 monitoring, detection, and response capabilities, combining advanced SIEM platforms, threat intelligence feeds, and AI-driven analytics. The SOC ensures businesses have continuous visibility into their threat landscape, enabling rapid incident response.`
+            desc: `Our Security Operations Center (SOC) provides 24/7 monitoring, detection, and response capabilities, combining advanced SIEM platforms, threat intelligence feeds, and AI-driven analytics. The SOC ensures businesses have continuous visibility into their threat landscape, enabling rapid incident response.`,
+            videoPath: "/services/SOC.mp4"
         }
 
     // Methodology Section

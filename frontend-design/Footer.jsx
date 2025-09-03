@@ -1,10 +1,10 @@
 const Footer = () => {
     const Section = ({ title, links }) => (
-        <div className="w-full md:w-auto mb-4 md:mb-0 md:px-16 font-inter">
-            <h3 className="w-full text-left text-lg font-bold md:font-bold text-white">
+        <div className="w-full md:w-auto mb-2 md:mb-0 md:px-16 font-inter">
+            <h3 className="w-full text-left text-lg font-bold text-white">
                 {title}
             </h3>
-            <ul className="mt-2 md:mt-4 space-y-2">
+            <ul className="mt-2 space-y-2">
                 {links.map((link, index) => (
                     <li
                         key={index}
@@ -17,14 +17,13 @@ const Footer = () => {
         </div>
     );
 
-
     return (
-        <footer className="relative z-0 bg-[#9d7af0]/30 backdrop-blur-xl border border-white/20 shadow-lg transition-all duration-300 transform text-white pt-10 md:px-0 font-inter">
-            <div className="max-w-7xl mx-auto grid md:grid-cols-4 gap-8 px-6 md:px-16">
+        <footer className="relative z-0 bg-[#9d7af0]/30 backdrop-blur-xl border border-white/20 shadow-lg transition-all duration-300 transform text-white pt-6 md:px-0 font-inter">
+            <div className="max-w-7xl mx-auto grid md:grid-cols-4 gap-6 px-6 md:px-16">
                 {/* Left Section */}
                 <div className="md:col-span-1">
                     {/* Logo Placeholder */}
-                    <div className="w-full h-32 bg-gray-200 mb-4"></div>
+                    <div className="w-full h-20 bg-gray-200 mb-3"></div>
                     <p className="text-sm text-white/90">
                         Our security platform provides advanced tools for red teaming, blue
                         teaming, forensic analysis, and cloud security. Built for enterprise
@@ -34,7 +33,7 @@ const Footer = () => {
                     </p>
 
                     {/* Placeholder Social Icons */}
-                    <div className="flex space-x-4 mt-4">
+                    <div className="flex space-x-3 mt-2">
                         <div className="w-10 h-10 bg-gradient-to-br from-yellow-400 to-pink-500 rounded-lg flex items-center justify-center text-white font-bold text-xl">
                             I
                         </div>
@@ -94,7 +93,7 @@ const Footer = () => {
             </div>
 
             {/* Footer Bottom */}
-            <div className="flex justify-center flex-col md:flex-row mt-10 text-center text-sm text-[#9d7af0] bg-white md:py-3 border-b-5 border-b-black">
+            <div className="flex justify-center flex-col md:flex-row mt-6 text-center text-sm text-[#9d7af0] bg-white md:py-2 border-b-2 border-b-black">
                 <div>©2025<span className='hidden md:inline'>&nbsp;|&nbsp;</span></div>
                 <div>
                     Developed By&nbsp;<span className="font-bold text-black">Code4Bharat</span><span className='hidden md:inline'>&nbsp;|&nbsp;</span>

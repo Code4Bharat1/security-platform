@@ -20,26 +20,26 @@ export default function ServicePage() {
             description: `End-to-end protection for AWS, Azure, and GCP workloads. Focuses on misconfiguration reviews, IAM security, workload testing, anomaly detection, and compliance across hybrid and multi-cloud environments.`,
             imageName: 'CS.png', // Replace with actual image path
         },
-        {
-            title: 'Forensic Services',
-            description: `Digital forensic investigations to trace attacker activity, recover compromised data, and provide legally defensible evidence. Helps reconstruct incidents for compliance, litigation, and regulatory audits.`,
-            imageName: 'FS.png', // Replace with actual image path
-        },
-        {
-            title: 'Network Security',
-            description: `Multi-layered defenses including firewalls, IDS/IPS, endpoint controls, and zero-trust segmentation. Prevents unauthorized access, malware, and ransomware across enterprise networks.`,
-            imageName: 'NS.png', // Replace with actual image path
-        },
-        {
-            title: 'Cybersecurity Consultancy',
-            description: `Advisory services to strengthen governance, policies, employee awareness, and strategic planning. Builds a security-first culture and aligns cybersecurity with business goals.`,
-            imageName: 'CC.png', // Replace with actual image path
-        },
-        {
-            title: 'Governance, Risk & Compliance',
-            description: `Unified framework for governance, risk management, and compliance. Helps organizations achieve continuous audit readiness, improve accountability, and make risk-informed business decisions.`,
-            imageName: 'GRC.png', // Replace with actual image path
-        },
+        // {
+        //     title: 'Forensic Services',
+        //     description: `Digital forensic investigations to trace attacker activity, recover compromised data, and provide legally defensible evidence. Helps reconstruct incidents for compliance, litigation, and regulatory audits.`,
+        //     imageName: 'FS.png', // Replace with actual image path
+        // },
+        // {
+        //     title: 'Network Security',
+        //     description: `Multi-layered defenses including firewalls, IDS/IPS, endpoint controls, and zero-trust segmentation. Prevents unauthorized access, malware, and ransomware across enterprise networks.`,
+        //     imageName: 'NS.png', // Replace with actual image path
+        // },
+        // {
+        //     title: 'Cybersecurity Consultancy',
+        //     description: `Advisory services to strengthen governance, policies, employee awareness, and strategic planning. Builds a security-first culture and aligns cybersecurity with business goals.`,
+        //     imageName: 'CC.png', // Replace with actual image path
+        // },
+        // {
+        //     title: 'Governance, Risk & Compliance',
+        //     description: `Unified framework for governance, risk management, and compliance. Helps organizations achieve continuous audit readiness, improve accountability, and make risk-informed business decisions.`,
+        //     imageName: 'GRC.png', // Replace with actual image path
+        // },
     ];
     return (
         <div className="flex flex-col p-8 bg-black text-white mx-1 md:mx-5 lg:mx-10 gap-3 md:gap-10">
