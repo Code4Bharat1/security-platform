@@ -3,7 +3,8 @@ import ServicesLayout from "./Layout";
 export default function PTPage() {
     const heroData = {
         title: "Penetration Testing",
-        desc: `Penetration Testing (PT) is a simulated cyberattack conducted by ethical hackers to test the resilience of systems, networks, and applications. Unlike VA, which highlights vulnerabilities, PT demonstrates real-world exploitability, providing organizations with proof-of-concept attacks that reveal the true business impact of potential breaches.`
+        desc: `Penetration Testing (PT) is a simulated cyberattack conducted by ethical hackers to test the resilience of systems, networks, and applications. Unlike VA, which highlights vulnerabilities, PT demonstrates real-world exploitability, providing organizations with proof-of-concept attacks that reveal the true business impact of potential breaches.`,
+        videoPath: "/services/PT.mp4"
     };
 
     const methodologyData = [
@@ -13,6 +14,9 @@ export default function PTPage() {
         { title: "Wireless & IoT PT", desc: "Assess Wi-Fi cracking, rogue access points..." },
         { title: "Social Engineering & Red Teaming", desc: "Conduct phishing campaigns..." }
     ];
+    33
+
+    
 
     const approchData = {
         firstRow: [

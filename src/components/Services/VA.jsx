@@ -1,6 +1,9 @@
 import ServicesLayout from "./Layout";
 export default function VAPage() {
-    const heroData = { title: "Vulnerability Assessment", desc: `Vulnerability Assessment (VA) is the first line of defense in a strong cybersecurity program. It is a structured process designed to uncover, analyze, and prioritize security weaknesses across an organization’s IT infrastructure, applications, cloud environments, and endpoints. Our VA services go beyond automated scans—every finding is validated by security experts and mapped against real-world attack scenarios, ensuring your remediation strategy is both actionable and business-focused.` }
+    const heroData = { title: "Vulnerability Assessment", desc: `Vulnerability Assessment (VA) is the first line of defense in a strong cybersecurity program. It is a structured process designed to uncover, analyze, and prioritize security weaknesses across an organization’s IT infrastructure, applications, cloud environments, and endpoints. Our VA services go beyond automated scans—every finding is validated by security experts and mapped against real-world attack scenarios, ensuring your remediation strategy is both actionable and business-focused.`,
+        videoPath: "/services/VA.mp4"
+
+     }
     const methodologyData = [
         { title: "Network Vulnerability Scanning", desc: "Detect open ports, weak services, and misconfigured firewalls." },
         { title: "Web Application Assessment", desc: "Review business-critical applications for OWASP Top 10 flaws, insecure APIs, and broken authentication." },

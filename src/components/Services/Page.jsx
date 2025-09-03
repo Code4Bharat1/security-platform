@@ -16,11 +16,11 @@ export default function ServicePage() {
             description: `24/7 monitoring, detection, and response to cyber threats using SIEM, AI-driven analytics, and threat intelligence. Ensures rapid incident detection and containment across networks, endpoints, and cloud.`,
             imageName: 'SOC.png', // Replace with actual image path
         },
-        // {
-        //     title: 'Cloud Security',
-        //     description: `End-to-end protection for AWS, Azure, and GCP workloads. Focuses on misconfiguration reviews, IAM security, workload testing, anomaly detection, and compliance across hybrid and multi-cloud environments.`,
-        //     imageName: 'CS.png', // Replace with actual image path
-        // },
+        {
+            title: 'Cloud Security',
+            description: `End-to-end protection for AWS, Azure, and GCP workloads. Focuses on misconfiguration reviews, IAM security, workload testing, anomaly detection, and compliance across hybrid and multi-cloud environments.`,
+            imageName: 'CS.png', // Replace with actual image path
+        },
         // {
         //     title: 'Forensic Services',
         //     description: `Digital forensic investigations to trace attacker activity, recover compromised data, and provide legally defensible evidence. Helps reconstruct incidents for compliance, litigation, and regulatory audits.`,
@@ -59,7 +59,7 @@ export default function ServicePage() {
                         </h2>
                         <p className="text-base md:text-md lg:text-lg xl:text-xl mb-6 text-justify">{service.description}</p>
                         <Link className="block bg-[#A580FF] text-white px-4 py-2 rounded hover:bg-[#A580FF]/50 self-center md:self-start mx-auto text-md md:text-lg lg:text-xl xl:text-2xl"
-                        href={`/services/${service.title.toLowerCase().replace(' ',"-")}`}>
+                        href={`/services/${service.title.toLowerCase().replaceAll(' ',"-")}`}>
                             Know more
                         </Link>
                     </div>
