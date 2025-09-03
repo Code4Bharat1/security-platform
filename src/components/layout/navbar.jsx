@@ -10,9 +10,12 @@ const Navbar = () => {
   const dropdownRef = useRef(null);
   const pathname = usePathname();
   const [toolkitOpen, setToolkitOpen] = useState(false);
+  const [textColor, setTextColor] = useState('text-white');
 
   useEffect(() => {
     if (typeof window !== 'undefined') {
+      const isDark = document.body.className.includes("bg-black"); // Remove this in final deployment
+      setTextColor(isDark ? "text-white" : "text-black"); // Remove this in final deployment
       const storedUser = localStorage.getItem('user');
       if (storedUser) {
         const parsedUser = JSON.parse(storedUser);
@@ -29,7 +32,7 @@ const Navbar = () => {
 
     document.addEventListener('mousedown', handleClickOutside);
     return () => document.removeEventListener('mousedown', handleClickOutside);
-  }, []);
+  }, [pathname]);  // Replace [pathname] with [] in final deployment
 
   const handleLogout = () => {
     localStorage.removeItem('token');
@@ -51,7 +54,7 @@ const Navbar = () => {
     }`;
 
   return (
-    <nav className="relative flex items-center justify-between md:justify-start md:gap-10 text-white font-semibold font-inter text-base px-2  lg:px-8 py-1 z-10 w-full">
+    <nav className={`relative flex items-center justify-between md:justify-start md:gap-10 ${textColor} font-semibold font-inter text-base px-2  lg:px-8 py-1 z-10 w-full`}>
       
       {/* Left: Hamburger (mobile only) */}
       <button
@@ -60,7 +63,7 @@ const Navbar = () => {
         aria-label="Toggle Menu"
       >
         <svg
-          className={`w-6 h-6 text-white transition-all duration-300 ease-in transform ${menuOpen ? 'rotate-90 scale-110' : 'rotate-0'
+          className={`w-6 h-6 ${textColor} transition-all duration-300 ease-in transform ${menuOpen ? 'rotate-90 scale-110' : 'rotate-0'
             }`}
           fill="none"
           stroke="currentColor"
@@ -169,12 +172,12 @@ const Navbar = () => {
           <div>
             <button
               onClick={() => setShowDropdown(!showDropdown)}
-              className="w-10 h-10 rounded-full hover:bg-blue-950/50 bg-[#9d7af0]/50 backdrop-blur-xl text-white flex items-center justify-center font-bold text-sm transition duration-200"
+              className={`w-10 h-10 rounded-full hover:bg-blue-950/50 bg-[#9d7af0]/50 backdrop-blur-xl ${textColor} flex items-center justify-center font-bold text-sm transition duration-200`}
             >
               {getInitials(userName)}
             </button>
             {showDropdown && (
-              <div className="absolute right-0 mt-2 bg-[#1a1a1a] text-white rounded-lg shadow-lg py-2 px-4 z-50">
+              <div className={`absolute right-0 mt-2 bg-[#1a1a1a] ${textColor} rounded-lg shadow-lg py-2 px-4 z-50`}>
                 <button
                   onClick={handleLogout}
                   className="hover:bg-blue-950/50 bg-[#9d7af0]/50 backdrop-blur-xl transition duration-200"
@@ -187,7 +190,7 @@ const Navbar = () => {
         ) : (
           <Link
             href="/gain-access"
-            className="md:ml-auto font-light cursor-pointer px-2 py-1 text-white rounded-sm hover:bg-blue-950/50 transition duration-200 text-xs w-[8ch] md:w-auto md:text-base bg-[#9d7af0]/50 backdrop-blur-xl md:text-nowrap z-10">
+            className="md:ml-auto font-light cursor-pointer px-2 py-1 ${textColor} rounded-sm hover:bg-blue-950/50 transition duration-200 text-xs w-[8ch] md:w-auto md:text-base bg-[#9d7af0]/50 backdrop-blur-xl md:text-nowrap z-10">
             Gain Access
           </Link>
         )}
