@@ -1,8 +1,9 @@
-import { useState } from "react";
-import { useRouter } from 'next/navigation';
+import { useState, useEffect } from "react";
+import { useRouter, useSearchParams } from 'next/navigation';
 
 export default function ToolsCard() {
-  const {push} = useRouter();
+  const { push } = useRouter();
+  const searchParams = useSearchParams();
 
   const buttonList = [[{
     name: "Vulnerability Scanner",
@@ -47,7 +48,7 @@ export default function ToolsCard() {
   {
     name: "Technology Fingerprinter",
     image: "/tools/card-images/fingerprint.png",
-    description: "un an OWASP ZAP-powered automated security scan to detect vulnerabilities.",
+    description: "Run an OWASP ZAP-powered automated security scan to detect vulnerabilities.",
     slug: "fingerPrint",
     buttonLabel: "fingerPrint",
     type: "red-team"
@@ -153,8 +154,8 @@ export default function ToolsCard() {
     buttonLabel: "Identify Fraudster",
     type: "forensic"
   },]]
-  const [buttons, setButtons] = useState(buttonList[1])
-  const [categories, setCategories] = useState([
+
+  const initialCategories = [
     {
       title: "Red Teaming",
       description: "Offensive security topics,\npenetration testing, etc.",
@@ -186,36 +187,125 @@ export default function ToolsCard() {
       buttonColor: "bg-[#008000] hover:bg-[#006400]",
       borderGlow: "hover:border-[#008000] hover:shadow-[0_0_15px_#008000]"
     },
-  ])
+  ];
 
+  // Initialize state based on URL parameter or localStorage
+  const getInitialSelection = () => {
+    // Check URL parameter first
+    const categoryParam = searchParams.get('category');
+    if (categoryParam) {
+      const categoryIndex = initialCategories.findIndex(cat => 
+        cat.title.toLowerCase().includes(categoryParam.toLowerCase())
+      );
+      if (categoryIndex !== -1) return categoryIndex;
+    }
+
+    // Check localStorage
+    if (typeof window !== 'undefined') {
+      const savedCategory = localStorage.getItem('selectedToolCategory');
+      if (savedCategory) {
+        const parsedIndex = parseInt(savedCategory);
+        if (!isNaN(parsedIndex) && parsedIndex >= 0 && parsedIndex < 3) {
+          return parsedIndex;
+        }
+      }
+    }
+    
+    // Default to Blue Team (index 1)
+    return 1;
+  };
+
+  // Initialize activeIndex to always be 1 (middle position)
   const [activeIndex, setActiveIndex] = useState(1);
+  const [categories, setCategories] = useState(() => {
+    const selectedIndex = getInitialSelection();
+    if (selectedIndex === 1) return initialCategories;
+    
+    const newCategories = [...initialCategories];
+    const temp = newCategories[1];
+    newCategories[1] = newCategories[selectedIndex];
+    newCategories[selectedIndex] = temp;
+    return newCategories;
+  });
+
+  const [buttons, setButtons] = useState(() => {
+    const selectedIndex = getInitialSelection();
+    const typeIndex = selectedIndex === 0 ? 0 : selectedIndex === 1 ? 1 : 2;
+    return buttonList[typeIndex];
+  });
+
   const [activeGlow, setActiveGlow] = useState(categories[1].glowColor);
   const [activeButtonStyle, setActiveButtonStyle] = useState(categories[1].buttonColor);
   const [activeBorderGlow, setActiveBorderGlow] = useState(categories[1].borderGlow);
 
+  // Update active styles when categories change
+  useEffect(() => {
+    setActiveGlow(categories[1].glowColor);
+    setActiveButtonStyle(categories[1].buttonColor);
+    setActiveBorderGlow(categories[1].borderGlow);
+  }, [categories]);
+
   const handleCardClick = (index) => {
-    // If clicked card is already active, reset the active index to null
     setActiveIndex(index);
 
     if (index != 1) {
       const newCategories = [...categories];
-      const typeTemp = newCategories[index]
+      const typeTemp = newCategories[index];
       const type =
         typeTemp["title"].includes("Red") ? 0 :
           typeTemp["title"].includes("Blue") ? 1 :
-            typeTemp["title"].includes("Non-Tech") ? 2 : "team is unknown";
-              
-      
+            typeTemp["title"].includes("Non-Tech") ? 2 : 1; // Default to blue if unknown
+
       const temp = newCategories[1]; 
       newCategories[1] = newCategories[index];
       newCategories[index] = temp;
       setActiveIndex(1);
-      setButtons(buttonList[type])
+      setButtons(buttonList[type]);
       setCategories(newCategories);
-      setActiveGlow(newCategories[1].glowColor);
-      setActiveButtonStyle(newCategories[1].buttonColor);
-      setActiveBorderGlow(newCategories[1].borderGlow);
+
+      // Save selection to localStorage
+      const originalIndex = initialCategories.findIndex(cat => cat.title === typeTemp.title);
+      if (typeof window !== 'undefined') {
+        localStorage.setItem('selectedToolCategory', originalIndex.toString());
+      }
     }
+  };
+
+  // Enhanced navigation function that preserves category
+  const navigateToTool = (slug) => {
+    // Save current selection before navigating
+    if (typeof window !== 'undefined') {
+      const currentCategory = categories[1].title;
+      const originalIndex = initialCategories.findIndex(cat => cat.title === currentCategory);
+      localStorage.setItem('selectedToolCategory', originalIndex.toString());
+    }
+    push(`/tools/${slug}`);
+  };
+
+  // Enhanced "View All" navigation
+  const navigateToViewAll = () => {
+    const currentCategory = categories[1].title;
+    const originalIndex = initialCategories.findIndex(cat => cat.title === currentCategory);
+    
+    // Save to localStorage
+    if (typeof window !== 'undefined') {
+      localStorage.setItem('selectedToolCategory', originalIndex.toString());
+    }
+
+    let path = "";
+    if (currentCategory.includes("Red")) {
+      path = "/tools/red-team";
+    } else if (currentCategory.includes("Blue")) {
+      path = "/tools/blue-team";
+    } else if (currentCategory.includes("Non-Tech")) {
+      path = "/tools/green-team";
+    } else {
+      path = "/tools/blue-team"; // Default fallback
+    }
+    
+    // Add category parameter to URL for additional persistence
+    const categoryParam = currentCategory.toLowerCase().replace(' teaming', '').replace(' ', '-');
+    push(`${path}?category=${categoryParam}`);
   };
 
   return (
@@ -223,21 +313,21 @@ export default function ToolsCard() {
       {/* Header matching the image */}
       <div className="mb-12">
         <h2 className="text-white text-4xl md:text-5xl lg:text-5xl font-black text-center mb-4">
- <span className="text-[#9d7af0]">Toolkits</span> | Security Platform
-      </h2>
+          <span className="text-[#9d7af0]">Toolkits</span> | Security Platform
+        </h2>
         <div className="w-full h-1 bg-gradient-to-r from-transparent via-[#9d7af0] to-transparent mx-auto"></div>
       </div>
 
       {/* Team Section - Updated to match the image with larger cards */}
       <div className="flex flex-col lg:flex-row gap-12 mb-12">
         {categories.map((cat, index) => {
-          const isActive = activeIndex === index;
+          const isMiddleCard = index === 1; // Only middle card gets the active styling
           return (
             <div
               key={index}
               className={`
                 flex-1 rounded-2xl p-8 cursor-pointer transition-all duration-300
-                ${cat.bgColorClass} ${isActive ? 'ring-4 ring-white ring-opacity-90 scale-105 shadow-2xl' : 'opacity-90 hover:opacity-100 hover:scale-102'}
+                ${cat.bgColorClass} ${isMiddleCard ? 'ring-4 ring-white ring-opacity-90 scale-105 shadow-2xl' : 'opacity-90 hover:opacity-100 hover:scale-102'}
                 relative overflow-hidden min-h-[260px] flex flex-col justify-center
                 ${cat.bgImageClass}
               `}
@@ -271,44 +361,31 @@ export default function ToolsCard() {
             title={tool.name}
             subtitle={tool.description}
             slug={tool.slug}
-            push={push}
+            onNavigate={navigateToTool}
             buttonColor={activeButtonStyle}
             borderGlow={activeBorderGlow}
           />
         ))}
       </div>
-<div className="mt-5 text-center">
-  <button
-    value={JSON.stringify(buttons)}
-    onClick={
-      () =>{ 
-        const newCategories = [...categories];
-      const typeTemp = newCategories[activeIndex]
-      let path = ""
-        const type =
-        typeTemp["title"].includes("Red") ? path = "/tools/red-team" :
-          typeTemp["title"].includes("Blue") ? path = "/tools/blue-team" :
-            typeTemp["title"].includes("Non-Tech") ? path = "/tools/green-team" : "team is unknown";
-        push(path)
-      }
-    }
-    className={`px-6 py-2 border-[#9d7af0] text-white font-semibold rounded-lg shadow-md 
-               transition-all duration-300 ease-in-out ${activeButtonStyle} hover:scale-105 cursor-pointer`}
-  >
-    View All
-  </button>
-</div>
 
- 
+      <div className="mt-5 text-center">
+        <button
+          onClick={navigateToViewAll}
+          className={`px-6 py-2 border-[#9d7af0] text-white font-semibold rounded-lg shadow-md 
+                     transition-all duration-300 ease-in-out ${activeButtonStyle} hover:scale-105 cursor-pointer`}
+        >
+          View All
+        </button>
+      </div>
     </div>
   );
 }
 
-function SampleToolCard({ img_path, title, subtitle, slug, push, buttonColor, borderGlow }) {
+function SampleToolCard({ img_path, title, subtitle, slug, onNavigate, buttonColor, borderGlow }) {
   return (
     <div 
       className={`bg-white/10 backdrop-blur-md rounded-xl p-5 border border-white/20 transition-all duration-300 scale-90 hover:scale-[1.00] cursor-pointer h-full ${borderGlow}`}
-      onClick={() => push(`/tools/${slug}`)}
+      onClick={() => onNavigate(slug)}
     >
       <div className="flex flex-col items-center h-full">
         <img

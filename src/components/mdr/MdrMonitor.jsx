@@ -31,7 +31,7 @@ export default function MdrMonitor() {
 
   return (
     <div className="min-h-screen bg-gray-100 flex flex-col items-center pt-20 px-4">
-      <img src="/MDR.png" alt="verify" className="w-16 h-20 mb-4 mt-7" />
+      <img src="/tools/card-images/MDR.png" alt="verify" className="w-16 h-20 mb-4 mt-7" />
       <div className="text-center mb-10">
         <ShieldCheck className="mx-auto mb-4 text-green-600" size={48} />
         <h1 className="text-3xl font-bold text-green-800">MDR Monitor</h1>

@@ -217,7 +217,7 @@ export default function KeywordPage() {
     <div className="min-h-screen bg-gradient-to-br from-slate-50 via-green-50 to-emerald-100">
       {/* Header */}
       <div className="bg-white/80 backdrop-blur-sm border-b border-gray-200 sticky top-0 z-10">
-        <img src="/keyword_checker.png" alt="verify" className="w-16 h-20 mb-4 mt-7" />
+        <img src="/tools/card-images/keyword_checker.png" alt="verify" className="w-16 h-20 mb-4 mt-7" />
         <div className="max-w-6xl mx-auto px-6 py-4">
           <div className="flex justify-center items-center gap-3">
             <div className="p-2 bg-gradient-to-r from-green-600 to-emerald-600 rounded-lg">

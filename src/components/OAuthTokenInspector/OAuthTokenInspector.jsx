@@ -309,10 +309,10 @@ export default function OAuthTokenInspector() {
 
       <div className="max-w-5xl mx-auto">
         {/* Header — REPLACED ICON with your image */}
-        {/* <img src="/oauth.png" alt="OAUTH2" className="w-16 h-20 mb-4 mt-7" /> */}
+        {/* <img src="/tools/card-images/oauth.png" alt="OAUTH2" className="w-16 h-20 mb-4 mt-7" /> */}
         <div className="text-center mb-8 pt-8">
           <img
-            src="/oauth.png"
+            src="/tools/card-images/oauth.png"
             alt="OAuth2"
             className="w-16 h-16 rounded-2xl mx-auto mb-4 shadow-lg"
           />
