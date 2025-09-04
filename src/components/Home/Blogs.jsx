@@ -2,13 +2,14 @@ import Link from "next/link";
 export default function Blogs() {
   return (
     <div className="mb-10 text-white">
+
+       {/* Horizontal line */}
+      <div className="w-full h-[2px] bg-[#9d7af0]/70 backdrop-blur-xl border border-white/20 shadow-lg mt-6 md:mt-15"></div>
+      
       {/* Heading */}
-      <h2 className="mx-5 md:mx-20 text-2xl sm:text-3xl md:text-4xl font-inter font-bold underline underline-offset-8 md:underline-offset-12 decoration-[#9d7af0]/70 shadow-lg">
+      <h2 className="mx-5 md:mx-20 text-2xl sm:text-3xl md:text-4xl md:mt-10 font-inter font-bold underline underline-offset-8 md:underline-offset-12 decoration-[#9d7af0]/70 shadow-lg">
         Blogs&nbsp;
       </h2>
-
-      {/* Horizontal line */}
-      <div className="w-full h-[2px] bg-[#9d7af0]/70 backdrop-blur-xl border border-white/20 shadow-lg mt-6 md:mt-10"></div>
 
       {/* Blog cards section with gradient background */}
       <div className="px-4 sm:px-6 md:px-10 mt-10 bg-white/10 backdrop-blur-2xl border border-white/20 shadow-lg py-10 flex">
