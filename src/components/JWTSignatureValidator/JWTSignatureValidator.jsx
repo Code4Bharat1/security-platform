@@ -190,7 +190,7 @@ export default function JWTSignatureValidator() {
       <div className="max-w-4xl mx-auto">
         {/* Header */}
         <div className="text-center mb-8">
-          <img src="/jwt_signature.png" alt="verify" className="w-16 h-20 mb-4 mt-7" />
+          <img src="/tools/card-images/jwt_signature.png" alt="verify" className="w-16 h-20 mb-4 mt-7" />
           <h1 className="text-4xl font-bold bg-gradient-to-r from-green-600 to-emerald-600 bg-clip-text text-transparent mb-2">
             JWT Signature Validator
           </h1>

@@ -282,7 +282,7 @@ def frame_headers(get_response):
       <div className="max-w-4xl mx-auto" ref={reportRef}>
         {/* Header */}
         <div className="text-center mb-8">
-          <img src="/clickjacking.png" alt="verify" className="w-16 h-20 mb-4 mt-7" />
+          <img src="/tools/card-images/clickjacking.png" alt="verify" className="w-16 h-20 mb-4 mt-7" />
           <div className="inline-flex items-center justify-center w-20 h-20 bg-gradient-to-br from-green-600 to-emerald-600 rounded-full mb-4 shadow-lg">
             <Shield className="w-10 h-10 text-white" />
           </div>

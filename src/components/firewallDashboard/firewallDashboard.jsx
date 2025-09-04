@@ -186,7 +186,7 @@ export default function FirewallDashboard({ data }) {
         <div className="rounded-2xl bg-white shadow-md border border-gray-100 p-8">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
-              <img src="/waf1.png" alt="verify" className="w-12 h-14" />
+              <img src="/tools/card-images/waf1.png" alt="verify" className="w-12 h-14" />
               <div>
                 <h2 className="text-2xl font-bold">Firewall Detection Report</h2>
                 <p className="text-sm text-gray-500">Run a scan to see details here.</p>
@@ -236,7 +236,7 @@ export default function FirewallDashboard({ data }) {
         {/* Header row */}
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <img src="/waf1.png" alt="verify" className="w-12 h-14" />
+            <img src="/tools/card-images/waf1.png" alt="verify" className="w-12 h-14" />
             <div>
               <h2 className="text-2xl font-bold">Firewall Detection Report</h2>
               <p className="text-sm text-gray-500">Results for your latest scan.</p>
