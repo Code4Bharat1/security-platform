@@ -22,6 +22,13 @@ const Footer = () => {
     </div>
   );
 
+   const scrollToSection = (id) => {
+    const section = document.getElementById(id);
+    if (section) {
+      section.scrollIntoView({ behavior: "smooth", block: "start" });
+    }
+  };
+
   return (
     <footer className="relative z-0 bg-[#9d7af0]/30 backdrop-blur-xl border border-white/20 shadow-lg transition-all duration-300 transform text-white pt-10 md:px-0 font-inter">
       <div className="max-w-7xl mx-auto grid md:grid-cols-4 gap-8 px-2 md:px-3">
