@@ -158,36 +158,40 @@ export default function ToolsCard() {
     {
       title: "Red Teaming",
       description: "Offensive security topics,\npenetration testing, etc.",
-      bgColorClass: "bg-[#FF0000]",
+      bgColorClass: "bg-red-500",
       bgImageClass: "bg-[url('/tools/red-bg-design.png')] bg-bottom bg-no-repeat bg-contain",
       textColorClass: "text-white",
+      glowColor: "#D01A1A",
+      buttonColor: "bg-[#D01A1A] hover:bg-[#b31515]",
+      borderGlow: "hover:border-[#D01A1A] hover:shadow-[0_0_15px_#D01A1A]"
     },
     {
       title: "Blue Teaming",
-      description: "Defensive security,\nmonitoring, SIEM etc.",
-      bgColorClass: "bg-[#123AA0]",
+      description: "Defensive security,\nmonitoring, SIEM, etc.",
+      bgColorClass: "bg-blue-500",
       bgImageClass: "bg-[url('/tools/blue-bg-design.png')] bg-left-top bg-no-repeat bg-[length:75%]",
       textColorClass: "text-white",
+      glowColor: "#3C6DFF",
+      buttonColor: "bg-[#3C6DFF] hover:bg-[#2a5de0]",
+      borderGlow: "hover:border-[#3C6DFF] hover:shadow-[0_0_15px_#3C6DFF]"
     },
     {
-      title: "Green Teaming",
+      title: "Non-Tech",
       description: "Tools for everyday usage.",
       bgColorClass: "bg-green-500",
       bgImageClass: "bg-[url('/tools/white-bg-design-1.png')] bg-right-bottom bg-no-repeat bg-[length:50%]",
-      textColorClass: "text-black",
-      overlayImg: "/tools/white-bg-design-2.png",
-    },
-    {
-      title: "Purple Teaming",
-      description: "Tools for forencic research",
-      bgColorClass: "bg-purple-500",
-      bgImageClass: "bg-[url('/tools/blue-bg-design.png')] bg-right-bottom bg-no-repeat bg-[length:50%]",
       textColorClass: "text-white",
       overlayImg: "/tools/white-bg-design-2.png",
+      glowColor: "#008000",
+      buttonColor: "bg-[#008000] hover:bg-[#006400]",
+      borderGlow: "hover:border-[#008000] hover:shadow-[0_0_15px_#008000]"
     },
   ])
 
   const [activeIndex, setActiveIndex] = useState(1);
+  const [activeGlow, setActiveGlow] = useState(categories[1].glowColor);
+  const [activeButtonStyle, setActiveButtonStyle] = useState(categories[1].buttonColor);
+  const [activeBorderGlow, setActiveBorderGlow] = useState(categories[1].borderGlow);
 
   const handleCardClick = (index) => {
     // If clicked card is already active, reset the active index to null
@@ -199,8 +203,7 @@ export default function ToolsCard() {
       const type =
         typeTemp["title"].includes("Red") ? 0 :
           typeTemp["title"].includes("Blue") ? 1 :
-            typeTemp["title"].includes("Green") ? 2 :
-              typeTemp["title"].includes("Purple") ? 3 : "team is unknown";
+            typeTemp["title"].includes("Non-Tech") ? 2 : "team is unknown";
               
       
       const temp = newCategories[1]; 
@@ -209,142 +212,120 @@ export default function ToolsCard() {
       setActiveIndex(1);
       setButtons(buttonList[type])
       setCategories(newCategories);
+      setActiveGlow(newCategories[1].glowColor);
+      setActiveButtonStyle(newCategories[1].buttonColor);
+      setActiveBorderGlow(newCategories[1].borderGlow);
     }
   };
 
   return (
     <div className="my-10 min-h-screen px-4 sm:px-8 font-inter flex flex-col">
-      <h2 className="mx-auto text-white text-2xl sm:text-3xl md:text-4xl font-bold mb-8 sm:mb-5 text-center lg:text-left">
-        <span className="text-[#9d7af0]">Toolkits</span> | Security Platform
+      {/* Header matching the image */}
+      <div className="mb-12">
+        <h2 className="text-white text-4xl md:text-5xl lg:text-5xl font-black text-center mb-4">
+ <span className="text-[#9d7af0]">Toolkits</span> | Security Platform
       </h2>
+        <div className="w-full h-1 bg-gradient-to-r from-transparent via-[#9d7af0] to-transparent mx-auto"></div>
+      </div>
 
-      {/* Team Section */}
-      <div className="flex flex-col items-center p-2" >
-        {/* Non-active Cards Group */}
-        <div className="flex flex-row flex-nowrap gap-2 justify-center w-full my-2">
-          {categories.map((cat, index) => {
-            const isActive = activeIndex === index;
-
-            // Only render non-active cards in this group
-            if (!isActive) {
-              return (
-                <div
-                  key={index}
-                  className={`
-              transition-all duration-200
-              flex-1 rounded-xl lg:rounded-3xl flex flex-col justify-center
-              px-1 py-5 cursor-pointer relative
-              w-full break-words
-              hover:scale-105
-              
-              ${cat.bgColorClass} ${cat.bgImageClass} ${cat.textColorClass}
-              ${isActive ? ' opacity-100': 'opacity-80'}
-              transition
-            `}
-                  onClick={() => handleCardClick(index)}
-                >
-                  <h3 className="text-lg sm:text-lg md:text-xl font-bold mb-1 sm:mb-2 md:mb-3">
-                    {cat.title}
-                  </h3>
-                  <p className="hidden sm:block text-xs sm:text-sm md:text-base leading-snug whitespace-pre-line">
-                    {cat.description}
-                  </p>
-
-                  {cat.overlayImg && (
-                    <img
-                      src={cat.overlayImg}
-                      alt=""
-                      className="absolute top-0 left-0 h-[25%] sm:h-[30%] md:h-[35%] pointer-events-none"
-                    />
-                  )}
-                </div>
-              );
-            }
-            return null;  // Skip rendering active cards here
-          })}
-        </div>
-
-        {/* Active Card */}
+      {/* Team Section - Updated to match the image with larger cards */}
+      <div className="flex flex-col lg:flex-row gap-12 mb-12">
         {categories.map((cat, index) => {
           const isActive = activeIndex === index;
-          if (isActive) {
-            return (
-              <div
-                key={index}
-                className={`
-            transition-all duration-200
-            w-full rounded-3xl flex flex-col justify-center
-            p-2 md:p-5 cursor-pointer relative hover:scale-y-105 
-            ${cat.bgColorClass} ${cat.bgImageClass} ${cat.textColorClass}
-            ${isActive ? 'opacity-100 h-50' : 'opacity-80'}
-            transition
-          `}
-                onClick={() => handleCardClick(index)}
-              >
-                <h3 className="text-xl sm:text-2xl md:text-3xl font-bold mb-1 sm:mb-2 md:mb-3 break-words">
-                  {cat.title}
-                </h3>
-                <p className="text-xs sm:text-sm md:text-base whitespace-pre-line">
-                  {cat.description}
-                </p>
-
-                {cat.overlayImg && (
-                  <img
-                    src={cat.overlayImg}
-                    alt=""
-                    className="absolute top-0 left-0 h-[25%] sm:h-[30%] md:h-[35%] pointer-events-none"
-                  />
-                )}
-              </div>
-            );
-          }
-          return null;  // Skip rendering non-active cards here
+          return (
+            <div
+              key={index}
+              className={`
+                flex-1 rounded-2xl p-8 cursor-pointer transition-all duration-300
+                ${cat.bgColorClass} ${isActive ? 'ring-4 ring-white ring-opacity-90 scale-105 shadow-2xl' : 'opacity-90 hover:opacity-100 hover:scale-102'}
+                relative overflow-hidden min-h-[260px] flex flex-col justify-center
+                ${cat.bgImageClass}
+              `}
+              onClick={() => handleCardClick(index)}
+            >
+              <h3 className={`text-2xl md:text-3xl font-bold mb-3 z-10 ${cat.textColorClass}`}>
+                {cat.title}
+              </h3>
+              <p className={`text-base md:text-lg z-10 whitespace-pre-line ${cat.textColorClass} leading-relaxed`}>
+                {cat.description}
+              </p>
+              
+              {cat.overlayImg && (
+                <img
+                  src={cat.overlayImg}
+                  alt=""
+                  className="absolute top-0 right-0 h-24 md:h-32 pointer-events-none opacity-70"
+                />
+              )}
+            </div>
+          );
         })}
       </div>
 
-      {/* Tools Section */}
-      <div className="grid grid-cols-2 grid-rows-3 sm:grid-cols-3 sm:grid-rows-2 lg:grid-cols-3 gap-4 sm:gap-5 mt-2 sm:mt-5">
+      {/* Tools Section with Glowing Borders */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2">
         {buttons.map((tool, i) => (
           <SampleToolCard
             key={i}
             img_path={tool.image}
-            title={tool.title}
+            title={tool.name}
             subtitle={tool.description}
-            slug = {tool.slug}
-            push = {push}
+            slug={tool.slug}
+            push={push}
+            buttonColor={activeButtonStyle}
+            borderGlow={activeBorderGlow}
           />
         ))}
       </div>
+<div className="mt-5 text-center">
+  <button
+    value={JSON.stringify(buttons)}
+    onClick={
+      () =>{ 
+        const newCategories = [...categories];
+      const typeTemp = newCategories[activeIndex]
+      let path = ""
+        const type =
+        typeTemp["title"].includes("Red") ? path = "/tools/red-team" :
+          typeTemp["title"].includes("Blue") ? path = "/tools/blue-team" :
+            typeTemp["title"].includes("Non-Tech") ? path = "/tools/green-team" : "team is unknown";
+        push(path)
+      }
+    }
+    className={`px-6 py-2 border-[#9d7af0] text-white font-semibold rounded-lg shadow-md 
+               transition-all duration-300 ease-in-out ${activeButtonStyle} hover:scale-105 cursor-pointer`}
+  >
+    View All
+  </button>
+</div>
+
+ 
     </div>
   );
 }
 
-function SampleToolCard({ img_path, title, subtitle, slug, push }) {
+function SampleToolCard({ img_path, title, subtitle, slug, push, buttonColor, borderGlow }) {
   return (
-    <div className="flex w-full max-w-xs sm:max-w-[21rem] md:max-w-[24rem] min-h-[10rem] sm:min-h-[13rem] max-h-[16rem] group mx-auto">
-      {/* Colored Stripe */}
-      <div className="ml-auto w-2 mt-4 sm:mt-5 h-16 sm:h-20 rounded-l-lg bg-[#9d7af0]"></div>
-
-      {/* Card Body */}
-      <div className="mr-auto flex flex-col rounded-xl py-2 px-3 w-full justify-center overflow-hidden group-hover:scale-105 bg-white/10 backdrop-blur-xl border border-white/20 shadow-lg transition-all duration-200 transform cursor-pointer hover:shadow-[0_0_20px_rgba(255,255,255,0.3)]"
-      onClick={()=>push(`/tools/${slug}`)}>
+    <div 
+      className={`bg-white/10 backdrop-blur-md rounded-xl p-5 border border-white/20 transition-all duration-300 scale-90 hover:scale-[1.00] cursor-pointer h-full ${borderGlow}`}
+      onClick={() => push(`/tools/${slug}`)}
+    >
+      <div className="flex flex-col items-center h-full">
         <img
           src={img_path}
           alt={title}
-          className="h-20 sm:h-24 max-w-[80%] object-contain mx-auto"
+          className="h-20 w-20 object-contain mb-4"
         />
-        <h3 className="text-white text-sm sm:text-base text-center">
+        <h3 className="text-white text-lg font-semibold text-center mb-2">
           {title}
         </h3>
-        <p className="hidden lg:block text-gray-400 text-xs text-center line-clamp-2">
+        <p className="text-gray-300 text-sm text-center flex-grow">
           {subtitle}
         </p>
+        <button className={`mt-4 ${buttonColor} text-white py-2 px-4 rounded-lg text-sm transition-colors cursor-pointer`}>
+          Try Now
+        </button>
       </div>
     </div>
   );
 }
-
-
-
-
-

@@ -3,19 +3,19 @@ import { useRouter } from 'next/navigation';
 const services = [
     {
         title: "Vulnerability Assessment",
-        imgSrc: "https://images.unsplash.com/photo-1603791440384-56cd371ee9a7?auto=format&fit=crop&w=800&q=80",
+        imgSrc: "/OurCoreServices/VA.png",
         description: "Identify, classify, and prioritize vulnerabilities in systems before they become threats.",
     },
     {
-        title: "Security Operations Center",
-        imgSrc: "https://images.unsplash.com/photo-1550751827-4bd374c3f58b?auto=format&fit=crop&w=800&q=80",
-        description: "24/7 centralized monitoring, detection, and response to security incidents and threats.",
+        title: "Penetration Testing",
+        imgSrc: "/OurCoreServices/PT.png",
+        description: "Investigate cyber incidents and gather legal digital evidence using forensics tool.",
         
     },
     {
-        title: "Digital Forensics",
-        imgSrc: "https://images.unsplash.com/photo-1591696205602-2f950c417cb9?auto=format&fit=crop&w=800&q=80",
-        description: "Investigate cyber incidents and gather legal digital evidence using forensics tools.",
+        title: "Security Operations Center",
+        imgSrc: "/OurCoreServices/SOC.png",
+        description: "24/7 centralized monitoring, detection, and response to security incidents and threatss.",
     }
 ];
 
@@ -35,7 +35,7 @@ export default function ServicesPage() {
             </div>
 
             {/* Horizontal line */}
-            <div className="w-full h-[2px] bg-[#9d7af0]/70 backdrop-blur-xl border border-white/20 shadow-lg mb-6 md:mb-10"></div>
+            {/* <div className="w-full h-[2px] bg-[#9d7af0]/70 backdrop-blur-xl border border-white/20 shadow-lg mb-6 md:mb-10"></div> */}
 
             {/* Services */}
             <div className="flex flex-col md:flex-row justify-around items-stretch gap-6 px-6 bg-white/10 backdrop-blur-2xl border border-white/20 py-6 transition-all duration-700 ease-in lg:flex-wrap">
@@ -68,10 +68,26 @@ export default function ServicesPage() {
                                     }`}
                             >
                                 <div className="flex flex-col">
-                                    <p className="text-sm mb-4 mt-6">{service.description}</p>
-                                    <button className="text-[#9d7af0] underline font-medium hover:text-[#bba6f3] transition-colors duration-500 ease-in"
-                                    onClick={()=>push(`/services/${service.title.toLowerCase().replace(" ", "-")}`)}>
-                                        Read More
+                                    <p className="text-sm mb-6 mt-6 leading-relaxed">{service.description}</p>
+                                    <button 
+                                        className="relative inline-flex items-center justify-center px-6 py-3 text-sm font-semibold text-white bg-gradient-to-r from-[#9d7af0] to-[#7c5ce0] border border-[#9d7af0]/50 rounded-lg shadow-lg backdrop-blur-sm transition-all duration-300 ease-in-out hover:from-[#bba6f3] hover:to-[#9d7af0] hover:shadow-xl hover:shadow-[#9d7af0]/25 hover:scale-105 hover:-translate-y-0.5 focus:outline-none focus:ring-2 focus:ring-[#9d7af0]/50 focus:ring-offset-2 focus:ring-offset-transparent active:scale-95"
+                                        onClick={(e) => {
+                                            e.stopPropagation();
+                                            push(`/services/${service.title.toLowerCase().replace(/\s+/g, "-")}`);
+                                        }}
+                                    >
+                                        <span className="mr-2">Read More</span>
+                                        <svg 
+                                            className="w-4 h-4 transition-transform duration-300 group-hover:translate-x-1" 
+                                            fill="none" 
+                                            stroke="currentColor" 
+                                            viewBox="0 0 24 24"
+                                        >
+                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 8l4 4m0 0l-4 4m4-4H3" />
+                                        </svg>
+                                        
+                                        {/* Glowing effect on hover */}
+                                        <div className="absolute inset-0 rounded-lg bg-gradient-to-r from-[#9d7af0] to-[#7c5ce0] opacity-0 blur-xl transition-opacity duration-300 hover:opacity-30 -z-10"></div>
                                     </button>
                                 </div>
                             </div>
@@ -86,4 +102,4 @@ export default function ServicesPage() {
         </div>
 
     )
-}
+};

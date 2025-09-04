@@ -8,14 +8,12 @@ const Navbar = () => {
   const [showDropdown, setShowDropdown] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
   const dropdownRef = useRef(null);
+  const toolkitRef = useRef(null); // Add ref for toolkit dropdown
   const pathname = usePathname();
   const [toolkitOpen, setToolkitOpen] = useState(false);
-  const [textColor, setTextColor] = useState('text-white');
 
   useEffect(() => {
     if (typeof window !== 'undefined') {
-      const isDark = document.body.className.includes("bg-black"); // Remove this in final deployment
-      setTextColor(isDark ? "text-white" : "text-black"); // Remove this in final deployment
       const storedUser = localStorage.getItem('user');
       if (storedUser) {
         const parsedUser = JSON.parse(storedUser);
@@ -25,14 +23,19 @@ const Navbar = () => {
     }
 
     const handleClickOutside = (event) => {
+      // Close user dropdown if clicking outside
       if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
         setShowDropdown(false);
+      }
+      // Close toolkit dropdown if clicking outside
+      if (toolkitRef.current && !toolkitRef.current.contains(event.target)) {
+        setToolkitOpen(false);
       }
     };
 
     document.addEventListener('mousedown', handleClickOutside);
     return () => document.removeEventListener('mousedown', handleClickOutside);
-  }, [pathname]);  // Replace [pathname] with [] in final deployment
+  }, []);
 
   const handleLogout = () => {
     localStorage.removeItem('token');
@@ -54,7 +57,7 @@ const Navbar = () => {
     }`;
 
   return (
-    <nav className={`relative flex items-center justify-between md:justify-start md:gap-10 ${textColor} font-semibold font-inter text-base px-2  lg:px-8 py-1 z-10 w-full`}>
+    <nav className="relative flex items-center justify-between md:justify-start md:gap-10 text-white font-semibold font-inter text-base px-2  lg:px-8 py-1 z-10 w-full">
       
       {/* Left: Hamburger (mobile only) */}
       <button
@@ -63,7 +66,7 @@ const Navbar = () => {
         aria-label="Toggle Menu"
       >
         <svg
-          className={`w-6 h-6 ${textColor} transition-all duration-300 ease-in transform ${menuOpen ? 'rotate-90 scale-110' : 'rotate-0'
+          className={`w-6 h-6 text-white transition-all duration-300 ease-in transform ${menuOpen ? 'rotate-90 scale-110' : 'rotate-0'
             }`}
           fill="none"
           stroke="currentColor"
@@ -102,25 +105,25 @@ const Navbar = () => {
       {/* Nav links for desktop */}
       <ul className="hidden md:flex md:font-normal lg:font-semibold md:justify-center md:items-center md:w-full md:gap-10 w-screen z-10">
         <li>
-          <Link href="/home" className={navLinkClasses("/home")}>Home</Link>
+          <Link href="/" className={navLinkClasses("/")}>Home</Link>
         </li>
         <li>
           <Link href="/about" className={navLinkClasses("/about")}>About Us</Link>
         </li>
 
         {/* Toolkit Dropdown (Desktop) */}
-        <li className="relative group">
+        <li className="relative group" ref={toolkitRef}>
           <button className={`${navLinkClasses("/toolkit")} flex items-center gap-1`} onClick={() => setToolkitOpen(!toolkitOpen)}>
             Toolkit
             <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
             </svg>
           </button>
-          <ul className={`absolute top-full mt-2 left-0 w-40 bg-black/80 backdrop-blur-md rounded-md shadow-lg py-2 z-30 transition-opacity duration-200 ${toolkitOpen ? 'opacity-100 visible' : 'opacity-0 invisible'}`}>
-            <li><Link href="/tools/red-team" className="block px-4 py-2 hover:bg-[#2a2a2a]">Red Team</Link></li>
-            <li><Link href="/tools/blue-team" className="block px-4 py-2 hover:bg-[#2a2a2a]">Blue Team</Link></li>
-            <li><Link href="/tools/green-team" className="block px-4 py-2 hover:bg-[#2a2a2a]">Green Team</Link></li>
-            <li><Link href="/tools/purple-team" className="block px-4 py-2 hover:bg-[#2a2a2a]">Purple Team</Link></li>
+          <ul className={`absolute top-full mt-2 left-0 w-40 bg-black/0 rounded-md py-2 z-30 transition-opacity duration-200 ${toolkitOpen ? 'opacity-100 visible' : 'opacity-0 invisible'}`}>
+            <li><Link href="/tools/red-team" className="block px-4 py-2 hover:bg-[#2a2a2a]/80" onClick={() => setToolkitOpen(false)}>Red Team</Link></li>
+            <li><Link href="/tools/blue-team" className="block px-4 py-2 hover:bg-[#2a2a2a]" onClick={() => setToolkitOpen(false)}>Blue Team</Link></li>
+            <li><Link href="/tools/green-team" className="block px-4 py-2 hover:bg-[#2a2a2a]" onClick={() => setToolkitOpen(false)}>Green Team</Link></li>
+            <li><Link href="/tools/purple-team" className="block px-4 py-2 hover:bg-[#2a2a2a]" onClick={() => setToolkitOpen(false)}>Purple Team</Link></li>
           </ul>
         </li>
 
@@ -140,7 +143,7 @@ const Navbar = () => {
       >
 
         <li>
-          <Link href="/home" className={navLinkClasses("/home")}>Home</Link>
+          <Link href="/" className={navLinkClasses("/home")}>Home</Link>
         </li>
         <li>
           <Link href="/about" className={navLinkClasses("/about")}>About Us</Link>
@@ -172,12 +175,12 @@ const Navbar = () => {
           <div>
             <button
               onClick={() => setShowDropdown(!showDropdown)}
-              className={`w-10 h-10 rounded-full hover:bg-blue-950/50 bg-[#9d7af0]/50 backdrop-blur-xl ${textColor} flex items-center justify-center font-bold text-sm transition duration-200`}
+              className="w-10 h-10 rounded-full hover:bg-blue-950/50 bg-[#9d7af0]/50 backdrop-blur-xl text-white flex items-center justify-center font-bold text-sm transition duration-200"
             >
               {getInitials(userName)}
             </button>
             {showDropdown && (
-              <div className={`absolute right-0 mt-2 bg-[#1a1a1a] ${textColor} rounded-lg shadow-lg py-2 px-4 z-50`}>
+              <div className="absolute right-0 mt-2 bg-[#1a1a1a] text-white rounded-lg shadow-lg py-2 px-4 z-50">
                 <button
                   onClick={handleLogout}
                   className="hover:bg-blue-950/50 bg-[#9d7af0]/50 backdrop-blur-xl transition duration-200"
@@ -190,7 +193,7 @@ const Navbar = () => {
         ) : (
           <Link
             href="/gain-access"
-            className="md:ml-auto font-light cursor-pointer px-2 py-1 ${textColor} rounded-sm hover:bg-blue-950/50 transition duration-200 text-xs w-[8ch] md:w-auto md:text-base bg-[#9d7af0]/50 backdrop-blur-xl md:text-nowrap z-10">
+            className="md:ml-auto font-light cursor-pointer px-2 py-1 text-white rounded-sm hover:bg-blue-950/50 transition duration-200 text-xs w-[8ch] md:w-auto md:text-base bg-[#9d7af0]/70 backdrop-blur-xl md:text-nowrap z-10">
             Gain Access
           </Link>
         )}

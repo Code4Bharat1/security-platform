@@ -1,4 +1,6 @@
+import { useRouter } from 'next/navigation';
 export default function Hero() {
+    const router = useRouter();
     return (
         <div className="font-inter overflow-hidden h-screen">
             <video
@@ -28,10 +30,11 @@ export default function Hero() {
                     </p>
 
                     <div className="flex flex-col sm:flex-row justify-center gap-4 sm:gap-10 mt-8 text-base md:text-xl">
-                        <button className="cursor-pointer px-2 py-3 bg rounded-lg w-full sm:w-[15ch] hover:bg-blue-950/50 hover:text-white bg-[#9d7af0]/50 backdrop-blur-xl shadow-lg ring-1 ring-black/5">
+                        <button className="cursor-pointer px-2 py-3 bg rounded-lg w-full sm:w-[18ch] hover:bg-blue-950/50 hover:text-white bg-[#9d7af0]/50 backdrop-blur-xl shadow-lg ring-1 ring-black/5"
+                        onClick={() => router.push('/gain-access')}>
                             Get Started
                         </button>
-                        <button className="cursor-pointer px-2 py-3 text-black rounded-lg w-full sm:w-[15ch] text-nowrap hover:bg-blue-950/50 hover:text-white  bg-white/80 backdrop-blur-2xl shadow-lg ring-1 ring-black/5">
+                        <button className="cursor-pointer px-0 py-3 text-black rounded-lg w-full sm:w-[18ch] text-nowrap hover:bg-blue-950/50 hover:text-white  bg-white/80 backdrop-blur-2xl shadow-lg ring-1 ring-black/5">
                             Schedule Meeting
                         </button>
                     </div>
