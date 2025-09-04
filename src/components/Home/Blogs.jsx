@@ -1,7 +1,7 @@
 import Link from "next/link";
 export default function Blogs() {
   return (
-    <div className="mb-10 text-white">
+    <div id="blogs" className="mb-10 text-white">
 
        {/* Horizontal line */}
       <div className="w-full h-[2px] bg-[#9d7af0]/70 backdrop-blur-xl border border-white/20 shadow-lg mt-6 md:mt-15"></div>
