@@ -1,3 +1,5 @@
+'use client';
+
 import ToolLayout from "./Layout";
 export default function RedTool() {
     const toolList = [{
@@ -10,7 +12,7 @@ export default function RedTool() {
     },
     {
         name: "Source Code Analyzer",
-        image: "/tools/card-images/tools/card-images/ode.png",
+        image: "/tools/card-images/ode.png",
         description: "Scan websites for security weaknesses like XSS or SQL injection.",
         slug: "Source-Code",
         buttonLabel: "Check Your Code's",
@@ -18,7 +20,7 @@ export default function RedTool() {
     },
     {
         name: "Checkmarx Scanner",
-        image: "/tools/card-images/tools/card-images/heckmarx.png",
+        image: "/tools/card-images/heckmarx.png",
         description: "Scan websites for security weaknesses like XSS or SQL injection.",
         slug: "codeAnalysis",
         buttonLabel: "Scan your codes",
@@ -94,9 +96,10 @@ export default function RedTool() {
         slug: "portScannerForm",
         buttonLabel: "Check Headers",
         type: "red-team"
-    }, {
+    },
+    {
         name: "Clickjacking Tester",
-        image: "/tools/card-images/tools/card-images/lickjacking.png",
+        image: "/tools/card-images/lickjacking.png",
         description: " Check for UI redressing vulnerabilities in a webpage.",
         slug: "clickjackingTester",
         buttonLabel: "Clickjacking Tester",
@@ -104,19 +107,21 @@ export default function RedTool() {
     },
     {
         name: "CSRF Vulnerability Scanner",
-        image: "/tools/card-images/tools/card-images/srf.png",
+        image: "/tools/card-images/srf.png",
         description: " Check for UI redressing vulnerabilities in a webpage.",
         slug: "csrfChecker",
         buttonLabel: "CSRF Vulnerability Scanner",
         type: "red-team"
-    }, {
+    },
+    {
         name: "Open Redirect Tester ",
         image: "/tools/card-images/open-redirect.png",
         description: "Find unsafe redirection vulnerabilities.",
         slug: "openRedirectTester",
         buttonLabel: "Open Redirect Tester ",
         type: "red-team"
-    }, {
+    },
+    {
         name: "Secret Key Scanner",
         image: "/tools/card-images/secret_key_scanner.png",
         description: "Search for exposed API keys or credentials.",
