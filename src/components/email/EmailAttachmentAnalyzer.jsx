@@ -37,7 +37,7 @@ export default function EmailAttachmentAnalyzer() {
 
   return (
     <div className="min-h-screen bg-gray-100 flex flex-col items-center pt-20 px-4">
-      <img src="/email.png" alt="verify" className="w-16 h-20 mb-4 mt-7" />
+      <img src="/tools/card-images/email.png" alt="verify" className="w-16 h-20 mb-4 mt-7" />
 
       <div className="text-center mb-10">
         <MailSearch className="mx-auto mb-4 text-blue-600" size={48} />

@@ -1,6 +1,7 @@
 'use client';
 import { useState } from 'react';
 import Link from 'next/link';
+import { Mail, Phone, MapPin } from 'lucide-react';
 
 export default function ContactPage() {
   const [name, setName] = useState('');
@@ -176,7 +177,6 @@ export default function ContactPage() {
               </div>
             </div>
           </div>
-
         </div>
       </div>
     </div>

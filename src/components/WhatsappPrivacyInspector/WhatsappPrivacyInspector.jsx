@@ -95,7 +95,7 @@ export default function WhatsappPrivacyChecker() {
 
   return (
     <div className="min-h-screen bg-gray-50 flex flex-col items-center justify-center px-4">
-      <img src="/wp.png" alt="whatsapp privacy image" className="w-16 h-20 mb-4 mt-7" />
+      <img src="/tools/card-images/wp.png" alt="whatsapp privacy image" className="w-16 h-20 mb-4 mt-7" />
       <h1 className="text-3xl font-bold text-gray-800 mb-2">Whatsapp Privacy Inspect</h1>
       <p className="text-lg text-gray-600 mb-6">Analyze your privacy and take required measures.</p>
 

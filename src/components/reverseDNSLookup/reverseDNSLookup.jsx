@@ -266,7 +266,7 @@ export default function ReverseDNSLookup() {
     <div className="min-h-screen bg-gradient-to-br from-green-50 via-emerald-50 to-teal-50 p-4">
       <div className="max-w-3xl mx-auto">
         {/* Centered PNG logo */}
-        <img src="/reverse_dns.png" alt="Reverse DNS" className="w-16 h-20 mx-auto mb-4 mt-7" />
+        <img src="/tools/card-images/reverse_dns.png" alt="Reverse DNS" className="w-16 h-20 mx-auto mb-4 mt-7" />
         {/* Header */}
         <div className="text-center mb-8">
           <h1 className="text-3xl font-bold bg-gradient-to-r from-green-600 to-emerald-700 bg-clip-text text-transparent">

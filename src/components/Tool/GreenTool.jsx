@@ -1,3 +1,5 @@
+'use client';
+
 import ToolLayout from "./Layout";
 export default function GreenTool() {
     const toolList = [// Non-Tech
@@ -131,7 +133,7 @@ export default function GreenTool() {
         },
         {
             name: "PDF",
-            image: "PDF.png",
+            image: "/tools/card-images/PDF.png",
             description: "Create Your PDF.",
             slug: "PDF",
             buttonLabel: "Create PDF",
@@ -139,7 +141,7 @@ export default function GreenTool() {
         },
         {
             name: "Chrome Extention",
-            image: "chrome.png",
+            image: "/tools/card-images/chrome.png",
             description: "Description Chrome Extention ....",
             slug: "Chrome-Extention",
             buttonLabel: "Use Chrome Extention",
@@ -147,7 +149,7 @@ export default function GreenTool() {
         },
         {
             name: "Password Strength Checker",
-            image: "password-checker.png",
+            image: "/tools/card-images/password-checker.png",
             description: "Description Passsword Strenght Checker....",
             slug: "Passsword-Checker",
             buttonLabel: "Check Your Password",
