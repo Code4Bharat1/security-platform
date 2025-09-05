@@ -1,3 +1,5 @@
+'use client';
+
 import ToolLayout from "./Layout";
 export default function PurpleTool() {
     const toolList = [// Non-Tech

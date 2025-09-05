@@ -1,10 +1,11 @@
-'use client'
-
-
-import Home from '@/components/Home/Home'
+import { Suspense } from "react";
+export const dynamic = "force-dynamic";
+import Home from "@/components/Home/Home";
 
 export default function Landing() {
   return (
-    <Home></Home>
+    <Suspense fallback={<div>Loading...</div>}>
+      <Home />
+    </Suspense>
   );
 }
