@@ -2,7 +2,7 @@ import ToolLayout from "./Layout";
 export default function RedTool() {
     const toolList = [{
         name: "Vulnerability Scanner",
-        image: "/tools/card-images/vuln_scanner.png",
+        image: "/RedTeam/vuln_scanner.png",
         description: "Scan websites for security weaknesses like XSS or SQL injection.",
         slug: "vuln-scanner",
         buttonLabel: "Scan for Vulnerabilities",
@@ -10,7 +10,7 @@ export default function RedTool() {
     },
     {
         name: "Source Code Analyzer",
-        image: "/tools/card-images/tools/card-images/ode.png",
+        image: "/RedTeam/code.png",
         description: "Scan websites for security weaknesses like XSS or SQL injection.",
         slug: "Source-Code",
         buttonLabel: "Check Your Code's",
@@ -18,7 +18,7 @@ export default function RedTool() {
     },
     {
         name: "Checkmarx Scanner",
-        image: "/tools/card-images/tools/card-images/heckmarx.png",
+        image: "/RedTeam/heckmarx.png",
         description: "Scan websites for security weaknesses like XSS or SQL injection.",
         slug: "codeAnalysis",
         buttonLabel: "Scan your codes",
@@ -26,7 +26,7 @@ export default function RedTool() {
     },
     {
         name: "Subdomain Scanner",
-        image: "/tools/card-images/subdomain.png",
+        image: "/RedTeam/subdomain.png",
         description: "Scan websites for analyzing subdomains and their security posture.",
         slug: "subdomainEnumeration",
         buttonLabel: "Scan your website",
@@ -34,7 +34,7 @@ export default function RedTool() {
     },
     {
         name: "Website Recon",
-        image: "/tools/card-images/web-recon.png",
+        image: "/RedTeam/web-recon.png",
         description: "Perform an in-depth reconnaissance of a website to identify key metadata, technologies used.",
         slug: "webrecon",
         buttonLabel: "Website Recon",
@@ -42,7 +42,7 @@ export default function RedTool() {
     },
     {
         name: "Technology Fingerprinter",
-        image: "/tools/card-images/fingerprint.png",
+        image: "/RedTeam/fingerprint.png",
         description: "un an OWASP ZAP-powered automated security scan to detect vulnerabilities.",
         slug: "fingerPrint",
         buttonLabel: "fingerPrint",
@@ -50,7 +50,7 @@ export default function RedTool() {
     },
     {
         name: "Brute Force Scanner",
-        image: "/tools/card-images/brute-force.png",
+        image: "/RedTeam/brute-force.png",
         description: "un an OWASP ZAP-powered automated security scan to detect vulnerabilities.",
         slug: "bruteForce",
         buttonLabel: "bruteForce",
@@ -58,7 +58,7 @@ export default function RedTool() {
     },
     {
         name: "Mocha Testing",
-        image: "/tools/card-images/mocha-logo.png",
+        image: "/RedTeam/mocha-logo.png",
         description: "Displays all available Mocha commands, options, and usage details.",
         slug: "mochaForm",
         buttonLabel: "Mocha Testing",
@@ -66,7 +66,7 @@ export default function RedTool() {
     },
     {
         name: "Broken link Checker",
-        image: "/tools/card-images/brokenlink1.png",
+        image: "/RedTeam/brokenlink.png",
         description: "Scans web pages for dead or broken links, helping maintain SEO integrity",
         slug: "brokenStreamForm",
         buttonLabel: "Scan for Vulnerabilities",
@@ -74,14 +74,14 @@ export default function RedTool() {
     },
     {
         name: "Wordpress Scanner",
-        image: "/tools/card-images/wordpress-secure.png",
+        image: "/RedTeam/wordpress-secure.png",
         description: "Check for outdated plugins, misconfigurations, and known vulnerabilities.",
         slug: "wordpressForm",
         buttonLabel: "Scan for Wordpress",
         type: "red-team"
     }, {
         name: "API Testing",
-        image: "/tools/card-images/api.png",
+        image: "/RedTeam/api.png",
         description: "Allows users to test API endpoints, validating functionality and security headers",
         slug: "apiForm",
         buttonLabel: "Scan for API",
@@ -89,14 +89,14 @@ export default function RedTool() {
     },
     {
         name: "Port Scanner",
-        image: "/tools/card-images/port_scan.png",
+        image: "/RedTeam/port_scan.png",
         description: "Allows users to test API endpoints, validating functionality, security headers",
         slug: "portScannerForm",
         buttonLabel: "Check Headers",
         type: "red-team"
     }, {
         name: "Clickjacking Tester",
-        image: "/tools/card-images/tools/card-images/lickjacking.png",
+        image: "/RedTeam/lickjacking.png",
         description: " Check for UI redressing vulnerabilities in a webpage.",
         slug: "clickjackingTester",
         buttonLabel: "Clickjacking Tester",
@@ -104,21 +104,21 @@ export default function RedTool() {
     },
     {
         name: "CSRF Vulnerability Scanner",
-        image: "/tools/card-images/tools/card-images/srf.png",
+        image: "/RedTeam/csrf.png",
         description: " Check for UI redressing vulnerabilities in a webpage.",
         slug: "csrfChecker",
         buttonLabel: "CSRF Vulnerability Scanner",
         type: "red-team"
     }, {
         name: "Open Redirect Tester ",
-        image: "/tools/card-images/open-redirect.png",
+        image: "/RedTeam/open-redirect.png",
         description: "Find unsafe redirection vulnerabilities.",
         slug: "openRedirectTester",
         buttonLabel: "Open Redirect Tester ",
         type: "red-team"
     }, {
         name: "Secret Key Scanner",
-        image: "/tools/card-images/secret_key_scanner.png",
+        image: "/RedTeam/secret_key_scanner.png",
         description: "Search for exposed API keys or credentials.",
         slug: "secretKeyScanner",
         buttonLabel: "Secret Key Scanner",
@@ -126,7 +126,7 @@ export default function RedTool() {
     },
     {
         name: "Session Fixation Tester",
-        image: "/tools/card-images/session_fixation.png",
+        image: "/RedTeam/session_fixation.png",
         description: "Detect session fixation vulnerabilities",
         slug: "sessionFixationChecker",
         buttonLabel: "Session Fixation Tester",
@@ -134,7 +134,7 @@ export default function RedTool() {
     },
     {
         name: "Whois Domain Lookup",
-        image: "/tools/card-images/whois.png",
+        image: "/RedTeam/whois.png",
         description: "Retrieve domain registration and ownership details.",
         slug: "whoisLookup",
         buttonLabel: "Whois Domain Lookup",
@@ -142,21 +142,21 @@ export default function RedTool() {
     },
     {
         name: "XSS Vulnerability Tester",
-        image: "/tools/card-images/xss.png",
+        image: "/RedTeam/xss.png",
         description: "Identify Cross-Site Scripting (XSS) risks",
         slug: "xssTester",
         buttonLabel: "XSS Vulnerability Tester",
         type: "red-team"
     }, {
         name: "SQLi Scanner",
-        image: "/tools/card-images/sql_injection.png",
+        image: "/RedTeam/sql_injection.png",
         description: "This tool scans websites for SQL Injection vulnerabilities.",
         slug: "nexpose-scan",
         buttonLabel: "Scan SQLi",
         type: "red-team"
     }, {
         name: "Database Security Checker",
-        image: "/tools/card-images/DB-Security.png",
+        image: "/RedTeam/DB-Security.png",
         description: "Database Safety Checker With Score.",
         slug: "DbSecurityChecker",
         buttonLabel: "Check Security",
