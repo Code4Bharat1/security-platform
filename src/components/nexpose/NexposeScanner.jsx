@@ -5,7 +5,8 @@ import { jsPDF } from "jspdf";
 import autoTable from "jspdf-autotable";
 
 /** Safe API base with fallback */
-const API_BASE = (process.env.NEXT_PUBLIC_PROD_API_URL).replace(/\/+$/, "");
+const API_BASE = (process.env.NEXT_PUBLIC_PROD_API_URL)
+// .replace(/\/+$/, "");
 
 /** Strict http(s) URL validation */
 function isValidHttpUrl(value) {
