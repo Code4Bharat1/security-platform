@@ -5,8 +5,8 @@ import { useState, useRef, useEffect } from "react";
 export default function VAPage() {
     const heroData = { title: "Vulnerability Assessment", desc: `Vulnerability Assessment (VA) is the first line of defense in a strong cybersecurity program. It is a structured process designed to uncover, analyze, and prioritize security weaknesses across an organization’s IT infrastructure, applications, cloud environments, and endpoints. Our VA services go beyond automated scans—every finding is validated by security experts and mapped against real-world attack scenarios, ensuring your remediation strategy is both actionable and business-focused.`,
         videoPath: "/services/VA.mp4"
-
      }
+
     const methodologyData = [
         { title: "Network Vulnerability Scanning", desc: "Detect open ports, weak services, and misconfigured firewalls." },
         { title: "Web Application Assessment", desc: "Review business-critical applications for OWASP Top 10 flaws, insecure APIs, and broken authentication." },
@@ -46,6 +46,7 @@ function ServicesLayout({ heroData, methodologyData, approchData }) {
     return (
         <div className="bg-gradient-to-b from-gray-900 to-black text-white">
             <DescHero data={heroData} />
+            <Hero data={heroData} />
             <Methodology data={methodologyData} />
             <OurApproch data={approchData} />
         </div>
@@ -86,84 +87,119 @@ function DescHero({ data }) {
                     </h1>
                 </div>
                 
-                {/* Description */}
-                <div className="max-w-4xl bg-black/40 backdrop-blur-md rounded-2xl p-6 border border-white/10">
-                    <p className="text-lg md:text-xl text-gray-200 leading-relaxed text-center">
-                        {data.desc}
-                    </p>
-                </div>
-                
-                {/* Scroll indicator */}
-                <div className="absolute bottom-10 flex flex-col items-center">
-                    <p className="text-sm text-gray-300 mb-2">Scroll to explore</p>
-                    <div className="w-6 h-10 border-2 border-gray-300 rounded-full flex justify-center">
-                        <div className="w-1 h-3 bg-gray-300 rounded-full mt-2 animate-bounce"></div>
-                    </div>
-                </div>
+           
+
             </div>
         </div>
     );
 }
+function Hero({ data }) {
+  return (
+    <div className="max-w-9xl mx-auto px-6 md:px-25 py-10 grid md:grid-cols-2 gap-12 items-center">
+      {/* Left side - Text */}
+      <div>
+        <p className="text-lg md:text-xl text-gray-200 leading-relaxed">
+          {data.desc}
+        </p>
+      </div>
+
+      {/* Right side - Image */}
+      <div className="flex justify-center">
+        <img
+          src="/OurCoreServices/va-diagram.png" // replace with your actual image path
+          alt="Vulnerability Assessment"
+          className="rounded-xl shadow-lg w-full max-w-md object-contain"
+        />
+      </div>
+    </div>
+  );
+}
+
 
 function Methodology({ data }) {
-    const [isVisible, setIsVisible] = useState(Array(data.length).fill(false));
-    const methodologyRefs = useRef([]);
+  const [isVisible, setIsVisible] = useState(Array(data.length).fill(false));
+  const methodologyRefs = useRef([]);
 
-    useEffect(() => {
-        const observer = new IntersectionObserver(
-            (entries) => {
-                entries.forEach((entry) => {
-                    if (entry.isIntersecting) {
-                        const index = methodologyRefs.current.findIndex(ref => ref === entry.target);
-                        setIsVisible(prev => {
-                            const newState = [...prev];
-                            newState[index] = true;
-                            return newState;
-                        });
-                    }
-                });
-            },
-            { threshold: 0.3 }
-        );
-
-        methodologyRefs.current.forEach(ref => {
-            if (ref) observer.observe(ref);
-        });
-
-        return () => {
-            methodologyRefs.current.forEach(ref => {
-                if (ref) observer.unobserve(ref);
+  useEffect(() => {
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting) {
+            const index = methodologyRefs.current.findIndex(
+              (ref) => ref === entry.target
+            );
+            setIsVisible((prev) => {
+              const newState = [...prev];
+              newState[index] = true;
+              return newState;
             });
-        };
-    }, [data.length]);
-
-    return (
-        <div className="relative min-h-screen py-20 px-4 sm:px-6 md:px-8 lg:px-12 xl:px-20">
-            <div className="absolute inset-0 bg-gradient-to-b from-gray-900 to-black z-0"></div>
-            
-            <h2 className="text-4xl md:text-5xl lg:text-6xl font-bold text-center mb-16 bg-clip-text text-transparent bg-gradient-to-r from-purple-400 to-indigo-500">
-                Methodology
-            </h2>
-            
-            <div className="flex flex-col gap-16 relative z-10">
-                {data.map((item, index) => (
-                    <div 
-                        key={index}
-                        ref={el => methodologyRefs.current[index] = el}
-                        className={`flex flex-col text-center transition-all duration-700 ease-out ${isVisible[index] ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10'}`}
-                    >
-                        <h3 className={`w-full md:w-4/5 lg:w-2/3 py-4 bg-gradient-to-r from-[#A580FF]/20 to-[#7C4DFF]/20 backdrop-blur-lg text-xl sm:text-2xl lg:text-3xl font-bold rounded-lg mx-auto ${index % 2 === 0 ? "md:ml-auto" : "md:mr-auto"}`}>
-                            {item.title}
-                        </h3>
-                        <p className="w-full md:w-4/5 lg:w-2/3 bg-white/5 backdrop-blur-lg py-4 px-6 font-medium text-lg md:text-xl leading-relaxed rounded-lg mx-auto mt-4">
-                            {item.desc}
-                        </p>
-                    </div>
-                ))}
-            </div>
-        </div>
+          }
+        });
+      },
+      { threshold: 0.3 }
     );
+
+    methodologyRefs.current.forEach((ref) => {
+      if (ref) observer.observe(ref);
+    });
+
+    return () => {
+      methodologyRefs.current.forEach((ref) => {
+        if (ref) observer.unobserve(ref);
+      });
+    };
+  }, [data.length]);
+
+  return (
+    <div className="relative py-20 px-6 sm:px-10 md:px-16 lg:px-20 bg-black">
+      <div className="absolute inset-0 bg-gradient-to-b from-gray-900 to-black z-0"></div>
+
+      {/* Section Title */}
+      <h2 className="text-4xl md:text-5xl font-bold text-center mb-16 text-indigo-500 relative z-10">
+        Vulnerability Assessment <br />
+        <span className="text-white">Services</span>
+      </h2>
+
+      {/* Items in Center */}
+      <div className="flex flex-col items-center space-y-14 relative z-10">
+        {data.map((item, index) => (
+          <div
+            key={index}
+            ref={(el) => (methodologyRefs.current[index] = el)}
+            className={`grid md:grid-cols-2 gap-8 items-center max-w-4xl w-full transition-all duration-700 ease-out ${
+              isVisible[index]
+                ? "opacity-100 translate-y-0"
+                : "opacity-0 translate-y-10"
+            } ${index % 2 !== 0 ? "md:flex-row-reverse" : ""}`}
+          >
+            {/* Text Section */}
+            <div className="text-center md:text-left">
+              <h3 className="text-xl md:text-2xl font-bold text-white mb-3">
+                {item.title}
+              </h3>
+              <p className="text-gray-300 text-base md:text-lg leading-relaxed">
+                {item.desc}
+              </p>
+            </div>
+
+            {/* Icon Section */}
+            <div className="flex justify-center md:justify-center">
+              <div className="w-16 h-16 md:w-20 md:h-20 bg-indigo-500 rounded-full flex items-center justify-center shadow-lg">
+                <img
+                  src={item.icon}
+                  alt={item.title}
+                  className="w-8 h-8 md:w-10 md:h-10 object-contain"
+                />
+              </div>
+            </div>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
 }
+
+
 
 function OurApproch({ data }) {
     return (

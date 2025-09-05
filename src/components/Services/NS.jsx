@@ -1,30 +1,33 @@
 import ServicesLayout from "./Layout";
 
-export default function FSPage() {
+export default function NSPage() {
     const heroData = 
         {
-            title: "Forensic Services",
-            desc: "Forensic services help organizations investigate incidents, trace attackers, and recover data, while maintaining the legal integrity of evidence. Our experts ensure evidence is admissible in court and useful for compliance audits."
+            title: "Network Security",
+            desc: "Network Security involves implementing measures to protect the integrity, confidentiality, and availability of computer networks and data. Our services include threat detection, firewall management, and incident response to safeguard your network infrastructure."
         }
 
     const methodologyData = [
         {
-            title: "Cloud SOC",
+            title: "Network Asset Discovery & Mapping ",
             desc: "Real-time cloud-native threat monitoring."
         },
         {
-            title: "Cloud VAPT"
+            title: "Configuration & Policy Review "
         },
         {
-            title: "Compliance Alignment",
+            title: "Traffic Analysis & Threat Detection ",
             desc: "ISO 27017, PCI DSS, HIPAA, GDPR compliance readiness."
         },
         {
-            title: "Activity & Log Analysis"
+            title: "Attack Simulation "
         },
         {
-            title: "Data Security & Encryption",
+            title: "Vulnerability Remediation & Hardening",
             desc: "Advanced key management, DLP, and Zero-Trust controls."
+        },
+        {
+            title:"Continuous Monitoring & Alerting "
         }
     ];
 
