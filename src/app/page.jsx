@@ -1,5 +1,5 @@
 import { Suspense } from "react";
-export const dynamic = "force-dynamic";
+// export const dynamic = "force-dynamic";
 import Home from "@/components/Home/Home";
 
 export default function Landing() {
