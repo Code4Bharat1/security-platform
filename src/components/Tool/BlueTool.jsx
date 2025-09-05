@@ -1,3 +1,5 @@
+'use client';
+
 import ToolLayout from "./Layout";
 export default function BlueTool() {
     const toolList = [// Blue-Team
@@ -67,7 +69,7 @@ export default function BlueTool() {
   },
   {
     name: "Wireshark",
-    image: "Wireshark.png",
+    image: "/tools/card-images/Wireshark.png",
     description: "Description Wireshark ......",
     slug: "Wireshark",
     buttonLabel: "Use Wireshark",
@@ -75,7 +77,7 @@ export default function BlueTool() {
   },
   {
     name: "Data Leak",
-    image: "data-leak.png",
+    image: "/tools/card-images/data-leak.png",
     description: "Description Data Leak....",
     slug: "Data-Leak",
     buttonLabel: "Find Data Leak",

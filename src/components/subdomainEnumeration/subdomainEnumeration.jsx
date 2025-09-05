@@ -103,7 +103,7 @@ export default function SubdomainEnumeration() {
 
   return (
     <div className="max-w-xl mx-auto p-6 border rounded shadow-sm">
-      <img src="/subdomain.png" alt="subdomain" className="w-16 h-20 mb-4 mt-7" />
+      <img src="/tools/card-images/subdomain.png" alt="subdomain" className="w-16 h-20 mb-4 mt-7" />
       <h2 className="text-2xl font-semibold mb-4">Subdomain Enumeration</h2>
 
       <input

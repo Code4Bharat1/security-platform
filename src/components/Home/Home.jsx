@@ -1,3 +1,7 @@
+"use client";
+export const dynamic = "force-dynamic"; // stop Next.js prerender
+import { Suspense } from "react";
+
 import Hero from './Hero'
 import Certifications from './Certifications'
 import WhyUs from './WhyUs'
