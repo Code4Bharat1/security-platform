@@ -45,7 +45,7 @@ function Card({ data, borderColor, textColor, bgColor}) {
     return (
         <div className={`flex flex-col aspect-4/3 rounded-xl w-full overflow-hidden hover:scale-105 bg-white/10 backdrop-blur-xl border-2 ${borderColor} shadow-lg transition-all duration-200 transform cursor-pointer hover:shadow-[0_0_20px_rgba(255,255,255,0.3)] text-white justify-around px-5`}>
             <img
-                src={`/tools/cards/${data.image}`}
+                src={`${data.image}`}
                 alt={data.team}
                 className="h-24 object-contain mx-auto aspect-square object-bottom"
             />
