@@ -123,68 +123,20 @@ export default function Vulnscanner() {
   );
 
   return (
-    <div className="min-h-screen bg-black text-white">
-      {/* Navigation */}
-      <nav className="bg-black/95 backdrop-blur-sm border-b border-red-500/20 sticky top-0 z-50">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between items-center h-16">
-            <div className="flex items-center gap-8">
-              <div className="flex items-center gap-3">
-                <div className="w-10 h-10 bg-gradient-to-r from-red-500 to-red-600 rounded-full flex items-center justify-center">
-                  <span className="text-white font-bold text-sm">IMG</span>
-                </div>
-              </div>
-              <div className="hidden md:flex space-x-8">
-                <a href="#" className="text-white hover:text-red-400 transition-colors">Home</a>
-                <a href="#" className="text-gray-300 hover:text-white transition-colors">About Us</a>
-                <a href="#" className="text-gray-300 hover:text-white transition-colors">Tools</a>
-                <a href="#" className="text-gray-300 hover:text-white transition-colors">Service</a>
-                <a href="#" className="text-gray-300 hover:text-white transition-colors">Contact</a>
-              </div>
-            </div>
-            <div className="hidden md:block">
-              <button className="bg-red-500 hover:bg-red-600 text-white px-6 py-2 rounded-lg transition-colors">
-                Login
-              </button>
-            </div>
-            <div className="md:hidden">
-              <button
-                onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-                className="text-white"
-              >
-                {mobileMenuOpen ? <X size={24} /> : <Menu size={24} />}
-              </button>
-            </div>
-          </div>
-        </div>
+    <div className="flex flex-col items-center justify-center min-h-screen bg-gray-100 p-4 mb-5">
+      <img src="/tools/card-images/vuln_scanner.png" alt="verify" className="w-16 h-20 mb-4 mt-7" />
+      <h1 className="text-3xl md:text-4xl font-bold text-slate-800 mt-3">
+        Protect Your Website
+      </h1>
+      <p className="text-lg text-slate-600 max-w-2xl mx-auto text-center mt-3 mb-3">
+        Our advanced security scanner identifies vulnerabilities before
+        attackers can exploit them.
+      </p>
 
-        {/* Mobile menu */}
-        {mobileMenuOpen && (
-          <div className="md:hidden bg-black/95 border-t border-gray-800">
-            <div className="px-2 pt-2 pb-3 space-y-1">
-              <a href="#" className="block px-3 py-2 text-white">Home</a>
-              <a href="#" className="block px-3 py-2 text-gray-300">About Us</a>
-              <a href="#" className="block px-3 py-2 text-gray-300">Tools</a>
-              <a href="#" className="block px-3 py-2 text-gray-300">Service</a>
-              <a href="#" className="block px-3 py-2 text-gray-300">Contact</a>
-              <button className="w-full text-left px-3 py-2 bg-red-500 text-white rounded-lg mt-4">
-                Login
-              </button>
-            </div>
-          </div>
-        )}
-      </nav>
-
-      {/* Hero Section */}
-      <div className="relative overflow-hidden">
-        <div className="absolute inset-0 bg-gradient-to-b from-red-500/10 to-transparent"></div>
-        <div className="relative max-w-4xl mx-auto px-4 py-20 text-center">
-          <div className="w-20 h-20 mx-auto mb-8 bg-gradient-to-r from-red-500 to-red-600 rounded-full flex items-center justify-center">
-            <Shield size={40} className="text-white" />
-          </div>
-          
-          <h1 className="text-5xl md:text-6xl font-bold mb-6">
-            Protect Your <span className="text-red-500">Website</span>
+      <div className="bg-white rounded-lg shadow-lg w-full max-w-5xl">
+        <div className="p-6 border-b border-gray-200">
+          <h1 className="text-2xl font-bold text-center mb-4 text-green-800">
+            Website Vulnerability Scanner
           </h1>
           
           <p className="text-xl text-gray-300 mb-12 max-w-2xl mx-auto">

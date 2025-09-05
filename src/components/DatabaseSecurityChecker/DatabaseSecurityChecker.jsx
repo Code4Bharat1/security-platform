@@ -41,7 +41,7 @@ export default function DbSecurityChecker() {
 
   return (
     <div className="min-h-screen flex flex-col items-center bg-gray-100 p-4">
-     <img src="/DB-Security.png" alt="verify" className="w-16 h-20 mb-4 mt-7" />
+     <img src="/tools/card-images/DB-Security.png" alt="verify" className="w-16 h-20 mb-4 mt-7" />
 
       <h1 className="text-2xl font-bold text-green-800 mb-4">🛡️ Database Security Score Checker</h1>
       <div className="bg-white p-4 rounded shadow max-w-md w-full">

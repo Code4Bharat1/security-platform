@@ -203,7 +203,7 @@ export default function MochaForm() {
 
       {/* Header */}
       <div className="text-center pt-8 pb-6">
-        <img src="/mocha-logo.png" alt="verify" className="w-16 h-20 mb-4 mt-7" />
+        <img src="/tools/card-images/mocha-logo.png" alt="verify" className="w-16 h-20 mb-4 mt-7" />
         <div className="flex justify-center items-center mb-4">
           <div className="bg-gradient-to-r from-green-500 to-emerald-600 p-4 rounded-full shadow-lg">
             <Zap className="w-12 h-12 text-white" />
