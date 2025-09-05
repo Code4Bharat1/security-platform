@@ -1,5 +1,5 @@
-import FSPage from "@/components/Services/FS";
+// import FSPage from "@/components/Services/FS";
 
-export default function Page(){
-    return (<FSPage></FSPage>)
-}
+// export default function Page(){
+//     return (<FSPage></FSPage>)
+// }

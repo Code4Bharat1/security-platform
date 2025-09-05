@@ -61,7 +61,7 @@ const SharePointScanner = () => {
   return (
     <div className="flex flex-col items-center min-h-screen bg-gray-100 px-4 py-8">
       <img
-        src="/sharepoint.png"
+        src="/tools/card-images/sharepoint.png"
         alt="SharePoint Security"
         className="w-48 h-20 mb-4"
       />

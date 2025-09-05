@@ -324,7 +324,7 @@ const regex = new RegExp(userInput); // ⚠️ Unescaped input`
         <div className="text-center mb-8">
           {/* centered image */}
           <img
-            src="/regex.png"
+            src="/tools/card-images/regex.png"
             alt="regex"
             className="w h-20 mx-auto mb-4 mt-10 block"
           />

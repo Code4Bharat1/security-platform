@@ -207,7 +207,7 @@ export default function CodeObfuscationChecker() {
 
   return (
     <div className="p-6 max-w-6xl mx-auto">
-      <img src="/obfuscation.png" alt="verify" className="w-16 h-20 mb-4 mt-7" />
+      <img src="/tools/card-images/obfuscation.png" alt="verify" className="w-16 h-20 mb-4 mt-7" />
       <h1 className="text-3xl font-bold mb-2">Code Obfuscation Checker</h1>
       <p className="text-gray-600 mb-6">
         Paste code, or upload multiple files to scan. Heatmap highlights suspicious lines.

@@ -257,7 +257,7 @@ export default function BrokenStreamPage() {
     <main className="min-h-screen bg-neutral-950 text-slate-100 px-4">
       <div className="max-w-6xl mx-auto pt-16">
         <div className="flex items-center gap-4 mb-4">
-          <img src="/brokenlink1.png" alt="verify" className="w-12 h-14 mt-2" />
+          <img src="/tools/card-images/brokenlink1.png" alt="verify" className="w-12 h-14 mt-2" />
           <div>
             <h1 className="text-3xl font-bold">🔗 Broken Link Checker (Streaming)</h1>
             <p className="text-sm text-slate-400">

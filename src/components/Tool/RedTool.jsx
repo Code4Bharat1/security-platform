@@ -1,3 +1,5 @@
+'use client';
+
 import ToolLayout from "./Layout";
 export default function RedTool() {
     const toolList = [{
@@ -94,7 +96,8 @@ export default function RedTool() {
         slug: "portScannerForm",
         buttonLabel: "Check Headers",
         type: "red-team"
-    }, {
+    },
+    {
         name: "Clickjacking Tester",
         image: "/RedTeam/lickjacking.png",
         description: " Check for UI redressing vulnerabilities in a webpage.",
@@ -109,14 +112,16 @@ export default function RedTool() {
         slug: "csrfChecker",
         buttonLabel: "CSRF Vulnerability Scanner",
         type: "red-team"
-    }, {
+    },
+    {
         name: "Open Redirect Tester ",
         image: "/RedTeam/open-redirect.png",
         description: "Find unsafe redirection vulnerabilities.",
         slug: "openRedirectTester",
         buttonLabel: "Open Redirect Tester ",
         type: "red-team"
-    }, {
+    },
+    {
         name: "Secret Key Scanner",
         image: "/RedTeam/secret_key_scanner.png",
         description: "Search for exposed API keys or credentials.",

@@ -1,4 +1,6 @@
-import RedTool from "./RedTool"
+'use client';
+
+import GreenTool from "./GreenTool"
 export default function Tool(){
-    return <RedTool></RedTool>
+    return <GreenTool />
 }

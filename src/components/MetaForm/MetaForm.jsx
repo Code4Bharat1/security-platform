@@ -251,7 +251,7 @@ table{border-collapse:collapse;width:100%;font-size:13px} td,th{border:1px solid
         <div className="text-center mb-10">
           <div className="flex justify-center mb-5">
             <div className="bg-white p-4 rounded-full shadow-lg">
-              <img src="/meta_tag.png" alt="verify" className="w-10 h-10" />
+              <img src="/tools/card-images/meta_tag.png" alt="verify" className="w-10 h-10" />
             </div>
           </div>
           <h1 className="text-4xl font-bold text-slate-800 mb-2">Protect Your Website</h1>

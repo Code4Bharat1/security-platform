@@ -161,7 +161,7 @@ export default function SecureCrypt() {
   return (
     <div className="min-h-screen bg-gray-100 flex flex-col items-center px-3 pt-10 pb-24">
       <div className="text-center mb-6">
-        <img src="/dycrypt.png" alt="SecureCrypt" className="w-16 h-16 mx-auto mb-4" />
+        <img src="/tools/card-images/dycrypt.png" alt="SecureCrypt" className="w-16 h-16 mx-auto mb-4" />
         <h1 className="text-3xl font-bold text-green-700">SecureCrypt</h1>
         <p className="text-gray-600 mt-2">
           AES‑256‑GCM encryption with passphrase/key, portable package, Copy/PDF/TXT export.

@@ -278,7 +278,7 @@ export default function LinkDetector() {
 
   return (
     <div className="min-h-screen bg-gray-50 flex flex-col items-center pt-10 pb-24 px-4">
-      <img src="/link_dec.png" alt="verify" className="w-16 h-20 mb-2 mt-2" />
+      <img src="/tools/card-images/link_dec.png" alt="verify" className="w-16 h-20 mb-2 mt-2" />
       <div className="text-center mb-8">
         <Link2 className="mx-auto mb-3 text-green-600" size={48} />
         <h1 className="text-3xl font-bold text-green-800">Link Detector</h1>

@@ -8,7 +8,8 @@ try {
 } catch { /* fallback */ }
 
 // Set your API base (must include /api if your server mounts there)
-const API = (process.env.NEXT_PUBLIC_PROD_API_URL ).replace(/\/+$/, "");
+const API = (process.env.NEXT_PUBLIC_PROD_API_URL )
+// .replace(/\/+$/, "");
 
 /** "20" -> {mode:"single",port:20}
  *  "60-2000" -> {mode:"range",start:60,end:2000}

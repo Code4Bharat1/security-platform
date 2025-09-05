@@ -1,20 +1,24 @@
+"use client";
+
 import Link from "next/link";
+import { useState, useRef, useEffect } from "react";
+
 export default function ServicePage() {
     const services = [
         {
             title: 'Vulnerability Assessment',
             description: `A structured process to uncover, analyze, and prioritize security weaknesses across IT infrastructure, applications, cloud, and endpoints. Goes beyond automated scans by validating findings and mapping them to real-world attack scenarios.`,
-            imageName: 'VA.png', // Replace with actual image path
+            imageName: 'VA.png',
         },
         {
             title: 'Penetration Testing',
             description: `Controlled ethical hacking that simulates real-world cyberattacks. Unlike VA, it shows if vulnerabilities can actually be exploited and their business impact.`,
-            imageName: 'PT.png', // Replace with actual image path
+            imageName: 'PT.png',
         },
         {
             title: 'Security Operations Center',
             description: `24/7 monitoring, detection, and response to cyber threats using SIEM, AI-driven analytics, and threat intelligence. Ensures rapid incident detection and containment across networks, endpoints, and cloud.`,
-            imageName: 'SOC.png', // Replace with actual image path
+            imageName: 'SOC.png',
         },
         {
             title: 'Cloud Security',
@@ -71,8 +75,8 @@ export default function ServicePage() {
                             className="object-contain"
                         />
                     </div>
-                </div>
-            ))}
+                ))}
+            </div>
         </div>
     );
 }
