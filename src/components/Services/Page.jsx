@@ -94,7 +94,7 @@ export default function ServicePage() {
                     >
                         {/* Text Content */}
                         <div className="w-full md:w-1/2 flex flex-col justify-center">
-                            <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold mb-6 bg-clip-text text-transparent bg-gradient-to-r from-purple-300 to-indigo-300">
+                            <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold mb-6 bg-clip-text bg-gradient-to-r from-purple-300 to-indigo-300">
                                 {service.title}
                             </h2>
                             <p className="text-lg md:text-xl text-gray-300 mb-8 leading-relaxed">
