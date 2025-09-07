@@ -71,7 +71,7 @@ function Methodology({ data }) {
 
       {/* Title */}
       <h2 className="relative z-10 text-center text-3xl sm:text-4xl md:text-6xl font-inter font-bold underline underline-offset-8 md:underline-offset-12 decoration-indigo-500/70 text-white mb-16">
-        Methodology
+        Services
       </h2>
 
       {/* Single Row Layout */}

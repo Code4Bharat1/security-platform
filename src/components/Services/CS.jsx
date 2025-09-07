@@ -5,7 +5,7 @@ export default function SOCPage() {
     const heroData = 
         {
             title: "Cloud Security",
-            desc: "Our Security Operations Center (SOC) provides 24/7 monitoring, detection, and response capabilities, combining advanced SIEM platforms, threat intelligence feeds, and AI-driven analytics. The SOC ensures businesses have continuous visibility into their threat landscape, enabling rapid incident response.",
+            desc: "Cloud Security involves the protection of data, workloads, and applications hosted on cloud platforms such as AWS, Azure, and Google Cloud. It ensures that cloud environments are configured securely, access is properly controlled, and data remains protected from unauthorized access or breaches. Cloud security covers governance, compliance, identity management, and defence against both external and insider threats.",
             videoPath: "/Services/CS.mp4"
         }
 
