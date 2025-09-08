@@ -1,6 +1,6 @@
 "use client";
 import { useMemo, useState } from "react";
-import { Radar, ChevronDown, ChevronUp, Link as LinkIcon, Clipboard } from "lucide-react";
+import { Radar, ChevronDown, ChevronUp, ExternalLink, Clipboard } from "lucide-react";
 import { jsPDF } from "jspdf";
 import autoTable from "jspdf-autotable";
 
@@ -155,26 +155,45 @@ export default function NexposeScanner() {
   }, [result, showPositivesOnly]);
 
   return (
-    <div className="min-h-screen bg-gray-100 flex flex-col items-center pt-10 px-4">
-      <div className="text-center mb-8">
-        <Radar className="mx-auto mb-3 text-green-700" size={44} />
-        <h1 className="text-2xl font-semibold text-green-800">SQLi Scanner</h1>
-        <p className="text-gray-600 mt-1">Detect error-based, union-based, boolean/time-based blind SQLi.</p>
-      </div>
+    <div className="min-h-screen bg-black flex flex-col items-center pt-10 px-4">
+      {/* Header with logo and title */}
+{/* Header with logo and title */}
+<div className="text-center mb-4">
+  <div className="flex items-center justify-center mb-4">
+    <div className="w-20 h-20 rounded-full overflow-hidden mr-4 border-4 border-red-500">
+      <img
+        src="/Redteam/sql_injection.png" // <-- apni image path
+        alt="Logo"
+        className="w-full h-full object-cover"
+      />
+    </div>
+    <div className="text-left">
+      <h1 className="text-2xl font-bold text-white">SQLi Scanner</h1>
+      <p className="text-gray-400 text-sm">
+        Detect error-based, union-based, boolean/time-based blind SQLi.
+      </p>
+    </div>
+  </div>
+</div>
 
-      <div className="bg-white shadow rounded-xl p-6 w-full max-w-3xl">
+
+
+      {/* Main scanner box */}
+      <div className="bg-black border-2 border-white-600 rounded-lg p-6 w-full max-w-md">
         {/* URL input with validation */}
-        <label className="block text-sm font-medium mb-1">Target URL</label>
+        <label className="block text-white font-medium mb-2">Target URL</label>
         <input
-          className={`w-full px-3 py-2 border rounded ${urlError ? "border-rose-500" : "border-gray-300"}`}
+          className={`w-full px-4 py-3 bg-black border-2 rounded-lg text-white placeholder-gray-500 focus:outline-none ${
+            urlError ? "border-red-500" : "border-white-600 focus:border-red-600"
+          }`}
           value={url}
           onChange={(e) => onUrlChange(e.target.value)}
-          placeholder="https://example.com/search"
+          placeholder="https://example.com"
           aria-invalid={!!urlError}
           aria-describedby="url-error"
         />
         {urlError && (
-          <div id="url-error" className="mt-1 text-xs text-rose-700">
+          <div id="url-error" className="mt-2 text-sm text-red-400">
             {urlError}
           </div>
         )}
@@ -182,199 +201,214 @@ export default function NexposeScanner() {
         <button
           onClick={handleScan}
           disabled={scanning || !urlIsValid}
-          className={`mt-4 w-full py-3 rounded-md text-white font-semibold ${
-            scanning || !urlIsValid ? "bg-green-400 cursor-not-allowed" : "bg-green-700 hover:bg-green-800"
+          className={`mt-6 w-full py-3 rounded-lg text-white font-semibold border-2 transition-colors ${
+            scanning || !urlIsValid 
+              ? "bg-red-800 border-white-600 cursor-not-allowed" 
+              : "bg-red-700 border-red-600 hover:bg-red-800 hover:border-red-700"
           }`}
         >
           {scanning ? "Scanning..." : "Start SQLi Scan"}
         </button>
 
         {error && (
-          <div className="mt-4 p-3 bg-red-100 border border-red-300 text-red-700 rounded">
+          <div className="mt-4 p-3 bg-red-900 border border-red-600 text-red-300 rounded">
             {error}
           </div>
         )}
-
-        {result && (
-          <div className="mt-6 space-y-4">
-            {/* Summary */}
-{result && (
-  <div className="p-4 border rounded bg-gray-50">
-    {/* Unreachable / Inconclusive / Degraded banners */}
-    {result.scanStatus !== "ok" && (
-      <div className={
-        result.scanStatus === "unreachable"
-          ? "p-3 mb-3 rounded bg-rose-50 border border-rose-200 text-rose-800"
-          : result.scanStatus === "inconclusive"
-          ? "p-3 mb-3 rounded bg-amber-50 border border-amber-200 text-amber-800"
-          : "p-3 mb-3 rounded bg-blue-50 border border-blue-200 text-blue-800"
-      }>
-        <div className="font-semibold capitalize">{result.scanStatus}</div>
-        <div className="text-sm">{result.message}</div>
-        <div className="text-xs mt-1">
-          Attempted: <b>{result.payloadsAttempted}</b> · Succeeded: <b>{result.payloadsSucceeded}</b> · Success rate: <b>{Math.round((result.successRate||0)*100)}%</b>
-        </div>
-        {result.diagnostics?.baseline?.error && (
-          <div className="text-xs mt-1">Baseline error: {result.diagnostics.baseline.error}</div>
-        )}
       </div>
-    )}
 
-    {/* Normal trusted summary only when ok OR degraded */}
-    {(result.scanStatus === "ok" || result.scanStatus === "degraded") && (
-      <>
-        <div className="flex flex-wrap items-center justify-between gap-2">
-          <div className="text-sm">
-            <div className="font-semibold">Scan Completed {result.scanStatus === "degraded" && "(degraded confidence)"}</div>
-            <div>{result.payloadsAttempted} payloads attempted · {result.payloadsSucceeded} succeeded</div>
-            <div>Types: {(result.coverage?.typesAttempted || []).join(", ")}</div>
-            <div>OWASP: {result.owasp}</div>
-          </div>
-          <div className="text-right">
-            <div className="text-sm">Risk Score</div>
-            <div className="text-lg font-bold">{result.riskScore}/100</div>
-            <div className="text-xs text-gray-600">{result.riskLevel}</div>
-          </div>
-        </div>
-        <div className="mt-2 text-xs text-gray-600">
-          Method: <span className="font-semibold">{result.method}</span> &nbsp;|&nbsp;
-          Parameter: <span className="font-semibold">{result.paramName}</span>
-        </div>
-        {result.pocUrl && (
-          <div className="mt-3 flex items-center gap-2">
-            <LinkIcon size={16} />
-            <a href={result.pocUrl} target="_blank" rel="noreferrer" className="text-blue-700 underline break-all">
-              Proof of Concept URL
-            </a>
-            <button onClick={() => navigator.clipboard.writeText(result.pocUrl)}
-                    className="ml-2 px-2 py-1 text-xs bg-blue-600 text-white rounded inline-flex items-center gap-1">
-              <Clipboard size={14} /> Copy
-            </button>
-          </div>
-        )}
-      </>
-    )}
-  </div>
-)}
-
-
-            {/* Toggle + counts */}
-            <div className="flex items-center justify-between">
-              <div className="text-sm text-gray-700">
-                Showing: <b>{showPositivesOnly ? (result.findingsCount || 0) : (result.payloadsTested || 0)}</b>{" "}
-                {showPositivesOnly ? "positive finding(s)" : "test(s)"}
-              </div>
-              <div className="flex gap-2">
-                <button
-                  onClick={() => setShowPositivesOnly(false)}
-                  className={`px-3 py-1 rounded text-sm ${!showPositivesOnly ? "bg-gray-900 text-white" : "bg-gray-200"}`}
-                >
-                  All tests
-                </button>
-                <button
-                  onClick={() => setShowPositivesOnly(true)}
-                  className={`px-3 py-1 rounded text-sm ${showPositivesOnly ? "bg-gray-900 text-white" : "bg-gray-200"}`}
-                >
-                  Positive only
-                </button>
-              </div>
-            </div>
-
-            {/* Vulnerability Details */}
-            {result?.vulnerable && result?.vulnerabilityDetails?.length > 0 && (
-              <div className="p-4 border rounded bg-white">
-                <div className="font-semibold mb-2">Vulnerability Details</div>
-                <div className="space-y-3">
-                  {result.vulnerabilityDetails.map((v, i) => (
-                    <div key={i} className="p-3 rounded bg-gray-50">
-                      <div className="flex flex-wrap items-center gap-3 text-sm mb-2">
-                        <span className="px-2 py-0.5 rounded bg-gray-800 text-white">Method: {v.method}</span>
-                        <span className="px-2 py-0.5 rounded bg-gray-200">Parameter: {v.parameter}</span>
-                        <span
-                          className={`px-2 py-0.5 rounded ${
-                            v.risk === "High"
-                              ? "bg-rose-100 text-rose-800"
-                              : v.risk === "Medium"
-                              ? "bg-amber-100 text-amber-800"
-                              : "bg-emerald-100 text-emerald-800"
-                          }`}
-                        >
-                          Risk: {v.risk}
-                        </span>
-                        <span className="px-2 py-0.5 rounded bg-blue-100 text-blue-800">{v.owasp}</span>
-                      </div>
-                      <div className="text-xs">
-                        <div className="font-semibold mb-1">Payload that worked</div>
-                        <div className="flex items-center gap-2">
-                          <code className="break-all bg-white border px-2 py-1 rounded">{v.payload}</code>
-                          <button
-                            onClick={() => navigator.clipboard.writeText(v.payload)}
-                            className="px-2 py-1 text-xs bg-blue-600 text-white rounded"
-                          >
-                            Copy
-                          </button>
-                        </div>
-                      </div>
-                    </div>
-                  ))}
+      {/* Results section */}
+      {result && (
+        <div className="mt-8 w-full max-w-6xl space-y-6">
+          {/* Summary */}
+          <div className="bg-gray-900 border border-white-700 rounded-lg p-6">
+            {/* Status banners */}
+            {result.scanStatus !== "ok" && (
+              <div className={
+                result.scanStatus === "unreachable"
+                  ? "p-4 mb-4 rounded border bg-red-900 border-red-600 text-red-300"
+                  : result.scanStatus === "inconclusive"
+                  ? "p-4 mb-4 rounded border bg-yellow-900 border-yellow-600 text-yellow-300"
+                  : "p-4 mb-4 rounded border bg-blue-900 border-blue-600 text-blue-300"
+              }>
+                <div className="font-semibold capitalize">{result.scanStatus}</div>
+                <div className="text-sm">{result.message}</div>
+                <div className="text-xs mt-1">
+                  Attempted: <span className="font-semibold">{result.payloadsAttempted}</span> · 
+                  Succeeded: <span className="font-semibold">{result.payloadsSucceeded}</span> · 
+                  Success rate: <span className="font-semibold">{Math.round((result.successRate||0)*100)}%</span>
                 </div>
+                {result.diagnostics?.baseline?.error && (
+                  <div className="text-xs mt-1">Baseline error: {result.diagnostics.baseline.error}</div>
+                )}
               </div>
             )}
 
-            {/* Table (all rows or positives) */}
-            <div className="overflow-x-auto border rounded">
+            {/* Normal summary */}
+            {(result.scanStatus === "ok" || result.scanStatus === "degraded") && (
+              <>
+                <div className="flex flex-wrap items-center justify-between gap-4">
+                  <div className="text-sm text-gray-300">
+                    <div className="font-semibold text-white">
+                      Scan Completed {result.scanStatus === "degraded" && "(degraded confidence)"}
+                    </div>
+                    <div>{result.payloadsAttempted} payloads attempted · {result.payloadsSucceeded} succeeded</div>
+                    <div>Types: {(result.coverage?.typesAttempted || []).join(", ")}</div>
+                    <div>OWASP: {result.owasp}</div>
+                  </div>
+                  <div className="text-right">
+                    <div className="text-sm text-gray-400">Risk Score</div>
+                    <div className="text-2xl font-bold text-white">{result.riskScore}/100</div>
+                    <div className="text-sm text-gray-400">{result.riskLevel}</div>
+                  </div>
+                </div>
+                <div className="mt-3 text-xs text-gray-400">
+                  Method: <span className="font-semibold text-white">{result.method}</span> &nbsp;|&nbsp;
+                  Parameter: <span className="font-semibold text-white">{result.paramName}</span>
+                </div>
+                {result.pocUrl && (
+                  <div className="mt-4 flex items-center gap-2">
+                    <ExternalLink size={16} className="text-gray-400" />
+                    <a href={result.pocUrl} target="_blank" rel="noreferrer" className="text-red-400 underline break-all">
+                      Proof of Concept URL
+                    </a>
+                    <button 
+                      onClick={() => navigator.clipboard.writeText(result.pocUrl)}
+                      className="ml-2 px-2 py-1 text-xs bg-red-700 text-white rounded inline-flex items-center gap-1 hover:bg-red-800"
+                    >
+                      <Clipboard size={14} /> Copy
+                    </button>
+                  </div>
+                )}
+              </>
+            )}
+          </div>
+
+          {/* Toggle controls */}
+          <div className="flex items-center justify-between">
+            <div className="text-sm text-gray-300">
+              Showing: <span className="font-semibold text-white">{showPositivesOnly ? (result.findingsCount || 0) : (result.payloadsTested || 0)}</span>{" "}
+              {showPositivesOnly ? "positive finding(s)" : "test(s)"}
+            </div>
+            <div className="flex gap-2">
+              <button
+                onClick={() => setShowPositivesOnly(false)}
+                className={`px-4 py-2 rounded text-sm font-medium transition-colors ${
+                  !showPositivesOnly ? "bg-red-700 text-white border border-red-600" : "bg-gray-800 text-gray-300 border border-white-700 hover:bg-gray-700"
+                }`}
+              >
+                All tests
+              </button>
+              <button
+                onClick={() => setShowPositivesOnly(true)}
+                className={`px-4 py-2 rounded text-sm font-medium transition-colors ${
+                  showPositivesOnly ? "bg-red-700 text-white border border-red-600" : "bg-gray-800 text-gray-300 border border-white-700 hover:bg-gray-700"
+                }`}
+              >
+                Positive only
+              </button>
+            </div>
+          </div>
+
+          {/* Vulnerability Details */}
+          {result?.vulnerable && result?.vulnerabilityDetails?.length > 0 && (
+            <div className="bg-gray-900 border border-white-700 rounded-lg p-6">
+              <div className="font-semibold text-white mb-4">Vulnerability Details</div>
+              <div className="space-y-4">
+                {result.vulnerabilityDetails.map((v, i) => (
+                  <div key={i} className="p-4 rounded-lg bg-gray-800 border border-white-700">
+                    <div className="flex flex-wrap items-center gap-3 text-sm mb-3">
+                      <span className="px-2 py-1 rounded bg-white text-black font-medium">Method: {v.method}</span>
+                      <span className="px-2 py-1 rounded bg-gray-700 text-gray-300">Parameter: {v.parameter}</span>
+                      <span
+                        className={`px-2 py-1 rounded font-medium ${
+                          v.risk === "High"
+                            ? "bg-red-700 text-white"
+                            : v.risk === "Medium"
+                            ? "bg-yellow-700 text-white"
+                            : "bg-green-700 text-white"
+                        }`}
+                      >
+                        Risk: {v.risk}
+                      </span>
+                      <span className="px-2 py-1 rounded bg-blue-700 text-white">{v.owasp}</span>
+                    </div>
+                    <div className="text-sm">
+                      <div className="font-semibold text-white mb-2">Payload that worked</div>
+                      <div className="flex items-center gap-2">
+                        <code className="break-all bg-black border border-white-600 px-3 py-2 rounded text-gray-300 flex-1">
+                          {v.payload}
+                        </code>
+                        <button
+                          onClick={() => navigator.clipboard.writeText(v.payload)}
+                          className="px-3 py-2 text-sm bg-red-700 text-white rounded hover:bg-red-800 whitespace-nowrap"
+                        >
+                          Copy
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* Results table */}
+          <div className="bg-gray-900 border border-white-700 rounded-lg overflow-hidden">
+            <div className="overflow-x-auto">
               <table className="min-w-full text-sm">
-                <thead className="bg-gray-50">
+                <thead className="bg-gray-800">
                   <tr>
-                    <th className="px-3 py-2 text-left">#</th>
-                    <th className="px-3 py-2 text-left">Type</th>
-                    <th className="px-3 py-2 text-left">Evidence</th>
-                    <th className="px-3 py-2 text-left">Status</th>
-                    <th className="px-3 py-2 text-left">Time (ms)</th>
-                    <th className="px-3 py-2 text-left">Details</th>
+                    <th className="px-4 py-3 text-left text-white font-medium">#</th>
+                    <th className="px-4 py-3 text-left text-white font-medium">Type</th>
+                    <th className="px-4 py-3 text-left text-white font-medium">Evidence</th>
+                    <th className="px-4 py-3 text-left text-white font-medium">Status</th>
+                    <th className="px-4 py-3 text-left text-white font-medium">Time (ms)</th>
+                    <th className="px-4 py-3 text-left text-white font-medium">Details</th>
                   </tr>
                 </thead>
                 <tbody>
                   {rows.map((f, idx) => {
                     const open = openIdx === idx;
                     return (
-                      <tr key={idx} className="border-t">
-                        <td className="px-3 py-2">{idx + 1}</td>
-                        <td className="px-3 py-2">{f.type}</td>
-                        <td className="px-3 py-2">{f.evidence || (f.error ? "Request error" : "—")}</td>
-                        <td className="px-3 py-2">{String(f.status)}</td>
-                        <td className="px-3 py-2">{String(f.timeMs)}</td>
-                        <td className="px-3 py-2">
+                      <tr key={idx} className="border-t border-white-700">
+                        <td className="px-4 py-3 text-gray-300">{idx + 1}</td>
+                        <td className="px-4 py-3 text-gray-300">{f.type}</td>
+                        <td className="px-4 py-3 text-gray-300">{f.evidence || (f.error ? "Request error" : "—")}</td>
+                        <td className="px-4 py-3 text-gray-300">{String(f.status)}</td>
+                        <td className="px-4 py-3 text-gray-300">{String(f.timeMs)}</td>
+                        <td className="px-4 py-3">
                           <button
                             onClick={() => setOpenIdx(open ? null : idx)}
-                            className="px-2 py-1 text-xs bg-gray-800 text-white rounded inline-flex items-center gap-1"
+                            className="px-3 py-1 text-xs bg-red-700 text-white rounded inline-flex items-center gap-1 hover:bg-red-800"
                           >
-                            {open ? <ChevronUp size={14} /> : <ChevronDown size={14} />} {open ? "Hide" : "View"}
+                            {open ? <ChevronUp size={14} /> : <ChevronDown size={14} />} 
+                            {open ? "Hide" : "View"}
                           </button>
                           {open && (
-                            <div className="mt-2 p-2 bg-gray-50 rounded text-xs">
-                              <div>
-                                <span className="font-semibold">Parameter:</span> {f.param}
+                            <div className="mt-3 p-3 bg-gray-800 rounded text-xs border border-white-600">
+                              <div className="text-gray-300 mb-1">
+                                <span className="font-semibold text-white">Parameter:</span> {f.param}
                               </div>
-                              <div>
-                                <span className="font-semibold">Method:</span> {f.method}
+                              <div className="text-gray-300 mb-1">
+                                <span className="font-semibold text-white">Method:</span> {f.method}
                               </div>
-                              <div className="break-words">
-                                <span className="font-semibold">Payload:</span> {f.payload}
+                              <div className="break-words text-gray-300 mb-1">
+                                <span className="font-semibold text-white">Payload:</span> {f.payload}
                               </div>
                               {f.pocUrl && (
-                                <div className="break-words">
-                                  <span className="font-semibold">PoC URL:</span> {f.pocUrl}
+                                <div className="break-words text-gray-300 mb-1">
+                                  <span className="font-semibold text-white">PoC URL:</span> {f.pocUrl}
                                 </div>
                               )}
-                              <div>
-                                <span className="font-semibold">OWASP:</span> A03:2021 Injection
+                              <div className="text-gray-300 mb-1">
+                                <span className="font-semibold text-white">OWASP:</span> A03:2021 Injection
                               </div>
-                              <div>
-                                <span className="font-semibold">Risk:</span> {f.risk}
+                              <div className="text-gray-300 mb-1">
+                                <span className="font-semibold text-white">Risk:</span> {f.risk}
                               </div>
                               {f.error && (
-                                <div className="text-rose-700">
+                                <div className="text-red-400">
                                   <span className="font-semibold">Request error:</span> {f.error}
                                 </div>
                               )}
@@ -386,7 +420,7 @@ export default function NexposeScanner() {
                   })}
                   {!rows.length && (
                     <tr>
-                      <td className="px-3 py-6 text-center text-gray-600" colSpan={6}>
+                      <td className="px-4 py-8 text-center text-gray-500" colSpan={6}>
                         No rows.
                       </td>
                     </tr>
@@ -394,21 +428,27 @@ export default function NexposeScanner() {
                 </tbody>
               </table>
             </div>
-
-            {/* Exports */}
-            <div className="flex flex-wrap gap-2">
-              <button onClick={exportJSON} className="bg-green-700 text-white px-3 py-2 rounded">
-                Export JSON
-              </button>
-              <button onClick={exportPDF} className="bg-rose-600 text-white px-3 py-2 rounded">
-                Export PDF
-              </button>
-            </div>
           </div>
-        )}
-      </div>
 
-      <p className="text-xs text-gray-500 mt-4">Use only on systems you are authorized to test.</p>
+          {/* Export buttons */}
+          <div className="flex flex-wrap gap-3">
+            <button 
+              onClick={exportJSON} 
+              className="bg-green-700 text-white px-4 py-2 rounded border border-green-600 hover:bg-green-800 transition-colors"
+            >
+              Export JSON
+            </button>
+            <button 
+              onClick={exportPDF} 
+              className="bg-red-700 text-white px-4 py-2 rounded border border-red-600 hover:bg-red-800 transition-colors"
+            >
+              Export PDF
+            </button>
+          </div>
+        </div>
+      )}
+
+      <p className="text-gray-500 text-xs mt-8 text-center">Use only on systems you are authorized to test.</p>
     </div>
   );
 }

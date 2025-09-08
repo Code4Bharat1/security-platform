@@ -1,15 +1,12 @@
 "use client";
 import React, { useState } from "react";
-import { Loader2, Search, Clock, Shield, History, FileText, BarChart, Menu, X } from "lucide-react";
+import { Loader2, Search, Clock, Shield, FileText } from "lucide-react";
 
-export default function Vulnscanner() {
+export default function VulnScanner() {
   const [url, setUrl] = useState("");
   const [error, setError] = useState("");
   const [scanData, setScanData] = useState(null);
   const [loading, setLoading] = useState(false);
-  const [activeTab, setActiveTab] = useState("overview");
-  const [history, setHistory] = useState(null);
-  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   const validateUrl = (v) => {
     const val = (v || "").trim();
@@ -33,9 +30,8 @@ export default function Vulnscanner() {
     setError("");
     setLoading(true);
     setScanData(null);
-    setHistory(null);
 
-    // Simulate API call with mock data
+    // ---- Mock API Call Simulation ----
     setTimeout(() => {
       const mockData = {
         domain: domainFromUrl(url),
@@ -48,37 +44,28 @@ export default function Vulnscanner() {
           issuer: "Let's Encrypt Authority X3",
           validFrom: "2024-01-15",
           validTo: "2025-04-15",
-          daysRemaining: 95
-        },
-        headers: {
-          httpVersion: "1.1",
-          statusCode: 200,
-          statusMessage: "OK",
-          "content-type": "text/html; charset=UTF-8",
-          "x-frame-options": "DENY",
-          "strict-transport-security": "max-age=31536000",
-          "x-content-type-options": "nosniff"
+          daysRemaining: 95,
         },
         vulnerabilities: [
           {
             severity: "medium",
             type: "missing_security_headers",
             description: "Missing Content Security Policy header",
-            recommendation: "Implement a CSP header to prevent XSS attacks"
+            recommendation: "Implement a CSP header to prevent XSS attacks",
           },
           {
-            severity: "low", 
+            severity: "low",
             type: "cookie_security",
             description: "Cookies without Secure flag",
-            recommendation: "Add Secure flag to all cookies"
+            recommendation: "Add Secure flag to all cookies",
           },
           {
             severity: "low",
             type: "information_disclosure",
             description: "Server version disclosed in headers",
-            recommendation: "Hide server version information"
-          }
-        ]
+            recommendation: "Hide server version information",
+          },
+        ],
       };
       setScanData(mockData);
       setLoading(false);
@@ -88,31 +75,18 @@ export default function Vulnscanner() {
   const getSeverityColor = (severity) => {
     switch ((severity || "").toLowerCase()) {
       case "high":
-        return "bg-red-500/20 text-red-400 border-red-500/30";
+        return "bg-red-500/20 text-red-400 border-red-500";
       case "medium":
-        return "bg-yellow-500/20 text-yellow-400 border-yellow-500/30";
+        return "bg-yellow-500/20 text-yellow-400 border-yellow-500";
       case "low":
-        return "bg-blue-500/20 text-blue-400 border-blue-500/30";
+        return "bg-blue-500/20 text-blue-400 border-blue-500";
       default:
-        return "bg-gray-500/20 text-gray-400 border-gray-500/30";
-    }
-  };
-
-  const getRiskLevelColor = (level) => {
-    switch ((level || "").toLowerCase()) {
-      case "high":
-        return "text-red-400";
-      case "medium":
-        return "text-yellow-400";
-      case "low":
-        return "text-green-400";
-      default:
-        return "text-gray-400";
+        return "bg-gray-500/20 text-gray-400 border-gray-500";
     }
   };
 
   const StatCard = ({ title, value, hint, icon }) => (
-    <div className="bg-gray-800/50 p-6 rounded-xl border border-gray-700/50 backdrop-blur-sm">
+    <div className="bg-black p-6 rounded-xl border border-white">
       <div className="flex items-center gap-3 mb-3">
         {icon}
         <h3 className="text-lg font-medium text-white">{title}</h3>
@@ -123,327 +97,150 @@ export default function Vulnscanner() {
   );
 
   return (
-    <div className="flex flex-col items-center justify-center min-h-screen bg-gray-100 p-4 mb-5">
-      <img src="/tools/card-images/vuln_scanner.png" alt="verify" className="w-16 h-20 mb-4 mt-7" />
-      <h1 className="text-3xl md:text-4xl font-bold text-slate-800 mt-3">
-        Protect Your Website
-      </h1>
-      <p className="text-lg text-slate-600 max-w-2xl mx-auto text-center mt-3 mb-3">
-        Our advanced security scanner identifies vulnerabilities before
-        attackers can exploit them.
-      </p>
+    <div className="min-h-screen bg-black text-white p-6">
+      <div className="max-w-4xl mx-auto">
+        {/* Header */}
+        <div className="flex items-center mb-8 p-4">
+          <div className="w-16 h-16 bg-gray-300 rounded-full flex items-center justify-center mr-4 overflow-hidden">
+            <img
+              src="/RedTeam/code.png"
+              alt="Security Scanner"
+              className="w-full h-full object-cover"
+            />
+          </div>
+          <div>
+            <h1 className="text-3xl font-bold text-white">
+              Protect Your <span className="text-red-500">Website</span>
+            </h1>
+            <p className="text-gray-400 mt-1 text-lg">
+              Our advanced security scanner identifies vulnerabilities before
+              attackers can exploit them.
+            </p>
+          </div>
+        </div>
 
-      <div className="bg-white rounded-lg shadow-lg w-full max-w-5xl">
-        <div className="p-6 border-b border-gray-200">
-          <h1 className="text-2xl font-bold text-center mb-4 text-green-800">
+        {/* Scanner Form */}
+        <div className="bg-black border border-white rounded-2xl p-8 mb-6">
+          <h2 className="text-2xl font-bold text-white text-center mb-6">
             Website Vulnerability Scanner
-          </h1>
-          
-          <p className="text-xl text-gray-300 mb-12 max-w-2xl mx-auto">
-            Our advanced security scanner identifies vulnerabilities before attackers can exploit them.
-          </p>
+          </h2>
 
-          {/* Scanner Form */}
-          <div className="bg-black/60 backdrop-blur-sm border border-gray-800 rounded-2xl p-8 max-w-2xl mx-auto">
-            <h2 className="text-2xl font-bold mb-6 text-white">Website Vulnerability Scanner</h2>
-            
-            <div className="space-y-6">
-              <div>
-                <input
-                  type="url"
-                  value={url}
-                  onChange={(e) => setUrl(e.target.value)}
-                  placeholder="https://example.com"
-                  required
-                  className="w-full bg-gray-900/50 border border-gray-700 rounded-lg px-4 py-3 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent"
-                  autoComplete="off"
-                  spellCheck={false}
-                />
-              </div>
-              
-              {error && (
-                <p className="text-red-400 text-sm text-left">{error}</p>
-              )}
-              
-              <button
-                onClick={handleSubmit}
-                disabled={loading}
-                className="w-full bg-red-500 hover:bg-red-600 disabled:bg-red-500/50 text-white py-3 px-6 rounded-lg font-semibold flex items-center justify-center gap-3 transition-all duration-300"
-              >
-                {loading ? (
-                  <Loader2 className="h-5 w-5 animate-spin" />
-                ) : (
-                  <Search className="h-5 w-5" />
-                )}
-                {loading ? "Scanning..." : "Scan"}
-              </button>
-            </div>
+          <div className="max-w-md mx-auto">
+            <input
+              type="url"
+              value={url}
+              onChange={(e) => setUrl(e.target.value)}
+              placeholder="https://example.com"
+              className="w-full bg-transparent border border-white rounded-lg px-4 py-3 text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-red-500 mb-4"
+              autoComplete="off"
+              spellCheck={false}
+            />
+
+            {error && (
+              <p className="text-red-400 text-sm text-center mb-4">{error}</p>
+            )}
+
+            <button
+  onClick={handleSubmit}
+  disabled={loading}
+  className="w-fit mx-auto bg-red-500 hover:bg-red-600 disabled:bg-red-500/50 text-white py-3 px-6 rounded-lg font-semibold flex items-center justify-center gap-3 transition-all duration-300 border border-white"
+>
+  {loading ? (
+    <Loader2 className="h-5 w-5 animate-spin" />
+  ) : (
+    <Search className="h-5 w-5" />
+  )}
+  {loading ? "Scanning..." : "Scan"}
+</button>
           </div>
         </div>
-      </div>
 
-      {/* Loading State */}
-      {loading && (
-        <div className="max-w-6xl mx-auto px-4 py-12 text-center">
-          <div className="bg-gray-900/50 backdrop-blur-sm border border-gray-800 rounded-2xl p-12">
-            <div className="w-16 h-16 mx-auto mb-6 border-4 border-red-500 border-t-transparent rounded-full animate-spin"></div>
-            <p className="text-xl text-gray-300">Scanning website for vulnerabilities...</p>
-            <p className="text-sm text-gray-500 mt-2">This may take a few moments</p>
-          </div>
-        </div>
-      )}
+        {/* Results */}
+        {scanData && !loading && (
+          <div className="bg-black border border-white rounded-2xl p-8 mt-8">
+            <h2 className="text-2xl font-bold text-white mb-6">
+              Scan Results for {scanData.domain}
+            </h2>
 
-      {/* Results Section */}
-      {scanData && !loading && (
-        <div className="max-w-6xl mx-auto px-4 py-12">
-          <div className="bg-gray-900/50 backdrop-blur-sm border border-gray-800 rounded-2xl overflow-hidden">
-            
-            {/* Results Header */}
-            <div className="p-8 border-b border-gray-800">
-              <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-4">
-                <div>
-                  <h2 className="text-3xl font-bold text-white mb-2">
-                    Scan Results: {scanData.domain}
-                  </h2>
-                  <p className="text-gray-400">
-                    Scanned on {new Date(scanData.timestamp).toLocaleString()}
-                  </p>
-                </div>
-                <div className="bg-gray-800/50 px-6 py-3 rounded-lg border border-gray-700">
-                  <span className="text-gray-300 text-sm">Risk Level: </span>
-                  <span className={`font-bold text-lg ${getRiskLevelColor(scanData.riskLevel)}`}>
-                    {scanData.riskLevel?.toUpperCase()}
-                  </span>
-                </div>
-              </div>
-            </div>
-
-            {/* Stats Grid */}
-            <div className="p-8 border-b border-gray-800">
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                <StatCard
-                  title="SSL Certificate"
-                  value={
-                    scanData.ssl?.valid ? (
-                      <span className="text-green-400">VALID</span>
-                    ) : (
-                      <span className="text-red-400">INVALID</span>
-                    )
-                  }
-                  hint={
-                    scanData.ssl?.daysRemaining > 0
-                      ? `Expires in ${scanData.ssl.daysRemaining} days`
-                      : "Certificate expired"
-                  }
-                  icon={<Shield className="text-green-400" size={24} />}
-                />
-                <StatCard
-                  title="Security Issues"
-                  value={
-                    <span className={scanData.vulnerabilityCount > 0 ? "text-red-400" : "text-green-400"}>
-                      {scanData.vulnerabilityCount || 0}
-                    </span>
-                  }
-                  hint="Vulnerabilities detected"
-                  icon={<FileText className="text-red-400" size={24} />}
-                />
-                <StatCard
-                  title="Response Time"
-                  value={
-                    <span className="text-blue-400">
-                      {typeof scanData.timespan === "number" ? `${scanData.timespan} ms` : "—"}
-                    </span>
-                  }
-                  hint="Main page fetch time"
-                  icon={<Clock className="text-blue-400" size={24} />}
-                />
-              </div>
-            </div>
-
-            {/* Tabs */}
-            <div className="border-b border-gray-800">
-              <nav className="flex flex-wrap px-8">
-                {[
-                  ["overview", "Overview"],
-                  ["vulnerabilities", "Vulnerabilities"],
-                  ["ssl", "SSL Certificate"],
-                  ["headers", "HTTP Headers"],
-                ].map(([key, label]) => (
-                  <button
-                    key={key}
-                    onClick={() => setActiveTab(key)}
-                    className={`py-4 px-6 font-medium text-sm border-b-2 transition-colors ${
-                      activeTab === key
-                        ? "border-red-500 text-red-400"
-                        : "border-transparent text-gray-400 hover:text-white hover:border-gray-600"
-                    }`}
+            {/* Stats */}
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
+              <StatCard
+                title="SSL Certificate"
+                value={
+                  scanData.ssl?.valid ? (
+                    <span className="text-green-400">VALID</span>
+                  ) : (
+                    <span className="text-red-400">INVALID</span>
+                  )
+                }
+                hint={`Expires in ${scanData.ssl.daysRemaining} days`}
+                icon={<Shield className="text-green-400" size={24} />}
+              />
+              <StatCard
+                title="Security Issues"
+                value={
+                  <span
+                    className={
+                      scanData.vulnerabilityCount > 0
+                        ? "text-red-400"
+                        : "text-green-400"
+                    }
                   >
-                    {label}
-                  </button>
-                ))}
-              </nav>
+                    {scanData.vulnerabilityCount}
+                  </span>
+                }
+                hint="Vulnerabilities detected"
+                icon={<FileText className="text-red-400" size={24} />}
+              />
+              <StatCard
+                title="Response Time"
+                value={<span className="text-blue-400">{scanData.timespan} ms</span>}
+                hint="Main page fetch time"
+                icon={<Clock className="text-blue-400" size={24} />}
+              />
             </div>
 
-            {/* Tab Content */}
-            <div className="p-8">
-              {activeTab === "overview" && (
-                <div className="space-y-6">
-                  <div className="bg-gray-800/30 rounded-xl p-6 border border-gray-700">
-                    <h3 className="text-xl font-semibold text-white mb-4">Security Summary</h3>
-                    <div className="space-y-3">
-                      <div className="flex justify-between items-center">
-                        <span className="text-gray-300">Overall Status:</span>
-                        <span className={`font-semibold ${getRiskLevelColor(scanData.riskLevel)}`}>
-                          {scanData.riskLevel?.toUpperCase()}
+            {/* Vulnerabilities Table */}
+            <h3 className="text-xl font-semibold text-white mb-4">
+              Vulnerabilities
+            </h3>
+            <div className="overflow-x-auto">
+              <table className="w-full text-left border border-white">
+                <thead>
+                  <tr className="border-b border-white">
+                    <th className="py-3 px-4 text-gray-400">Severity</th>
+                    <th className="py-3 px-4 text-gray-400">Type</th>
+                    <th className="py-3 px-4 text-gray-400">Description</th>
+                    <th className="py-3 px-4 text-gray-400">Recommendation</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {scanData.vulnerabilities.map((v, i) => (
+                    <tr key={i} className="border-b border-white">
+                      <td className="py-3 px-4">
+                        <span
+                          className={`px-3 py-1 text-xs rounded-full border ${getSeverityColor(
+                            v.severity
+                          )}`}
+                        >
+                          {v.severity.toUpperCase()}
                         </span>
-                      </div>
-                      <div className="flex justify-between items-center">
-                        <span className="text-gray-300">Vulnerabilities Found:</span>
-                        <span className="text-white font-semibold">{scanData.vulnerabilityCount || 0}</span>
-                      </div>
-                      <div className="flex justify-between items-center">
-                        <span className="text-gray-300">SSL Status:</span>
-                        <span className={scanData.ssl?.valid ? "text-green-400" : "text-red-400"}>
-                          {scanData.ssl?.valid ? "Secure" : "Insecure"}
-                        </span>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              )}
-
-              {activeTab === "vulnerabilities" && (
-                <div className="space-y-6">
-                  {scanData.vulnerabilities?.length ? (
-                    <div className="overflow-x-auto">
-                      <table className="w-full">
-                        <thead>
-                          <tr className="border-b border-gray-700">
-                            <th className="text-left py-4 px-6 text-gray-400 font-medium">Severity</th>
-                            <th className="text-left py-4 px-6 text-gray-400 font-medium">Type</th>
-                            <th className="text-left py-4 px-6 text-gray-400 font-medium">Description</th>
-                            <th className="text-left py-4 px-6 text-gray-400 font-medium">Recommendation</th>
-                          </tr>
-                        </thead>
-                        <tbody>
-                          {scanData.vulnerabilities.map((v, i) => (
-                            <tr key={i} className="border-b border-gray-800 hover:bg-gray-800/20">
-                              <td className="py-4 px-6">
-                                <span className={`px-3 py-1 text-xs rounded-full border ${getSeverityColor(v.severity)}`}>
-                                  {v.severity?.toUpperCase()}
-                                </span>
-                              </td>
-                              <td className="py-4 px-6 text-white font-medium">
-                                {(v.type || "").replace(/_/g, " ")}
-                              </td>
-                              <td className="py-4 px-6 text-gray-300">
-                                {v.description}
-                              </td>
-                              <td className="py-4 px-6 text-gray-400">
-                                {v.recommendation || "—"}
-                              </td>
-                            </tr>
-                          ))}
-                        </tbody>
-                      </table>
-                    </div>
-                  ) : (
-                    <div className="text-center py-12">
-                      <div className="w-16 h-16 mx-auto mb-4 bg-green-500/20 rounded-full flex items-center justify-center">
-                        <Shield className="text-green-400" size={32} />
-                      </div>
-                      <p className="text-green-400 font-semibold text-lg mb-2">No vulnerabilities detected!</p>
-                      <p className="text-gray-400">Your website appears to be secure from common threats.</p>
-                    </div>
-                  )}
-                </div>
-              )}
-
-              {activeTab === "ssl" && (
-                <div className="space-y-6">
-                  {scanData.ssl ? (
-                    <div className="bg-gray-800/30 rounded-xl border border-gray-700 overflow-hidden">
-                      <table className="w-full">
-                        <tbody>
-                          <tr className="border-b border-gray-700">
-                            <td className="py-4 px-6 text-gray-400 font-medium bg-gray-800/50">Status</td>
-                            <td className="py-4 px-6">
-                              <span className={scanData.ssl.valid ? "text-green-400" : "text-red-400"}>
-                                {scanData.ssl.valid ? "Valid & Secure" : "Invalid"}
-                              </span>
-                            </td>
-                          </tr>
-                          <tr className="border-b border-gray-700">
-                            <td className="py-4 px-6 text-gray-400 font-medium bg-gray-800/50">Issuer</td>
-                            <td className="py-4 px-6 text-white">{scanData.ssl.issuer || "Unknown"}</td>
-                          </tr>
-                          <tr className="border-b border-gray-700">
-                            <td className="py-4 px-6 text-gray-400 font-medium bg-gray-800/50">Valid From</td>
-                            <td className="py-4 px-6 text-white">{scanData.ssl.validFrom || "N/A"}</td>
-                          </tr>
-                          <tr className="border-b border-gray-700">
-                            <td className="py-4 px-6 text-gray-400 font-medium bg-gray-800/50">Valid Until</td>
-                            <td className="py-4 px-6 text-white">{scanData.ssl.validTo || "N/A"}</td>
-                          </tr>
-                          <tr>
-                            <td className="py-4 px-6 text-gray-400 font-medium bg-gray-800/50">Days Remaining</td>
-                            <td className="py-4 px-6">
-                              <span className={
-                                scanData.ssl.daysRemaining > 30 ? "text-green-400" :
-                                scanData.ssl.daysRemaining > 0 ? "text-yellow-400" : "text-red-400"
-                              }>
-                                {scanData.ssl.daysRemaining ?? "0"} days
-                              </span>
-                            </td>
-                          </tr>
-                        </tbody>
-                      </table>
-                    </div>
-                  ) : (
-                    <div className="text-center py-12">
-                      <p className="text-red-400 font-semibold mb-2">SSL certificate information unavailable</p>
-                      <p className="text-gray-400">Unable to retrieve SSL certificate details.</p>
-                    </div>
-                  )}
-                </div>
-              )}
-
-              {activeTab === "headers" && (
-                <div className="space-y-6">
-                  {scanData.headers ? (
-                    <div className="bg-gray-800/30 rounded-xl border border-gray-700 overflow-hidden">
-                      <table className="w-full">
-                        <thead>
-                          <tr className="border-b border-gray-700 bg-gray-800/50">
-                            <th className="text-left py-4 px-6 text-gray-400 font-medium">Header</th>
-                            <th className="text-left py-4 px-6 text-gray-400 font-medium">Value</th>
-                          </tr>
-                        </thead>
-                        <tbody>
-                          {Object.entries(scanData.headers)
-                            .filter(([k]) => !["httpVersion", "statusCode", "statusMessage"].includes(k))
-                            .map(([key, value], index) => (
-                              <tr key={index} className="border-b border-gray-800 hover:bg-gray-800/20">
-                                <td className="py-4 px-6 text-white font-medium">{key}</td>
-                                <td className="py-4 px-6 text-gray-300 break-all">
-                                  {typeof value === "string" ? value : JSON.stringify(value)}
-                                </td>
-                              </tr>
-                            ))}
-                        </tbody>
-                      </table>
-                    </div>
-                  ) : (
-                    <div className="text-center py-12">
-                      <p className="text-gray-400">HTTP headers not available</p>
-                    </div>
-                  )}
-                </div>
-              )}
+                      </td>
+                      <td className="py-3 px-4 text-white font-medium">
+                        {v.type.replace(/_/g, " ")}
+                      </td>
+                      <td className="py-3 px-4 text-gray-300">{v.description}</td>
+                      <td className="py-3 px-4 text-gray-400">
+                        {v.recommendation}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
             </div>
           </div>
-        </div>
-      )}
+        )}
+      </div>
     </div>
   );
-};
+}

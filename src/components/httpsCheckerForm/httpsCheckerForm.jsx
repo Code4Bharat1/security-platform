@@ -10,7 +10,7 @@ import autoTable from "jspdf-autotable";
 
 function InfoRow({ label, value }) {
   return (
-    <div className="flex items-center justify-between rounded-lg bg-white border border-green-100 px-3 py-2">
+    <div className="flex items-center justify-between rounded-lg bg-black border border-blue-100 px-3 py-2">
       <span className="text-gray-600">{label}</span>
       <span className="font-medium text-gray-800">{value}</span>
     </div>
@@ -123,21 +123,21 @@ export default function HttpsCheckerPage() {
 
     if (recs.length === 0) {
       recs.push({
-        icon: <CheckCircle className="w-5 h-5 text-green-500" />,
+        icon: <CheckCircle className="w-5 h-5 text-white-500" />,
         text: "HTTPS enforcement is excellent! The site has proper redirection and HSTS configuration.",
         type: "success"
       });
     }
 
     return (
-      <div className="mt-6 p-5 bg-gradient-to-r from-green-50 to-emerald-50 border border-green-200 rounded-xl">
+      <div className="mt-6 p-5 bg-gradient-to-r from-green-50 to-emerald-50 border border-blue-200 rounded-xl">
         <div className="flex items-center gap-2 mb-3">
-          <Shield className="w-5 h-5 text-green-600" />
-          <h3 className="font-semibold text-green-800">Security Recommendations</h3>
+          <Shield className="w-5 h-5 text-white-600" />
+          <h3 className="font-semibold text-white-800">Security Recommendations</h3>
         </div>
         <div className="space-y-3">
           {recs.map((rec, i) => (
-            <div key={i} className="flex items-start gap-3 p-3 bg-white rounded-lg shadow-sm">
+            <div key={i} className="flex items-start gap-3 p-3 bg-black rounded-lg shadow-sm">
               {rec.icon}
               <p className="text-sm text-gray-700 leading-relaxed">{rec.text}</p>
             </div>
@@ -326,57 +326,61 @@ export default function HttpsCheckerPage() {
   // ---------- UI ----------
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-green-50 via-emerald-50 to-teal-50 p-4">
+    <div className="min-h-screen bg-black p-4">
       <div className="max-w-2xl mx-auto pt-10">
         {/* Header */}
-        <div className="text-center mb-8">
-          <img src="/tools/card-images/https-security.png" alt="verify" className="w-16 h-20 mb-4 mt-7" />
-          <div className="flex justify-center items-center gap-3 mb-4">
-            <div className="p-3 bg-green-100 rounded-full">
-              <Lock className="w-8 h-8 text-green-600" />
-            </div>
-            <h1 className="text-3xl font-bold bg-gradient-to-r from-green-600 to-emerald-600 bg-clip-text text-transparent">
+        <div className="flex items-center justify-center gap-4 mb-8">
+          <img 
+            src="/tools/card-images/https-security.png" 
+            alt="verify" 
+            className="w-20 h-20 rounded-full"
+          />
+          <div className="text-left">
+            <h1 className="text-3xl font-bold text-white">
               HTTPS Security Checker
             </h1>
+            <p className="text-gray-200 text-lg">
+              Verify your website's HTTPS configuration and security headers
+            </p>
           </div>
-          <p className="text-gray-600 text-lg">
-            Verify your website's HTTPS configuration and security headers
-          </p>
         </div>
 
         {/* Main Card */}
-        <div className="bg-white shadow-xl rounded-2xl p-8 border border-green-100">
+        <div >
           {/* Input Section */}
           <div className="space-y-4 mb-6">
             <div className="relative">
-              <Globe className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-green-500" />
+              <Globe className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-white-500" />
               <input
                 type="text"
                 placeholder="Enter domain (e.g., example.com)"
                 value={domain}
                 onChange={(e) => setDomain(e.target.value.trim())}
                 onKeyPress={handleKeyPress}
-                className="w-full pl-12 pr-4 py-3 border-2 border-green-200 rounded-xl focus:border-green-500 focus:ring-2 focus:ring-green-200 transition-all duration-200 text-gray-700 outline-none"
+                className="w-full pl-12 pr-4 py-3 border-2 border-blue-200 rounded-xl focus:border-blue-500 focus:ring-2 focus:ring-green-200 transition-all duration-200 text-gray-700 outline-none"
               />
             </div>
             
-            <button
-              onClick={handleCheck}
-              disabled={loading || !domain}
-              className="w-full bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 disabled:from-gray-300 disabled:to-gray-400 text-white font-semibold py-3 px-6 rounded-xl transition-all duration-200 transform hover:scale-[1.02] disabled:scale-100 shadow-lg hover:shadow-xl"
-            >
-              {loading ? (
-                <div className="flex items-center justify-center gap-2">
-                  <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
-                  Analyzing Security...
-                </div>
-              ) : (
-                <div className="flex items-center justify-center gap-2">
-                  <Shield className="w-5 h-5" />
-                  Check HTTPS Security
-                </div>
-              )}
-            </button>
+            <div className="flex justify-center">
+  <button
+    onClick={handleCheck}
+    disabled={loading || !domain}
+    className="bg-black text-white font-semibold py-2 px-6 rounded-xl transition-all duration-200 transform hover:scale-[1.02] disabled:opacity-50 shadow-lg border border-blue-500"
+  >
+    {loading ? (
+      <div className="flex items-center justify-center gap-2">
+        <div className="w-5 h-5 border-2 border-blue-500 border-t-transparent rounded-full animate-spin"></div>
+        Analyzing Security...
+      </div>
+    ) : (
+      <div className="flex items-center justify-center gap-2">
+        <Shield className="w-5 h-5" />
+        Check HTTPS Security
+      </div>
+    )}
+  </button>
+</div>
+
           </div>
 
           {/* Error Display */}
@@ -393,7 +397,7 @@ export default function HttpsCheckerPage() {
           {result && (
             <div className="space-y-6">
               {/* Header + Actions */}
-              <div className="flex items-center justify-between pb-4 border-b border-green-100">
+              <div className="flex items-center justify-between pb-4 border-b border-blue-100">
                 <div className="text-center md:text-left">
                   <h2 className="text-xl font-semibold text-gray-800 mb-1">
                     Security Analysis for
@@ -405,7 +409,7 @@ export default function HttpsCheckerPage() {
                 <div className="flex gap-2">
                   <button
                     onClick={handleDownloadPDF}
-                    className="h-10 px-4 rounded-lg border border-green-700 text-green-700 hover:bg-green-50 transition"
+                    className="h-10 px-4 rounded-lg border border-blue-700 text-white-700 hover:bg-green-50 transition"
                     title="Download PDF"
                   >
                     <div className="inline-flex items-center gap-2">
@@ -414,7 +418,7 @@ export default function HttpsCheckerPage() {
                   </button>
                   <button
                     onClick={handleDownloadTXT}
-                    className="h-10 px-4 rounded-lg border border-green-700 text-green-700 hover:bg-green-50 transition"
+                    className="h-10 px-4 rounded-lg border border-blue-700 text-white-700 hover:bg-green-50 transition"
                     title="Download TXT"
                   >
                     <div className="inline-flex items-center gap-2">
@@ -427,14 +431,14 @@ export default function HttpsCheckerPage() {
               {/* Results Grid */}
               <div className="grid gap-4">
                 {/* HTTP Redirect */}
-                <div className="flex items-center justify-between p-4 bg-gradient-to-r from-green-50 to-emerald-50 rounded-xl border border-green-200">
+                <div className="flex items-center justify-between p-4 bg-gradient-to-r from-blue-50 to-blue-100 rounded-xl border border-blue-500">
                   <div className="flex items-center gap-3">
                     {result.httpRedirectsToHttps ? (
-                      <CheckCircle className="w-6 h-6 text-green-500" />
+                      <CheckCircle className="w-6 h-6 text-500" />
                     ) : (
                       <XCircle className="w-6 h-6 text-red-500" />
                     )}
-                    <span className="font-medium text-gray-700">HTTP → HTTPS Redirect</span>
+                    <span className="font-medium text-black-700">HTTP → HTTPS Redirect</span>
                   </div>
                   <span className={`px-3 py-1 rounded-full text-sm font-semibold ${
                     result.httpRedirectsToHttps 
@@ -446,110 +450,22 @@ export default function HttpsCheckerPage() {
                 </div>
 
                 {/* HSTS */}
-                <div className="flex items-center justify-between p-4 bg-gradient-to-r from-green-50 to-emerald-50 rounded-xl border border-green-200">
+                <div className="flex items-center justify-between p-4 bg-gradient-to-r from-blue-50 to-blue-100 rounded-xl border border-blue-500">
                   <div className="flex items-center gap-3">
                     {result.hstsEnabled ? (
                       <CheckCircle className="w-6 h-6 text-green-500" />
                     ) : (
-                      <AlertTriangle className="w-6 h-6 text-yellow-500" />
+                      <XCircle className="w-6 h-6 text-red-500" />
                     )}
-                    <span className="font-medium text-gray-700">HSTS Header</span>
+                    <span className="font-medium text-gray-700">HSTS Enabled</span>
                   </div>
                   <span className={`px-3 py-1 rounded-full text-sm font-semibold ${
                     result.hstsEnabled 
                       ? "bg-green-100 text-green-800" 
-                      : "bg-yellow-100 text-yellow-800"
+                      : "bg-red-100 text-red-800"
                   }`}>
-                    {result.hstsEnabled ? "Enabled" : "Disabled"}
+                    {result.hstsEnabled ? "Yes" : "No"}
                   </span>
-                </div>
-
-                {/* HSTS Max Age */}
-                {result.hstsEnabled && result.hstsMaxAge && (
-                  <div className="flex items-center justify-between p-4 bg-gradient-to-r from-green-50 to-emerald-50 rounded-xl border border-green-200">
-                    <div className="flex items-center gap-3">
-                      <Shield className="w-6 h-6 text-green-500" />
-                      <span className="font-medium text-gray-700">HSTS Max-Age</span>
-                    </div>
-                    <span className="px-3 py-1 bg-green-100 text-green-800 rounded-full text-sm font-semibold">
-                      {Number(result.hstsMaxAge).toLocaleString()} seconds
-                    </span>
-                  </div>
-                )}
-              </div>
-
-              {/* Missing Headers */}
-              <div className="rounded-xl border border-red-200 bg-red-50 p-5">
-                <h3 className="font-semibold text-red-800 mb-3">Missing Headers</h3>
-                {result.missingHeaders?.length ? (
-                  <ul className="list-disc list-inside space-y-1 text-red-800">
-                    {result.missingHeaders.map((h) => (
-                      <li key={h} className="text-sm">{h}</li>
-                    ))}
-                  </ul>
-                ) : (
-                  <p className="text-sm text-red-800">None 🎉</p>
-                )}
-              </div>
-
-              {/* Upcoming / Modern Hardening Headers */}
-              <div className="rounded-xl border border-amber-200 bg-amber-50 p-5">
-                <h3 className="font-semibold text-amber-800 mb-3">Upcoming Headers (Modern Hardening)</h3>
-                {result.upcomingHeaders?.length ? (
-                  <ul className="list-disc list-inside space-y-1 text-amber-900">
-                    {result.upcomingHeaders.map((h) => (
-                      <li key={h} className="text-sm">{h}</li>
-                    ))}
-                  </ul>
-                ) : (
-                  <p className="text-sm text-amber-900">All modern hardening headers present (or not applicable).</p>
-                )}
-                <p className="mt-2 text-xs text-amber-700">
-                  Tip: Consider adding COOP/COEP/CORP to strengthen isolation; review impact on embedded content.
-                </p>
-              </div>
-
-              {/* Additional Information */}
-              <div className="rounded-xl border border-green-200 bg-green-50 p-5">
-                <h3 className="font-semibold text-green-800 mb-4">Additional Information</h3>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
-                  <InfoRow label="HTTP Version" value={result.additionalInfo?.httpVersion || "—"} />
-                  <InfoRow label="ALPN" value={result.additionalInfo?.alpn || "—"} />
-                  <InfoRow label="TLS Protocol" value={result.additionalInfo?.tlsProtocol || "—"} />
-                  <InfoRow label="TLS Cipher" value={result.additionalInfo?.tlsCipher || "—"} />
-                  <InfoRow label="Server" value={result.additionalInfo?.server || "—"} />
-                  <InfoRow label="X-Powered-By" value={result.additionalInfo?.xPoweredBy || "—"} />
-                  <InfoRow label="CDN Provider" value={result.additionalInfo?.cdnProvider || "—"} />
-                  <InfoRow label="Cache-Control" value={result.additionalInfo?.cacheControl || "—"} />
-                </div>
-
-                {/* HSTS details */}
-                <div className="mt-4 text-sm">
-                  <h4 className="font-medium text-green-900 mb-2">HSTS Details</h4>
-                  <ul className="list-disc list-inside space-y-1 text-green-900">
-                    <li>includeSubDomains: {String(result.additionalInfo?.hsts?.includeSubDomains ?? false)}</li>
-                    <li>preload flag: {String(result.additionalInfo?.hsts?.preload ?? false)}</li>
-                    <li>Preload-ready: {String(result.additionalInfo?.hsts?.preloadReady ?? false)}</li>
-                  </ul>
-                </div>
-
-                {/* Redirect details */}
-                <div className="mt-4 text-sm">
-                  <h4 className="font-medium text-green-900 mb-2">Redirect</h4>
-                  <div className="space-y-1 text-green-900">
-                    <div>Status (HTTP → HTTPS): {result.additionalInfo?.redirect?.fromHttpStatus ?? "—"}</div>
-                    <div>Location: {result.additionalInfo?.redirect?.location || "—"}</div>
-                  </div>
-                </div>
-              </div>
-
-              {/* Raw Headers */}
-              <div className="rounded-xl border border-gray-200 bg-gray-50">
-                <div className="px-4 py-3 border-b bg-gray-100 font-semibold">Raw Headers</div>
-                <div className="p-4 overflow-auto">
-                  <pre className="text-xs text-gray-800 whitespace-pre-wrap">
-{JSON.stringify(result.rawHeaders || {}, null, 2)}
-                  </pre>
                 </div>
               </div>
 

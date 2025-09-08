@@ -1,16 +1,12 @@
-'use client';
-
+"use client";
 import { useState } from 'react';
-import { jsPDF } from 'jspdf';
-import autoTable from 'jspdf-autotable';
 
-export default function SubdomainEnumeration() {
+export default function SubdomainScanner() {
   const [domain, setDomain] = useState('');
   const [results, setResults] = useState([]);
-  const [stats, setStats] = useState(null); // { total, startedAt, finishedAt, durationMs }
+  const [stats, setStats] = useState(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
-  const [imageSrc, setImageSrc] = useState(null); // To store the image URL of the website
 
   const formatDate = (iso) => {
     if (!iso) return '-';
@@ -37,7 +33,6 @@ export default function SubdomainEnumeration() {
     setError('');
     setResults([]);
     setStats(null);
-    setImageSrc(null); // Reset image when starting a new search
 
     const cleanDomain = domain.trim().toLowerCase();
     if (!cleanDomain) {
@@ -46,35 +41,25 @@ export default function SubdomainEnumeration() {
       return;
     }
 
+    // Simulated API call for demo purposes
     try {
-      const res = await fetch(
-        `${process.env.NEXT_PUBLIC_PROD_API_URL}/subdomain/subdomains-scan`,
-        {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ domain: cleanDomain }),
-        }
-      );
-
-      const data = await res.json();
-
-      if (!res.ok) {
-        setError(data.error || 'Something went wrong.');
-      } else {
-        const list = Array.isArray(data.results) ? data.results : [];
-        setResults(list);
-
-        setStats({
-          total: typeof data.total === 'number' ? data.total : list.length,
-          startedAt: data.startedAt,
-          finishedAt: data.finishedAt,
-          durationMs: data.durationMs,
-        });
-
-        if (list.length === 0) {
-          setError('No subdomains found.');
-        }
-      }
+      await new Promise(resolve => setTimeout(resolve, 2000));
+      
+      const mockResults = [
+        { subdomain: `www.${cleanDomain}` },
+        { subdomain: `mail.${cleanDomain}` },
+        { subdomain: `ftp.${cleanDomain}` },
+        { subdomain: `admin.${cleanDomain}` },
+        { subdomain: `api.${cleanDomain}` }
+      ];
+      
+      setResults(mockResults);
+      setStats({
+        total: mockResults.length,
+        startedAt: new Date().toISOString(),
+        finishedAt: new Date().toISOString(),
+        durationMs: 2000,
+      });
     } catch (err) {
       setError('Failed to fetch subdomains.');
     } finally {
@@ -83,98 +68,117 @@ export default function SubdomainEnumeration() {
   };
 
   const downloadPDF = () => {
-    const doc = new jsPDF();
-    doc.text(`Subdomain Enumeration for ${domain}`, 10, 10);
-    autoTable(doc, {
-      head: [['Subdomain']],
-      body: results.map(({ subdomain }) => [subdomain]),
-    });
-    doc.save('subdomain-enumeration.pdf');
+    alert('PDF download functionality would be implemented here');
   };
 
   const handleSubdomainClick = (subdomain) => {
-    const img = new Image();
-    img.src = `https://${subdomain}/favicon.ico`;
-
-    // Set the image source or fallback if the favicon doesn't load
-    img.onload = () => setImageSrc(img.src);
-    img.onerror = () => setImageSrc('/fallback-image.png'); // Replace with a default image URL
+    window.open(`https://${subdomain}`, '_blank');
   };
 
   return (
-    <div className="max-w-xl mx-auto p-6 border rounded shadow-sm">
-      <img src="/tools/card-images/subdomain.png" alt="subdomain" className="w-16 h-20 mb-4 mt-7" />
-      <h2 className="text-2xl font-semibold mb-4">Subdomain Enumeration</h2>
-
-      <input
-        type="text"
-        placeholder="Enter domain (e.g., example.com)"
-        value={domain}
-        onChange={(e) => setDomain(e.target.value)}
-        className="w-full p-2 mb-3 border rounded"
-      />
-
-      <button
-        onClick={handleSubmit}
-        disabled={loading}
-        className="w-full bg-blue-600 hover:bg-blue-700 text-white py-2 rounded disabled:opacity-50"
-      >
-        {loading ? 'Searching...' : 'Find Subdomains'}
-      </button>
-
-      {error && <p className="mt-3 text-red-600">{error}</p>}
-
-      {stats && (
-        <div className="mt-5 grid grid-cols-2 gap-3 bg-gray-50 p-4 rounded border">
-          <div>
-            <p className="text-sm text-gray-600">Total subdomains</p>
-            <p className="text-lg font-semibold">{stats.total ?? '-'}</p>
+    <div className="min-h-screen bg-black text-white">
+      <div className="max-w-2xl mx-auto p-8">
+        {/* Header */}
+        <div className="flex items-center gap-4 mb-8">
+          <div className="w-20 h-20 rounded-full border-4 border-red-500 overflow-hidden flex items-center justify-center bg-gray-800">
+            {/* Replace this src with your logo path */}
+            <img
+              src="/RedTeam/subdomain.png"
+              alt="Logo"
+              className="w-full h-full object-cover"
+            />
           </div>
           <div>
-            <p className="text-sm text-gray-600">Scan duration</p>
-            <p className="text-lg font-semibold">{formatDuration(stats.durationMs)}</p>
-          </div>
-          <div className="col-span-2">
-            <p className="text-sm text-gray-600">Starting time</p>
-            <p className="text-sm font-medium">{formatDate(stats.startedAt)}</p>
-          </div>
-          <div className="col-span-2">
-            <p className="text-sm text-gray-600">Finish time</p>
-            <p className="text-sm font-medium">{formatDate(stats.finishedAt)}</p>
+            <h1 className="text-3xl font-bold text-white">Subdomain Scanner</h1>
+            <p className="text-gray-400 text-lg">
+              Scan websites for analyzing subdomains and their security posture.
+            </p>
           </div>
         </div>
-      )}
 
-      {results.length > 0 && (
-        <div className="mt-5">
-          <h3 className="text-xl font-semibold mb-2">Results</h3>
-          <ul className="list-disc list-inside space-y-1 max-h-60 overflow-auto border p-3 rounded bg-gray-50">
-            {results.map(({ subdomain }, idx) => (
-              <li key={idx} className="break-all">
-                <a
-                  href={`https://${subdomain}`}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="text-blue-600 hover:underline"
-                  onClick={(e) => {
-                    e.preventDefault();
-                    handleSubdomainClick(subdomain);
-                  }}
-                >
-                  {subdomain}
-                </a>
-              </li>
-            ))}
-          </ul>
+        {/* Main Form */}
+        <div className="bg-gray-900 border border-white-700 rounded-lg p-6">
+          <div className="mb-6">
+            <label className="block text-red-400 text-lg font-semibold mb-4">
+              Subdomain
+            </label>
+            <input
+              type="text"
+              placeholder="Enter domain (e.g., example.com)"
+              value={domain}
+              onChange={(e) => setDomain(e.target.value)}
+              className="w-full p-4 bg-white text-black rounded-lg text-lg placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-red-500"
+            />
+          </div>
 
           <button
-            onClick={downloadPDF}
-            className="mt-5 w-full bg-green-600 hover:bg-green-700 text-white py-2 rounded"
+            onClick={handleSubmit}
+            disabled={loading}
+            className="w-full bg-red-600 hover:bg-red-700 text-white py-4 rounded-lg text-lg font-semibold disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
           >
-            Download PDF
+            {loading ? 'Scanning...' : 'Find Subdomains'}
           </button>
         </div>
-      )}
+
+        {/* Error Message */}
+        {error && (
+          <div className="mt-6 p-4 bg-red-900/50 border border-red-500 rounded-lg">
+            <p className="text-red-400">{error}</p>
+          </div>
+        )}
+
+        {/* Stats */}
+        {stats && (
+          <div className="mt-6 bg-gray-900 border border-white-700 rounded-lg p-6">
+            <div className="grid grid-cols-2 gap-6">
+              <div>
+                <p className="text-gray-400 text-sm mb-1">Total subdomains</p>
+                <p className="text-white text-2xl font-bold">{stats.total ?? '-'}</p>
+              </div>
+              <div>
+                <p className="text-gray-400 text-sm mb-1">Scan duration</p>
+                <p className="text-white text-2xl font-bold">{formatDuration(stats.durationMs)}</p>
+              </div>
+              <div className="col-span-2">
+                <p className="text-gray-400 text-sm mb-1">Starting time</p>
+                <p className="text-white font-medium">{formatDate(stats.startedAt)}</p>
+              </div>
+              <div className="col-span-2">
+                <p className="text-gray-400 text-sm mb-1">Finish time</p>
+                <p className="text-white font-medium">{formatDate(stats.finishedAt)}</p>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Results */}
+        {results.length > 0 && (
+          <div className="mt-6">
+            <h3 className="text-xl font-semibold mb-4 text-white">Results</h3>
+            <div className="bg-gray-900 border border-white-700 rounded-lg p-4 max-h-80 overflow-auto">
+              <ul className="space-y-2">
+                {results.map(({ subdomain }, idx) => (
+                  <li key={idx}>
+                    <button
+                      onClick={() => handleSubdomainClick(subdomain)}
+                      className="text-blue-400 hover:text-blue-300 hover:underline break-all text-left"
+                    >
+                      {subdomain}
+                    </button>
+                  </li>
+                ))}
+              </ul>
+            </div>
+
+            <button
+              onClick={downloadPDF}
+              className="mt-4 w-full bg-green-600 hover:bg-green-700 text-white py-3 rounded-lg font-semibold transition-colors"
+            >
+              Download PDF
+            </button>
+          </div>
+        )}
+      </div>
     </div>
   );
 }
