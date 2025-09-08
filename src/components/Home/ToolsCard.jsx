@@ -1,3 +1,4 @@
+"use client";
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 
@@ -167,114 +168,111 @@ export default function ToolsCard() {
   ];
 
   // --- Categories ---
-  // --- Initial Categories ---
-const initialCategories = [
-  {
-    title: "Red Teaming",
-    description: "Offensive security topics,\npenetration testing, etc.",
-    bgColorClass: "bg-red-500",
-    bgImageClass:
-      "bg-[url('/tools/red-bg-design.png')] bg-bottom bg-no-repeat bg-contain",
-    textColorClass: "text-white",
-    glowColor: "#D01A1A",
-    buttonColor: "bg-[#D01A1A] hover:bg-[#b31515]",
-    borderGlow: "hover:border-[#D01A1A] hover:shadow-[0_0_15px_#D01A1A]",
-  },
-  {
-    title: "Blue Teaming",
-    description: "Defensive security,\nmonitoring, SIEM, etc.",
-    bgColorClass: "bg-blue-500",
-    bgImageClass:
-      "bg-[url('/tools/blue-bg-design.png')] bg-left-top bg-no-repeat bg-[length:75%]",
-    textColorClass: "text-white",
-    glowColor: "#3C6DFF",
-    buttonColor: "bg-[#3C6DFF] hover:bg-[#2a5de0]",
-    borderGlow: "hover:border-[#3C6DFF] hover:shadow-[0_0_15px_#3C6DFF]",
-  },
-  {
-    title: "Non-Tech",
-    description: "Tools for everyday usage.",
-    bgColorClass: "bg-green-500",
-    bgImageClass:
-      "bg-[url('/tools/white-bg-design-1.png')] bg-right-bottom bg-no-repeat bg-[length:50%]",
-    textColorClass: "text-white",
-    overlayImg: "/tools/white-bg-design-2.png",
-    glowColor: "#008000",
-    buttonColor: "bg-[#008000] hover:bg-[#006400]",
-    borderGlow: "hover:border-[#008000] hover:shadow-[0_0_15px_#008000]",
-  },
-];
+  const initialCategories = [
+    {
+      title: "Red Teaming",
+      description: "Offensive security topics,\npenetration testing, etc.",
+      bgColorClass: "bg-red-500",
+      bgImageClass:
+        "bg-[url('/tools/red-bg-design.png')] bg-bottom bg-no-repeat bg-contain",
+      textColorClass: "text-white",
+      glowColor: "#D01A1A",
+      buttonColor: "bg-[#D01A1A] hover:bg-[#b31515]",
+      borderGlow: "hover:border-[#D01A1A] hover:shadow-[0_0_15px_#D01A1A]",
+    },
+    {
+      title: "Blue Teaming",
+      description: "Defensive security,\nmonitoring, SIEM, etc.",
+      bgColorClass: "bg-blue-500",
+      bgImageClass:
+        "bg-[url('/tools/blue-bg-design.png')] bg-left-top bg-no-repeat bg-[length:75%]",
+      textColorClass: "text-white",
+      glowColor: "#3C6DFF",
+      buttonColor: "bg-[#3C6DFF] hover:bg-[#2a5de0]",
+      borderGlow: "hover:border-[#3C6DFF] hover:shadow-[0_0_15px_#3C6DFF]",
+    },
+    {
+      title: "Non-Tech",
+      description: "Tools for everyday usage.",
+      bgColorClass: "bg-green-500",
+      bgImageClass:
+        "bg-[url('/tools/white-bg-design-1.png')] bg-right-bottom bg-no-repeat bg-[length:50%]",
+      textColorClass: "text-white",
+      overlayImg: "/tools/white-bg-design-2.png",
+      glowColor: "#008000",
+      buttonColor: "bg-[#008000] hover:bg-[#006400]",
+      borderGlow: "hover:border-[#008000] hover:shadow-[0_0_15px_#008000]",
+    },
+  ];
 
-// --- Restore Categories Order if Saved ---
-const [categories, setCategories] = useState(() => {
-  if (typeof window !== "undefined") {
-    const saved = localStorage.getItem("categories");
-    return saved ? JSON.parse(saved) : initialCategories;
-  }
-  return initialCategories;
-});
+  // --- States (deterministic defaults) ---
+  const [categories, setCategories] = useState(initialCategories);
+  const [activeIndex, setActiveIndex] = useState(1);
+  const [buttons, setButtons] = useState(buttonList[1]);
+  const [activeGlow, setActiveGlow] = useState(initialCategories[1].glowColor);
+  const [activeButtonStyle, setActiveButtonStyle] = useState(initialCategories[1].buttonColor);
+  const [activeBorderGlow, setActiveBorderGlow] = useState(initialCategories[1].borderGlow);
 
-// --- Restore Active Card ---
-const [activeIndex, setActiveIndex] = useState(() => {
-  if (typeof window !== "undefined") {
-    const saved = localStorage.getItem("activeIndex");
-    return saved ? parseInt(saved) : 1;
-  }
-  return 1;
-});
+  // --- Restore state from localStorage (client only) ---
+  useEffect(() => {
+    const savedCategories = localStorage.getItem("categories");
+    const savedIndex = localStorage.getItem("activeIndex");
 
+    if (savedCategories) {
+      setCategories(JSON.parse(savedCategories));
+    }
+    if (savedIndex) {
+      const idx = parseInt(savedIndex);
+      setActiveIndex(idx);
+      setButtons(buttonList[idx]);
+      setActiveGlow(initialCategories[idx].glowColor);
+      setActiveButtonStyle(initialCategories[idx].buttonColor);
+      setActiveBorderGlow(initialCategories[idx].borderGlow);
+    }
+  }, []);
 
-  const [buttons, setButtons] = useState(buttonList[activeIndex]);
-  const [activeGlow, setActiveGlow] = useState(categories[activeIndex].glowColor);
-  const [activeButtonStyle, setActiveButtonStyle] = useState(
-    categories[activeIndex].buttonColor
-  );
-  const [activeBorderGlow, setActiveBorderGlow] = useState(
-    categories[activeIndex].borderGlow
-  );
-
+  // --- Update buttons when activeIndex or categories change ---
   useEffect(() => {
     setButtons(buttonList[activeIndex]);
     setActiveGlow(categories[activeIndex].glowColor);
     setActiveButtonStyle(categories[activeIndex].buttonColor);
     setActiveBorderGlow(categories[activeIndex].borderGlow);
-  }, [activeIndex]);
+  }, [activeIndex, categories]);
 
   const handleCardClick = (index) => {
-  if (index !== 1) {
-    const newCategories = [...categories];
-    const typeTemp = newCategories[index];
-    const type =
-      typeTemp["title"].includes("Red") ? 0 :
-      typeTemp["title"].includes("Blue") ? 1 :
-      typeTemp["title"].includes("Non-Tech") ? 2 : 1;
+    if (index !== 1) {
+      const newCategories = [...categories];
+      const typeTemp = newCategories[index];
+      const type =
+        typeTemp["title"].includes("Red") ? 0 :
+        typeTemp["title"].includes("Blue") ? 1 :
+        typeTemp["title"].includes("Non-Tech") ? 2 : 1;
 
-    const temp = newCategories[1];
-    newCategories[1] = newCategories[index];
-    newCategories[index] = temp;
+      const temp = newCategories[1];
+      newCategories[1] = newCategories[index];
+      newCategories[index] = temp;
 
-    setCategories(newCategories);
-    setActiveIndex(1);
-    setButtons(buttonList[type]);
-    setActiveGlow(newCategories[1].glowColor);
-    setActiveButtonStyle(newCategories[1].buttonColor);
-    setActiveBorderGlow(newCategories[1].borderGlow);
+      setCategories(newCategories);
+      setActiveIndex(1);
+      setButtons(buttonList[type]);
+      setActiveGlow(newCategories[1].glowColor);
+      setActiveButtonStyle(newCategories[1].buttonColor);
+      setActiveBorderGlow(newCategories[1].borderGlow);
 
-    // ✅ Save entire state
-    localStorage.setItem("categories", JSON.stringify(newCategories));
-    localStorage.setItem("activeIndex", "1");
-  } else {
-    setButtons(buttonList[activeIndex]);
-    setActiveGlow(categories[index].glowColor);
-    setActiveButtonStyle(categories[index].buttonColor);
-    setActiveBorderGlow(categories[index].borderGlow);
+      // ✅ Save entire state
+      localStorage.setItem("categories", JSON.stringify(newCategories));
+      localStorage.setItem("activeIndex", "1");
+    } else {
+      setButtons(buttonList[activeIndex]);
+      setActiveGlow(categories[index].glowColor);
+      setActiveButtonStyle(categories[index].buttonColor);
+      setActiveBorderGlow(categories[index].borderGlow);
 
-    // ✅ Save active card even if it's already center
-    localStorage.setItem("categories", JSON.stringify(categories));
-    localStorage.setItem("activeIndex", index.toString());
-  }
-};
-
+      // ✅ Save active card even if it's already center
+      localStorage.setItem("categories", JSON.stringify(categories));
+      localStorage.setItem("activeIndex", index.toString());
+    }
+  };
 
   return (
     <div className="my-10 min-h-screen px-4 sm:px-8 font-inter flex flex-col">

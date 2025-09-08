@@ -1,5 +1,5 @@
 'use client';
-import { useMemo, useState } from 'react';
+import { useState } from 'react';
 import { jsPDF } from 'jspdf';
 import autoTable from 'jspdf-autotable';
 
@@ -7,7 +7,7 @@ export default function SecretKeyScanner() {
   const [code, setCode] = useState('');
   const [results, setResults] = useState([]);
   const [loading, setLoading] = useState(false);
-  const [validateOnline, setValidateOnline] = useState(false); // ⬅️ NEW
+  const [validateOnline, setValidateOnline] = useState(false);
 
   const apiBase = (process.env.NEXT_PUBLIC_PROD_API_URL || '').replace(/\/+$/, '');
 
@@ -18,7 +18,7 @@ export default function SecretKeyScanner() {
       const res = await fetch(`${apiBase}/secretKeyScanner/secret-scan`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ code, validateOnline }), // ⬅️ pass flag
+        body: JSON.stringify({ code, validateOnline }),
       });
       const data = await res.json();
       setResults(data.secrets || []);
@@ -54,20 +54,6 @@ export default function SecretKeyScanner() {
       body: rows,
       styles: { fontSize: 8, cellWidth: 'wrap' },
       columnStyles: { 4: { cellWidth: 70 } },
-    });
-
-    // Suggestions page
-    let y = (doc.lastAutoTable && doc.lastAutoTable.finalY) || 38;
-    if (y > 240) { doc.addPage(); y = 20; }
-    doc.setFontSize(12);
-    doc.text('Suggestions', 14, y + 10);
-    doc.setFontSize(9);
-    let cur = y + 16;
-    results.slice(0, 10).forEach((r, idx) => {
-      const line = `${idx + 1}. [${r.type}] ${r.suggestion || '—'}`;
-      if (cur > 270) { doc.addPage(); cur = 20; }
-      doc.text(line, 14, cur);
-      cur += 6;
     });
 
     doc.save('secret-scan-report.pdf');
@@ -110,10 +96,28 @@ export default function SecretKeyScanner() {
       : 'bg-gray-100 border-gray-400';
 
   return (
-    <div className="max-w-4xl mx-auto p-4 space-y-4">
-      <h1 className="text-2xl font-bold">Secret Key Exposure Scanner</h1>
+    <div className="min-h-screen bg-black text-white flex flex-col items-center p-6">
+      
+{/* Header */}
+<div className="flex items-center gap-4 mb-8 w-full max-w-3xl mx-auto pl-4">
+  <img
+    src="/Redteam/secret_key_scanner.png"   // <-- apna image path yaha daalo
+    alt="Logo"
+    className="w-20 h-20 rounded-full border-4 border-red-500 bg-gray-800 object-cover"
+  />
+  <div>
+    <h1 className="text-3xl font-bold text-white mb-1">
+      Secret Key Exposure Scanner
+    </h1>
+    <p className="text-gray-300 text-sm">
+      Search for exposed API keys or credentials.
+    </p>
+  </div>
+</div>
 
-      <div className="flex items-center gap-3">
+
+      {/* Upload + Checkbox */}
+      <div className="flex items-center gap-3 mb-4 w-full max-w-3xl">
         <input
           type="file"
           accept=".js,.env,.txt,.json"
@@ -127,11 +131,14 @@ export default function SecretKeyScanner() {
             reader.readAsText(file);
           }}
         />
-        <label htmlFor="fileInput" className="inline-block bg-blue-600 text-white px-4 py-2 rounded cursor-pointer hover:bg-blue-700">
+        <label
+          htmlFor="fileInput"
+          className="bg-white text-red-600 font-bold px-4 py-2 rounded cursor-pointer hover:bg-gray-200"
+        >
           Choose File
         </label>
 
-        <label className="flex items-center gap-2 text-sm">
+        <label className="flex items-center gap-2 text-2xs text-red-300">
           <input
             type="checkbox"
             checked={validateOnline}
@@ -141,51 +148,86 @@ export default function SecretKeyScanner() {
         </label>
       </div>
 
+      {/* Textarea */}
       <textarea
         rows={10}
-        className="w-full p-3 rounded border font-mono border-gray-300"
-        placeholder="Paste your code or upload a file..."
+        className="w-full max-w-3xl p-4 rounded-lg border-2 border-white bg-black text-red-500 font-mono placeholder-red-400"
+        placeholder="Paste your code or Upload File......."
         value={code}
         onChange={(e) => setCode(e.target.value)}
       />
 
-      <div className="flex gap-3">
+      {/* Buttons */}
+      <div className="flex gap-3 mt-4">
         <button
-          className={`px-4 py-2 rounded text-white ${loading ? 'bg-black/60' : 'bg-black hover:bg-gray-800'}`}
+          className={`px-6 py-3 rounded-lg font-semibold ${
+            loading
+              ? 'bg-red-400 cursor-not-allowed'
+              : 'bg-red-600 hover:bg-red-700'
+          } text-white`}
           onClick={scanSecrets}
           disabled={loading}
         >
-          {loading ? 'Scanning...' : '🔍 Scan for Secrets'}
+          {loading ? 'Scanning...' : 'Scan for Secrets'}
         </button>
 
         {!!results.length && (
           <>
-            <button className="px-4 py-2 rounded bg-emerald-600 text-white hover:bg-emerald-700" onClick={makePdf}>
+            <button
+              className="px-4 py-2 rounded-lg bg-emerald-600 text-white hover:bg-emerald-700"
+              onClick={makePdf}
+            >
               Download PDF
             </button>
-            <button className="px-4 py-2 rounded bg-gray-700 text-white hover:bg-gray-800" onClick={downloadTxt}>
+            <button
+              className="px-4 py-2 rounded-lg bg-gray-600 text-white hover:bg-gray-700"
+              onClick={downloadTxt}
+            >
               Download TXT
             </button>
           </>
         )}
       </div>
 
+      {/* Results */}
       {!!results.length && (
-        <div className="mt-6 space-y-4">
-          <h2 className="text-xl font-semibold">🛡️ Secrets Detected: {results.length}</h2>
+        <div className="mt-8 w-full max-w-3xl space-y-4">
+          <h2 className="text-xl font-semibold">
+            🛡️ Secrets Detected: {results.length}
+          </h2>
           {results.map((r, idx) => (
-            <div key={idx} className={`border-l-4 p-4 rounded shadow ${badge(r.severity)}`}>
+            <div
+              key={idx}
+              className={`border-l-4 p-4 rounded shadow ${badge(r.severity)}`}
+            >
               <p><strong>Type:</strong> {r.type}</p>
-              <p><strong>Line {r.line}:</strong> <code className="bg-white px-1 py-0.5 rounded break-all">{r.redacted || r.secret}</code></p>
-              <p><strong>Severity:</strong> <span className="font-medium">{r.severity}</span></p>
-              <p className="text-sm text-gray-700 mt-1"><strong>Suggestion:</strong> {r.suggestion}</p>
+              <p>
+                <strong>Line {r.line}:</strong>{' '}
+                <code className="bg-white text-black px-1 py-0.5 rounded break-all">
+                  {r.redacted || r.secret}
+                </code>
+              </p>
+              <p>
+                <strong>Severity:</strong>{' '}
+                <span className="font-medium">{r.severity}</span>
+              </p>
+              <p className="text-sm text-gray-200 mt-1">
+                <strong>Suggestion:</strong> {r.suggestion}
+              </p>
               <div className="mt-1 text-sm">
                 <strong>Validation:</strong>{' '}
                 <span className="font-medium">
                   {r.validation?.status || 'unknown'}
                 </span>
                 {r.validation?.evidence?.status && (
-                  <span className="text-gray-600"> (HTTP {r.validation.evidence.status}{r.validation.evidence.note ? `, ${r.validation.evidence.note}` : ''})</span>
+                  <span className="text-gray-400">
+                    {' '}
+                    (HTTP {r.validation.evidence.status}
+                    {r.validation.evidence.note
+                      ? `, ${r.validation.evidence.note}`
+                      : ''}
+                    )
+                  </span>
                 )}
               </div>
             </div>
