@@ -4,7 +4,7 @@ import { useMemo, useState } from "react";
 import { Globe, Search, ShieldCheck } from 'lucide-react';
 
 // Set your API base
-const API = 'http://localhost:4180';
+const API = (process.env.NEXT_PUBLIC_API_BASE );
 
 function parsePortInput(input) {
   const s = String(input || "").trim().toLowerCase();
