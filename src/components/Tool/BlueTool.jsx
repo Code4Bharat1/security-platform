@@ -5,7 +5,7 @@ export default function BlueTool() {
     const toolList = [// Blue-Team
   {
     name: "WAF Scanner",
-    image: "/tools/card-images/waf1.png",
+    image: "/BlueTeam/waf.png",
     description: "Detects and analyzes WAF protection on a website, providing insights into security rules",
     slug: "firewallDashboard",
     buttonLabel: "Check WAF",
@@ -13,7 +13,7 @@ export default function BlueTool() {
   },
   {
     name: "HTTPS Security Checker",
-    image: "/tools/card-images/https-security.png",
+    image: "/BlueTeam/https security checker.png",
     description: "Validate HTTPS security implementation.",
     slug: "httpsCheckerForm",
     buttonLabel: "HTTPS Security Checker",
@@ -21,7 +21,7 @@ export default function BlueTool() {
   },
   {
     name: "JWT Signature Validator",
-    image: "/tools/card-images/jwt_signature.png",
+    image: "/BlueTeam/jwt_signature.png",
     description: "Ensure JWT signature integrity.",
     slug: "JWTSignatureValidator",
     buttonLabel: "JWT Signature Validator",
@@ -29,7 +29,7 @@ export default function BlueTool() {
   },
   {
     name: "OAuth Token Analyzer",
-    image: "/tools/card-images/oauth.png",
+    image: "/BlueTeam/oauth_token.png",
     description: "Inspect OAuth tokens for security risks.",
     slug: "OAuthTokenInspector",
     buttonLabel: "OAuth Token Analyzer",
@@ -37,7 +37,7 @@ export default function BlueTool() {
   },
   {
     name: "Obfuscation Detector",
-    image: "/tools/card-images/obfuscation.png",
+    image: "/BlueTeam/obfuscation Detector.png",
     description: "Identify obfuscation techniques in code.",
     slug: "obfuscationChecker",
     buttonLabel: "Obfuscation Detector",
@@ -45,7 +45,7 @@ export default function BlueTool() {
   },
   {
     name: "Regex Security Validator",
-    image: "/tools/card-images/regex.png",
+    image: "/BlueTeam/regex.png",
     description: "Check regular expressions for security flaws",
     slug: "regexDetector",
     buttonLabel: "Regex Security Validator",
@@ -53,7 +53,7 @@ export default function BlueTool() {
   },
   {
     name: "Reverse DNS Resolver ",
-    image: "/tools/card-images/reverse_dns.png",
+    image: "/BlueTeam/reverse dns.png",
     description: "Retrieve domain names linked to an IP.",
     slug: "reverseDNSLookup",
     buttonLabel: "Reverse DNS Resolver",
@@ -61,28 +61,28 @@ export default function BlueTool() {
   },
   {
     name: "MDR Monitor",
-    image: "/tools/card-images/MDR.png",
+    image: "/BlueTeam/MDR.png",
     description: "Monitors and responds to real-time security threats.",
     slug: "mdr-monitor",
     buttonLabel: "Start Monitoring",
     type: "blue-team"
   },
-  {
-    name: "Wireshark",
-    image: "/tools/card-images/Wireshark.png",
-    description: "Description Wireshark ......",
-    slug: "Wireshark",
-    buttonLabel: "Use Wireshark",
-    type: "blue-team"
-  },
-  {
-    name: "Data Leak",
-    image: "/tools/card-images/data-leak.png",
-    description: "Description Data Leak....",
-    slug: "Data-Leak",
-    buttonLabel: "Find Data Leak",
-    type: "blue-team"
-  },
+  // {
+  //   name: "Wireshark",
+  //   image: "/BlueTeam/Wireshark.png",
+  //   description: "Description Wireshark ......",
+  //   slug: "Wireshark",
+  //   buttonLabel: "Use Wireshark",
+  //   type: "blue-team"
+  // },
+  // {
+  //   name: "Data Leak",
+  //   image: "/BlueTeam/data-leak.png",
+  //   description: "Description Data Leak....",
+  //   slug: "Data-Leak",
+  //   buttonLabel: "Find Data Leak",
+  //   type: "blue-team"
+  // },
     ]
     return (<ToolLayout team="blue" toolList={toolList}></ToolLayout>)
 }

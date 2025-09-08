@@ -170,9 +170,9 @@ export default function JWTSignatureValidator() {
         {/* Header */}
 <div className="flex items-center justify-start gap-4 mb-6">
   <img
-    src="/tools/card-images/jwt_signature.png"
+    src="/BlueTeam/jwt_signature.png"
     alt="verify"
-    className="w-20 h-20"
+    className="w-20 h-20 rounded-full border-4 border-blue-500"
   />
   <div className="text-left">
     <h1 className="text-3xl font-bold">JWT Signature Validator</h1>
@@ -181,6 +181,7 @@ export default function JWTSignatureValidator() {
     </p>
   </div>
 </div>
+
 
 
 
@@ -247,34 +248,37 @@ export default function JWTSignatureValidator() {
           {/* Buttons */}
           <div className="flex flex-wrap gap-3">
             <button
-              onClick={handleValidate}
-              disabled={loading || !token.trim() || !secret.trim()}
-              className="flex-1 bg-blue-600 text-white py-3 px-6 rounded-lg hover:bg-blue-700 disabled:bg-gray-600 transition"
-            >
-              {loading ? "Validating..." : "Validate JWT Token"}
-            </button>
+  onClick={handleValidate}
+  disabled={loading || !token.trim() || !secret.trim()}
+  className="flex-1 bg-blue text-white py-3 px-6 rounded-lg hover:bg-blue-600 disabled:bg-blue-600 transition"
+>
+  {loading ? "Validating..." : "Validate JWT Token"}
+</button>
+<button
+  onClick={handleDownloadPDF}
+  disabled={!result}
+  className={`px-4 py-3 rounded-lg border transition ${
+    result
+      ? "bg-blue-600 text-white border-blue-600 hover:bg-blue-700"
+      : "bg-blue-600 text-gray-100 border-blue-300 cursor-not-allowed"
+  }`}
+>
+  Download PDF
+</button>
+
+           
             <button
-              onClick={handleDownloadPDF}
-              disabled={!result}
-              className={`px-4 py-3 rounded-lg border transition ${
-                result
-                  ? "border-blue-500 text-blue-400 hover:bg-blue-900/30"
-                  : "border-blue-600 text-gray-500 cursor-not-allowed"
-              }`}
-            >
-              Download PDF
-            </button>
-            <button
-              onClick={handleDownloadTXT}
-              disabled={!result}
-              className={`px-4 py-3 rounded-lg border transition ${
-                result
-                  ? "border-blue-500 text-blue-400 hover:bg-blue-900/30"
-                  : "border-blue-600 text-gray-500 cursor-not-allowed"
-              }`}
-            >
-              Download TXT
-            </button>
+  onClick={handleDownloadTXT}
+  disabled={!result}
+  className={`px-4 py-3 rounded-lg border transition ${
+    result
+      ? "bg-blue-600 text-white border-blue-600 hover:bg-blue-700"
+      : "bg-blue-600 text-gray-100 border-blue-300 cursor-not-allowed"
+  }`}
+>
+  Download TXT
+</button>
+
           </div>
 
           {/* Error */}
@@ -286,7 +290,7 @@ export default function JWTSignatureValidator() {
 
           {/* Success */}
           {result && (
-            <div className="bg-blue-900/20 border border-blue-600 rounded-lg p-6">
+            <div className="bg-blue-600 border border-blue-600 rounded-lg p-6">
               <h2 className="text-lg font-bold text-blue-400 mb-3">JWT Signature Valid</h2>
               <p className="text-gray-300 text-sm mb-4">
                 Your JWT token has been successfully validated and decoded

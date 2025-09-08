@@ -131,7 +131,7 @@ export default function RedTool() {
     },
     {
         name: "Session Fixation Tester",
-        image: "/RedTeam/session_fixation.png",
+        image: "/RedTeam/session fixation.png",
         description: "Detect session fixation vulnerabilities",
         slug: "sessionFixationChecker",
         buttonLabel: "Session Fixation Tester",
