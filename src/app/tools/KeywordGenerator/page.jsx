@@ -3,6 +3,7 @@
 import { useMemo, useState } from "react";
 import { jsPDF } from "jspdf";
 import autoTable from "jspdf-autotable";
+import GreenLayout from "@/components/GreenTeam/layout";
 
 const API_BASE =
   process.env.NEXT_PUBLIC_PROD_API_URL ||
@@ -278,14 +279,18 @@ export default function KeywordIntelligencePage() {
   const hasData = highPriority.length + longTail.length > 0;
 
   return (
-    <div className="min-h-screen bg-[#0b0f17] text-slate-100">
+    <div className="min-h-screen bg-black text-slate-100">
+      <GreenLayout
+        heroData={{
+          imgPath: "/GreenTeam/keyword-generate.png",
+          title: "Keyword Intelligence Report",
+          desc: "Generate a comprehensive keyword intelligence report for your website, complete with actionable insights to boost your SEO strategy.",
+        }}
+      />
       <div className="max-w-5xl mx-auto p-6 space-y-6">
-        <header className="flex items-center justify-between">
-          <h1 className="text-xl font-semibold">Enhanced Industry-Level Output Structure</h1>
-          <div className="text-sm text-slate-400">📊 Keyword Intelligence Report — {dateStr}</div>
-        </header>
+      <div className="text-sm text-slate-400">📊 Keyword Intelligence Report — {dateStr}</div>
 
-        <section className="rounded-2xl border border-slate-800 bg-[#0f1523] p-5 shadow-[0_0_0_1px_rgba(0,0,0,0.3)]">
+        <section className="rounded-2xl border border-white bg-[#0f1523] p-5 shadow-[0_0_0_1px_rgba(0,0,0,0.3)]">
           <div className="flex flex-col md:flex-row gap-3 md:items-end">
             <div className="flex-1">
               <label className="block text-sm font-medium mb-1 text-slate-300">Website URL</label>
@@ -300,7 +305,7 @@ export default function KeywordIntelligencePage() {
             <button
               onClick={analyze}
               disabled={loading || !url}
-              className="h-10 px-4 rounded-lg bg-indigo-600 hover:bg-indigo-500 text-white disabled:opacity-60 focus:outline-none focus:ring-2 focus:ring-indigo-500/40"
+              className="h-10 px-4 rounded-lg bg-green-600 hover:bg-green-500 text-white focus:outline-none focus:ring-2 focus:ring-green-500/40"
             >
               {loading ? "Generating..." : "Generate"}
             </button>
@@ -308,7 +313,7 @@ export default function KeywordIntelligencePage() {
             <button
               onClick={() => setEditable((v) => !v)}
               disabled={!hasData}
-              className="h-10 px-4 rounded-lg border border-slate-700 bg-slate-900 hover:bg-slate-800 text-slate-200 disabled:opacity-60"
+              className="h-10 px-4 rounded-lg border border-slate-700 bg-green-600 hover:bg-green-500 text-white"
             >
               {editable ? "Lock Editing" : "Edit Metrics"}
             </button>
@@ -316,7 +321,7 @@ export default function KeywordIntelligencePage() {
             <button
               onClick={exportTXT}
               disabled={!hasData}
-              className="h-10 px-4 rounded-lg border border-slate-700 bg-slate-900 hover:bg-slate-800 text-slate-200 disabled:opacity-60"
+              className="h-10 px-4 rounded-lg border border-slate-700 bg-green-600 hover:bg-green-500 text-white"
             >
               Export TXT
             </button>
@@ -324,7 +329,7 @@ export default function KeywordIntelligencePage() {
             <button
               onClick={exportPDF}
               disabled={!hasData}
-              className="h-10 px-4 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white disabled:opacity-60"
+              className="h-10 px-4 rounded-lg bg-green-600 hover:bg-green-500 text-white"
             >
               Export PDF
             </button>

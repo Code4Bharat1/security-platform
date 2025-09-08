@@ -32,7 +32,7 @@ export default function PTPage() {
             heroData={heroData}
             heroVideo="/PT.mp4"  
             methodologyData={methodologyData}
-            approchData={approchData}
+            keyAspectsData={keyAspectsData}
         />
     );
 }

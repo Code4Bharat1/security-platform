@@ -56,7 +56,7 @@ export default function OsintTool() {
       <GreenLayout
         heroData={{
           imgPath: "/GreenTeam/DataBreach1.png",
-          title: "OSINT Checker",
+          title: "Data Breach",
           desc: "Verify if a username/email appears on public platforms",
         }}
       />
