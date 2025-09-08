@@ -1,6 +1,7 @@
 "use client";
 import { useState } from "react";
 import { ExternalLink, Search, ShieldAlert } from "lucide-react";
+import GreenLayout from "../GreenTeam/layout";
 
 const statusChip = (status) => {
   const base = "px-2 py-0.5 rounded text-xs font-semibold";
@@ -51,11 +52,15 @@ export default function OsintTool() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-900 text-gray-100 flex flex-col items-center pt-16 px-4">
-      <h1 className="text-3xl font-bold mb-2 text-green-400">OSINT Checker</h1>
-      <p className="mb-6 text-gray-400">Verify if a username/email appears on public platforms</p>
-
-      <div className="w-full max-w-2xl bg-gray-800 rounded-xl shadow p-6">
+    <div className="min-h-screen bg-black text-white flex flex-col items-center pt-16 px-4">
+      <GreenLayout
+        heroData={{
+          imgPath: "/GreenTeam/DataBreach1.png",
+          title: "OSINT Checker",
+          desc: "Verify if a username/email appears on public platforms",
+        }}
+      />
+      <div className="w-full border border-white max-w-2xl bg-black rounded-xl shadow p-6">
         <div className="grid sm:grid-cols-3 gap-3">
           <select
             value={queryType}

@@ -6,6 +6,7 @@ import {
 } from "lucide-react";
 import { jsPDF } from "jspdf";
 import autoTable from "jspdf-autotable";
+import GreenLayout from "../GreenTeam/layout";
 
 export default function KeywordPage() {
   const [url, setUrl] = useState("");
@@ -214,43 +215,32 @@ export default function KeywordPage() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-green-50 to-emerald-100">
+    <div className="min-h-screen bg-black">
       {/* Header */}
-      <div className="bg-white/80 backdrop-blur-sm border-b border-gray-200 sticky top-0 z-10">
-        <img src="/tools/card-images/keyword_checker.png" alt="verify" className="w-16 h-20 mb-4 mt-7" />
-        <div className="max-w-6xl mx-auto px-6 py-4">
-          <div className="flex justify-center items-center gap-3">
-            <div className="p-2 bg-gradient-to-r from-green-600 to-emerald-600 rounded-lg">
-              <BarChart3 className="w-6 h-6 text-white" />
-            </div>
-            <h1 className="text-2xl font-bold bg-gradient-to-r from-green-600 to-emerald-600 bg-clip-text text-transparent">
-              Keyword Density Analyzer
-            </h1>
-          </div>
-        </div>
-      </div>
+<GreenLayout heroData={{
+        title: "Keyword Density Analyzer",
+        desc: "Get detailed insights into keyword density and phrase frequency to optimize your content for better SEO performance.",
+        imgPath: "/GreenTeam/keyword_checker.png"
+      }} />
 
+      
       <div className="max-w-6xl mx-auto px-6 py-8">
         {/* Hero */}
         <div className="text-center mb-12">
-          <h2 className="text-4xl font-bold text-gray-800 mb-4">Analyze Your Website's Keywords</h2>
-          <p className="text-lg text-gray-600 max-w-2xl mx-auto">
-            Get detailed insights into keyword density and phrase frequency to
-            optimize your content for better SEO performance.
-          </p>
+          <h2 className="text-4xl font-bold text-green-600 mb-4">Analyze Your Website's Keywords</h2>
         </div>
 
         {/* Form */}
-        <div className="bg-white rounded-2xl shadow-xl border border-gray-200 p-8 mb-8">
+        <div className="bg-black rounded-2xl shadow-xl border border-gray-200 p-8 mb-8">
           <div className="space-y-6">
             <div className="relative">
-              <label htmlFor="url" className="block text-sm font-semibold text-gray-700 mb-2">Website URL</label>
+              <label htmlFor="url" className="block text-sm font-semibold text-gray-200 mb-2">Website URL</label>
               <div className="relative">
-                <Globe className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 w-5 h-5" />
+                <Globe className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-200 w-5 h-5" />
                 <input
                   id="url"
                   type="text"
-                  className="w-full pl-12 pr-4 py-4 border-2 border-gray-200 rounded-xl focus:border-green-500 focus:ring-4 focus:ring-green-500/20 transition-all duration-200 text-lg"
+                  className="w-full pl-12 pr-4 py-4 border-2 text-white border-gray-200 rounded-xl focus:border-green-500 focus:ring-4 focus:ring-green-500/20 transition-all duration-200 text-lg"
                   placeholder="https://example.com"
                   value={url}
                   onChange={(e) => setUrl(e.target.value)}
@@ -384,7 +374,7 @@ export default function KeywordPage() {
 /* ---------- UI bits ---------- */
 function StatCard({ value, label, accent }) {
   return (
-    <div className="bg-white rounded-xl shadow-lg border border-gray-200 p-6">
+    <div className="bg-black rounded-xl shadow-lg border border-gray-200 p-6">
       <div className="text-center">
         <div className={`text-3xl font-bold ${accent} mb-2`}>{value}</div>
         <div className="text-gray-600 font-medium">{label}</div>
@@ -397,7 +387,7 @@ function TableBlock({ title, grad, children }) {
   return (
     <div className="bg-white rounded-2xl shadow-xl border border-gray-200 overflow-hidden">
       <div className={`bg-gradient-to-r ${grad} px-6 py-4`}>
-        <h3 className="text-xl font-bold text-white">{title}</h3>
+        <h3 className="text-xl font-bold text-black">{title}</h3>
       </div>
       <div className="overflow-x-auto">{children}</div>
     </div>

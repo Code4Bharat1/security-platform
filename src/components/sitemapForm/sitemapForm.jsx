@@ -3,6 +3,7 @@ import { useState } from 'react';
 import { Loader2, Search as SearchIcon, FileText, Eye, X } from 'lucide-react';
 import { jsPDF } from 'jspdf';
 import autoTable from 'jspdf-autotable';
+import GreenLayout from '../GreenTeam/layout';
 
 const classNames = (...xs) => xs.filter(Boolean).join(' ');
 
@@ -13,6 +14,13 @@ export default function SitemapForm() {
   const [loading, setLoading] = useState(false);
   const [depth, setDepth] = useState(3);
 
+  // Hero data
+  const Hero=
+  {
+      title: "Optimize Your Website",
+      desc: "Our sitemap generator helps search engines find and index all pages on your website.",
+      imgPath: "/GreenTeam/sitemap1.png"
+  }
   // XML preview modal
   const [showXml, setShowXml] = useState(false);
 
@@ -129,17 +137,14 @@ export default function SitemapForm() {
   };
 
   return (
-    <div className="flex flex-col items-center min-h-screen bg-gray-100 mb-5 px-4">
-      <img src="/sitemap1.png" alt="sitemap" className="w-28 h-28 mb-2 mt-7" />
-      <h1 className="text-3xl md:text-4xl font-bold text-blue-800 mt-2">
-        Optimize Your Website
-      </h1>
-      <p className="text-lg text-slate-600 max-w-2xl mx-auto text-center mt-2">
-        Our sitemap generator helps search engines find and index all pages on your website.
-      </p>
+    <div className="flex flex-col bg-gradient-to-b from-black to-green-900 items-center mb-5 px-4">
 
-      <div className="bg-white p-6 rounded-lg shadow-lg w-full max-w-4xl mt-8">
-        <h1 className="text-2xl font-bold text-center mb-5 mt-2 text-blue-800">
+      <GreenLayout 
+      heroData={Hero}  
+      ></GreenLayout>
+
+      <div className="bg-black p-6 border border-white rounded-lg shadow-lg w-full max-w-4xl mt-8">
+        <h1 className="text-2xl font-bold text-center mb-5 mt-2 text-green-800">
           Website Sitemap Generator
         </h1>
 
@@ -152,7 +157,7 @@ export default function SitemapForm() {
             onChange={(e) => setUrl(e.target.value.trim())}
             placeholder="https://example.com"
             required
-            className="w-full border border-gray-300 rounded-lg p-2 mb-4 focus:outline-none focus:ring-2 focus:ring-blue-800 focus:border-blue-800"
+            className="w-full border text-white border-gray-300 rounded-lg p-2 mb-4 focus:outline-none focus:ring-2 focus:ring-green-800 focus:border-green-800"
           />
 
           <div className="mb-4">
@@ -167,33 +172,35 @@ export default function SitemapForm() {
               max="5"
               value={depth}
               onChange={(e) => setDepth(parseInt(e.target.value || '1', 10))}
-              className="w-full border border-gray-300 rounded-lg p-2 focus:outline-none focus:ring-2 focus:ring-blue-800 focus:border-blue-800"
+              className="w-full text-white border border-gray-300 rounded-lg p-2 focus:outline-none focus:ring-2 focus:ring-green-800 focus:border-green-800"
             />
           </div>
 
           {error && <p className="text-red-600 text-sm mb-4">{error}</p>}
+          <div className="flex justify-center">
           <button
             type="submit"
-            className="w-full bg-blue-800 text-white py-2 px-4 rounded hover:bg-blue-700 transition-colors duration-300 flex items-center justify-center gap-2 disabled:opacity-60"
+            className="w-50 bg-green-800 text-white py-2 px-4 rounded hover:bg-green-700 transition-colors duration-300 flex items-center justify-center gap-2 disabled:opacity-60"
             disabled={loading}
           >
             {loading ? <Loader2 className="h-5 w-5 animate-spin" /> : <SearchIcon className="h-5 w-5" />}
             {loading ? 'Generating...' : 'Generate Sitemap'}
           </button>
+          </div>
         </form>
 
         {/* Results */}
         <div className="mt-6">
           {loading && (
             <div className="flex flex-col items-center justify-center p-6 bg-gray-50 rounded-lg border border-gray-200">
-              <div className="animate-spin rounded-full h-10 w-10 border-t-2 border-blue-800 border-opacity-50 mb-3"></div>
-              <p className="text-blue-800 font-medium">Generating sitemap, please wait...</p>
+              <div className="animate-spin rounded-full h-10 w-10 border-t-2 border-green-800 border-opacity-50 mb-3"></div>
+              <p className="text-green-800 font-medium">Generating sitemap, please wait...</p>
             </div>
           )}
 
           {!loading && sitemapData && (
             <div className="border rounded-lg p-4 bg-gray-50">
-              <h2 className="text-xl font-bold text-blue-800 mb-2">Sitemap Report</h2>
+              <h2 className="text-xl font-bold text-green-800 mb-2">Sitemap Report</h2>
 
               {/* Warning if broken urls */}
               {(sitemapData.summary?.broken ?? 0) > 0 && (
@@ -222,7 +229,7 @@ export default function SitemapForm() {
                     {(sitemapData.pagesFound ?? 0)} pages
                   </span>
                 </div>
-                <div className="max-h-64 overflow-y-auto bg-white p-3 border border-gray-200 rounded">
+                <div className="max-h-64 overflow-y-auto bg-black p-3 border border-gray-200 rounded">
                   {sitemapData.urlDetails?.length ? (
                     <ul className="space-y-2">
                       {sitemapData.urlDetails.map((u, i) => (
@@ -244,7 +251,7 @@ export default function SitemapForm() {
                               href={u.url}
                               target="_blank"
                               rel="noopener noreferrer"
-                              className="text-blue-600 hover:underline truncate"
+                              className="text-green-600 hover:underline truncate"
                               title={u.url}
                             >
                               {u.url}
@@ -275,7 +282,7 @@ export default function SitemapForm() {
                 </button>
                 <button
                   onClick={downloadXML}
-                  className="flex-1 bg-blue-800 text-white py-2 px-4 rounded hover:bg-blue-700 transition-colors duration-300 flex items-center justify-center gap-2"
+                  className="flex-1 bg-green-800 text-white py-2 px-4 rounded hover:bg-green-700 transition-colors duration-300 flex items-center justify-center gap-2"
                 >
                   <FileText className="h-5 w-5" />
                   Download XML
@@ -303,7 +310,7 @@ export default function SitemapForm() {
       {/* XML Modal */}
       {showXml && sitemapData?.xml && (
         <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
-          <div className="bg-white w-full max-w-4xl rounded shadow-lg">
+          <div className="bg-black w-full max-w-4xl rounded shadow-lg">
             <div className="flex items-center justify-between p-3 border-b">
               <div className="font-semibold">Sitemap XML Preview</div>
               <button
@@ -320,7 +327,7 @@ export default function SitemapForm() {
             <div className="p-3 border-t text-right">
               <button
                 onClick={() => setShowXml(false)}
-                className="inline-flex items-center px-4 py-2 rounded bg-blue-600 text-white hover:bg-blue-500"
+                className="inline-flex items-center px-4 py-2 rounded bg-green-600 text-white hover:bg-green-500"
               >
                 Close
               </button>
@@ -387,7 +394,7 @@ function Stat({ label, value, tone }) {
       ? 'bg-red-50 border-red-200 text-red-700'
       : tone === 'amber'
       ? 'bg-yellow-50 border-yellow-200 text-yellow-700'
-      : 'bg-blue-50 border-blue-200 text-blue-800';
+      : 'bg-green-50 border-green-200 text-green-800';
   return (
     <div className={classNames('p-3 rounded border', toneMap)}>
       <div className="text-sm opacity-80">{label}</div>

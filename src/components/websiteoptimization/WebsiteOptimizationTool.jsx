@@ -1,6 +1,7 @@
 "use client";
 import { useState } from "react";
 import axios from "axios";
+import GreenLayout from "../GreenTeam/layout";
 
 export default function WebsiteOptimizationTool() {
   const [url, setUrl] = useState("");
@@ -38,17 +39,21 @@ export default function WebsiteOptimizationTool() {
   };
 
   return (
-    <div className="flex items-center justify-center min-h-screen bg-gray-100">
-      <div className="w-full max-w-xl mx-auto p-6 shadow-lg rounded-lg bg-white">
-        <img src="/tools/card-images/optimization.png" alt="verify" className="w-16 h-20 mb-4 mt-7" />
-        <h1 className="text-2xl font-bold mb-4 text-center text-gray-800">
-          🌐 Website Optimization Tool
-        </h1>
+    <div className="min-h-screen bg-black flex flex-col items-center px-3 pt-10 pb-24">
+      <GreenLayout
+        heroData={{
+          imgPath: "/GreenTeam/optimization.png",
+          title: "Website Optimization Tool",
+          desc: "Analyze and optimize your website for better performance and SEO.",
+        }}
+      />  
+      <div className="w-full max-w-xl mx-auto p-6 shadow-lg rounded-lg bg-black border border-white">
+
         <input
           type="text"
           value={url}
           onChange={(e) => setUrl(e.target.value.trim())}         placeholder="Enter website URL (e.g. https://example.com)"
-          className="w-full p-3 border border-gray-300 rounded mb-4 focus:outline-none focus:ring-2 focus:ring-green-400"
+          className="w-full p-3 text-white border border-white rounded mb-4 focus:outline-none focus:ring-2 focus:ring-green-400"
         />
         <button
           onClick={handleScan}

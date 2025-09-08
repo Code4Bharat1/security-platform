@@ -4,16 +4,8 @@ import ToolLayout from "./Layout";
 export default function GreenTool() {
     const toolList = [// Non-Tech
         {
-            name: "Broken link Checker",
-            image: "/tools/card-images/brokenlink1.png",
-            description: "Scans web pages for dead or broken links, helping maintain SEO integrity",
-            slug: "brokenStreamForm",
-            buttonLabel: "Scan for Vulnerabilities",
-            type: "non-tech"
-        },
-        {
             name: "Sitemap Generator",
-            image: "/tools/card-images/sitemap1.png",
+            image: "/GreenTeam/sitemap1.png",
             description: "Creates an XML sitemap to help search engines index a website efficiently",
             slug: "sitemapForm",
             buttonLabel: "Generate Sitemap",
@@ -21,7 +13,7 @@ export default function GreenTool() {
         },
         {
             name: "Meta Tag Analyzer",
-            image: "/tools/card-images/meta_tag.png",
+            image: "/GreenTeam/meta_tag.png",
             description: "Analyze meta tags like title, description, and keywords.",
             slug: "meta-tag",
             buttonLabel: "Analyze Meta Tags",
@@ -29,7 +21,7 @@ export default function GreenTool() {
         },
         {
             name: "Keyword Density Checker",
-            image: "/tools/card-images/keyword_checker.png",
+            image: "/GreenTeam/keyword_checker.png",
             description: "Analyze keyword frequency for SEO structuring on website.",
             slug: "keyword-checker",
             buttonLabel: "Check Keyword Density",
@@ -37,7 +29,7 @@ export default function GreenTool() {
         },
         {
             name: "Link Detector",
-            image: "/tools/card-images/link_dec.png",
+            image: "/GreenTeam/link_dec.png",
             description: "This tool helps detect malicious, suspicious, or unsafe links.",
             slug: "check-link",
             buttonLabel: "Check Link",
@@ -45,7 +37,7 @@ export default function GreenTool() {
         },
         {
             name: "SecureCrypt",
-            image: "/tools/card-images/dycrypt.png",
+            image: "/GreenTeam/dycrypt.png",
             description: "Encrypts and decrypts text using secure algorithms.",
             slug: "securecrypt",
             buttonLabel: "Encrypt Now",
@@ -53,7 +45,7 @@ export default function GreenTool() {
         },
         {
             name: "File Scanner",
-            image: "/tools/card-images/folder-scan.png",
+            image: "/GreenTeam/folder-scan.png",
             description: "Scans files for malware or suspicious files.",
             slug: "folder-threat-scanner",
             buttonLabel: "Scan File",
@@ -61,7 +53,7 @@ export default function GreenTool() {
         },
         {
             name: "WhatsApp Privacy Inspector",
-            image: "/tools/card-images/wp.png",
+            image: "/GreenTeam/wp.png",
             description: "Checks WhatsApp settings for potential privacy risks.",
             slug: "whatsapp-privacy-inspector",
             buttonLabel: "Inspect Now",
@@ -69,7 +61,7 @@ export default function GreenTool() {
         },
         {
             name: "Email Attachment Analyzer",
-            image: "/tools/card-images/email.png",
+            image: "/GreenTeam/email.png",
             description: "Scans email attachments for malware or hidden threats.",
             slug: "email-attachment-analyzer",
             buttonLabel: "Analyze File",
@@ -77,7 +69,7 @@ export default function GreenTool() {
         },
         {
             name: "IP Address Info Finder",
-            image: "/tools/card-images/ip.png",
+            image: "/GreenTeam/ip.png",
             description: "Fetches location and network details of an IP address.",
             slug: "ip-address-info-finder",
             buttonLabel: "Find Info",
@@ -85,7 +77,7 @@ export default function GreenTool() {
         },
         {
             name: "QR Tool",
-            image: "/tools/card-images/QR.png",
+            image: "/GreenTeam/QR.png",
             description: "Unsafe QR & QR Generater.",
             slug: "fake-qr-code-detector",
             buttonLabel: "Scan QR",
@@ -93,7 +85,7 @@ export default function GreenTool() {
         },
         {
             name: "Website Optimization Tool",
-            image: "/tools/card-images/optimization.png",
+            image: "/GreenTeam/optimization.png",
             description: "Detects deployment issues like unused code, large assets, and slow-loading elements.",
             slug: "website-optimization-tool",
             buttonLabel: "Check Optimization",
@@ -101,7 +93,7 @@ export default function GreenTool() {
         },
         {
             name: "SEO Score Analyzer Tool",
-            image: "/tools/card-images/seo-score.png",
+            image: "/GreenTeam/seo-score.png",
             description: "Analyzes website SEO and provides improvement tips.",
             slug: "seo-score-analyzer-tool",
             buttonLabel: "Analyze SEO",
@@ -109,7 +101,7 @@ export default function GreenTool() {
         },
         {
             name: "Keyword Generator",
-            image: "/tools/card-images/keyword-generate.png",
+            image: "/GreenTeam/keyword-generate.png",
             description: "Extract SEO-Friendly Keyword Suggestions.",
             slug: "KeywordGenerator",
             buttonLabel: "Generate Keyword",
@@ -117,7 +109,7 @@ export default function GreenTool() {
         },
         {
             name: "Data Breach",
-            image: "/tools/card-images/DataBreach1.png",
+            image: "/GreenTeam/DataBreach1.png",
             description: "Find Where Your Email , Phone No. Or Username is Exposed",
             slug: "osint",
             buttonLabel: "Check Info",
@@ -125,7 +117,7 @@ export default function GreenTool() {
         },
         {
             name: "URL Shortener",
-            image: "/tools/card-images/shorted-url.png",
+            image: "/GreenTeam/shorted-url.png",
             description: "Make Links Short and Simple.",
             slug: "url-shortener",
             buttonLabel: "Shorten URL",
@@ -133,7 +125,7 @@ export default function GreenTool() {
         },
         {
             name: "PDF",
-            image: "/tools/card-images/PDF.png",
+            image: "/GreenTeam/PDF.png",
             description: "Create Your PDF.",
             slug: "PDF",
             buttonLabel: "Create PDF",
@@ -141,7 +133,7 @@ export default function GreenTool() {
         },
         {
             name: "Chrome Extention",
-            image: "/tools/card-images/chrome.png",
+            image: "/GreenTeam/chrome.png",
             description: "Description Chrome Extention ....",
             slug: "Chrome-Extention",
             buttonLabel: "Use Chrome Extention",
@@ -149,9 +141,9 @@ export default function GreenTool() {
         },
         {
             name: "Password Strength Checker",
-            image: "/tools/card-images/password-checker.png",
-            description: "Description Passsword Strenght Checker....",
-            slug: "Passsword-Checker",
+            image: "/GreenTeam/password-checker.png",
+            description: "Description Password Strenght Checker....",
+            slug: "password-checker",
             buttonLabel: "Check Your Password",
             type: "non-tech"
         }

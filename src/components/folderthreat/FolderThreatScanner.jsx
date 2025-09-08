@@ -1,6 +1,7 @@
 "use client";
 import { FolderSearch, ChevronDown, ChevronUp } from "lucide-react";
 import { useState } from "react";
+import GreenLayout from "../GreenTeam/layout";
 
 export default function FileThreatScanner() {
   const [files, setFiles] = useState([]);
@@ -46,17 +47,17 @@ export default function FileThreatScanner() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-100 flex flex-col items-center pt-20 px-4">
-      <img src="/tools/card-images/waf1.png" alt="verify" className="w-16 h-20 mb-4 mt-7" />
-      <div className="text-center mb-10">
-        <FolderSearch className="mx-auto mb-4 text-green-600" size={48} />
-        <h1 className="text-3xl font-bold text-green-800">File Scanner</h1>
-        <p className="text-gray-600 mt-2">
-          Upload files to scan for malware or suspicious activity.
-        </p>
-      </div>
+    <div className="min-h-screen bg-black flex flex-col items-center pt-20 px-4">
+  
+      <GreenLayout
+        heroData={{
+          imgPath: "/GreenTeam/folder-scan.png",
+          title: "File Threat Scanner",
+          desc: "Upload files to scan for malware or suspicious activity.",
+        }}
+      />
 
-      <div className="bg-white shadow-lg rounded-xl p-6 w-full max-w-3xl text-center">
+      <div className="bg-black border border-white shadow-lg rounded-xl p-6 w-full max-w-3xl text-center">
         {/* File Upload */}
         <label
           htmlFor="fileInput"

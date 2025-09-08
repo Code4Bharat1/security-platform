@@ -1,5 +1,6 @@
 "use client";
 import { useEffect, useRef, useState } from "react";
+import GreenLayout from "../GreenTeam/layout";
 
 const CameraCapture = ({ onCapture }) => {
   const videoRef = useRef(null);
@@ -47,7 +48,7 @@ const CameraCapture = ({ onCapture }) => {
       <button
         onClick={capture}
         disabled={!ready}
-        className="mt-2 px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
+        className="mt-2 px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700"
       >
         Capture Image
       </button>
@@ -173,14 +174,15 @@ const FakeQRCodeDetectorAndQRGenerator = () => {
 
 
   return (
-    <div className="min-h-screen bg-gray-100 flex items-center justify-center p-4">
-      
-      <div className="bg-white shadow-xl rounded-lg max-w-2xl w-full p-6">
-        {/* Tabs */}
-        <div>
-        <img src="/tools/card-images/QR.png" alt="verify" className="w-16 h-20 mb-4 mt-7 mx-auto" />
-
-        </div>
+    <div className="min-h-screen bg-black flex flex-col items-center justify-center p-4">
+ 
+        <GreenLayout
+          heroData={{
+            title: "Fake QR Detector & QR Generator",
+            imgPath: "/GreenTeam/QR.png",
+          }}
+        />
+        <div className="bg-black border border-white shadow-xl rounded-lg max-w-2xl w-full p-6">
         <div className="flex justify-center mb-6 space-x-4">
           <button
             onClick={() => {
@@ -188,7 +190,7 @@ const FakeQRCodeDetectorAndQRGenerator = () => {
               setImageSrc(null);
               setScanResult("");
             }}
-            className={`px-4 py-2 rounded ${tab === "scanner" ? "bg-blue-600 text-white" : "bg-gray-200 text-black"
+            className={`px-4 py-2 rounded ${tab === "scanner" ? "bg-green-600 text-white" : "bg-gray-200 text-black"
               }`}
           >
             Unsafe QR Detector
@@ -199,7 +201,7 @@ const FakeQRCodeDetectorAndQRGenerator = () => {
               setImageSrc(null);
               setScanResult("");
             }}
-            className={`px-4 py-2 rounded ${tab === "generator" ? "bg-blue-600 text-white" : "bg-gray-200 text-black"
+            className={`px-4 py-2 rounded ${tab === "generator" ? "bg-green-600 text-white" : "bg-gray-200 text-black"
               }`}
           >
             QR Generator
@@ -212,12 +214,12 @@ const FakeQRCodeDetectorAndQRGenerator = () => {
             <div
               onDrop={handleDrop}
               onDragOver={(e) => e.preventDefault()}
-              className="border-2 border-dashed border-gray-400 p-6 mb-4 text-center rounded bg-gray-50"
+              className="bg-gray-300 border-2 border-dashed border-whitegray-400 p-6 mb-4 text-center rounded bg-gray-50"
             >
               Drag & Drop Image Here or&nbsp;
               <label
                 htmlFor="file-upload"
-                className="cursor-pointer text-blue-500"
+                className="cursor-pointer text-blue-600"
                 onClick={() => {
                   setInputMethod("upload");
                   setImageSrc(null);
@@ -260,7 +262,7 @@ const FakeQRCodeDetectorAndQRGenerator = () => {
               <button
                 onClick={handleScan}
                 disabled={loading}
-                className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
+                className="px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700"
               >
                 {loading ? "Scanning..." : "Scan"}
               </button>
@@ -287,7 +289,7 @@ const FakeQRCodeDetectorAndQRGenerator = () => {
             <div>
               <button
                 onClick={handleGenerate}
-                className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
+                className="px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700"
               >
                 {loading ? "Generating..." : "Generate"}
               </button>

@@ -8,7 +8,7 @@ import "./globals.css";
 
 import Navbar from "@/components/layout/navbar";
 import Footer from "@/components/layout/footer";
-import Redfooter from "@/components/layout/Redfooter";
+
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
