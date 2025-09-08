@@ -40,49 +40,76 @@ export default function DbSecurityChecker() {
   };
 
   return (
-    <div className="min-h-screen flex flex-col items-center bg-gray-100 p-4">
-     <img src="/tools/card-images/DB-Security.png" alt="verify" className="w-16 h-20 mb-4 mt-7" />
+    <div className="min-h-screen flex flex-col items-center justify-start bg-gray-900 p-6">
+      {/* Header */}
+<div className="flex items-center mb-6 gap-4">
+  <div className="w-20 h-20 rounded-full border-4 border-red-600 overflow-hidden flex items-center justify-center bg-black">
+    <img src="/RedTeam/DB-Security.png" alt="DB Logo" className="w-16 h-16 object-cover"/>
+  </div>
+  <div className="flex flex-col">
+    <h1 className="text-3xl font-bold text-white">Database Security Checker</h1>
+    <p className="text-gray-300 text-sm">Database Safety Checker With Score</p>
+  </div>
+</div>
 
-      <h1 className="text-2xl font-bold text-green-800 mb-4">🛡️ Database Security Score Checker</h1>
-      <div className="bg-white p-4 rounded shadow max-w-md w-full">
-        <div className="mb-2">DB Type:
+      {/* Form Card */}
+      <div className="bg-black text-white p-6 rounded-2xl shadow-lg w-full max-w-md border-2 border-white-600">
+        <div className="mb-4">
+          <label className="block mb-1">DB Type:</label>
           <select value={form.dbType} onChange={e => setForm({ ...form, dbType: e.target.value })}
-            className="ml-2 border px-2">
+            className="w-full px-3 py-2 rounded bg-gray-800 border border-white-700 focus:outline-none">
             <option>MongoDB</option>
-            {/* future: MySQL, PostgreSQL */}
           </select>
         </div>
-        <div className="mb-2">Host/IP:
+
+        <div className="mb-4">
+          <label className="block mb-1">Host / IP:</label>
           <input value={form.host} onChange={e => setForm({ ...form, host: e.target.value })}
-            className="ml-2 border px-2" />
-        </div>
-        <div className="mb-2">Port:
-          <input value={form.port} onChange={e => setForm({ ...form, port: e.target.value })}
-            className="ml-2 border px-2" />
-        </div>
-        <div className="mb-2">Username:
-          <input value={form.username} onChange={e => setForm({ ...form, username: e.target.value })}
-            className="ml-2 border px-2" />
-        </div>
-        <div className="mb-2">Password:
-          <input type="password" value={form.password} onChange={e => setForm({ ...form, password: e.target.value })}
-            className="ml-2 border px-2" />
+            className="w-full px-3 py-2 rounded bg-gray-800 border border-white-700 focus:outline-none" />
         </div>
 
-        <div className="mb-2">
-          <label><input type="checkbox" checked={form.checks.includes('ssl')} onChange={() => toggleCheck('ssl')} /> SSL/TLS</label>
-          <label className="ml-2"><input type="checkbox" checked={form.checks.includes('auth')} onChange={() => toggleCheck('auth')} /> Auth</label>
-          <label className="ml-2"><input type="checkbox" checked={form.checks.includes('encryption')} onChange={() => toggleCheck('encryption')} /> Encryption</label>
+        <div className="mb-4">
+          <label className="block mb-1">Port:</label>
+          <input value={form.port} onChange={e => setForm({ ...form, port: e.target.value })}
+            className="w-full px-3 py-2 rounded bg-gray-800 border border-white-700 focus:outline-none" />
+        </div>
+
+        <div className="mb-4">
+          <label className="block mb-1">Username:</label>
+          <input value={form.username} onChange={e => setForm({ ...form, username: e.target.value })}
+            className="w-full px-3 py-2 rounded bg-gray-800 border border-white-700 focus:outline-none" />
+        </div>
+
+        <div className="mb-4">
+          <label className="block mb-1">Password:</label>
+          <input type="password" value={form.password} onChange={e => setForm({ ...form, password: e.target.value })}
+            className="w-full px-3 py-2 rounded bg-gray-800 border border-white-700 focus:outline-none" />
+        </div>
+
+        <div className="mb-4 flex flex-wrap gap-4">
+          <label className="flex items-center gap-2">
+            <input type="checkbox" checked={form.checks.includes('ssl')} onChange={() => toggleCheck('ssl')} />
+            SSL/TLS
+          </label>
+          <label className="flex items-center gap-2">
+            <input type="checkbox" checked={form.checks.includes('auth')} onChange={() => toggleCheck('auth')} />
+            Auth
+          </label>
+          <label className="flex items-center gap-2">
+            <input type="checkbox" checked={form.checks.includes('encryption')} onChange={() => toggleCheck('encryption')} />
+            Encryption
+          </label>
         </div>
 
         <button onClick={runScan} disabled={loading}
-          className={`w-full py-2 mt-2 rounded text-white ${loading ? "bg-green-400" : "bg-green-700 hover:bg-green-800"}`}>
-          {loading ? "Scanning..." : "🚀 Run Security Scan"}
+          className={`w-full py-2 mt-2 rounded text-white ${loading ? "bg-red-400" : "bg-red-600 hover:bg-red-700"}`}>
+          {loading ? "Scanning..." : "Run Security Scan"}
         </button>
       </div>
 
+      {/* Result Card */}
       {result && (
-        <div className="bg-black text-green-400 mt-4 p-4 w-full max-w-md rounded font-mono text-sm">
+        <div className="bg-gray-800 text-green-400 mt-6 p-4 w-full max-w-md rounded-lg font-mono text-sm border border-white-600">
           <p>📊 Security Score: {result.securityScore}/100</p>
           <p>❗ Issues Found: {result.issues}</p>
           {result.findings.map((f, i) => (

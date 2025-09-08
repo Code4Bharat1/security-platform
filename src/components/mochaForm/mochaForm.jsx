@@ -22,7 +22,7 @@ export default function MochaForm() {
   const [headers, setHeaders] = useState("");
   const [body, setBody] = useState("");
   const [testDescription, setTestDescription] = useState("");
-  const [timeoutMs, setTimeoutMs] = useState(10000); // NEW
+  const [timeoutMs, setTimeoutMs] = useState(10000);
   const [error, setError] = useState("");
   const [testResults, setTestResults] = useState(null);
   const [loading, setLoading] = useState(false);
@@ -97,8 +97,8 @@ export default function MochaForm() {
             headers: headerObj,
             body: bodyObj,
             testDescription,
-            timeoutMs, // NEW
-            wantPrevious: true, // NEW
+            timeoutMs,
+            wantPrevious: true,
           }),
         }
       );
@@ -107,7 +107,7 @@ export default function MochaForm() {
         const errText = await res.text().catch(() => "");
         const msg = `API test failed with HTTP ${res.status}. ${errText || ""}`.trim();
         showToastMessage(msg, "error");
-        if (res.status >= 500) alert(msg); // hard alert on 5xx
+        if (res.status >= 500) alert(msg);
         setError(msg);
         setLoading(false);
         return;
@@ -119,7 +119,7 @@ export default function MochaForm() {
       if (result && typeof result.statusCode === "number" && result.statusCode >= 500) {
         const msg = `API responded with ${result.statusCode}`;
         showToastMessage(msg, "error");
-        alert(msg); // hard alert on 5xx payload
+        alert(msg);
       } else {
         showToastMessage("🎉 Test completed successfully!", "success");
       }
@@ -129,7 +129,7 @@ export default function MochaForm() {
       const msg = `Network error: ${e?.message || "Unknown error"}`;
       setError(msg);
       showToastMessage(msg, "error");
-      alert(msg); // hard alert on network/timeout
+      alert(msg);
       setLoading(false);
     }
   };
@@ -153,7 +153,7 @@ export default function MochaForm() {
   const ComparisonBadge = ({ deltaMs, deltaPct }) => {
     if (deltaMs === 0) {
       return (
-        <span className="inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs bg-gray-100 text-gray-700">
+        <span className="inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs bg-gray-700 text-gray-300">
           <Minus className="w-3 h-3" /> Same
         </span>
       );
@@ -162,7 +162,7 @@ export default function MochaForm() {
     return (
       <span
         className={`inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs ${
-          improved ? "bg-green-100 text-green-700" : "bg-red-100 text-red-700"
+          improved ? "bg-green-900 text-green-300" : "bg-red-900 text-red-300"
         }`}
       >
         {improved ? (
@@ -180,16 +180,16 @@ export default function MochaForm() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-green-50 via-white to-emerald-50">
+    <div className="min-h-screen bg-gray-900">
       {/* Toast */}
       {showToast && (
         <div
           className={`fixed top-4 right-4 z-50 p-4 rounded-lg shadow-lg border-l-4 transform transition-all duration-300 ${
             toastType === "success"
-              ? "bg-green-50 border-green-500 text-green-800"
+              ? "bg-green-900 border-green-500 text-green-300"
               : toastType === "error"
-              ? "bg-red-50 border-red-500 text-red-800"
-              : "bg-blue-50 border-blue-500 text-blue-800"
+              ? "bg-red-900 border-red-500 text-red-300"
+              : "bg-blue-900 border-blue-500 text-blue-300"
           }`}
         >
           <div className="flex items-center">
@@ -203,41 +203,37 @@ export default function MochaForm() {
 
       {/* Header */}
       <div className="text-center pt-8 pb-6">
-        <img src="/tools/card-images/mocha-logo.png" alt="verify" className="w-16 h-20 mb-4 mt-7" />
         <div className="flex justify-center items-center mb-4">
-          <div className="bg-gradient-to-r from-green-500 to-emerald-600 p-4 rounded-full shadow-lg">
-            <Zap className="w-12 h-12 text-white" />
+          <div className="bg-white p-3 rounded-full">
+            <div className="bg-red-500 text-white px-3 py-1 rounded text-sm font-bold">
+              img
+            </div>
           </div>
         </div>
-        <h1 className="text-4xl md:text-5xl font-bold bg-gradient-to-r from-green-600 to-emerald-700 bg-clip-text text-transparent mb-3">
+        <h1 className="text-3xl font-bold text-white mb-2">
           Mocha API Testing
         </h1>
-        <p className="text-lg text-gray-600 max-w-2xl mx-auto px-4">
-          Test your API endpoints with ease. Enter your API details below and get
-          instant feedback on performance and reliability.
+        <p className="text-gray-400 max-w-2xl mx-auto px-4 text-sm">
+          Test your API endpoints with ease. Enter your API details below and get instant feedback on performance and reliability.
         </p>
-        <div className="mt-4 bg-blue-50 border border-blue-200 rounded-lg p-3 max-w-md mx-auto">
-          <p className="text-sm text-blue-700 flex items-center gap-2">
-            <Info className="h-4 w-4" />
-            <span className="font-medium">Connected to:</span>
-            <code className="bg-blue-100 px-2 py-1 rounded text-xs">localhost:5000</code>
-          </p>
+        <div className="mt-4 text-gray-400 text-sm">
+          <p>Connected to: localhost:5000</p>
         </div>
       </div>
 
       {/* Main */}
-      <div className="max-w-6xl mx-auto px-4 pb-12">
-        <div className="bg-white rounded-2xl shadow-xl border border-gray-100 overflow-hidden">
-          {/* Bar */}
-          <div className="bg-gradient-to-r from-green-500 to-emerald-600 px-6 py-4">
+      <div className="max-w-4xl mx-auto px-4 pb-12">
+        <div className="bg-gray-800 rounded-lg shadow-xl border border-white-700 overflow-hidden">
+          {/* Header Bar */}
+          <div className="bg-red-600 px-6 py-4">
             <div className="flex items-center justify-between">
-              <h2 className="text-xl font-bold text-white flex items-center gap-2">
+              <h2 className="text-lg font-bold text-white flex items-center gap-2">
                 <Globe className="h-5 w-5" />
                 API Test Runner
               </h2>
               <button
                 onClick={quickFillExample}
-                className="bg-white/20 hover:bg-white/30 text-white px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200 flex items-center gap-2"
+                className="bg-orange-500 hover:bg-orange-600 text-white px-4 py-2 rounded text-sm font-medium transition-all duration-200 flex items-center gap-2"
               >
                 <HelpCircle className="h-4 w-4" />
                 Try Example
@@ -249,119 +245,92 @@ export default function MochaForm() {
           <div className="p-6 space-y-6">
             {/* URL */}
             <div className="space-y-2">
-              <label
-                htmlFor="endpoint"
-                className="block text-sm font-semibold text-gray-700 flex items-center gap-2"
-              >
-                <Globe className="h-4 w-4 text-green-600" />
-                API Endpoint URL *
+              <label className="block text-sm font-semibold text-white flex items-center gap-2">
+                <Globe className="h-4 w-4 text-gray-400" />
+                API Endpoint URL
               </label>
               <input
                 type="text"
-                id="endpoint"
                 value={endpoint}
                 onChange={(e) => setEndpoint(e.target.value.trim())}
-                placeholder="https://api.example.com/users"
-                required
-                className="w-full border-2 border-gray-200 rounded-xl p-4 focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500 transition-all duration-200"
+                placeholder="https://example.com"
+                className="w-full bg-gray-700 border border-white-600 rounded p-3 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500 transition-all duration-200"
               />
-              <p className="text-xs text-gray-500 flex items-center gap-1">
-                <Info className="h-3 w-3" />
+              <p className="text-xs text-gray-400">
                 Must be a valid URL starting with http:// or https://
               </p>
             </div>
 
-            {/* Method & Description */}
-            <div className="grid md:grid-cols-2 gap-6">
-              <div className="space-y-2">
-                <label
-                  htmlFor="method"
-                  className="block text-sm font-semibold text-gray-700 flex items-center gap-2"
-                >
-                  <Code className="h-4 w-4 text-green-600" />
-                  Request Method
-                </label>
-                <select
-                  id="method"
-                  value={method}
-                  onChange={(e) => setMethod(e.target.value.trim())}
-                  className="w-full border-2 border-gray-200 rounded-xl p-4 focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500 transition-all duration-200"
-                >
-                  <option value="GET">GET - Retrieve data</option>
-                  <option value="POST">POST - Create new data</option>
-                  <option value="PUT">PUT - Update existing data</option>
-                  <option value="DELETE">DELETE - Remove data</option>
-                  <option value="PATCH">PATCH - Partial update</option>
-                </select>
-              </div>
+            {/* Method */}
+            <div className="space-y-2">
+              <label className="block text-sm font-semibold text-white flex items-center gap-2">
+                <Code className="h-4 w-4 text-gray-400" />
+                Request Method
+              </label>
+              <select
+                value={method}
+                onChange={(e) => setMethod(e.target.value.trim())}
+                className="w-full bg-gray-700 border border-white-600 rounded p-3 text-white focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500 transition-all duration-200"
+              >
+                <option value="GET">GET - Retrieve data</option>
+                <option value="POST">POST - Create new data</option>
+                <option value="PUT">PUT - Update existing data</option>
+                <option value="DELETE">DELETE - Remove data</option>
+                <option value="PATCH">PATCH - Partial update</option>
+              </select>
+            </div>
 
-              <div className="space-y-2">
-                <label
-                  htmlFor="testDescription"
-                  className="block text-sm font-semibold text-gray-700 flex items-center gap-2"
-                >
-                  <FileText className="h-4 w-4 text-green-600" />
-                  Test Description
-                </label>
-                <input
-                  type="text"
-                  id="testDescription"
-                  value={testDescription}
-                  onChange={(e) => setTestDescription(e.target.value.trim())}
-                  placeholder="Describe what this test should do..."
-                  className="w-full border-2 border-gray-200 rounded-xl p-4 focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500 transition-all duration-200"
-                />
-              </div>
+            {/* Test Description */}
+            <div className="space-y-2">
+              <label className="block text-sm font-semibold text-white flex items-center gap-2">
+                <FileText className="h-4 w-4 text-gray-400" />
+                Test Description
+              </label>
+              <input
+                type="text"
+                value={testDescription}
+                onChange={(e) => setTestDescription(e.target.value.trim())}
+                placeholder="Describe what this test should do..."
+                className="w-full bg-gray-700 border border-white-600 rounded p-3 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500 transition-all duration-200"
+              />
             </div>
 
             {/* Headers */}
             <div className="space-y-2">
-              <label
-                htmlFor="headers"
-                className="block text-sm font-semibold text-gray-700"
-              >
+              <label className="block text-sm font-semibold text-white">
                 Headers (JSON) - Optional
               </label>
               <textarea
-                id="headers"
                 value={headers}
                 onChange={(e) => setHeaders(e.target.value.trim())}
                 placeholder={getHeadersPlaceholder()}
                 rows={3}
-                className="w-full border-2 border-gray-200 rounded-xl p-4 focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500 transition-all duration-200 font-mono text-sm"
+                className="w-full bg-gray-700 border border-white-600 rounded p-3 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500 transition-all duration-200 font-mono text-sm"
               />
             </div>
 
             {/* Body */}
             {method !== "GET" && (
               <div className="space-y-2">
-                <label
-                  htmlFor="body"
-                  className="block text-sm font-semibold text-gray-700"
-                >
+                <label className="block text-sm font-semibold text-white">
                   Request Body (JSON) - Optional
                 </label>
                 <textarea
-                  id="body"
                   value={body}
                   onChange={(e) => setBody(e.target.value.trim())}
                   placeholder='{\n  "name": "John Doe",\n  "email": "john@example.com"\n}'
                   rows={4}
-                  className="w-full border-2 border-gray-200 rounded-xl p-4 focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500 transition-all duration-200 font-mono text-sm"
+                  className="w-full bg-gray-700 border border-white-600 rounded p-3 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500 transition-all duration-200 font-mono text-sm"
                 />
               </div>
             )}
 
-            {/* NEW: Timeout */}
+            {/* Timeout */}
             <div className="space-y-2">
-              <label
-                htmlFor="timeout"
-                className="block text-sm font-semibold text-gray-700"
-              >
-                Advanced: Timeout (ms)
+              <label className="block text-sm font-semibold text-white">
+                Timeout (ms)
               </label>
               <input
-                id="timeout"
                 type="number"
                 min={1000}
                 step={500}
@@ -369,31 +338,31 @@ export default function MochaForm() {
                 onChange={(e) =>
                   setTimeoutMs(Math.max(0, Number(e.target.value || 0)))
                 }
-                className="w-56 border-2 border-gray-200 rounded-xl p-3 focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500 transition-all duration-200"
+                className="w-56 bg-gray-700 border border-white-600 rounded p-3 text-white focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500 transition-all duration-200"
               />
-              <p className="text-xs text-gray-500">
+              <p className="text-xs text-gray-400">
                 Request will be aborted if it exceeds this duration.
               </p>
             </div>
 
             {/* Error Display */}
             {error && (
-              <div className="bg-red-50 border-2 border-red-200 rounded-xl p-4 flex items-start gap-3">
-                <AlertCircle className="h-6 w-6 text-red-500 flex-shrink-0 mt-0.5" />
+              <div className="bg-red-900 border border-red-700 rounded p-4 flex items-start gap-3">
+                <AlertCircle className="h-6 w-6 text-red-400 flex-shrink-0 mt-0.5" />
                 <div>
-                  <p className="text-red-700 font-medium">{error}</p>
-                  <p className="text-red-600 text-sm mt-1">
+                  <p className="text-red-300 font-medium">{error}</p>
+                  <p className="text-red-400 text-sm mt-1">
                     Check the console for detailed error information
                   </p>
                 </div>
               </div>
             )}
 
-            {/* Submit */}
+            {/* Submit Button */}
             <button
               onClick={handleSubmit}
               disabled={loading}
-              className="w-full bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white py-4 px-6 rounded-xl font-semibold text-lg transition-all duration-200 flex items-center justify-center gap-3 disabled:opacity-50 disabled:cursor-not-allowed shadow-lg hover:shadow-xl transform hover:-translate-y-0.5"
+              className="w-full bg-red-600 hover:bg-red-700 text-white py-4 px-6 rounded font-semibold text-lg transition-all duration-200 flex items-center justify-center gap-3 disabled:opacity-50 disabled:cursor-not-allowed"
             >
               {loading ? (
                 <>
@@ -412,22 +381,22 @@ export default function MochaForm() {
           {/* Loading */}
           {loading && (
             <div className="mx-6 mb-6">
-              <div className="bg-gradient-to-r from-green-50 to-emerald-50 border-2 border-green-200 rounded-xl p-8 text-center">
-                <div className="animate-spin rounded-full h-12 w-12 border-4 border-green-500 border-t-transparent mx-auto mb-4"></div>
-                <h3 className="text-lg font-semibold text-green-700 mb-2">
+              <div className="bg-gray-700 border border-white-600 rounded p-8 text-center">
+                <div className="animate-spin rounded-full h-12 w-12 border-4 border-red-500 border-t-transparent mx-auto mb-4"></div>
+                <h3 className="text-lg font-semibold text-white mb-2">
                   Running Mocha Tests...
                 </h3>
-                <p className="text-green-600">
+                <p className="text-gray-400">
                   Testing your API endpoint with real Mocha tests
                 </p>
-                <div className="mt-4 bg-white rounded-lg p-3">
-                  <div className="flex justify-between text-sm text-gray-600">
+                <div className="mt-4 bg-gray-800 rounded p-3">
+                  <div className="flex justify-between text-sm text-gray-400">
                     <span>Progress</span>
                     <span>Testing...</span>
                   </div>
-                  <div className="w-full bg-gray-200 rounded-full h-2 mt-2">
+                  <div className="w-full bg-gray-600 rounded-full h-2 mt-2">
                     <div
-                      className="bg-gradient-to-r from-green-500 to-emerald-600 h-2 rounded-full animate-pulse"
+                      className="bg-red-600 h-2 rounded-full animate-pulse"
                       style={{ width: "75%" }}
                     ></div>
                   </div>
@@ -439,13 +408,13 @@ export default function MochaForm() {
           {/* Results */}
           {!loading && testResults && (
             <div className="mx-6 mb-6">
-              <div className="bg-gradient-to-r from-gray-50 to-green-50 border-2 border-gray-200 rounded-xl overflow-hidden">
-                {/* Header */}
+              <div className="bg-gray-700 border border-white-600 rounded overflow-hidden">
+                {/* Results Header */}
                 <div
                   className={`px-6 py-4 ${
                     testResults.passed
-                      ? "bg-gradient-to-r from-green-500 to-emerald-600"
-                      : "bg-gradient-to-r from-red-500 to-red-600"
+                      ? "bg-green-700"
+                      : "bg-red-700"
                   }`}
                 >
                   <div className="flex items-center justify-between">
@@ -457,7 +426,7 @@ export default function MochaForm() {
                       )}
                       Test Results
                     </h3>
-                    <span className="px-4 py-2 rounded-full text-sm font-bold bg-white/20 text-white">
+                    <span className="px-4 py-2 rounded text-sm font-bold bg-white/20 text-white">
                       {testResults.passed ? "✓ PASSED" : "✗ FAILED"}
                     </span>
                   </div>
@@ -467,15 +436,15 @@ export default function MochaForm() {
                   {/* Status */}
                   {typeof testResults.statusCode === "number" && (
                     <div className="flex items-center gap-3">
-                      <span className="text-gray-600 font-medium">
+                      <span className="text-gray-300 font-medium">
                         HTTP Status:
                       </span>
                       <span
-                        className={`px-3 py-1 rounded-full text-sm font-bold ${
+                        className={`px-3 py-1 rounded text-sm font-bold ${
                           testResults.statusCode >= 200 &&
                           testResults.statusCode < 300
-                            ? "bg-green-100 text-green-800"
-                            : "bg-red-100 text-red-800"
+                            ? "bg-green-900 text-green-300"
+                            : "bg-red-900 text-red-300"
                         }`}
                       >
                         {testResults.statusCode}
@@ -486,11 +455,11 @@ export default function MochaForm() {
                   {/* Response */}
                   {testResults.response && (
                     <div className="space-y-3">
-                      <h4 className="font-semibold text-gray-700 flex items-center gap-2">
-                        <Info className="h-5 w-5 text-green-600" />
+                      <h4 className="font-semibold text-white flex items-center gap-2">
+                        <Info className="h-5 w-5 text-gray-400" />
                         API Response
                       </h4>
-                      <div className="bg-gray-900 rounded-xl p-4 overflow-auto max-h-60">
+                      <div className="bg-black rounded p-4 overflow-auto max-h-60">
                         <pre className="text-sm text-green-400 whitespace-pre-wrap break-words">
                           {JSON.stringify(testResults.response, null, 2)}
                         </pre>
@@ -502,34 +471,34 @@ export default function MochaForm() {
                   {Array.isArray(testResults.assertions) &&
                     testResults.assertions.length > 0 && (
                       <div className="space-y-2">
-                        <h4 className="font-semibold text-gray-700">
+                        <h4 className="font-semibold text-white">
                           Test Assertions
                         </h4>
                         {testResults.assertions.map((a, i) => (
                           <div
                             key={i}
-                            className={`p-4 rounded-xl border-l-4 ${
+                            className={`p-4 rounded border-l-4 ${
                               a.passed
-                                ? "bg-green-50 border-green-500"
-                                : "bg-red-50 border-red-500"
+                                ? "bg-green-900 border-green-500"
+                                : "bg-red-900 border-red-500"
                             }`}
                           >
                             <div className="flex items-start gap-3">
                               {a.passed ? (
-                                <Check className="h-5 w-5 text-green-600 mt-0.5" />
+                                <Check className="h-5 w-5 text-green-400 mt-0.5" />
                               ) : (
-                                <AlertCircle className="h-5 w-5 text-red-600 mt-0.5" />
+                                <AlertCircle className="h-5 w-5 text-red-400 mt-0.5" />
                               )}
                               <div className="flex-1">
                                 <p
                                   className={`font-medium ${
-                                    a.passed ? "text-green-700" : "text-red-700"
+                                    a.passed ? "text-green-300" : "text-red-300"
                                   }`}
                                 >
                                   {a.message}
                                 </p>
                                 {!a.passed && a.error && (
-                                  <p className="text-sm text-red-600 mt-1">
+                                  <p className="text-sm text-red-400 mt-1">
                                     {a.error}
                                   </p>
                                 )}
@@ -542,47 +511,47 @@ export default function MochaForm() {
 
                   {/* Summary */}
                   <div className="grid md:grid-cols-3 gap-4">
-                    <div className="bg-white rounded-xl p-4 border-2 border-gray-200 text-center">
-                      <p className="text-2xl font-bold text-green-600">
+                    <div className="bg-gray-800 rounded p-4 border border-white-600 text-center">
+                      <p className="text-2xl font-bold text-green-400">
                         {testResults.duration ?? "N/A"}ms
                       </p>
-                      <p className="text-sm text-gray-600">Response Time</p>
+                      <p className="text-sm text-gray-400">Response Time</p>
                     </div>
-                    <div className="bg-white rounded-xl p-4 border-2 border-gray-200 text-center">
-                      <p className="text-2xl font-bold text-blue-600">{method}</p>
-                      <p className="text-sm text-gray-600">Method Used</p>
+                    <div className="bg-gray-800 rounded p-4 border border-white-600 text-center">
+                      <p className="text-2xl font-bold text-blue-400">{method}</p>
+                      <p className="text-sm text-gray-400">Method Used</p>
                     </div>
-                    <div className="bg-white rounded-xl p-4 border-2 border-gray-200 text-center">
-                      <p className="text-2xl font-bold text-purple-600">
+                    <div className="bg-gray-800 rounded p-4 border border-white-600 text-center">
+                      <p className="text-2xl font-bold text-purple-400">
                         {Array.isArray(testResults.assertions)
                           ? `${testResults.assertions.filter((a) => a.passed).length}/${testResults.assertions.length}`
                           : "N/A"}
                       </p>
-                      <p className="text-sm text-gray-600">Tests Passed</p>
+                      <p className="text-sm text-gray-400">Tests Passed</p>
                     </div>
                   </div>
 
                   {/* Previous vs Current */}
                   {typeof testResults.previousDuration === "number" && (
-                    <div className="bg-white rounded-xl p-4 border-2 border-dashed border-emerald-200">
-                      <h4 className="font-semibold text-gray-800 mb-3">
+                    <div className="bg-gray-800 rounded p-4 border border-dashed border-white-600">
+                      <h4 className="font-semibold text-white mb-3">
                         Response Time Comparison
                       </h4>
                       <div className="grid sm:grid-cols-3 gap-4 items-center">
                         <div className="text-center">
-                          <p className="text-xs text-gray-500">Previous</p>
-                          <p className="text-xl font-semibold text-gray-800">
+                          <p className="text-xs text-gray-400">Previous</p>
+                          <p className="text-xl font-semibold text-white">
                             {testResults.previousDuration} ms
                           </p>
                         </div>
                         <div className="text-center">
-                          <p className="text-xs text-gray-500">Current</p>
-                          <p className="text-xl font-semibold text-gray-800">
+                          <p className="text-xs text-gray-400">Current</p>
+                          <p className="text-xl font-semibold text-white">
                             {testResults.duration} ms
                           </p>
                         </div>
                         <div className="text-center">
-                          <p className="text-xs text-gray-500">Change</p>
+                          <p className="text-xs text-gray-400">Change</p>
                           <div className="mt-1">
                             <ComparisonBadge
                               deltaMs={testResults.deltaMs}
@@ -594,7 +563,7 @@ export default function MochaForm() {
                       {typeof testResults.degraded === "boolean" && (
                         <p
                           className={`mt-3 text-sm ${
-                            testResults.degraded ? "text-red-700" : "text-green-700"
+                            testResults.degraded ? "text-red-400" : "text-green-400"
                           }`}
                         >
                           {testResults.degraded
@@ -610,32 +579,31 @@ export default function MochaForm() {
           )}
         </div>
 
-        {/* Help */}
-        <div className="mt-8 bg-gradient-to-r from-blue-50 to-indigo-50 rounded-2xl p-6 border border-blue-200">
-          <h3 className="text-lg font-bold text-blue-800 mb-3 flex items-center gap-2">
+        {/* Help Section */}
+        <div className="mt-8 bg-black-800 rounded-lg p-6 border border-white-700">
+          <h3 className="text-lg font-bold text-white mb-3 flex items-center gap-2">
             <HelpCircle className="h-5 w-5" />
             How to Use This Tool
           </h3>
-          <div className="grid md:grid-cols-2 gap-4 text-sm text-blue-700">
+          <div className="grid md:grid-cols-2 gap-6">
             <div>
-              <p className="font-medium mb-2">🚀 Quick Start:</p>
-              <ol className="list-decimal list-inside space-y-1">
-                <li>Click "Try Example" to fill sample data</li>
-                <li>Or enter your own API endpoint URL</li>
-                <li>Select the HTTP method (GET, POST, etc.)</li>
-                <li>Add headers and body if needed</li>
-                <li>Adjust timeout if needed</li>
-                <li>Click "Run API Test" and see results!</li>
-              </ol>
+              <p className="font-medium mb-3 text-white">🚀 Quick Start:</p>
+              <ul className="text-sm text-red-400 space-y-1">
+                <li>• Click "Try Example" to fill sample data</li>
+                <li>• Or enter your own API endpoint URL</li>
+                <li>• Select the HTTP method (GET, POST, etc.)</li>
+                <li>• Add headers and body if needed</li>
+                <li>• Click "Run API Test" and see results!</li>
+              </ul>
             </div>
             <div>
-              <p className="font-medium mb-2">📋 What This Tool Tests:</p>
-              <ul className="list-disc list-inside space-y-1">
-                <li>HTTP status code validation</li>
-                <li>Response format checking</li>
-                <li>Response time measurement</li>
-                <li>Timeout handling</li>
-                <li>Previous vs current latency comparison</li>
+              <p className="font-medium mb-3 text-white">📋 What This Tool Tests:</p>
+              <ul className="text-sm text-red-400 space-y-1">
+                <li>• HTTP status code validation</li>
+                <li>• Response format checking</li>
+                <li>• Response time measurement</li>
+                <li>• Timeout handling</li>
+                <li>• Performance comparison</li>
               </ul>
             </div>
           </div>

@@ -140,152 +140,189 @@ export default function XssTester() {
   };
 
   return (
-    <div className="max-w-5xl mx-auto p-4 space-y-6">
-      <h1 className="text-2xl font-bold">🧪 Advanced XSS Scanner</h1>
+    <div className="min-h-screen bg-black text-white">
+      <div className="max-w-5xl mx-auto p-6 space-y-6">
+        {/* Header with Logo */}
+        <div className="flex items-center gap-4 mb-8">
+  <div className="w-20 h-20 bg-white rounded-full flex items-center justify-center border-4 border-red-600 overflow-hidden">
+    <img
+      src="/Redteam/xss.png" // <-- replace with your image path
+      alt="Logo"
+      className="w-full h-full object-cover"
+    />
+  </div>
+  <div>
+    <h1 className="text-3xl font-bold text-white">Advanced XSS Scanner</h1>
+    <p className="text-gray-400 text-sm">Identify Cross-Site Scripting (XSS) risks</p>
+  </div>
+</div>
 
-      <form onSubmit={handleTest} className="space-y-4">
-        <input
-          type="url"
-          placeholder="Target URL (e.g., https://site.com/search)"
-          value={url}
-          onChange={(e) => setUrl(e.target.value)}
-          className="w-full p-2 border rounded"
-          required
-        />
 
-        <input
-          type="text"
-          placeholder="Parameter name (e.g., q)"
-          value={param}
-          onChange={(e) => setParam(e.target.value)}
-          className="w-full p-2 border rounded"
-          required
-        />
-
-        <div className="flex items-center gap-4">
-          <label className="flex items-center gap-2">
+        <div className="space-y-6">
+          {/* URL Input */}
+          <div className="bg-blue-900/20 rounded-lg p-6 border border-white">
+  <label className="block text-sm font-medium mb-2 text-gray-200"></label>
+            <label className="block text-white font-medium mb-2">URL to Test</label>
             <input
-              type="checkbox"
-              checked={usePresetList}
-              onChange={(e) => setUsePresetList(e.target.checked)}
+              type="url"
+              placeholder="Target URL (e.g., https://site.com/search)"
+              value={url}
+              onChange={(e) => setUrl(e.target.value)}
+              className="w-full p-3 bg-gray-800 border border-white-600 rounded-lg text-white placeholder-gray-400 focus:border-red-500 focus:outline-none"
+              required
             />
-            Use multi‑payload list
-          </label>
-        </div>
+          </div>
 
-        {usePresetList ? (
-          <textarea
-            className="w-full p-2 border rounded font-mono text-sm"
-            rows={8}
-            value={payloads}
-            onChange={(e) => setPayloads(e.target.value)}
-            placeholder="One payload per line"
-          />
-        ) : (
-          <textarea
-            className="w-full p-2 border rounded font-mono text-sm"
-            rows={4}
-            value={customPayload}
-            onChange={(e) => setCustomPayload(e.target.value)}
-            placeholder="Single payload"
-          />
-        )}
+          {/* Parameter Input */}
+          <div>
+            <label className="block text-white font-medium mb-2">Parameter Name</label>
+            <input
+              type="text"
+              placeholder="Parameter name (e.g., q)"
+              value={param}
+              onChange={(e) => setParam(e.target.value)}
+              className="w-full p-3 bg-gray-800 border border-white-600 rounded-lg text-white placeholder-gray-400 focus:border-red-500 focus:outline-none"
+              required
+            />
+          </div>
 
-        <div className="flex items-center gap-3">
-          <button
-            type="submit"
-            disabled={loading}
-            className={`px-4 py-2 text-white rounded ${loading ? 'bg-blue-400' : 'bg-blue-600 hover:bg-blue-700'}`}
-          >
-            {loading ? 'Scanning…' : 'Run Scan'}
-          </button>
+          {/* Payload Selection */}
+          <div className="flex items-center gap-4 mb-4">
+            <label className="flex items-center gap-2 text-white">
+              <input
+                type="checkbox"
+                checked={usePresetList}
+                onChange={(e) => setUsePresetList(e.target.checked)}
+                className="w-4 h-4 text-red-600 bg-gray-800 border-white-600 rounded focus:ring-red-500 focus:ring-2"
+              />
+              Use multi‑payload list
+            </label>
+          </div>
 
-          {result && !result.error && (
-            <>
-              <button
-                type="button"
-                onClick={makePdf}
-                className="px-4 py-2 bg-emerald-600 text-white rounded hover:bg-emerald-700"
-              >
-                Download PDF Report
-              </button>
-              <button
-                type="button"
-                onClick={downloadJson}
-                className="px-4 py-2 bg-gray-700 text-white rounded hover:bg-gray-800"
-              >
-                Download JSON
-              </button>
-            </>
-          )}
-        </div>
-      </form>
-
-      {result && (
-        <div className="bg-gray-50 border rounded p-4">
-          <h2 className="font-semibold mb-2">Summary</h2>
-          {!result.error ? (
-            <>
-              <div className="text-sm">
-                <div>WAF: {result.waf?.detected ? `Yes (${result.waf?.vendor || 'unknown'})` : 'No'}</div>
-                <div>Rate Limiting: {result.rateLimit?.detected ? `Yes (${result.rateLimit?.reason})` : 'No'}</div>
-                <div>
-                  Totals — Tests: {result.summary?.total} | Exec: {result.summary?.executed} | High: {result.summary?.high} | Med: {result.summary?.medium} | Low: {result.summary?.low}
-                </div>
-              </div>
-
-              <div className="overflow-auto mt-4">
-                <table className="min-w-full text-sm">
-                  <thead>
-                    <tr className="text-left border-b">
-                      <th className="py-2 pr-3">#</th>
-                      <th className="py-2 pr-3">Payload</th>
-                      <th className="py-2 pr-3">Context</th>
-                      <th className="py-2 pr-3">Reflected</th>
-                      <th className="py-2 pr-3">DOM Exec</th>
-                      <th className="py-2 pr-3">Risk</th>
-                      <th className="py-2 pr-3">HTTP</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {(result.runs || []).map((r, i) => (
-                      <tr key={i} className="border-b align-top">
-                        <td className="py-2 pr-3">{i + 1}</td>
-                        <td className="py-2 pr-3 font-mono break-all">{r.payload}</td>
-                        <td className="py-2 pr-3">{r.context || '—'}</td>
-                        <td className="py-2 pr-3">{r.reflected ? 'Yes' : 'No'}</td>
-                        <td className="py-2 pr-3">{r.domExecuted ? 'Yes' : 'No'}</td>
-                        <td className="py-2 pr-3">{r.risk || '—'}</td>
-                        <td className="py-2 pr-3">{r.status || '—'}</td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-
-              {/* Reflection highlight (first hit) */}
-              {(result.runs || []).some((r) => r.reflection?.highlighted) && (
-                <div className="mt-4">
-                  <h3 className="font-semibold">Reflected Payload Highlight</h3>
-                  {(result.runs || [])
-                    .filter((r) => r.reflection?.highlighted)
-                    .slice(0, 1)
-                    .map((r, idx) => (
-                      <pre
-                        key={idx}
-                        className="bg-white border rounded p-3 overflow-auto text-xs whitespace-pre-wrap"
-                      >
-                        {r.reflection?.highlighted}
-                      </pre>
-                    ))}
-                </div>
-              )}
-            </>
+          {/* Payload Input */}
+          {usePresetList ? (
+            <textarea
+              className="w-full p-3 bg-gray-800 border border-white-600 rounded-lg font-mono text-sm text-white placeholder-gray-400 focus:border-red-500 focus:outline-none"
+              rows={8}
+              value={payloads}
+              onChange={(e) => setPayloads(e.target.value)}
+              placeholder="One payload per line"
+            />
           ) : (
-            <div className="text-red-600">{String(result.error)}</div>
+            <textarea
+              className="w-full p-3 bg-gray-800 border border-white-600 rounded-lg font-mono text-sm text-white placeholder-gray-400 focus:border-red-500 focus:outline-none"
+              rows={4}
+              value={customPayload}
+              onChange={(e) => setCustomPayload(e.target.value)}
+              placeholder="Single payload"
+            />
           )}
+
+          {/* Action Buttons */}
+          <div className="flex items-center gap-3">
+            <button
+              type="button"
+              onClick={handleTest}
+              disabled={loading}
+              className={`px-6 py-3 text-white rounded-lg font-medium transition-all ${
+                loading 
+                  ? 'bg-red-400 cursor-not-allowed' 
+                  : 'bg-red-600 hover:bg-red-700 hover:shadow-lg'
+              }`}
+            >
+              {loading ? 'Scanning…' : 'Run Scan'}
+            </button>
+
+            {result && !result.error && (
+              <>
+                <button
+                  type="button"
+                  onClick={makePdf}
+                  className="px-6 py-3 bg-emerald-600 text-white rounded-lg hover:bg-emerald-700 font-medium transition-all hover:shadow-lg"
+                >
+                  Download PDF Report
+                </button>
+                <button
+                  type="button"
+                  onClick={downloadJson}
+                  className="px-6 py-3 bg-gray-700 text-white rounded-lg hover:bg-gray-600 font-medium transition-all hover:shadow-lg"
+                >
+                  Download JSON
+                </button>
+              </>
+            )}
+          </div>
         </div>
-      )}
+
+        {/* Results Section */}
+        {result && (
+          <div className="bg-gray-900 border border-white-700 rounded-lg p-6">
+            <h2 className="font-semibold text-xl mb-4 text-white">Summary</h2>
+            {!result.error ? (
+              <>
+                <div className="text-sm text-gray-300 space-y-1 mb-6">
+                  <div>WAF: {result.waf?.detected ? `Yes (${result.waf?.vendor || 'unknown'})` : 'No'}</div>
+                  <div>Rate Limiting: {result.rateLimit?.detected ? `Yes (${result.rateLimit?.reason})` : 'No'}</div>
+                  <div>
+                    Totals — Tests: {result.summary?.total} | Exec: {result.summary?.executed} | High: {result.summary?.high} | Med: {result.summary?.medium} | Low: {result.summary?.low}
+                  </div>
+                </div>
+
+                <div className="overflow-auto">
+                  <table className="min-w-full text-sm">
+                    <thead>
+                      <tr className="text-left border-b border-white-700">
+                        <th className="py-3 pr-3 text-gray-300 font-medium">#</th>
+                        <th className="py-3 pr-3 text-gray-300 font-medium">Payload</th>
+                        <th className="py-3 pr-3 text-gray-300 font-medium">Context</th>
+                        <th className="py-3 pr-3 text-gray-300 font-medium">Reflected</th>
+                        <th className="py-3 pr-3 text-gray-300 font-medium">DOM Exec</th>
+                        <th className="py-3 pr-3 text-gray-300 font-medium">Risk</th>
+                        <th className="py-3 pr-3 text-gray-300 font-medium">HTTP</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {(result.runs || []).map((r, i) => (
+                        <tr key={i} className="border-b border-white-800 align-top hover:bg-gray-800 transition-colors">
+                          <td className="py-3 pr-3 text-gray-300">{i + 1}</td>
+                          <td className="py-3 pr-3 font-mono break-all text-gray-100">{r.payload}</td>
+                          <td className="py-3 pr-3 text-gray-300">{r.context || '—'}</td>
+                          <td className="py-3 pr-3 text-gray-300">{r.reflected ? 'Yes' : 'No'}</td>
+                          <td className="py-3 pr-3 text-gray-300">{r.domExecuted ? 'Yes' : 'No'}</td>
+                          <td className="py-3 pr-3 text-gray-300">{r.risk || '—'}</td>
+                          <td className="py-3 pr-3 text-gray-300">{r.status || '—'}</td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+
+                {/* Reflection highlight (first hit) */}
+                {(result.runs || []).some((r) => r.reflection?.highlighted) && (
+                  <div className="mt-6">
+                    <h3 className="font-semibold text-white mb-3">Reflected Payload Highlight</h3>
+                    {(result.runs || [])
+                      .filter((r) => r.reflection?.highlighted)
+                      .slice(0, 1)
+                      .map((r, idx) => (
+                        <pre
+                          key={idx}
+                          className="bg-gray-800 border border-white-700 rounded-lg p-4 overflow-auto text-xs whitespace-pre-wrap text-gray-200"
+                        >
+                          {r.reflection?.highlighted}
+                        </pre>
+                      ))}
+                  </div>
+                )}
+              </>
+            ) : (
+              <div className="text-red-400 bg-red-900/20 p-4 rounded-lg border border-red-800">
+                {String(result.error)}
+              </div>
+            )}
+          </div>
+        )}
+      </div>
     </div>
   );
 }
