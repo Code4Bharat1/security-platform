@@ -148,8 +148,8 @@ export default function GreenTool() {
         {
             name: "Password Strength Checker",
             image: "password-checker.png",
-            description: "Description Passsword Strenght Checker....",
-            slug: "Passsword-Checker",
+            description: "Description Password Strength Checker....",
+            slug: "password-checker",
             buttonLabel: "Check Your Password",
             type: "non-tech"
         }

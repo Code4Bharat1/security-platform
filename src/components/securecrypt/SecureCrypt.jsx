@@ -4,6 +4,7 @@ import { useMemo, useState } from "react";
 import { Clipboard, ClipboardCheck, Download } from "lucide-react";
 import { jsPDF } from "jspdf";
 import autoTable from "jspdf-autotable";
+import GreenLayout from "../GreenTeam/layout";
 
 export default function SecureCrypt() {
   const API = useMemo(
@@ -159,16 +160,16 @@ export default function SecureCrypt() {
   const resultIsError = resultText.startsWith("❌");
 
   return (
-    <div className="min-h-screen bg-gray-100 flex flex-col items-center px-3 pt-10 pb-24">
-      <div className="text-center mb-6">
-        <img src="/tools/card-images/dycrypt.png" alt="SecureCrypt" className="w-16 h-16 mx-auto mb-4" />
-        <h1 className="text-3xl font-bold text-green-700">SecureCrypt</h1>
-        <p className="text-gray-600 mt-2">
-          AES‑256‑GCM encryption with passphrase/key, portable package, Copy/PDF/TXT export.
-        </p>
-      </div>
+    <div className="min-h-screen bg-black flex flex-col items-center px-3 pt-10 pb-24">
 
-      <div className="bg-white shadow-lg rounded-xl p-6 w-full max-w-2xl">
+    <GreenLayout 
+        heroData={{
+          imgPath: "/GreenTeam/dycrypt.png",
+          title: "SecureCrypt",
+          desc: "AES‑256‑GCM encryption with passphrase/key, portable package, Copy/PDF/TXT export."
+        }}
+      />
+      <div className="bg-black border border-white shadow-lg rounded-xl p-6 w-full max-w-2xl">
         {/* Mode */}
         <div className="flex justify-center gap-3 mb-4">
           <button
@@ -192,7 +193,7 @@ export default function SecureCrypt() {
         </div>
 
         {/* Input */}
-        <label className="block text-sm font-medium mb-1">
+        <label className="block text-white text-sm font-medium mb-1">
           {mode === "encrypt" ? "Plaintext" : "Encrypted Package (Base64)"}
         </label>
         <textarea
@@ -200,13 +201,13 @@ export default function SecureCrypt() {
           placeholder={mode === "encrypt" ? "Enter text to encrypt…" : "Paste the package returned by Encrypt…"}
           value={text}
           onChange={(e) => setText(e.target.value)}
-          className="w-full px-4 py-3 mb-4 border rounded-md focus:outline-none focus:ring-2 focus:ring-green-500"
+          className="w-full px-4 py-3 mb-4 text-white border rounded-md focus:outline-none focus:ring-2 focus:ring-green-500"
         />
 
         {/* Passphrase / Key */}
-        <div className="grid sm:grid-cols-2 gap-4 mb-4">
+        <div className="grid sm:grid-cols-2 gap-4 text-white mb-4">
           <div>
-            <label className="block text-sm font-medium mb-1">Passphrase (optional)</label>
+            <label className="block text-white text-sm font-medium mb-1">Passphrase (optional)</label>
             <input
               type="password"
               value={passphrase}
@@ -214,12 +215,12 @@ export default function SecureCrypt() {
               placeholder="Strong passphrase…"
               className="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-green-500"
             />
-            <p className="text-xs text-gray-500 mt-1">
+            <p className="text-xs mt-1">
               If empty, a random 256‑bit key will be generated for you.
             </p>
           </div>
           <div>
-            <label className="block text-sm font-medium mb-1">Base64 Key (optional)</label>
+            <label className="block text-white text-sm font-medium mb-1">Base64 Key (optional)</label>
             <input
               type="text"
               value={keyB64}
@@ -227,7 +228,7 @@ export default function SecureCrypt() {
               placeholder="Use instead of passphrase"
               className="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-green-500"
             />
-            <p className="text-xs text-gray-500 mt-1">
+            <p className="text-xs mt-1">
               Exactly 32 bytes (base64). Overrides passphrase if provided.
             </p>
           </div>

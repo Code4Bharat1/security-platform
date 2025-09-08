@@ -1,6 +1,7 @@
 "use client";
 import { useState } from "react";
 import { Link2 } from "lucide-react";
+import GreenLayout from "@/components/GreenTeam/layout";
 
 export default function UrlShortener() {
   const [originalUrl, setOriginalUrl] = useState("");
@@ -39,26 +40,28 @@ export default function UrlShortener() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-green-100 to-green-50 flex flex-col items-center pt-20 px-4">
-      <div className="text-center mb-8">
-        <Link2 className="mx-auto mb-3 text-green-700" size={48} />
-        <h1 className="text-3xl font-bold text-green-900">URL Shortener</h1>
-        <p className="text-gray-700 mt-1 text-sm">Make your long links short, clean & professional.</p>
-      </div>
+    <div className="min-h-screen bg-black flex flex-col items-center pt-20 px-4">
+      <GreenLayout
+        heroData={{
+          imgPath: "/GreenTeam/shorted-url.png",
+          title: "URL Shortener",
+          desc: "Make your long links short, clean & professional.",
+        }}
+      />
 
-      <div className="bg-white shadow-2xl rounded-2xl p-8 w-full max-w-xl text-center">
+      <div className="bg-black border border-white shadow-2xl rounded-2xl p-8 w-full max-w-xl text-center">
         <input
           type="text"
           placeholder="🔗 Paste your long URL here..."
           value={originalUrl}
           onChange={(e) => setOriginalUrl(e.target.value)}
-          className="w-full px-4 py-3 mb-5 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-green-500 text-gray-800"
+          className="w-full px-4 py-3 mb-5 border border-white text-white rounded-xl focus:outline-none focus:ring-2 focus:ring-green-500 text-gray-800"
         />
 
         <button
           onClick={handleShorten}
           disabled={loading || !originalUrl}
-          className={`w-full py-3 rounded-xl text-white font-semibold transition ${
+          className={`w-50 py-3 rounded-xl text-white font-semibold transition ${
             loading ? "bg-green-400 cursor-not-allowed" : "bg-green-600 hover:bg-green-700"
           }`}
         >

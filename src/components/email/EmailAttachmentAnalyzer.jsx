@@ -1,6 +1,7 @@
 "use client";
 import { useState } from "react";
 import { MailSearch } from "lucide-react";
+import GreenLayout from "../GreenTeam/layout";
 
 export default function EmailAttachmentAnalyzer() {
   const [file, setFile] = useState(null);
@@ -36,16 +37,15 @@ export default function EmailAttachmentAnalyzer() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-100 flex flex-col items-center pt-20 px-4">
-      <img src="/tools/card-images/email.png" alt="verify" className="w-16 h-20 mb-4 mt-7" />
-
-      <div className="text-center mb-10">
-        <MailSearch className="mx-auto mb-4 text-blue-600" size={48} />
-        <h1 className="text-3xl font-bold text-green-800">Email Attachment Analyzer</h1>
-        <p className="text-gray-600 mt-2">
-          Upload an attachment file to scan for threats or malware.
-        </p>
-      </div>
+    <div className="min-h-screen bg-black flex flex-col items-center pt-20 px-4">
+    
+      <GreenLayout  
+        heroData={{
+          imgPath: "/GreenTeam/email.png",
+          title: "Email Attachment Analyzer",
+          desc: "Upload an email attachment to scan for potential threats or malware.",
+        }}
+      />
 
       <div className="bg-white shadow-lg rounded-xl p-6 w-full max-w-lg text-center">
         <input

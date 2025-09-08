@@ -4,7 +4,7 @@ export default function ServicesLayout({ heroData, methodologyData, approchData 
             <DescHero data={heroData}></DescHero>
             <Hero data={heroData}></Hero>
             <Methodology data={methodologyData}></Methodology>
-            <OurApproch data={approchData}></OurApproch>
+            <KeyAspects data={keyAspectsData} />
         </div>
     )
 }
@@ -41,20 +41,26 @@ function DescHero({ data }) {
 }
 
 function Hero({ data }) {
+  // Split the description into first two words + rest
+  const words = data.desc.split(" ");
+  const firstTwoWords = words.slice(0, 2).join(" "); // take first two words
+  const rest = words.slice(2).join(" "); // remaining text
+
   return (
-    <div className="max-w-9xl mx-auto px-6 md:px-25 py-10 grid md:grid-cols-2 gap-12 items-center">
+    <div className="max-w-9xl bg-gradient-to-b from-black to-gray-800 mx-auto px-6 md:px-25 py-10 grid md:grid-cols-2 gap-8 items-center">
       {/* Left side - Text */}
       <div>
         <p className="text-lg md:text-xl text-gray-200 leading-relaxed">
-          {data.desc}
+          <strong className="font-semibold text-white">{firstTwoWords}</strong>{" "}
+          {rest}
         </p>
       </div>
 
       {/* Right side - Image */}
       <div className="flex justify-center">
         <img
-          src="/OurCoreServices/va-diagram.png" // replace with your actual image path
-          alt="Vulnerability Assessment"
+          src={data.imgSrc} // replace with your actual image path
+          alt={data.imgAlt}
           className="rounded-xl shadow-lg w-full max-w-md object-contain"
         />
       </div>
@@ -67,11 +73,11 @@ function Methodology({ data }) {
   return (
     <div className="relative min-h-screen py-16 px-6 md:px-12 lg:px-20">
       {/* Background */}
-      <div className="absolute inset-0 bg-gradient-to-b from-gray-900 to-black opacity-90 z-0"></div>
+      <div className="absolute inset-0 bg-gradient-to-b from-gray-800 to-black z-0"></div>
 
       {/* Title */}
       <h2 className="relative z-10 text-center text-3xl sm:text-4xl md:text-6xl font-inter font-bold underline underline-offset-8 md:underline-offset-12 decoration-indigo-500/70 text-white mb-16">
-        Methodology
+        Services
       </h2>
 
       {/* Single Row Layout */}
@@ -103,54 +109,95 @@ function Methodology({ data }) {
   );
 }
 
+function KeyAspects() {
+  return (
+    <div className="py-16 px-6 sm:px-12 lg:px-20 bg-black text-center">
+      {/* Section Heading */}
+      <h2 className="text-sm uppercase tracking-wider text-orange-600 mb-2">
+        Key Aspects of
+      </h2>
+      <h1 className="text-2xl md:text-4xl font-bold mb-10">
+        Vulnerability Assessment Process
+      </h1>
 
-function OurApproch({ data }) {
-    return (
-        <div className="">
-            <h2 className="text-2xl sm:text-4xl md:text-6xl font-inter font-bold underline underline-offset-8 md:underline-offset-12 decoration-[#9d7af0]/70 shadow-lg text-white mt-10 mb-20 mx-5 text-center">
-                Our Approach
-            </h2>
-            {/* Section 1: Grid Layout */}
-            {(
-                <div className="hidden md:grid grid-cols-6 gap-x-4 gap-y-8 text-white text-center">
-                    {/* Row 1 */}
-                    {data.firstRow.map((item, index) => (
-                        <div key={index} className="col-span-2 flex justify-center items-center">
-                            <div className="rounded-xl font-semibold text-sm md:text-xl border-dashed border-2 border-[#A580FF]/50 p-4 w-full aspect-video bg-white/10 backdrop-blur-xl h-full flex items-center justify-center">
-                                {item}
-                            </div>
-                        </div>
-                    ))}
+      {/* Diagram Image */}
+      <div className="flex justify-center">
+        <img
+          src={data.imgPath} // <-- update with your actual image path
+          alt={data.imgAlt}
+          className="w-full max-w-5xl object-contain"
+        />
+      </div>
+      <button>
+        <a
+          href="#next-section"
+            className="mt-6 inline-block bg-indigo-600 hover:bg-indigo-700 text-white font-semibold py-3 px-6 rounded-lg shadow-lg transition duration-300"
+                    >
+                        Free Consultation
+                    </a>
+                </button>
+    </div>
 
-                    {/* Row 2 */}
-                    {data.secondRow.map((item, index) => (
-                        <div
-                            key={index}
-                            className={`${item.colStart} col-span-2 flex justify-center items-center`}
-                        >
-                            <div className="rounded-xl font-semibold text-sm md:text-xl border-dashed border-2 border-[#A580FF]/50 p-4 w-full aspect-video bg-white/10 backdrop-blur-xl h-full flex items-center justify-center">
-                                {item.text}
-                            </div>
-                        </div>
-                    ))}
-                </div>
-            )}
-
-            {/* Section 2: Flat Mobile-Style Layout */}
-            {(
-                <div className="md:hidden flex flex-col gap-y-8 text-white text-center">
-                    {[...data.firstRow, ...data.secondRow].map((item, index) => {
-                        const content = typeof item === 'string' ? item : item.text;
-                        return (
-                            <div key={index} className="w-full flex justify-center items-center">
-                                <div className="rounded-xl font-semibold text-sm md:text-xl border-dashed border-2 border-[#A580FF]/50 p-4 w-full aspect-video bg-white/10 backdrop-blur-xl h-full flex items-center justify-center">
-                                    {content}
-                                </div>
-                            </div>
-                        );
-                    })}
-                </div>
-            )}
-        </div>
-    )
+  );
 }
+
+
+
+
+
+
+
+
+
+
+
+// function OurApproch({ data }) {
+//     return (
+//         <div className="">
+//             <h2 className="text-2xl sm:text-4xl md:text-6xl font-inter font-bold underline underline-offset-8 md:underline-offset-12 decoration-[#9d7af0]/70 shadow-lg text-white mt-10 mb-20 mx-5 text-center">
+//                 Our Approach
+//             </h2>
+//             {/* Section 1: Grid Layout */}
+//             {(
+//                 <div className="hidden md:grid grid-cols-6 gap-x-4 gap-y-8 text-white text-center">
+//                     {/* Row 1 */}
+//                     {data.firstRow.map((item, index) => (
+//                         <div key={index} className="col-span-2 flex justify-center items-center">
+//                             <div className="rounded-xl font-semibold text-sm md:text-xl border-dashed border-2 border-[#A580FF]/50 p-4 w-full aspect-video bg-white/10 backdrop-blur-xl h-full flex items-center justify-center">
+//                                 {item}
+//                             </div>
+//                         </div>
+//                     ))}
+
+//                     {/* Row 2 */}
+//                     {data.secondRow.map((item, index) => (
+//                         <div
+//                             key={index}
+//                             className={`${item.colStart} col-span-2 flex justify-center items-center`}
+//                         >
+//                             <div className="rounded-xl font-semibold text-sm md:text-xl border-dashed border-2 border-[#A580FF]/50 p-4 w-full aspect-video bg-white/10 backdrop-blur-xl h-full flex items-center justify-center">
+//                                 {item.text}
+//                             </div>
+//                         </div>
+//                     ))}
+//                 </div>
+//             )}
+
+//             {/* Section 2: Flat Mobile-Style Layout */}
+//             {(
+//                 <div className="md:hidden flex flex-col gap-y-8 text-white text-center">
+//                     {[...data.firstRow, ...data.secondRow].map((item, index) => {
+//                         const content = typeof item === 'string' ? item : item.text;
+//                         return (
+//                             <div key={index} className="w-full flex justify-center items-center">
+//                                 <div className="rounded-xl font-semibold text-sm md:text-xl border-dashed border-2 border-[#A580FF]/50 p-4 w-full aspect-video bg-white/10 backdrop-blur-xl h-full flex items-center justify-center">
+//                                     {content}
+//                                 </div>
+//                             </div>
+//                         );
+//                     })}
+//                 </div>
+//             )}
+//         </div>
+//     )
+// }

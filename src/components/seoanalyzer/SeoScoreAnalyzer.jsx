@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState } from "react";
+import GreenLayout from "../GreenTeam/layout";
 
 export default function SeoScoreAnalyzer() {
   const [url, setUrl] = useState("");
@@ -42,12 +43,14 @@ export default function SeoScoreAnalyzer() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-900 flex flex-col items-center justify-center p-6">
-      <div className="w-full max-w-3xl bg-gray-800 text-white rounded-2xl shadow-xl p-8 border border-gray-700">
-        {/* Header */}
-        <h1 className="text-3xl font-bold text-center mb-6">
-          🔍 SEO Score Analyzer
-        </h1>
+    <div className="min-h-screen bg-black flex flex-col items-center justify-center p-6">
+      <GreenLayout
+        heroData={{
+          imgPath: "/GreenTeam/seo-score.png",
+          title: "SEO Score Analyzer",
+        }}
+      />
+      <div className="w-full max-w-3xl bg-black border border-white text-white rounded-2xl shadow-xl p-8 border border-gray-700">
 
         {/* Input Section */}
         <div className="flex gap-3 mb-6">
@@ -56,17 +59,19 @@ export default function SeoScoreAnalyzer() {
             value={url}
             onChange={(e) => setUrl(e.target.value)}
             placeholder="Enter website URL (e.g. https://example.com)"
-            className="flex-1 border border-gray-600 bg-gray-700 text-white p-3 rounded-lg focus:ring-2 focus:ring-blue-500"
+            className="flex-1 border border-gray-600 bg-gray-700 text-white p-3 rounded-lg focus:ring-2 focus:ring-green-500"
           />
+
+        </div>
+        <div className="flex justify-center mb-6 space-x-4">
           <button
             onClick={analyzeSEO}
             disabled={loading}
-            className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-lg transition disabled:bg-gray-500"
+            className="bg-green-600 hover:bg-green-700 text-white px-6 py-3 rounded-lg transition disabled:bg-gray-500"
           >
             {loading ? "Analyzing..." : "Analyze"}
           </button>
-        </div>
-
+          </div>
         {/* Error Message */}
         {error && (
           <p className="text-red-400 font-medium mb-4 bg-red-900/40 p-3 rounded-lg">
@@ -77,7 +82,7 @@ export default function SeoScoreAnalyzer() {
         {/* Loader */}
         {loading && (
           <div className="flex justify-center items-center py-6">
-            <div className="w-10 h-10 border-4 border-blue-500 border-dashed rounded-full animate-spin"></div>
+            <div className="w-10 h-10 border-4 border-green-500 border-dashed rounded-full animate-spin"></div>
           </div>
         )}
 

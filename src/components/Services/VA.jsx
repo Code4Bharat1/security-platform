@@ -15,40 +15,42 @@ export default function VAPage() {
         { title: "Endpoint & Host Review", desc: "Evaluate OS patches, privilege escalations, insecure accounts, and device-level exposures." }
     ];
     
-    const approchData = {
-        firstRow: [
-            "Reconnaissance and threat modeling.",
-            "Vulnerability identification.",
-            "Exploitation and post-exploitation.",
-        ], 
-        secondRow: [
-            {
-                text: "Attack path documentation.",
-                colStart: "col-start-2",
-            },
-            {
-                text: "Reporting with PoCs and risk-based recommendations.",
-                colStart: "col-start-4",
-            },
-        ]
-    };
+    // const approchData = {
+    //     firstRow: [
+    //         "Reconnaissance and threat modeling.",
+    //         "Vulnerability identification.",
+    //         "Exploitation and post-exploitation.",
+    //     ], 
+    //     secondRow: [
+    //         {
+    //             text: "Attack path documentation.",
+    //             colStart: "col-start-2",
+    //         },
+    //         {
+    //             text: "Reporting with PoCs and risk-based recommendations.",
+    //             colStart: "col-start-4",
+    //         },
+    //     ]
+    // };
     
     return (
         <ServicesLayout 
             heroData={heroData} 
             methodologyData={methodologyData} 
-            approchData={approchData} 
+            keyAspectsData={KeyAspects} 
+            // approchData={approchData} 
         />
     );
 }
 
-function ServicesLayout({ heroData, methodologyData, approchData }) {
+function ServicesLayout({ heroData, methodologyData, approchData ,keyAspectsData}) {
     return (
         <div className="bg-gradient-to-b from-gray-900 to-black text-white">
             <DescHero data={heroData} />
             <Hero data={heroData} />
             <Methodology data={methodologyData} />
-            <OurApproch data={approchData} />
+            <KeyAspects data={keyAspectsData} />
+            {/* <OurApproch data={approchData} /> */}
         </div>
     );
 }
@@ -86,27 +88,61 @@ function DescHero({ data }) {
                         {secondPart}
                     </h1>
                 </div>
-                
-           
-
             </div>
         </div>
     );
 }
-function Hero({ data }) {
+
+function KeyAspects() {
   return (
-    <div className="max-w-9xl mx-auto px-6 md:px-25 py-10 grid md:grid-cols-2 gap-12 items-center">
+    <div className="py-16 px-6 sm:px-12 lg:px-20 bg-black text-center">
+      {/* Section Heading */}
+      <h2 className="text-sm uppercase tracking-wider text-orange-600 mb-2">
+        Key Aspects of
+      </h2>
+      <h1 className="text-2xl md:text-4xl font-bold mb-10">
+        Vulnerability Assessment Process
+      </h1>
+
+      {/* Diagram Image */}
+      <div className="flex justify-center">
+        <img
+          src="/images/va-process.png" // <-- update with your actual image path
+          alt="Vulnerability Assessment Process"
+          className="w-full max-w-5xl object-contain"
+        />
+      </div>
+                      <button>
+                    <a
+                        href="#next-section"
+                        className="mt-6 inline-block bg-indigo-600 hover:bg-indigo-700 text-white font-semibold py-3 px-6 rounded-lg shadow-lg transition duration-300"
+                    >
+                        Free Consultation
+                    </a>
+                </button>
+    </div>
+
+  );
+}
+
+function Hero({ data }) {
+  const desc = data.desc.split("Vulnerability Assessment");
+
+  return (
+    <div className=" bg-gradient-to-b from-black to-gray-900 z-0 max-w-9xl mx-auto px-6 md:px-25 py-10 grid md:grid-cols-2 gap-8 items-center">
       {/* Left side - Text */}
       <div>
         <p className="text-lg md:text-xl text-gray-200 leading-relaxed">
-          {data.desc}
+          {desc[0]}
+          <strong className=" text-white">Vulnerability Assessment</strong>
+          {desc[1]}
         </p>
       </div>
 
       {/* Right side - Image */}
       <div className="flex justify-center">
         <img
-          src="/OurCoreServices/va-diagram.png" // replace with your actual image path
+          src="/OurCoreServices/va-diagram.png"
           alt="Vulnerability Assessment"
           className="rounded-xl shadow-lg w-full max-w-md object-contain"
         />
@@ -201,47 +237,47 @@ function Methodology({ data }) {
 
 
 
-function OurApproch({ data }) {
-    return (
-        <div className="py-20 px-4 sm:px-6 md:px-8 lg:px-12 xl:px-20">
-            <h2 className="text-4xl md:text-5xl lg:text-6xl font-bold text-center mb-16 bg-clip-text text-transparent bg-gradient-to-r from-purple-400 to-indigo-500">
-                Our Approach
-            </h2>
+// function OurApproch({ data }) {
+//     return (
+//         <div className="py-20 px-4 sm:px-6 md:px-8 lg:px-12 xl:px-20">
+//             <h2 className="text-4xl md:text-5xl lg:text-6xl font-bold text-center mb-16 bg-clip-text text-transparent bg-gradient-to-r from-purple-400 to-indigo-500">
+//                 Our Approach
+//             </h2>
             
-            {/* Desktop Grid Layout */}
-            <div className="hidden md:grid grid-cols-6 gap-6 text-white text-center">
-                {/* Row 1 */}
-                {data.firstRow.map((item, index) => (
-                    <div key={index} className="col-span-2 flex justify-center items-center">
-                        <div className="rounded-xl font-semibold text-lg border-dashed border-2 border-[#A580FF]/50 p-6 w-full aspect-video bg-gradient-to-br from-[#A580FF]/10 to-[#7C4DFF]/10 backdrop-blur-lg h-full flex items-center justify-center transition-all duration-300 hover:scale-105 hover:shadow-lg hover:shadow-purple-500/20">
-                            {item}
-                        </div>
-                    </div>
-                ))}
+//             {/* Desktop Grid Layout */}
+//             <div className="hidden md:grid grid-cols-6 gap-6 text-white text-center">
+//                 {/* Row 1 */}
+//                 {data.firstRow.map((item, index) => (
+//                     <div key={index} className="col-span-2 flex justify-center items-center">
+//                         <div className="rounded-xl font-semibold text-lg border-dashed border-2 border-[#A580FF]/50 p-6 w-full aspect-video bg-gradient-to-br from-[#A580FF]/10 to-[#7C4DFF]/10 backdrop-blur-lg h-full flex items-center justify-center transition-all duration-300 hover:scale-105 hover:shadow-lg hover:shadow-purple-500/20">
+//                             {item}
+//                         </div>
+//                     </div>
+//                 ))}
 
-                {/* Row 2 */}
-                {data.secondRow.map((item, index) => (
-                    <div
-                        key={index}
-                        className={`${item.colStart} col-span-2 flex justify-center items-center`}
-                    >
-                        <div className="rounded-xl font-semibold text-lg border-dashed border-2 border-[#A580FF]/50 p-6 w-full aspect-video bg-gradient-to-br from-[#A580FF]/10 to-[#7C4DFF]/10 backdrop-blur-lg h-full flex items-center justify-center transition-all duration-300 hover:scale-105 hover:shadow-lg hover:shadow-purple-500/20">
-                            {item.text}
-                        </div>
-                    </div>
-                ))}
-            </div>
+//                 {/* Row 2 */}
+//                 {data.secondRow.map((item, index) => (
+//                     <div
+//                         key={index}
+//                         className={`${item.colStart} col-span-2 flex justify-center items-center`}
+//                     >
+//                         <div className="rounded-xl font-semibold text-lg border-dashed border-2 border-[#A580FF]/50 p-6 w-full aspect-video bg-gradient-to-br from-[#A580FF]/10 to-[#7C4DFF]/10 backdrop-blur-lg h-full flex items-center justify-center transition-all duration-300 hover:scale-105 hover:shadow-lg hover:shadow-purple-500/20">
+//                             {item.text}
+//                         </div>
+//                     </div>
+//                 ))}
+//             </div>
 
-            {/* Mobile Layout */}
-            <div className="md:hidden flex flex-col gap-8 text-white text-center">
-                {[...data.firstRow, ...data.secondRow.map(item => item.text)].map((item, index) => (
-                    <div key={index} className="w-full flex justify-center items-center">
-                        <div className="rounded-xl font-semibold text-lg border-dashed border-2 border-[#A580FF]/50 p-6 w-full aspect-video bg-gradient-to-br from-[#A580FF]/10 to-[#7C4DFF]/10 backdrop-blur-lg h-full flex items-center justify-center transition-all duration-300 hover:scale-105">
-                            {item}
-                        </div>
-                    </div>
-                ))}
-            </div>
-        </div>
-    );
-}
+//             {/* Mobile Layout */}
+//             <div className="md:hidden flex flex-col gap-8 text-white text-center">
+//                 {[...data.firstRow, ...data.secondRow.map(item => item.text)].map((item, index) => (
+//                     <div key={index} className="w-full flex justify-center items-center">
+//                         <div className="rounded-xl font-semibold text-lg border-dashed border-2 border-[#A580FF]/50 p-6 w-full aspect-video bg-gradient-to-br from-[#A580FF]/10 to-[#7C4DFF]/10 backdrop-blur-lg h-full flex items-center justify-center transition-all duration-300 hover:scale-105">
+//                             {item}
+//                         </div>
+//                     </div>
+//                 ))}
+//             </div>
+//         </div>
+//     );
+// }

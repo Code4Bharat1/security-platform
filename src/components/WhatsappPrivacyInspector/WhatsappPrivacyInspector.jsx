@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react';
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
+import GreenLayout from '../GreenTeam/layout';
 
 export default function WhatsappPrivacyChecker() {
   const [images, setImages] = useState([]);
@@ -94,13 +95,16 @@ export default function WhatsappPrivacyChecker() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 flex flex-col items-center justify-center px-4">
-      <img src="/tools/card-images/wp.png" alt="whatsapp privacy image" className="w-16 h-20 mb-4 mt-7" />
-      <h1 className="text-3xl font-bold text-gray-800 mb-2">Whatsapp Privacy Inspect</h1>
-      <p className="text-lg text-gray-600 mb-6">Analyze your privacy and take required measures.</p>
-
+    <div className="min-h-screen bg-black flex flex-col items-center px-4">
+      <GreenLayout  
+        heroData={{
+          title: "WhatsApp Privacy Inspector",
+          imgPath: "/GreenTeam/wp.png",
+          desc: "Analyze WhatsApp screenshots to assess your privacy settings and message security.",
+        }}
+      />
       <div
-        className="w-full max-w-xl border-2 border-dashed border-gray-300 rounded-lg p-6 bg-white hover:bg-gray-100 transition cursor-pointer"
+        className="w-full max-w-xl border-2 border-dashed border-gray-300 rounded-lg p-6 bg-gray-500 transition cursor-pointer"
         onDrop={handleDrop}
         onDragOver={(e) => e.preventDefault()}
       >
@@ -113,7 +117,7 @@ export default function WhatsappPrivacyChecker() {
           className="hidden"
           id="imageInput"
         />
-        <label htmlFor="imageInput" className="block text-center text-gray-500 cursor-pointer">
+        <label htmlFor="imageInput" className="block text-center border border-dashed rounded-lg border-green-500 px-5 py-3 text-white cursor-pointer">
           Drag & drop images here, or{' '}
           <span className="text-blue-500 underline cursor-pointer">browse</span> (2–5 images)
         </label>
@@ -137,19 +141,21 @@ export default function WhatsappPrivacyChecker() {
             </div>
           ))}
         </div>
-      </div>
+        <div className="justify-center text-center mt-2">
+              <button
+                 onClick={handleAnalyze}
+                 disabled={isLoading}
+                 className={`mt-6 px-6 py-2 rounded transition font-medium ${
+                   isLoading
+                     ? 'bg-gray-400 cursor-not-allowed text-white'
+                     : 'bg-green-600 hover:bg-green-700 text-white'
+                 }`}
+               >
+                 {isLoading ? 'Analyzing...' : 'Analyze'}
+               </button>
+        </div>
+</div>
 
-      <button
-        onClick={handleAnalyze}
-        disabled={isLoading}
-        className={`mt-6 px-6 py-2 rounded transition font-medium ${
-          isLoading
-            ? 'bg-gray-400 cursor-not-allowed text-white'
-            : 'bg-green-600 hover:bg-green-700 text-white'
-        }`}
-      >
-        {isLoading ? 'Analyzing...' : 'Analyze'}
-      </button>
 
       {score !== null && (
         <div className="mt-8 w-full max-w-xl bg-white p-6 rounded shadow">

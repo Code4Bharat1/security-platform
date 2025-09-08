@@ -15,9 +15,9 @@ const SEV_COLORS = {
   Unknown: "bg-gray-400",
 };
 const HEAT_COLORS = {
-  high: "bg-red-900/30 ring-1 ring-red-500/30",
-  medium: "bg-amber-900/30 ring-1 ring-amber-500/30",
-  low: "bg-emerald-900/30 ring-1 ring-emerald-500/30",
+  high: "bg-red-50 ring-1 ring-red-200",
+  medium: "bg-amber-50 ring-1 ring-amber-200",
+  low: "bg-emerald-50 ring-1 ring-emerald-200",
   none: "",
 };
 
@@ -206,118 +206,86 @@ export default function CodeObfuscationChecker() {
   };
 
   return (
-    <div className="min-h-screen bg-black text-white p-6">
-      <div className="max-w-4xl mx-auto">
-        {/* Header */}
-        <div className="flex items-center gap-4 mb-8">
-          <img
-          src="/BlueTeam/Obfuscation Detector.png"
-          alt="Obfuscation Icon"
-          className="w-20 h-20 rounded-full border-4 border-blue-500 object-cover"
-          />
+    <div className="p-6 max-w-6xl mx-auto">
+      <img src="/tools/card-images/obfuscation.png" alt="verify" className="w-16 h-20 mb-4 mt-7" />
+      <h1 className="text-3xl font-bold mb-2">Code Obfuscation Checker</h1>
+      <p className="text-gray-600 mb-6">
+        Paste code, or upload multiple files to scan. Heatmap highlights suspicious lines.
+      </p>
 
-          <div>
-            <h1 className="text-3xl font-bold text-white">Code Obfuscation Checker</h1>
-            <p className="text-gray-400 mt-1">
-              Paste code, or upload multiple files to scan. Heatmap highlights suspicious lines.
-            </p>
-          </div>
-        </div>
-
-        {/* Code Input Section */}
-        <div className="bg-gray-800/50 rounded-2xl p-6 mb-6 border border-blue-600">
-          <h2 className="text-blue-400 text-lg font-semibold mb-4">Paste Your Code</h2>
-          <textarea
-            className="w-full h-48 p-4 bg-gray-700/50 border border-blue-600 rounded-lg resize-none focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent font-mono text-white placeholder-gray-400"
-            placeholder="gsvdahcdswdmjsnxzcvb mjanhbvcxb mjkvcbcmjvnv ncgbmn"
-            value={code}
-            onChange={(e) => setCode(e.target.value)}
-          />
-        </div>
-
-        {/* Files Section */}
-        <div className="bg-gray-800/50 rounded-2xl p-6 mb-6 border border-blue-600">
-          <div className="flex items-center justify-between mb-4">
+      <div className="grid md:grid-cols-2 gap-4 mb-5">
+        <textarea
+          className="w-full h-48 p-4 border rounded-lg resize-none focus:outline-none focus:ring-2 focus:ring-emerald-500 font-mono"
+          placeholder="Paste your code here…"
+          value={code}
+          onChange={(e) => setCode(e.target.value)}
+        />
+        <div className="rounded-lg border p-4 bg-white">
+          <div className="flex items-center justify-between mb-3">
             <div>
-              <h2 className="text-white text-lg font-semibold">Files</h2>
-              <p className="text-gray-400 text-sm">Upload one or more files</p>
+              <div className="font-semibold">Files</div>
+              <div className="text-sm text-gray-500">Upload one or more files</div>
             </div>
             <button
+              className="text-sm text-emerald-700 border border-emerald-700 rounded-md px-3 py-1 hover:bg-emerald-50"
               onClick={clearAll}
-              className="px-6 py-2 border border-blue-500 rounded-full text-white hover:bg-gray-700/50 transition-colors"
             >
               Clear
             </button>
           </div>
-          
-          <div className="mb-4">
-            <label className="block">
-              <input
-                type="file"
-                accept=".js,.jsx,.ts,.tsx,.mjs,.cjs,.py,.rb,.php,.java,.go,.cs,.txt"
-                onChange={handleFileChange}
-                multiple
-                className="block w-full text-gray-400 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-blue-600 file:text-white hover:file:bg-blue-700 file:cursor-pointer cursor-pointer"
-              />
-            </label>
-          </div>
-          
-          <div className="text-sm text-gray-400">
-            {files.length > 0 ? (
-              <ul className="space-y-1">
-                {files.map((f, i) => (
-                  <li key={i} className="truncate">• {f.name}</li>
-                ))}
-              </ul>
-            ) : (
-              <p>• No files added</p>
-            )}
-          </div>
+          <input
+            type="file"
+            accept=".js,.jsx,.ts,.tsx,.mjs,.cjs,.py,.rb,.php,.java,.go,.cs,.txt"
+            onChange={handleFileChange}
+            multiple
+            className="block mb-3"
+          />
+          <ul className="text-sm space-y-1 max-h-32 overflow-auto">
+            {files.map((f, i) => (
+              <li key={i} className="truncate">{f.name}</li>
+            ))}
+            {!files.length && <li className="text-gray-400">No files added</li>}
+          </ul>
         </div>
-
-        {/* Action Buttons */}
-        <div className="flex flex-wrap gap-4 mb-6">
-          <button
-            onClick={analyze}
-            disabled={loading}
-            className={`px-8 py-3 rounded-full font-semibold transition-colors ${
-              loading 
-                ? "bg-gray-600 text-gray-400 cursor-not-allowed" 
-                : "bg-blue-600 hover:bg-blue-700 text-white"
-            }`}
-          >
-            {loading ? "ANALYZING..." : "ANALYZE"}
-          </button>
-
-          <button
-            onClick={exportPdfAll}
-            disabled={!result?.results?.length}
-            className="px-6 py-3 rounded-full bg-blue-600 hover:bg-blue-700 text-white font-semibold disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-          >
-            Download PDF (ALL)
-          </button>
-          
-          <button
-            onClick={exportTxtAll}
-            disabled={!result?.results?.length}
-            className="px-6 py-3 rounded-full bg-blue-600 hover:bg-blue-700 text-white font-semibold disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-          >
-            Download TXT (ALL)
-          </button>
-        </div>
-
-        {/* Error Message */}
-        {err && (
-          <div className="mb-6 p-4 rounded-lg bg-red-900/30 border border-red-500/30 text-red-400">
-            {err}
-          </div>
-        )}
-
-        {/* Results */}
-        {result?.results?.map((fileRes, idx) => (
-          <FileResult key={idx} {...fileRes} />
-        ))}
       </div>
+
+      <div className="flex flex-wrap gap-3 mb-6">
+        <button
+          onClick={analyze}
+          disabled={loading}
+          className={`px-6 py-2 rounded-md text-white font-semibold ${
+            loading ? "bg-gray-400" : "bg-emerald-600 hover:bg-emerald-700"
+          }`}
+        >
+          {loading ? "Analyzing…" : "Analyze"}
+        </button>
+
+        <button
+          onClick={exportPdfAll}
+          disabled={!result?.results?.length}
+          className="px-4 py-2 rounded-md border text-emerald-700 border-emerald-700 hover:bg-emerald-50 disabled:opacity-50"
+        >
+          Download PDF (All)
+        </button>
+        <button
+          onClick={exportTxtAll}
+          disabled={!result?.results?.length}
+          className="px-4 py-2 rounded-md border text-emerald-700 border-emerald-700 hover:bg-emerald-50 disabled:opacity-50"
+        >
+          Download TXT (All)
+        </button>
+      </div>
+
+      {err && (
+        <div className="mb-6 p-4 rounded-md bg-red-50 border border-red-200 text-red-800">
+          {err}
+        </div>
+      )}
+
+      {/* Results */}
+      {result?.results?.map((fileRes, idx) => (
+        <FileResult key={idx} {...fileRes} />
+      ))}
     </div>
   );
 }
@@ -419,13 +387,13 @@ function FileResult({
   };
 
   return (
-    <div className="bg-gray-800/50 rounded-2xl p-6 mb-8">
-      <div className="flex items-center justify-between gap-3 mb-6">
+    <div className="border rounded-lg p-6 shadow-md bg-white space-y-4 mb-8">
+      <div className="flex items-center justify-between gap-3">
         <div>
-          <h2 className="text-xl font-semibold text-white">{name}</h2>
-          <div className="text-sm text-gray-400 mt-1">
-            Score: <span className="font-semibold text-white">{score}</span>/100
-            <span className={`ml-3 inline-block align-middle text-white px-3 py-1 rounded-full text-sm ${SEV_COLORS[severity] || SEV_COLORS.Unknown}`}>
+          <h2 className="text-xl font-semibold">{name}</h2>
+          <div className="text-sm text-gray-600">
+            Score: <span className="font-semibold">{score}</span>/100
+            <span className={`ml-3 inline-block align-middle text-white px-2 py-0.5 rounded ${SEV_COLORS[severity] || SEV_COLORS.Unknown}`}>
               {severity}
             </span>
           </div>
@@ -433,62 +401,62 @@ function FileResult({
         <div className="flex gap-2">
           <button
             onClick={exportPdf}
-            className="px-4 py-2 text-blue-400 border border-blue-400 rounded-full hover:bg-blue-400/10 transition-colors"
+            className="px-3 py-1.5 text-emerald-700 border border-emerald-700 rounded hover:bg-emerald-50"
           >
             PDF
           </button>
           <button
             onClick={exportTxt}
-            className="px-4 py-2 text-blue-400 border border-blue-400 rounded-full hover:bg-blue-400/10 transition-colors"
+            className="px-3 py-1.5 text-emerald-700 border border-emerald-700 rounded hover:bg-emerald-50"
           >
             TXT
           </button>
         </div>
       </div>
 
-      <div className="grid md:grid-cols-2 gap-4 mb-6">
-        <div className="bg-gray-700/50 rounded-lg border border-blue-600 p-4">
-          <h3 className="font-semibold mb-3 text-white">Metrics</h3>
-          <ul className="text-sm grid grid-cols-2 gap-2">
+      <div className="grid md:grid-cols-2 gap-4">
+        <div className="rounded-md bg-emerald-50/40 border p-4">
+          <h3 className="font-semibold mb-2">Metrics</h3>
+          <ul className="text-sm grid grid-cols-2 gap-1">
             {Object.entries(metrics).map(([k, v]) => (
               <li key={k} className="flex justify-between gap-2">
-                <span className="text-gray-400">{k}</span>
-                <span className="font-mono text-white">{String(v)}</span>
+                <span className="text-gray-600">{k}</span>
+                <span className="font-mono">{String(v)}</span>
               </li>
             ))}
           </ul>
         </div>
 
-        <div className="bg-gray-700/50 rounded-lg border border-blue-600 p-4">
-          <h3 className="font-semibold mb-3 text-white">Issues</h3>
+        <div className="rounded-md bg-amber-50/40 border p-4">
+          <h3 className="font-semibold mb-2">Issues</h3>
           {issues?.length ? (
             <ul className="list-disc list-inside text-sm space-y-1">
               {issues.map((i, idx) => (
-                <li key={idx} className="text-gray-300">{i}</li>
+                <li key={idx}>{i}</li>
               ))}
             </ul>
           ) : (
-            <div className="text-sm text-gray-400">None</div>
+            <div className="text-sm text-gray-500">None</div>
           )}
         </div>
       </div>
 
       {/* Heatmap */}
-      <div className="mb-6">
-        <h3 className="font-semibold mb-3 text-white">Obfuscation Heatmap</h3>
-        <div className="bg-gray-900/50 border border-blue-600 rounded-lg overflow-hidden">
+      <div>
+        <h3 className="font-semibold mb-2">Obfuscation Heatmap</h3>
+        <div className="border rounded overflow-hidden">
           <div className="max-h-[420px] overflow-auto font-mono text-sm">
             {lines.map((ln, i) => {
               const n = i + 1;
               const h = lineMap.get(n);
               const cls = HEAT_COLORS[h?.level || "none"];
               return (
-                <div key={i} className={`grid grid-cols-[64px_1fr] px-3 py-2 ${cls} border-b border-blue-700/50 last:border-b-0`}>
-                  <div className="text-right pr-3 text-gray-500 select-none">{n}</div>
+                <div key={i} className={`grid grid-cols-[64px_1fr] px-2 py-1 ${cls}`}>
+                  <div className="text-right pr-3 text-gray-400 select-none">{n}</div>
                   <div className="whitespace-pre overflow-x-auto">
-                    <span className="break-all text-gray-300">{ln || " "}</span>
+                    <span className="break-all">{ln || " "}</span>
                     {h?.reasons?.length ? (
-                      <div className="mt-1 text-xs text-yellow-400">
+                      <div className="mt-1 text-xs text-gray-600">
                         ⚠ {h.reasons.join("; ")}
                       </div>
                     ) : null}
@@ -504,9 +472,9 @@ function FileResult({
       {(deobfuscationPreview?.base64Decoded?.length ||
         deobfuscationPreview?.unicodeDecoded?.length ||
         deobfuscationPreview?.collapsedStrings?.length) && (
-        <div className="bg-gray-700/50 rounded-lg border border-blue-600 p-4">
-          <h3 className="font-semibold mb-3 text-white">De-obfuscation Preview</h3>
-          <div className="grid md:grid-cols-3 gap-4 text-sm">
+        <div className="rounded-md bg-sky-50/60 border p-4">
+          <h3 className="font-semibold mb-2">De-obfuscation Preview</h3>
+          <div className="grid md:grid-cols-3 gap-3 text-sm">
             <PreviewList title="Base64" items={deobfuscationPreview.base64Decoded} kFrom="decoded" />
             <PreviewList title="Unicode" items={deobfuscationPreview.unicodeDecoded} kFrom="decoded" />
             <PreviewList title="Concats" items={deobfuscationPreview.collapsedStrings} kFrom="collapsed" />
@@ -521,18 +489,18 @@ function PreviewList({ title, items = [], kFrom }) {
   if (!items.length) {
     return (
       <div>
-        <div className="font-semibold text-white mb-2">{title}</div>
-        <div className="text-gray-400 text-sm">None</div>
+        <div className="font-semibold">{title}</div>
+        <div className="text-gray-500 text-sm">None</div>
       </div>
     );
   }
   return (
     <div>
-      <div className="font-semibold text-white mb-2">{title}</div>
+      <div className="font-semibold">{title}</div>
       <ul className="text-sm space-y-1">
         {items.slice(0, 8).map((d, i) => (
-          <li key={i} className="truncate text-gray-300">
-            L{d.line}: <span className="font-mono text-blue-400">{d[kFrom]}</span>
+          <li key={i} className="truncate">
+            L{d.line}: <span className="font-mono">{d[kFrom]}</span>
           </li>
         ))}
       </ul>

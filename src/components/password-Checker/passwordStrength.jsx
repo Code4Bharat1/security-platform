@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
+import GreenLayout from "../GreenTeam/layout";
 
 const API_BASE =
   process.env.NEXT_PUBLIC_PROD_API_URL ||
@@ -78,16 +79,18 @@ export default function PasswordCheckerPage() {
   }, [pct]);
 
   return (
-    <div className="min-h-screen bg-[#0b0f17] text-slate-100">
+    <div className="min-h-screen bg-black text-slate-100">
       <div className="max-w-3xl mx-auto p-6 space-y-6">
         <header>
-          <h1 className="text-2xl font-semibold">Take the Password Test</h1>
-          <p className="text-slate-400 text-sm mt-1">
-            Tip: mix length + upper/lower + numbers + symbols. Avoid dictionary words & sequences.
-          </p>
-        </header>
+<GreenLayout
+        heroData={{
+          imgPath: "/GreenTeam/password-checker.png",
+          title: "Password Strength Checker",
+        }}
+        />
+      </header>
 
-        <section className="rounded-xl border border-slate-800 bg-[#0f1523] p-5">
+        <section className="rounded-xl border border-white bg-black p-5">
           <div className="flex items-center justify-between gap-3 mb-2">
             <label className="text-sm text-slate-300">Enter password</label>
             <label className="text-xs flex items-center gap-2 text-slate-400">
@@ -108,7 +111,7 @@ export default function PasswordCheckerPage() {
     type={show ? "text" : "password"}
     value={pw}
     onChange={(e) => setPw(e.target.value)}
-    className="w-full text-center text-2xl font-semibold tracking-wide rounded-lg border border-yellow-400 bg-yellow-100/10 text-yellow-300 placeholder-slate-500 px-3 py-3 pr-28 focus:outline-none focus:ring-2 focus:ring-yellow-400/40"
+    className="w-full text-center text-2xl font-semibold tracking-wide rounded-lg border border-green-400 bg-yellow-100/10 text-yellow-300 placeholder-slate-500 px-3 py-3 pr-28 focus:outline-none focus:ring-2 focus:ring-yellow-400/40"
     placeholder="Type here…"
   />
 
