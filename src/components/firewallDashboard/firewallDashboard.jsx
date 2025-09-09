@@ -10,7 +10,7 @@ export default function FirewallDashboard({ data }) {
   const securityHeadersDetected = data?.securityHeadersDetected ?? [];
 
   const protectionColors = {
-    None: "text-gray-700 bg-gray-100 ring-1 ring-gray-200",
+    None: "text-gray-700 bg-black-100 ring-1 ring-gray-200",
     Moderate: "text-amber-800 bg-amber-100 ring-1 ring-amber-200",
     High: "text-red-800 bg-red-100 ring-1 ring-red-200",
   };
@@ -213,7 +213,7 @@ export default function FirewallDashboard({ data }) {
               </button>
             </div>
           </div>
-          <div className="mt-6 rounded-lg bg-gray-50 p-6 text-gray-600">
+          <div className="mt-6 rounded-lg bg-black-50 p-6 text-gray-600">
             No data to display.
           </div>
         </div>
@@ -232,20 +232,20 @@ export default function FirewallDashboard({ data }) {
 
   return (
     <div className="max-w-5xl mx-auto p-6">
-      <div className="rounded-2xl bg-white shadow-md border border-gray-100 p-8">
+      <div className="rounded-2xl bg-black shadow-md border border-gray-100 p-8">
         {/* Header row */}
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <img src="/tools/card-images/waf1.png" alt="verify" className="w-12 h-14" />
+            <img src="/BlueTeam/waf.png" alt="verify" className="w-15 h-15" />
             <div>
               <h2 className="text-2xl font-bold">Firewall Detection Report</h2>
-              <p className="text-sm text-gray-500">Results for your latest scan.</p>
+              <p className="text-sm text-white-500">Results for your latest scan.</p>
             </div>
           </div>
           <div className="flex gap-2">
             <button
               onClick={handleDownloadPdf}
-              className="h-10 px-4 rounded-lg border border-green-700 text-green-700 hover:bg-green-50 transition"
+              className="h-10 px-4 rounded-lg border border-blue-700 text-white-700 hover:bg-blue-50 transition"
               title="Download PDF"
             >
               <div className="inline-flex items-center gap-2">
@@ -254,7 +254,7 @@ export default function FirewallDashboard({ data }) {
             </button>
             <button
               onClick={handleDownloadTxt}
-              className="h-10 px-4 rounded-lg border border-green-700 text-green-700 hover:bg-green-50 transition"
+              className="h-10 px-4 rounded-lg border border-blue-700 text-white-700 hover:bg-black-50 transition"
               title="Download TXT"
             >
               <div className="inline-flex items-center gap-2">
@@ -266,8 +266,8 @@ export default function FirewallDashboard({ data }) {
 
         {/* Summary */}
         <div className="mt-6 grid grid-cols-1 md:grid-cols-2 gap-4">
-          <div className="rounded-lg border border-gray-100 bg-gray-50 p-4">
-            <div className="text-sm text-gray-500 mb-1">URL Scanned</div>
+          <div className="rounded-lg border border-blue-600 bg-black-50 p-4">
+            <div className="text-sm text-white-500 mb-1">URL Scanned</div>
             <div className="flex items-center gap-2">
               <Link2 className="h-4 w-4 text-blue-600" />
               <a
@@ -282,38 +282,38 @@ export default function FirewallDashboard({ data }) {
             </div>
           </div>
 
-          <div className="rounded-lg border border-gray-100 bg-gray-50 p-4">
-            <div className="text-sm text-gray-500 mb-1">HTTP Status Code</div>
-            <div className="text-gray-800 font-semibold">{statusCode}</div>
+          <div className="rounded-lg border border-blue-600 bg-black-50 p-4">
+            <div className="text-sm text-white-500 mb-1">HTTP Status Code</div>
+            <div className="text-white font-semibold">{statusCode}</div>
           </div>
 
-          <div className="rounded-lg border border-gray-100 bg-gray-50 p-4">
-            <div className="text-sm text-gray-500 mb-1">Protection Level</div>
+          <div className="rounded-lg border border-blue-600 bg-black-50 p-4">
+            <div className="text-sm text-white-500 mb-1">Protection Level</div>
             <ProtectionPill level={protectionLevel} />
           </div>
 
-          <div className="rounded-lg border border-gray-100 bg-gray-50 p-4">
-            <div className="text-sm text-gray-500 mb-1">Firewall Detected</div>
+          <div className="rounded-lg border border-blue-600 bg-black-50 p-4">
+            <div className="text-sm text-white-500 mb-1">Firewall Detected</div>
             {detected ? (
               <div className="inline-flex items-center gap-2 text-green-700 font-semibold">
                 <Shield className="h-4 w-4" />
                 {firewallName}
               </div>
             ) : (
-              <span className="text-gray-500 italic">None</span>
+              <span className="text-white-500 italic">None</span>
             )}
           </div>
 
-          <div className="rounded-lg border border-gray-100 bg-gray-50 p-4 md:col-span-2">
-            <div className="text-sm text-gray-500 mb-1">Server Header</div>
+          <div className="rounded-lg border border-blue-600 bg-black-50 p-4 md:col-span-2">
+            <div className="text-sm text-white mb-1">Server Header</div>
             <div className="text-gray-800 break-all">{serverHeader || "N/A"}</div>
           </div>
         </div>
 
         {/* Details */}
         <div className="mt-8 grid grid-cols-1 md:grid-cols-2 gap-6">
-          <div className="rounded-lg border border-gray-100">
-            <div className="px-4 py-3 border-b bg-gray-50 font-semibold">
+          <div className="rounded-lg border border-blue-600">
+            <div className="px-4 py-3 bg-black-50 font-semibold">
               Matched Headers
             </div>
             <div className="p-4">
@@ -321,19 +321,19 @@ export default function FirewallDashboard({ data }) {
                 <ul className="space-y-2">
                   {matchedHeaders.map(({ header, value }, idx) => (
                     <li key={`${header}-${idx}`} className="text-sm">
-                      <code className="bg-gray-100 px-1 py-0.5 rounded">{header}</code>
+                      <code className="bg-black-100 px-1 py-0.5 rounded">{header}</code>
                       <span className="text-gray-600">: {String(value ?? "")}</span>
                     </li>
                   ))}
                 </ul>
               ) : (
-                <div className="text-gray-500 text-sm">None</div>
+                <div className="text-white text-sm">None</div>
               )}
             </div>
           </div>
 
-          <div className="rounded-lg border border-gray-100">
-            <div className="px-4 py-3 border-b bg-gray-50 font-semibold">
+          <div className="rounded-lg border border-blue-600">
+            <div className="px-4 py-3 text-white bg-black-50 font-semibold">
               Security Headers Detected
             </div>
             <div className="p-4">
@@ -341,12 +341,12 @@ export default function FirewallDashboard({ data }) {
                 <ul className="space-y-2">
                   {securityHeadersDetected.map((header, idx) => (
                     <li key={`${header}-${idx}`} className="text-sm">
-                      <code className="bg-gray-100 px-1 py-0.5 rounded">{header}</code>
+                      <code className="bg-black-100 px-1 py-0.5 rounded">{header}</code>
                     </li>
                   ))}
                 </ul>
               ) : (
-                <div className="text-gray-500 text-sm">None</div>
+                <div className="text-white-500 text-sm">None</div>
               )}
             </div>
           </div>

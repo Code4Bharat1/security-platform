@@ -263,317 +263,323 @@ export default function ReverseDNSLookup() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-green-50 via-emerald-50 to-teal-50 p-4">
-      <div className="max-w-3xl mx-auto">
-        {/* Centered PNG logo */}
-        <img src="/tools/card-images/reverse_dns.png" alt="Reverse DNS" className="w-16 h-20 mx-auto mb-4 mt-7" />
-        {/* Header */}
-        <div className="text-center mb-8">
-          <h1 className="text-3xl font-bold bg-gradient-to-r from-green-600 to-emerald-700 bg-clip-text text-transparent">
-            Reverse DNS Lookup
-          </h1>
-          <p className="text-gray-600">
-            PTR + Geo + ASN/WHOIS + DNSBL + Forward Validation (with PDF/TXT export)
+  <div className="min-h-screen bg-black p-4">
+    <div className="max-w-3xl mx-auto">
+      {/* Header */}
+      <div className="flex items-center gap-4 mb-8">
+        <img
+  src="/BlueTeam/reverse dns.png"
+  alt="Reverse DNS"
+  className="w-20 h-20 rounded-full border-4 border-blue-500"
+/>
+
+        <div className="text-white">
+          <h1 className="text-3xl font-semibold">Reverse DNS Lookup</h1>
+          <p className="text-white">
+            PTR + Geo + ASN/WHOIS + DNSBL + <br />Forward Validation (with PDF/TXT export)
           </p>
         </div>
+      </div>
 
-        {/* Form Card */}
-        <div className="bg-white/80 backdrop-blur-sm rounded-2xl shadow-xl border border-green-100 p-6 mb-6">
-          <div className="space-y-4">
-            <div>
-              <label className="block text-sm font-semibold text-gray-700 mb-2">IP Address</label>
-              <div className="relative">
-                <input
-                  type="text"
-                  placeholder="e.g., 8.8.8.8 or 2001:4860:4860::8888"
-                  value={ip}
-                  onChange={(e) => setIp(e.target.value)}
-                  className={`w-full px-4 py-3 pl-12 border-2 rounded-xl transition-all duration-200 focus:outline-none focus:ring-4 ${
-                    validationMsg
-                      ? "border-red-300 focus:border-red-500 focus:ring-red-100"
-                      : valid
-                      ? "border-green-300 focus:border-green-500 focus:ring-green-100"
-                      : "border-gray-200 focus:border-green-400 focus:ring-green-50"
-                  } text-gray-700 font-mono`}
-                />
-                <Globe
-                  className={`absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 ${
-                    validationMsg ? "text-red-400" : valid ? "text-green-500" : "text-gray-400"
-                  }`}
-                />
-                {valid && (
-                  <CheckCircle className="absolute right-4 top-1/2 -translate-y-1/2 w-5 h-5 text-green-500" />
-                )}
-              </div>
-              {validationMsg && (
-                <div className="flex items-center gap-2 mt-2 text-red-600 text-sm">
-                  <AlertCircle className="w-4 h-4" /> {validationMsg}
-                </div>
+      {/* Form Card */}
+      <div className="bg-black/80 backdrop-blur-sm rounded-2xl shadow-xl border border-blue-500 p-6 mb-6">
+        <div className="space-y-4">
+          <div>
+            <label className="block text-xl font-semibold text-white mb-2 text-center">
+              IP Address
+            </label>
+            <div className="relative">
+              <input
+                type="text"
+                placeholder="e.g., 8.8.8.8 or 2001:4860:4860::8888"
+                value={ip}
+                onChange={(e) => setIp(e.target.value)}
+                className={`w-full text-white px-4 py-3 pl-12 border-2 rounded-xl transition-all duration-200 focus:outline-none focus:ring-4 ${
+                  validationMsg
+                    ? "border-red-300 focus:border-red-500 focus:ring-red-100"
+                    : valid
+                    ? "border-green-300 focus:border-green-500 focus:ring-green-100"
+                    : "border-blue-500 focus:border-blue-400 focus:ring-blue-50"
+                } text-gray-700 font-mono`}
+              />
+              <Globe
+                className={`absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 ${
+                  validationMsg ? "text-red-400" : valid ? "text-green-500" : "text-gray-400"
+                }`}
+              />
+              {valid && (
+                <CheckCircle className="absolute right-4 top-1/2 -translate-y-1/2 w-5 h-5 text-green-500" />
               )}
             </div>
+            {validationMsg && (
+              <div className="flex items-center gap-2 mt-2 text-red-600 text-sm">
+                <AlertCircle className="w-4 h-4" /> {validationMsg}
+              </div>
+            )}
+          </div>
 
-            <div className="flex gap-3">
-              <button
-                onClick={lookup}
-                disabled={!valid || loading}
-                className={`flex-1 py-3 font-semibold rounded-xl transition-all duration-200 flex items-center justify-center gap-2 ${
-                  valid && !loading
-                    ? "bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white shadow-lg hover:shadow-xl"
-                    : "bg-gray-200 text-gray-500 cursor-not-allowed"
-                }`}
-              >
-                {loading ? (
-                  <>
-                    <Loader2 className="w-5 h-5 animate-spin" /> Looking up...
-                  </>
-                ) : (
-                  <>
-                    <Search className="w-5 h-5" /> Perform Lookup
-                  </>
-                )}
-              </button>
-              <button
-                onClick={() => {
-                  setIp("");
-                  setData(null);
-                  setErr("");
-                }}
-                className="px-4 py-3 rounded-xl border text-gray-700 hover:bg-gray-50 flex items-center gap-2"
-                title="Reset"
-              >
-                <RefreshCcw className="w-5 h-5" />
-                Reset
-              </button>
-            </div>
+          <div className="flex gap-3">
+            <button
+              onClick={lookup}
+              disabled={!valid || loading}
+              className={`flex-1 py-3 font-semibold rounded-xl transition-all duration-200 flex items-center justify-center gap-2 ${
+                valid && !loading
+                  ? "bg-blue-900 text-white shadow-lg hover:bg-blue-700 hover:shadow-xl"
+                  : "bg-blue-600 text-white cursor-not-allowed"
+              }`}
+            >
+              {loading ? (
+                <>
+                  <Loader2 className="w-5 h-5 animate-spin" /> Looking up...
+                </>
+              ) : (
+                <>
+                  <Search className="w-5 h-5" /> Perform Lookup
+                </>
+              )}
+            </button>
+
+            <button
+              onClick={() => {
+                setIp("");
+                setData(null);
+                setErr("");
+              }}
+              className="px-4 py-3 rounded-xl bg-blue-600 text-white hover:bg-blue-700 flex items-center gap-2"
+              title="Reset"
+            >
+              <RefreshCcw className="w-5 h-5" />
+              Reset
+            </button>
           </div>
         </div>
+      </div>
 
-        {/* Error */}
-        {err && (
-          <div className="bg-red-50 border border-red-200 rounded-xl p-4 mb-6 text-red-700 flex items-center gap-2">
-            <AlertCircle className="w-5 h-5" /> {err}
+      {/* Error */}
+      {err && (
+        <div className="bg-red-50 border border-blue-200 rounded-xl p-4 mb-6 text-red-700 flex items-center gap-2">
+          <AlertCircle className="w-5 h-5" /> {err}
+        </div>
+      )}
+
+      {/* Results */}
+      {data && (
+        <div className="bg-white/80 backdrop-blur-sm rounded-2xl shadow-xl border border-blue-200 p-6 space-y-6">
+          {/* Top summary + exports */}
+          <div className="flex items-center justify-between gap-3 flex-wrap">
+            <div className="space-y-1">
+              <div className="text-xl font-semibold">Reverse DNS Summary</div>
+              <div className="text-sm text-gray-500">{data.ip}</div>
+            </div>
+            <div className="flex gap-2">
+              <button
+                onClick={downloadPDF}
+                className="px-3 py-2 rounded-lg border border-blue-700 text-emerald-700 hover:bg-emerald-50 flex items-center gap-2"
+              >
+                <Download className="w-4 h-4" /> Download PDF
+              </button>
+              <button
+                onClick={downloadTXT}
+                className="px-3 py-2 rounded-lg border border-blue-700 text-emerald-700 hover:bg-emerald-50 flex items-center gap-2"
+              >
+                <FileText className="w-4 h-4" /> Download TXT
+              </button>
+            </div>
           </div>
-        )}
 
-        {/* Results */}
-        {data && (
-          <div className="bg-white/80 backdrop-blur-sm rounded-2xl shadow-xl border border-green-100 p-6 space-y-6">
-            {/* Top summary + exports */}
-            <div className="flex items-center justify-between gap-3 flex-wrap">
-              <div className="space-y-1">
-                <div className="text-xl font-semibold">Reverse DNS Summary</div>
-                <div className="text-sm text-gray-500">{data.ip}</div>
-              </div>
-              <div className="flex gap-2">
-                <button
-                  onClick={downloadPDF}
-                  className="px-3 py-2 rounded-lg border border-emerald-700 text-emerald-700 hover:bg-emerald-50 flex items-center gap-2"
-                >
-                  <Download className="w-4 h-4" /> Download PDF
-                </button>
-                <button
-                  onClick={downloadTXT}
-                  className="px-3 py-2 rounded-lg border border-emerald-700 text-emerald-700 hover:bg-emerald-50 flex items-center gap-2"
-                >
-                  <FileText className="w-4 h-4" /> Download TXT
-                </button>
+          {/* Cards row */}
+          <div className="grid md:grid-cols-3 gap-4">
+            <div className="rounded-lg border border-blue-200 bg-gray-50 p-4">
+              <div className="text-xs text-gray-500">Type</div>
+              <div className="text-gray-800 font-semibold mt-1">{data.type || "PTR"}</div>
+            </div>
+            <div className="rounded-lg border border-blue-200 bg-gray-50 p-4">
+              <div className="text-xs text-gray-500">IP address with name</div>
+              <div className="text-gray-800 font-semibold mt-1">
+                {data.ip}
+                {data.displayName ? ` ${data.displayName}` : ""}
               </div>
             </div>
-
-            {/* Cards row */}
-            <div className="grid md:grid-cols-3 gap-4">
-              <div className="rounded-lg border bg-gray-50 p-4">
-                <div className="text-xs text-gray-500">Type</div>
-                <div className="text-gray-800 font-semibold mt-1">{data.type || "PTR"}</div>
-              </div>
-              <div className="rounded-lg border bg-gray-50 p-4">
-                <div className="text-xs text-gray-500">IP address with name</div>
-                <div className="text-gray-800 font-semibold mt-1">
-                  {data.ip}
-                  {data.displayName ? ` ${data.displayName}` : ""}
-                </div>
-              </div>
-              <div className="rounded-lg border bg-gray-50 p-4">
-                <div className="text-xs text-gray-500">TTL</div>
-                <div className="text-gray-800 font-semibold mt-1">
-                  {human(data.ttlHuman) || human(data.ttl ? `${data.ttl}s` : null)}
-                </div>
-              </div>
-              <div className="rounded-lg border bg-gray-50 p-4">
-                <div className="text-xs text-gray-500">Result</div>
-                <div className="text-gray-800 font-semibold mt-1">
-                  {human(data.result, "dns lookup found")}
-                </div>
-              </div>
-              <div className="rounded-lg border bg-gray-50 p-4">
-                <div className="text-xs text-gray-500">Test</div>
-                <div className="text-gray-800 font-semibold mt-1">
-                  {human(data.test, "public")}
-                </div>
-              </div>
-              <div className="rounded-lg border bg-gray-50 p-4">
-                <div className="text-xs text-gray-500">Reverse name</div>
-                <div className="text-gray-800 font-semibold mt-1">
-                  {human(data.reverseName)}
-                </div>
+            <div className="rounded-lg border border-blue-200 bg-gray-50 p-4">
+              <div className="text-xs text-gray-500">TTL</div>
+              <div className="text-gray-800 font-semibold mt-1">
+                {human(data.ttlHuman) || human(data.ttl ? `${data.ttl}s` : null)}
               </div>
             </div>
+            <div className="rounded-lg border border-blue-200 bg-gray-50 p-4">
+              <div className="text-xs text-gray-500">Result</div>
+              <div className="text-gray-800 font-semibold mt-1">
+                {human(data.result, "dns lookup found")}
+              </div>
+            </div>
+            <div className="rounded-lg border border-blue-200 bg-gray-50 p-4">
+              <div className="text-xs text-gray-500">Test</div>
+              <div className="text-gray-800 font-semibold mt-1">
+                {human(data.test, "public")}
+              </div>
+            </div>
+            <div className="rounded-lg border border-blue-200 bg-gray-50 p-4">
+              <div className="text-xs text-gray-500">Reverse name</div>
+              <div className="text-gray-800 font-semibold mt-1">
+                {human(data.reverseName)}
+              </div>
+            </div>
+          </div>
 
-            {/* PTR list */}
-            <div>
-              <div className="font-semibold mb-2">PTR Domains</div>
-              {data.ptr?.length ? (
-                <ul className="list-disc list-inside text-sm text-gray-800">
-                  {data.ptr.map((d) => (
-                    <li key={d}>
-                      <code className="bg-gray-100 px-1 py-0.5 rounded">{d}</code>
-                    </li>
-                  ))}
-                </ul>
+          {/* PTR list */}
+          <div>
+            <div className="font-semibold mb-2">PTR Domains</div>
+            {data.ptr?.length ? (
+              <ul className="list-disc list-inside text-sm text-gray-800">
+                {data.ptr.map((d) => (
+                  <li key={d}>
+                    <code className="bg-gray-100 px-1 py-0.5 rounded">{d}</code>
+                  </li>
+                ))}
+              </ul>
+            ) : (
+              <div className="text-sm text-gray-500">No PTR records.</div>
+            )}
+          </div>
+
+          {/* Geo + ASN */}
+          <div className="grid md:grid-cols-2 gap-4">
+            <div className="rounded-lg border border-blue-200 p-4">
+              <div className="font-semibold mb-2 flex items-center gap-2">
+                <MapPin className="w-4 h-4 text-green-600" />
+                Geolocation
+              </div>
+              {data.geo ? (
+                <div className="text-sm text-gray-700 space-y-1">
+                  <div>
+                    Country: <span className="font-medium">{human(data.geo.country)}</span>
+                  </div>
+                  <div>
+                    Region / City:{" "}
+                    <span className="font-medium">
+                      {human(data.geo.region)} / {human(data.geo.city)}
+                    </span>
+                  </div>
+                  <div>Timezone: {human(data.geo.timezone)}</div>
+                  <div>Lat/Lon: {human(data.geo.ll?.join(", "))}</div>
+                </div>
               ) : (
-                <div className="text-sm text-gray-500">No PTR records.</div>
+                <div className="text-sm text-gray-500">Not available</div>
               )}
             </div>
-
-            {/* Geo + ASN */}
-            <div className="grid md:grid-cols-2 gap-4">
-              <div className="rounded-lg border p-4">
-                <div className="font-semibold mb-2 flex items-center gap-2">
-                  <MapPin className="w-4 h-4 text-green-600" />
-                  Geolocation
+            <div className="rounded-lg border border-blue-200 p-4">
+              <div className="font-semibold mb-2">ASN / WHOIS</div>
+              {data.asn ? (
+                <div className="text-sm text-gray-700 space-y-1">
+                  <div>
+                    ASN: <span className="font-medium">{human(data.asn.asn)}</span>
+                  </div>
+                  <div>Org: {human(data.asn.org)}</div>
+                  <div>ISP: {human(data.asn.isp)}</div>
+                  <div>CIDR: {human(data.asn.cidr)}</div>
                 </div>
-                {data.geo ? (
-                  <div className="text-sm text-gray-700 space-y-1">
-                    <div>
-                      Country: <span className="font-medium">{human(data.geo.country)}</span>
-                    </div>
-                    <div>
-                      Region / City:{" "}
-                      <span className="font-medium">
-                        {human(data.geo.region)} / {human(data.geo.city)}
-                      </span>
-                    </div>
-                    <div>Timezone: {human(data.geo.timezone)}</div>
-                    <div>Lat/Lon: {human(data.geo.ll?.join(", "))}</div>
-                  </div>
-                ) : (
-                  <div className="text-sm text-gray-500">Not available</div>
-                )}
-              </div>
-              <div className="rounded-lg border p-4">
-                <div className="font-semibold mb-2">ASN / WHOIS</div>
-                {data.asn ? (
-                  <div className="text-sm text-gray-700 space-y-1">
-                    <div>
-                      ASN: <span className="font-medium">{human(data.asn.asn)}</span>
-                    </div>
-                    <div>Org: {human(data.asn.org)}</div>
-                    <div>ISP: {human(data.asn.isp)}</div>
-                    <div>CIDR: {human(data.asn.cidr)}</div>
-                  </div>
-                ) : (
-                  <div className="text-sm text-gray-500">Not available</div>
-                )}
-              </div>
-            </div>
-
-            {/* DNSBL */}
-            <div className="rounded-lg border p-4">
-              <div className="font-semibold mb-2">DNSBL / Blacklist</div>
-              <div className="text-sm text-gray-700 mb-2">
-                Listed on{" "}
-                <span className="font-semibold">
-                  {blacklistCount.listed}/{blacklistCount.total}
-                </span>{" "}
-                lists
-              </div>
-              <div className="grid md:grid-cols-2 gap-2">
-                {(data.blacklist?.results || []).map((z) => (
-                  <div
-                    key={z.zone}
-                    className={`p-3 rounded border text-sm ${
-                      z.listed
-                        ? "bg-red-50 border-red-200 text-red-700"
-                        : "bg-green-50 border-green-200 text-green-700"
-                    }`}
-                  >
-                    <div className="flex items-center justify-between">
-                      <div className="font-medium">{z.zone}</div>
-                      {z.listed ? (
-                        <CircleSlash className="w-4 h-4" />
-                      ) : (
-                        <Check className="w-4 h-4" />
-                      )}
-                    </div>
-                    {z.listed && z.addresses?.length ? (
-                      <div className="mt-1 text-xs">Answer: {z.addresses.join(", ")}</div>
-                    ) : null}
-                  </div>
-                ))}
-                {!data.blacklist?.results?.length && (
-                  <div className="text-sm text-gray-500">No DNSBL results.</div>
-                )}
-              </div>
-            </div>
-
-            {/* Forward validation */}
-            <div className="rounded-lg border p-4">
-              <div className="font-semibold mb-2">Forward DNS Validation</div>
-              <div className="text-sm mb-3">
-                {forwardVerdict.verified ? (
-                  <span className="inline-flex items-center gap-1 text-green-700">
-                    <Check className="w-4 h-4" /> All mappings verified
-                  </span>
-                ) : forwardVerdict.suspicious ? (
-                  <span className="inline-flex items-center gap-1 text-red-700">
-                    <AlertCircle className="w-4 h-4" /> Suspicious: at least one reverse → forward
-                    mapping did not point back to {data.ip}
-                  </span>
-                ) : (
-                  <span className="text-gray-600">No forward checks available.</span>
-                )}
-              </div>
-              <div className="space-y-2">
-                {(data.forwardValidation || []).map((f) => (
-                  <div
-                    key={f.domain}
-                    className={`p-3 rounded border text-sm ${
-                      f.matches
-                        ? "bg-green-50 border-green-200 text-green-700"
-                        : "bg-red-50 border-red-200 text-red-700"
-                    }`}
-                  >
-                    <div className="flex items-center justify-between">
-                      <code className="font-mono">{f.domain}</code>
-                      {f.matches ? <Check className="w-4 h-4" /> : <AlertCircle className="w-4 h-4" />}
-                    </div>
-                    <div className="mt-1 text-xs">
-                      A=[{(f.resolved?.A || []).join(", ")}] AAAA=[
-                      {(f.resolved?.AAAA || []).join(", ")}]
-                    </div>
-                  </div>
-                ))}
-                {!data.forwardValidation?.length && (
-                  <div className="text-sm text-gray-500">No forward data.</div>
-                )}
-              </div>
-            </div>
-
-            {/* Security usefulness line */}
-            <div className="rounded-lg border bg-gray-50 p-4">
-              <div className="font-semibold mb-1">Security notes</div>
-              <ul className="list-disc pl-5 text-sm text-gray-700 space-y-1">
-                <li>
-                  DNSBL listing and reverse/forward mismatch are common signals of potential
-                  abuse/spoofing.
-                </li>
-                <li>ASN/WHOIS + Geolocation help attribute ownership and hosting region.</li>
-                <li>PTR presence alone does not imply trust; always validate forward mapping.</li>
-              </ul>
+              ) : (
+                <div className="text-sm text-gray-500">Not available</div>
+              )}
             </div>
           </div>
-        )}
-      </div>
+
+          {/* DNSBL */}
+          <div className="rounded-lg border border-blue-200 p-4">
+            <div className="font-semibold mb-2">DNSBL / Blacklist</div>
+            <div className="text-sm text-gray-700 mb-2">
+              Listed on{" "}
+              <span className="font-semibold">
+                {blacklistCount.listed}/{blacklistCount.total}
+              </span>{" "}
+              lists
+            </div>
+            <div className="grid md:grid-cols-2 gap-2">
+              {(data.blacklist?.results || []).map((z) => (
+                <div
+                  key={z.zone}
+                  className={`p-3 rounded border text-sm ${
+                    z.listed
+                      ? "bg-red-50 border-red-200 text-red-700"
+                      : "bg-green-50 border-green-200 text-green-700"
+                  }`}
+                >
+                  <div className="flex items-center justify-between">
+                    <div className="font-medium">{z.zone}</div>
+                    {z.listed ? (
+                      <CircleSlash className="w-4 h-4" />
+                    ) : (
+                      <Check className="w-4 h-4" />
+                    )}
+                  </div>
+                  {z.listed && z.addresses?.length ? (
+                    <div className="mt-1 text-xs">Answer: {z.addresses.join(", ")}</div>
+                  ) : null}
+                </div>
+              ))}
+              {!data.blacklist?.results?.length && (
+                <div className="text-sm text-gray-500">No DNSBL results.</div>
+              )}
+            </div>
+          </div>
+
+          {/* Forward validation */}
+          <div className="rounded-lg border border-blue-200 p-4">
+            <div className="font-semibold mb-2">Forward DNS Validation</div>
+            <div className="text-sm mb-3">
+              {forwardVerdict.verified ? (
+                <span className="inline-flex items-center gap-1 text-green-700">
+                  <Check className="w-4 h-4" /> All mappings verified
+                </span>
+              ) : forwardVerdict.suspicious ? (
+                <span className="inline-flex items-center gap-1 text-red-700">
+                  <AlertCircle className="w-4 h-4" /> Suspicious: at least one reverse → forward
+                  mapping did not point back to {data.ip}
+                </span>
+              ) : (
+                <span className="text-gray-600">No forward checks available.</span>
+              )}
+            </div>
+            <div className="space-y-2">
+              {(data.forwardValidation || []).map((f) => (
+                <div
+                  key={f.domain}
+                  className={`p-3 rounded border text-sm ${
+                    f.matches
+                      ? "bg-green-50 border-green-200 text-green-700"
+                      : "bg-red-50 border-red-200 text-red-700"
+                  }`}
+                >
+                  <div className="flex items-center justify-between">
+                    <code className="font-mono">{f.domain}</code>
+                    {f.matches ? <Check className="w-4 h-4" /> : <AlertCircle className="w-4 h-4" />}
+                  </div>
+                  <div className="mt-1 text-xs">
+                    A=[{(f.resolved?.A || []).join(", ")}] AAAA=[{(f.resolved?.AAAA || []).join(", ")}]
+                  </div>
+                </div>
+              ))}
+              {!data.forwardValidation?.length && (
+                <div className="text-sm text-gray-500">No forward data.</div>
+              )}
+            </div>
+          </div>
+
+          {/* Security usefulness line */}
+          <div className="rounded-lg border border-blue-200">
+            <div className="font-semibold mb-1">Security notes</div>
+            <ul className="list-disc pl-5 text-sm text-gray-700 space-y-1">
+              <li>
+                DNSBL listing and reverse/forward mismatch are common signals of potential
+                abuse/spoofing.
+              </li>
+              <li>ASN/WHOIS + Geolocation help attribute ownership and hosting region.</li>
+              <li>PTR presence alone does not imply trust; always validate forward mapping.</li>
+            </ul>
+          </div>
+        </div>
+      )}
     </div>
-  );
-}
+  </div>
+);
+} 

@@ -130,16 +130,16 @@ export default function HttpsCheckerPage() {
     }
 
     return (
-      <div className="mt-6 p-5 bg-gradient-to-r from-green-50 to-emerald-50 border border-blue-200 rounded-xl">
+      <div className="mt-6 p-5 bg-black from-green-50 to-emerald-50 border border-blue-600 rounded-xl">
         <div className="flex items-center gap-2 mb-3">
-          <Shield className="w-5 h-5 text-white-600" />
-          <h3 className="font-semibold text-white-800">Security Recommendations</h3>
+          <Shield className="w-5 h-5 text-white" />
+          <h3 className="font-semibold text-white">Security Recommendations</h3>
         </div>
         <div className="space-y-3">
           {recs.map((rec, i) => (
             <div key={i} className="flex items-start gap-3 p-3 bg-black rounded-lg shadow-sm">
               {rec.icon}
-              <p className="text-sm text-gray-700 leading-relaxed">{rec.text}</p>
+              <p className="text-sm text-white leading-relaxed">{rec.text}</p>
             </div>
           ))}
         </div>
@@ -326,14 +326,14 @@ export default function HttpsCheckerPage() {
   // ---------- UI ----------
 
   return (
-    <div className="min-h-screen bg-black p-4">
+    <div className="min-h-screen bg-black p-4 ">
       <div className="max-w-2xl mx-auto pt-10">
         {/* Header */}
         <div className="flex items-center justify-center gap-4 mb-8">
   <img 
     src="/BlueTeam/https security checker.png" 
     alt="verify" 
-    className="w-20 h-20 rounded-full border-4 border-blue-500"
+    className="w-20 h-20 rounded-full border-4 border-blue-600"
   />
   <div className="text-left">
     <h1 className="text-3xl font-bold text-white">
@@ -401,17 +401,17 @@ export default function HttpsCheckerPage() {
               {/* Header + Actions */}
               <div className="flex items-center justify-between pb-4 border-b border-blue-100">
                 <div className="text-center md:text-left">
-                  <h2 className="text-xl font-semibold text-gray-800 mb-1">
+                  <h2 className="text-xl font-semibold text-white mb-1">
                     Security Analysis for
                   </h2>
-                  <span className="text-2xl font-bold bg-gradient-to-r from-green-600 to-emerald-600 bg-clip-text text-transparent">
+                  <span className="text-2xl font-bold bg-balck text-white to-emerald-600 bg-clip-text text-transparent">
                     {result.target}
                   </span>
                 </div>
                 <div className="flex gap-2">
                   <button
                     onClick={handleDownloadPDF}
-                    className="h-10 px-4 rounded-lg border border-blue-700 text-white-700 hover:bg-green-50 transition"
+                    className="h-10 px-4 rounded-lg border border-blue-700 text-white hover:bg-black-50 transition"
                     title="Download PDF"
                   >
                     <div className="inline-flex items-center gap-2">
@@ -420,7 +420,7 @@ export default function HttpsCheckerPage() {
                   </button>
                   <button
                     onClick={handleDownloadTXT}
-                    className="h-10 px-4 rounded-lg border border-blue-700 text-white-700 hover:bg-green-50 transition"
+                    className="h-10 px-4 rounded-lg border border-blue-700 text-white hover:bg-green-50 transition"
                     title="Download TXT"
                   >
                     <div className="inline-flex items-center gap-2">
@@ -433,18 +433,18 @@ export default function HttpsCheckerPage() {
               {/* Results Grid */}
               <div className="grid gap-4">
                 {/* HTTP Redirect */}
-                <div className="flex items-center justify-between p-4 bg-gradient-to-r from-blue-50 to-blue-100 rounded-xl border border-blue-500">
+                <div className="flex items-center justify-between p-4 bg-black from-blue-50 to-blue-100 rounded-xl border border-blue-500">
                   <div className="flex items-center gap-3">
                     {result.httpRedirectsToHttps ? (
                       <CheckCircle className="w-6 h-6 text-500" />
                     ) : (
                       <XCircle className="w-6 h-6 text-red-500" />
                     )}
-                    <span className="font-medium text-black-700">HTTP → HTTPS Redirect</span>
+                    <span className="font-medium text-white">HTTP → HTTPS Redirect</span>
                   </div>
                   <span className={`px-3 py-1 rounded-full text-sm font-semibold ${
                     result.httpRedirectsToHttps 
-                      ? "bg-green-100 text-green-800" 
+                      ? "bg-green-100 text-white-800" 
                       : "bg-red-100 text-red-800"
                   }`}>
                     {result.httpRedirectsToHttps ? "Enabled" : "Disabled"}
@@ -452,14 +452,14 @@ export default function HttpsCheckerPage() {
                 </div>
 
                 {/* HSTS */}
-                <div className="flex items-center justify-between p-4 bg-gradient-to-r from-blue-50 to-blue-100 rounded-xl border border-blue-500">
+                <div className="flex items-center justify-between p-4 bg-black from-blue-50 to-blue-100 rounded-xl border border-blue-500">
                   <div className="flex items-center gap-3">
                     {result.hstsEnabled ? (
-                      <CheckCircle className="w-6 h-6 text-green-500" />
+                      <CheckCircle className="w-6 h-6 text-white" />
                     ) : (
                       <XCircle className="w-6 h-6 text-red-500" />
                     )}
-                    <span className="font-medium text-gray-700">HSTS Enabled</span>
+                    <span className="font-medium text-white">HSTS Enabled</span>
                   </div>
                   <span className={`px-3 py-1 rounded-full text-sm font-semibold ${
                     result.hstsEnabled 
