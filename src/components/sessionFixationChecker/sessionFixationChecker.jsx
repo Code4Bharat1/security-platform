@@ -219,7 +219,7 @@
 <div className="flex items-center gap-4 mb-8">
   <div className="w-20 h-20 rounded-full overflow-hidden">
     <img
-      src="/Redteam/api.png" // <-- yahan apni image ka path dijiye
+      src="/Redteam/session fixation.png" // <-- yahan apni image ka path dijiye
       alt="Logo"
       className="w-full h-full object-cover"
     />
