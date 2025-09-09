@@ -1,105 +1,67 @@
 "use client";
-import { useMemo, useState } from 'react';
+import { useState } from "react";
 
 export default function TechnologyFingerprinter() {
-  const [url, setUrl] = useState('');
-  const [results, setResults] = useState([]);    // array of strings
-  const [meta, setMeta] = useState(null);        // { startedAt, finishedAt, durationMs, status, finalUrl, contentLength }
-  const [error, setError] = useState('');
+  const [url, setUrl] = useState("");
+  const [results, setResults] = useState([]);
+  const [meta, setMeta] = useState(null);
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
 
-  const formatDate = (iso) => {
-    if (!iso) return '-';
-    try { return new Date(iso).toLocaleString(); } catch { return String(iso); }
-  };
-  const formatDuration = (ms) => {
-    if (ms === 0) return '0 ms';
-    if (!ms && ms !== 0) return '-';
-    if (ms < 1000) return `${ms} ms`;
-    const s = (ms / 1000);
-    if (s < 60) return `${s.toFixed(2)} s`;
-    const m = Math.floor(s / 60);
-    const sec = (s % 60).toFixed(1);
-    return `${m}m ${sec}s`;
-  };
+  // --- outdated tech list ---
+  const outdatedList = ["jquery", "flash", "angularjs", "dojo", "prototype"];
 
   const analyzeTech = async () => {
     setLoading(true);
-    setError('');
+    setError("");
     setResults([]);
     setMeta(null);
 
-    const targetUrl = url.trim();
-    if (!targetUrl) {
-      setError('Please enter a URL');
-      setLoading(false);
-      return;
-    }
-
     try {
-      // Simulate API call for demo
-      await new Promise(resolve => setTimeout(resolve, 2000));
-      
-      // Mock technology detection result
-      const mockTechnologies = [
-        'Website Builder: Custom HTML/CSS',
-        'JavaScript: React 18.2.0',
-        'CSS Framework: Tailwind CSS',
-        'Analytics / Tag Manager: Google Analytics 4',
-        'Hosting / CDN: Cloudflare',
-        'Server: nginx/1.18.0',
-        'CMS: Next.js 13.4',
-        'Payment: Stripe Elements',
-        'JavaScript: jQuery 3.6.0',
-        'Other: Progressive Web App (PWA)'
-      ];
-      
-      const mockMeta = {
-        status: 200,
-        durationMs: 1850,
-        finalUrl: targetUrl.startsWith('http') ? targetUrl : `https://${targetUrl}`,
-        contentLength: 45678,
-        startedAt: new Date().toISOString(),
-        finishedAt: new Date().toISOString()
-      };
-      
-      setResults(mockTechnologies);
-      setMeta(mockMeta);
+      const res = await fetch(
+        `${process.env.NEXT_PUBLIC_PROD_API_URL}/fingerprint/fingerprint-scan`,
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ url }),
+        }
+      );
+
+      if (!res.ok) throw new Error(`API error: ${res.status}`);
+
+      const data = await res.json();
+      setResults(data.technologies || []);
+      setMeta({
+        timestamp: data.timestamp || new Date().toISOString(),
+      });
     } catch (err) {
-      setError('Server error');
+      setError("❌ Failed to analyze website technologies.");
+      console.error(err);
     } finally {
       setLoading(false);
     }
   };
 
-  // Quick categorization on the client by keyword
-  const categorized = useMemo(() => {
-    const buckets = {
-      'Website Builder': [],
-      'CMS': [],
-      'Analytics / Tag Manager': [],
-      'Hosting / CDN': [],
-      'JavaScript': [],
-      'CSS': [],
-      'Payments': [],
-      'Other': [],
-    };
-    for (const t of results) {
-      const s = t.toLowerCase();
-      if (s.includes('website builder')) buckets['Website Builder'].push(t);
-      else if (s.startsWith('📝 cms') || s.includes(' cms:') || s.includes('magento') || s.includes('opencart') || s.includes('next.js')) buckets['CMS'].push(t);
-      else if (s.includes('analytics') || s.includes('tag manager') || s.includes('pixel')) buckets['Analytics / Tag Manager'].push(t);
-      else if (s.includes('hosting') || s.includes('cdn') || s.includes('server') || s.includes('x-powered-by') || s.includes('cloudflare') || s.includes('nginx')) buckets['Hosting / CDN'].push(t);
-      else if (s.includes('javascript') || s.includes('react') || s.includes('vue') || s.includes('angular') || s.includes('jquery')) buckets['JavaScript'].push(t);
-      else if (s.includes('css framework') || s.includes('tailwind')) buckets['CSS'].push(t);
-      else if (s.includes('payment') || s.includes('razorpay') || s.includes('stripe') || s.includes('paypal')) buckets['Payments'].push(t);
-      else buckets['Other'].push(t);
-    }
-    return buckets;
-  }, [results]);
+  const getIcon = (tech) => {
+    const s = tech.toLowerCase();
+    if (s.includes("server") || s.includes("nginx") || s.includes("apache"))
+      return "🖥️";
+    if (s.includes("cdn") || s.includes("cloudflare") || s.includes("akamai"))
+      return "☁️";
+    if (s.includes("react") || s.includes("vue") || s.includes("angular"))
+      return "⚛️";
+    if (s.includes("jquery")) return "💡";
+    if (s.includes("analytics") || s.includes("tag manager")) return "📊";
+    if (s.includes("website builder") || s.includes("wix") || s.includes("shopify"))
+      return "🏗️";
+    return "🔧";
+  };
+
+  const isOutdated = (tech) =>
+    outdatedList.some((old) => tech.toLowerCase().includes(old));
 
   return (
-    <div className="min-h-screen bg-black text-white">
+     <div className="min-h-screen bg-black text-white">
       <div className="max-w-4xl mx-auto p-6">
         {/* Header */}
         <div className="flex items-center gap-4 mb-8">
@@ -116,85 +78,87 @@ export default function TechnologyFingerprinter() {
   </div>
 </div>
 
-
-        {/* Main Form Container */}
-        <div className="bg-gray-900 border border-white-700 rounded-lg p-6 mb-6">
-          <div className="flex gap-3">
-            <input
-              type="text"
-              placeholder="https://example.com"
-              className="flex-1 bg-white-800 text-white border border-white-600 rounded-lg px-4 py-3 text-lg focus:outline-none focus:ring-2 focus:ring-red-500"
-              value={url}
-              onChange={(e) => setUrl(e.target.value)}
-            />
-          </div>
-          
-          <div className="flex justify-center mt-4">
-            <button
-              onClick={analyzeTech}
-              disabled={loading}
-              className="bg-red-600 hover:bg-red-700 text-white px-6 py-2 rounded border border-red-500 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-            >
-              {loading ? 'Analyzing...' : 'Analyze'}
-            </button>
-          </div>
+        {/* Input + Button */}
+        <div className="flex gap-2 mb-6">
+          <input
+            type="text"
+            placeholder="https://example.com"
+            className="flex-1 border border-white rounded px-3 py-2 bg-black text-red-500 placeholder-red-500"
+            value={url}
+            onChange={(e) => setUrl(e.target.value)}
+          />
+          <button
+            onClick={analyzeTech}
+            disabled={loading}
+            className="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded disabled:opacity-50 font-bold"
+          >
+            {loading ? "Analyzing..." : "Analyze"}
+          </button>
         </div>
 
-        {/* Error Message */}
+        {/* Error */}
         {error && (
-          <div className="bg-red-900/50 border border-red-500 text-red-400 p-4 rounded-lg mb-6">
+          <div className="bg-red-900 border border-red-700 text-red-300 px-3 py-2 rounded mb-4">
             {error}
           </div>
         )}
 
-        {/* Meta Information */}
-        {meta && (
-          <div className="bg-gray-900 border border-white-700 rounded-lg p-6 mb-6">
-            <div className="grid grid-cols-2 gap-4">
-              <div>
-                <p className="text-gray-400 text-sm mb-1">HTTP status</p>
-                <p className="text-white font-semibold">{meta.status ?? '-'}</p>
-              </div>
-              <div>
-                <p className="text-gray-400 text-sm mb-1">Scan duration</p>
-                <p className="text-white font-semibold">{formatDuration(meta.durationMs)}</p>
-              </div>
-              <div className="col-span-2">
-                <p className="text-gray-400 text-sm mb-1">Final URL</p>
-                <p className="text-white font-medium break-all">{meta.finalUrl || '-'}</p>
-              </div>
-            </div>
-          </div>
+        {/* Timestamp */}
+        {meta?.timestamp && (
+          <p className="text-sm text-gray-400 mb-3">
+            Detected on:{" "}
+            {new Date(meta.timestamp).toLocaleString(undefined, {
+              dateStyle: "short",
+              timeStyle: "medium",
+            })}
+          </p>
         )}
 
-        {/* Results */}
+        {/* Results Table */}
         {results.length > 0 && (
-          <div className="space-y-6">
-            {Object.entries(categorized).map(([group, items]) =>
-              items.length ? (
-                <div key={group} className="bg-gray-900 border border-white-700 rounded-lg p-6">
-                  <h3 className="text-white font-semibold text-lg mb-4">{group}</h3>
-                  <ul className="space-y-2">
-                    {items.map((tech, i) => (
-                      <li key={`${group}-${i}`} className="text-gray-300 flex items-start">
-                        <span className="text-red-400 mr-2">•</span>
-                        <span className="text-sm">{tech}</span>
-                      </li>
-                    ))}
-                  </ul>
-                </div>
-              ) : null
-            )}
-          </div>
+          <table className="w-full border-collapse border border-gray-600 text-sm">
+            <thead className="bg-gray-900">
+              <tr>
+                <th className="border border-gray-600 px-2 py-2 w-10 text-red-500">
+                  #
+                </th>
+                <th className="border border-gray-600 px-2 py-2 text-left text-red-500">
+                  Detected Technology
+                </th>
+              </tr>
+            </thead>
+            <tbody>
+              {results.map((tech, i) => (
+                <tr key={i} className="hover:bg-gray-800">
+                  <td className="border border-gray-700 px-2 py-2 text-center text-gray-300">
+                    {i + 1}
+                  </td>
+                  <td
+                    className={`border border-gray-700 px-2 py-2 flex items-center gap-2 ${
+                      isOutdated(tech) ? "text-red-400 font-semibold" : "text-gray-200"
+                    }`}
+                  >
+                    <span>{getIcon(tech)}</span>
+                    {tech}
+                    {isOutdated(tech) && (
+                      <span className="ml-2 text-xs bg-red-800 text-red-200 px-2 py-0.5 rounded">
+                        ⚠️ Outdated / Security Risk
+                      </span>
+                    )}
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
         )}
 
-        {/* No Results Message */}
-        {!loading && !error && results.length === 0 && url && meta && (
-          <div className="bg-gray-900 border border-white-700 rounded-lg p-6 text-center">
-            <p className="text-gray-400">No technologies detected for this website.</p>
-          </div>
+        {/* Empty State */}
+        {!loading && results.length === 0 && url && !error && (
+          <p className="text-gray-400 mt-4 text-center">
+            No technologies detected.
+          </p>
         )}
       </div>
     </div>
   );
-} 
+}

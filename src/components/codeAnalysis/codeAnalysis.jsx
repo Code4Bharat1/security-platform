@@ -1,8 +1,9 @@
 "use client";
 import { useMemo, useState } from 'react';
+import axios from 'axios';
 
 // Build a sane API base: prefer env, else /api, trim trailing slashes
-const API_BASE = (process.env.NEXT_PUBLIC_PROD_API_URL || '/api').replace(/\/+$/, '');
+const API_BASE = (process.env.NEXT_PUBLIC_PROD_API_URL || 'http://localhost:4180/api').replace(/\/+$/, '');
 
 export default function AnalyzerPage() {
   const [code, setCode] = useState('');
@@ -14,11 +15,26 @@ export default function AnalyzerPage() {
   const [error, setError] = useState('');
   const [debug, setDebug] = useState(false);
   const [rawResponse, setRawResponse] = useState('');
+  const [feedback, setFeedback] = useState('');
+  const [feedbackSubmitted, setFeedbackSubmitted] = useState(false);
+  
+  // Dashboard analytics
+  const [analytics, setAnalytics] = useState({
+    totalIssues: 0,
+    byType: { XSS: 0, SQLi: 0, Eval: 0, DOMClobber: 0, PrototypePollution: 0 },
+    bySeverity: { Low: 0, Medium: 0, High: 0, Critical: 0 }
+  });
 
   // Filters
   const [q, setQ] = useState('');
   const [sevFilter, setSevFilter] = useState({ Low: true, Medium: true, High: true, Critical: true });
-  const [typeFilter, setTypeFilter] = useState({ XSS: true, SQLi: true, Eval: true });
+  const [typeFilter, setTypeFilter] = useState({ 
+    XSS: true, 
+    SQLi: true, 
+    Eval: true,
+    DOMClobber: true,
+    PrototypePollution: true
+  });
 
   const severityColors = {
     Low: 'bg-emerald-500 text-white',
@@ -68,6 +84,10 @@ $result = mysqli_query($conn, $query);
 ?>`,
       evaldanger: `const code = prompt('code');
 eval(code);`,
+      domclobber: `const config = {};
+window.config = config; // Vulnerable to DOM clobbering`,
+      prototype: `const obj = {};
+obj.__proto__.malicious = true; // Prototype pollution`,
       safe: `const el = document.getElementById('out');
 el.textContent = someUserInput; // safe
 // parameterized queries on server recommended`,
@@ -81,49 +101,51 @@ el.textContent = someUserInput; // safe
     setRawResponse('');
     setIssues([]);
     
-    // Simulate analysis for demo
     try {
-      await new Promise(resolve => setTimeout(resolve, 1500));
+      const response = await axios.post(`${API_BASE}/analyze/analyzeCode`, {
+        code,
+        language
+      });
       
-      // Mock analysis result based on code content
-      const mockIssues = [];
-      if (code.includes('innerHTML')) {
-        mockIssues.push({
-          line: 3,
-          severity: 'High',
-          type: 'XSS',
-          message: 'Potential XSS vulnerability using innerHTML',
-          snippet: 'innerHTML = userInput',
-          fix: 'Use textContent instead of innerHTML'
-        });
-      }
-      if (code.includes('eval(')) {
-        mockIssues.push({
-          line: 2,
-          severity: 'Critical',
-          type: 'Eval',
-          message: 'Use of eval() is dangerous',
-          snippet: 'eval(code)',
-          fix: 'Avoid using eval(), use safer alternatives'
-        });
-      }
-      if (code.includes('dangerouslySetInnerHTML')) {
-        mockIssues.push({
-          line: 2,
-          severity: 'High',
-          type: 'XSS',
-          message: 'dangerouslySetInnerHTML can lead to XSS',
-          snippet: 'dangerouslySetInnerHTML={{ __html: html }}',
-          fix: 'Sanitize HTML content before rendering'
-        });
-      }
+      const data = response.data;
+      setRawResponse(JSON.stringify(data, null, 2));
+      setIssues(data.issues || []);
       
-      setIssues(mockIssues);
-      const calculatedRisk = mockIssues.length > 0 ? Math.min(mockIssues.length * 30, 100) : 0;
+      // Calculate risk score
+      const calculatedRisk = data.issues.length > 0 
+        ? Math.min(data.issues.reduce((sum, issue) => {
+            const severityWeight = {
+              Low: 10,
+              Medium: 20,
+              High: 30,
+              Critical: 40
+            };
+            return sum + (severityWeight[issue.severity] || 10);
+          }, 0), 100)
+        : 0;
+      
       setRiskScore(calculatedRisk);
       setRiskBand(calculatedRisk >= 70 ? 'Critical' : calculatedRisk >= 40 ? 'High' : calculatedRisk > 0 ? 'Medium' : 'Safe');
+      
+      // Update analytics
+      const newAnalytics = {
+        totalIssues: data.issues.length,
+        byType: { XSS: 0, SQLi: 0, Eval: 0, DOMClobber: 0, PrototypePollution: 0 },
+        bySeverity: { Low: 0, Medium: 0, High: 0, Critical: 0 }
+      };
+      
+      data.issues.forEach(issue => {
+        if (newAnalytics.byType.hasOwnProperty(issue.type)) {
+          newAnalytics.byType[issue.type]++;
+        }
+        if (newAnalytics.bySeverity.hasOwnProperty(issue.severity)) {
+          newAnalytics.bySeverity[issue.severity]++;
+        }
+      });
+      
+      setAnalytics(newAnalytics);
     } catch (e) {
-      setError(e.message || 'Analyze failed');
+      setError(e.response?.data?.message || e.message || 'Analyze failed');
       setIssues([]);
       setRiskScore(0);
       setRiskBand('Safe');
@@ -132,21 +154,23 @@ el.textContent = someUserInput; // safe
     }
   }
 
+  const applyFix = (fix, snippet) => {
+    const fixedCode = code.replace(new RegExp(snippet.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'g'), fix);
+    setCode(fixedCode);
+  };
+
   const exportCSV = () => {
-    const headers = ['#', 'Line', 'Severity', 'Type', 'Issue', 'Snippet'];
+    const headers = ['#', 'Line', 'Severity', 'Type', 'Issue', 'Snippet', 'Fix'];
     const rows = filtered.length
       ? filtered
-      : [{ line: '', severity: '', type: '', message: 'No security issues found!', snippet: '' }];
-
+      : [{ line: '', severity: '', type: '', message: 'No security issues found!', snippet: '', fix: '' }];
     const escapeCSV = (v) => {
       const s = String(v ?? '');
       return /[",\n]/.test(s) ? `"${s.replace(/"/g, '""')}"` : s;
     };
-
     const csv =
-      [headers.join(','), ...rows.map((it, i) => [i + 1, it.line, it.severity, it.type, it.message, it.snippet].map(escapeCSV).join(','))].join('\n') +
+      [headers.join(','), ...rows.map((it, i) => [i + 1, it.line, it.severity, it.type, it.message, it.snippet, it.fix].map(escapeCSV).join(','))].join('\n') +
       '\n';
-
     const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
@@ -165,7 +189,7 @@ el.textContent = someUserInput; // safe
       ? filtered
           .map(
             (it, i) =>
-              `#${i + 1}\nLine: ${it.line}\nSeverity: ${it.severity}\nType: ${it.type}\nIssue: ${it.message}\nSnippet: ${it.snippet}\n`
+              `#${i + 1}\nLine: ${it.line}\nSeverity: ${it.severity}\nType: ${it.type}\nIssue: ${it.message}\nSnippet: ${it.snippet}\nFix: ${it.fix}\n`
           )
           .join('\n')
       : 'No security issues found!';
@@ -179,7 +203,7 @@ el.textContent = someUserInput; // safe
   };
 
   const exportJSON = () => {
-    const payload = { language, riskScore, riskBand, issues: filtered };
+    const payload = { language, riskScore, riskBand, issues: filtered, analytics };
     const blob = new Blob([JSON.stringify(payload, null, 2)], { type: 'application/json' });
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
@@ -189,13 +213,38 @@ el.textContent = someUserInput; // safe
     URL.revokeObjectURL(url);
   };
 
-  const copySnippet = async (snippet) => {
+  const copySnippet = async (text) => {
     try {
-      await navigator.clipboard.writeText(snippet);
-      alert('Snippet copied');
+      await navigator.clipboard.writeText(text);
+      alert('Copied to clipboard');
     } catch {
       alert('Copy failed');
     }
+  };
+
+  const submitFeedback = async () => {
+    if (!feedback.trim()) return;
+    
+    try {
+      await axios.post(`${API_BASE}/feedback`, {
+        feedback,
+        report: { issues, riskScore, language }
+      });
+      setFeedbackSubmitted(true);
+      setFeedback('');
+      setTimeout(() => setFeedbackSubmitted(false), 3000);
+    } catch (e) {
+      alert('Failed to submit feedback');
+    }
+  };
+
+  // Tooltip descriptions
+  const issueDescriptions = {
+    XSS: "Cross-Site Scripting: Injecting malicious scripts into web pages viewed by other users.",
+    SQLi: "SQL Injection: Inserting malicious SQL statements into an entry field for execution.",
+    Eval: "Eval Injection: Using eval() with user input can lead to code injection attacks.",
+    DOMClobber: "DOM Clobbering: Overwriting JavaScript variables via DOM properties like form IDs.",
+    PrototypePollution: "Prototype Pollution: Modifying object prototypes to affect all objects."
   };
 
   return (
@@ -211,6 +260,55 @@ el.textContent = someUserInput; // safe
             <p className="text-gray-400 text-lg">
               Rule-based static checks with severity, fixes, risk score, filters, and exports.
             </p>
+          </div>
+        </div>
+
+        {/* Dashboard Analytics */}
+        <div className="bg-gray-900 border border-white-700 rounded-lg p-6 mb-6">
+          <h2 className="text-xl font-bold text-white mb-4">Security Dashboard</h2>
+          
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            {/* Risk Score Card */}
+            <div className="bg-gray-800 p-4 rounded-lg">
+              <h3 className="text-gray-400 text-sm font-medium mb-2">Risk Score</h3>
+              <div className="flex items-center">
+                <div className={`w-16 h-16 rounded-full flex items-center justify-center ${riskColor}`}>
+                  <span className="text-xl font-bold">{riskScore}</span>
+                </div>
+                <div className="ml-4">
+                  <div className="text-2xl font-bold">{riskBand}</div>
+                  <div className="text-sm text-gray-400">Overall Risk</div>
+                </div>
+              </div>
+            </div>
+            
+            {/* Issues by Type */}
+            <div className="bg-gray-800 p-4 rounded-lg">
+              <h3 className="text-gray-400 text-sm font-medium mb-2">Issues by Type</h3>
+              <div className="space-y-2">
+                {Object.entries(analytics.byType).map(([type, count]) => (
+                  <div key={type} className="flex items-center">
+                    <div className="w-3 h-3 bg-red-500 rounded-full mr-2"></div>
+                    <div className="flex-1 text-sm">{type}</div>
+                    <div className="text-sm font-medium">{count}</div>
+                  </div>
+                ))}
+              </div>
+            </div>
+            
+            {/* Issues by Severity */}
+            <div className="bg-gray-800 p-4 rounded-lg">
+              <h3 className="text-gray-400 text-sm font-medium mb-2">Issues by Severity</h3>
+              <div className="space-y-2">
+                {Object.entries(analytics.bySeverity).map(([severity, count]) => (
+                  <div key={severity} className="flex items-center">
+                    <div className={`w-3 h-3 rounded-full mr-2 ${severityColors[severity]}`}></div>
+                    <div className="flex-1 text-sm">{severity}</div>
+                    <div className="text-sm font-medium">{count}</div>
+                  </div>
+                ))}
+              </div>
+            </div>
           </div>
         </div>
 
@@ -240,11 +338,13 @@ el.textContent = someUserInput; // safe
                 <button onClick={() => loadSample('vue')} className="px-3 py-1 bg-red-600 hover:bg-red-700 text-white rounded text-sm">Vue</button>
                 <button onClick={() => loadSample('php')} className="px-3 py-1 bg-red-600 hover:bg-red-700 text-white rounded text-sm">PHP</button>
                 <button onClick={() => loadSample('evaldanger')} className="px-3 py-1 bg-red-600 hover:bg-red-700 text-white rounded text-sm">EVAL</button>
+                <button onClick={() => loadSample('domclobber')} className="px-3 py-1 bg-red-600 hover:bg-red-700 text-white rounded text-sm">DOM Clobber</button>
+                <button onClick={() => loadSample('prototype')} className="px-3 py-1 bg-red-600 hover:bg-red-700 text-white rounded text-sm">Prototype</button>
                 <button onClick={() => loadSample('safe')} className="px-3 py-1 bg-red-600 hover:bg-red-700 text-white rounded text-sm">SAFE</button>
               </div>
             </div>
           </div>
-
+          
           {/* Code Editor */}
           <div className="mb-4">
             <label className="block text-gray-300 text-sm font-medium mb-2">Code to Analyze</label>
@@ -255,7 +355,7 @@ el.textContent = someUserInput; // safe
               className="w-full h-32 bg-gray-800 text-white border border-white-600 rounded p-3 font-mono text-sm resize-none"
             />
           </div>
-
+          
           {/* Analyze Button and Debug */}
           <div className="flex items-center gap-4">
             <button
@@ -289,7 +389,7 @@ el.textContent = someUserInput; // safe
               className="w-full bg-gray-800 text-white border border-white-600 rounded p-2 text-sm"
             />
           </div>
-
+          
           {/* Security Filter */}
           <div>
             <label className="block text-gray-300 text-sm font-medium mb-2">Security</label>
@@ -307,12 +407,12 @@ el.textContent = someUserInput; // safe
               ))}
             </div>
           </div>
-
+          
           {/* Type Filter */}
           <div>
             <label className="block text-gray-300 text-sm font-medium mb-2">Type</label>
             <div className="flex flex-wrap gap-3 text-sm">
-              {['XSS', 'SQLi', 'Eval'].map((t) => (
+              {Object.keys(typeFilter).map((t) => (
                 <label key={t} className="flex items-center text-gray-300">
                   <input
                     type="checkbox"
@@ -331,7 +431,7 @@ el.textContent = someUserInput; // safe
         <div className="bg-gray-900 border border-white-700 rounded-lg mb-6">
           {/* Table Header */}
           <div className="bg-red-600 text-white p-3 rounded-t-lg">
-            <div className="grid grid-cols-8 gap-2 text-sm font-medium">
+            <div className="grid grid-cols-9 gap-2 text-sm font-medium">
               <div>#</div>
               <div>Line</div>
               <div>Severity</div>
@@ -339,10 +439,11 @@ el.textContent = someUserInput; // safe
               <div>Issue</div>
               <div>Snippet</div>
               <div>Fix</div>
+              <div>Auto-Fix</div>
               <div>Actions</div>
             </div>
           </div>
-
+          
           {/* Table Body */}
           <div className="p-4">
             {filtered.length === 0 ? (
@@ -352,7 +453,7 @@ el.textContent = someUserInput; // safe
             ) : (
               <div className="space-y-2">
                 {filtered.map((it, idx) => (
-                  <div key={idx} className="grid grid-cols-8 gap-2 text-sm py-2 border-b border-white-700 last:border-b-0">
+                  <div key={idx} className="grid grid-cols-9 gap-2 text-sm py-2 border-b border-white-700 last:border-b-0">
                     <div className="text-gray-300">{idx + 1}</div>
                     <div className="text-gray-300">{it.line}</div>
                     <div>
@@ -360,20 +461,39 @@ el.textContent = someUserInput; // safe
                         {it.severity}
                       </span>
                     </div>
-                    <div>
-                      <span className="px-2 py-1 rounded bg-gray-700 text-gray-300 text-xs">
+                    <div className="relative group">
+                      <span className="px-2 py-1 rounded bg-gray-700 text-gray-300 text-xs cursor-help">
                         {it.type}
                       </span>
+                      <div className="absolute hidden group-hover:block z-10 w-64 p-2 bg-gray-800 text-white text-xs rounded shadow-lg left-0 top-full mt-1">
+                        {issueDescriptions[it.type] || "No description available"}
+                      </div>
                     </div>
                     <div className="text-gray-300">{it.message}</div>
                     <div className="text-gray-400 font-mono text-xs">{it.snippet}</div>
                     <div className="text-gray-400 text-xs">{it.fix}</div>
                     <div>
                       <button 
+                        onClick={() => applyFix(it.fix, it.snippet)}
+                        className="px-2 py-1 text-xs bg-green-600 hover:bg-green-700 text-white rounded mr-1"
+                      >
+                        Apply
+                      </button>
+                    </div>
+                    <div>
+                      <button 
                         onClick={() => copySnippet(it.snippet)} 
-                        className="px-2 py-1 text-xs bg-red-600 hover:bg-red-700 text-white rounded"
+                        className="px-2 py-1 text-xs bg-red-600 hover:bg-red-700 text-white rounded mr-1"
+                        title="Copy snippet"
                       >
                         Copy
+                      </button>
+                      <button 
+                        onClick={() => copySnippet(it.fix)} 
+                        className="px-2 py-1 text-xs bg-blue-600 hover:bg-blue-700 text-white rounded"
+                        title="Copy fix"
+                      >
+                        Fix
                       </button>
                     </div>
                   </div>
@@ -397,6 +517,29 @@ el.textContent = someUserInput; // safe
           <button onClick={exportPDF} className="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded">
             Export PDF
           </button>
+        </div>
+
+        {/* User Feedback */}
+        <div className="bg-gray-900 border border-white-700 rounded-lg p-6 mb-6">
+          <h3 className="text-lg font-medium text-white mb-3">Feedback</h3>
+          <div className="flex gap-3">
+            <textarea
+              value={feedback}
+              onChange={(e) => setFeedback(e.target.value)}
+              placeholder="Share your feedback about this security report..."
+              className="flex-1 bg-gray-800 text-white border border-white-600 rounded p-3 text-sm resize-none"
+              rows={3}
+            />
+            <div className="flex flex-col gap-2">
+              <button
+                onClick={submitFeedback}
+                disabled={!feedback.trim() || feedbackSubmitted}
+                className="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded font-medium disabled:opacity-50"
+              >
+                {feedbackSubmitted ? 'Submitted!' : 'Submit'}
+              </button>
+            </div>
+          </div>
         </div>
 
         {/* Error Display */}
