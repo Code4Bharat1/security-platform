@@ -1,7 +1,7 @@
 "use client"
 
 // IMPORTANT REMOVE "use client" and uncomment the `metadata` and 
-// remove conditional bgColor Rendering in final deployment
+// remove ctonditional bgColor Rendering in final deploymen
 import { usePathname } from 'next/navigation'
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
@@ -26,15 +26,15 @@ const geistMono = Geist_Mono({
 // };
 
 export default function RootLayout({ children }) {
-  let pathname = usePathname()
-  pathname = pathname.split("/")
-  const bgColor = pathname[1] === "tools" && (!pathname[2].includes("red") && !pathname[2].includes("blue") && !pathname[2].includes("green") && !pathname[2].includes("non-tech") && !pathname[2].includes("purple")) && pathname.length < 4 ? "bg-white" : "bg-black";
+  // let pathname = usePathname()
+  // pathname = pathname.split("/")
+  // const bgColor = pathname[1] === "tools" && (!pathname[2].includes("red") && !pathname[2].includes("blue") && !pathname[2].includes("green") && !pathname[2].includes("non-tech") && !pathname[2].includes("purple")) && pathname.length < 4 ? "bg-white" : "bg-black";
 
   // console.log(pathname, bgColor)
   return (
-    <html lang="en" className={`${bgColor}`}>
+    <html lang="en" className={`bg-black`}>
       <body
-        className={`${geistSans.variable} ${geistMono.variable} ${bgColor}`}
+        className={`${geistSans.variable} ${geistMono.variable} bg-black`}
       >
           <Navbar />
           {children}
