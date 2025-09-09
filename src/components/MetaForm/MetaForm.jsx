@@ -331,24 +331,24 @@ table{border-collapse:collapse;width:100%;font-size:13px} td,th{border:1px solid
                     )}
                     <div className="text-sm text-gray-500">{report.timestamp}</div>
                   </div>
-                  <div className="flex flex-wrap gap-2">
-                    <button onClick={downloadPDF} className="px-3 py-2 rounded border flex items-center gap-2">
+                  <div className="flex flex-wrap text-white gap-2">
+                    <button onClick={downloadPDF} className="px-3 py-2 rounded  bg-green-900 hover:bg-green-700 cursor-pointer flex items-center gap-2">
                       <FileText className="h-4 w-4" /> PDF
                     </button>
-                    <button onClick={downloadHTML} className="px-3 py-2 rounded border flex items-center gap-2">
+                    <button onClick={downloadHTML} className="px-3 py-2 rounded bg-green-900 hover:bg-green-700 cursor-pointer flex items-center gap-2">
                       <Download className="h-4 w-4" /> HTML
                     </button>
-                    <button onClick={downloadJSON} className="px-3 py-2 rounded border flex items-center gap-2">
+                    <button onClick={downloadJSON} className="px-3 py-2 rounded bg-green-900 hover:bg-green-700 cursor-pointer flex items-center gap-2">
                       <FileJson className="h-4 w-4" /> JSON
                     </button>
-                    <button onClick={downloadTXT} className="px-3 py-2 rounded border flex items-center gap-2">
+                    <button onClick={downloadTXT} className="px-3 py-2 rounded bg-green-900 hover:bg-green-700 cursor-pointer flex items-center gap-2">
                       <FileText className="h-4 w-4" /> TXT
                     </button>
                   </div>
                 </div>
 
                 {/* Scores */}
-                <div className="grid gap-3 sm:grid-cols-3">
+                <div className="grid gap-3 text-white sm:grid-cols-3">
                   <ScoreCard label="SEO Score" value={`${report.scores?.seo}/10`} tone="info" />
                   <ScoreCard label="Security Score" value={`${report.scores?.security}/10`} tone="info" />
                   <ScoreCard label="Total Score" value={`${report.scores?.total}/10`} tone="info" />
@@ -545,7 +545,7 @@ table{border-collapse:collapse;width:100%;font-size:13px} td,th{border:1px solid
 
 function ScoreCard({ label, value }) {
   return (
-    <div className="p-4 rounded border bg-blue-50 border-blue-200 text-blue-800">
+    <div className="p-4 rounded border bg-gray-200 border-green-200 text-black">
       <div className="text-sm opacity-80">{label}</div>
       <div className="text-2xl font-bold">{value}</div>
     </div>
@@ -557,7 +557,7 @@ function Section({ title, children }) {
     <section>
       <div className="flex items-center gap-2 mb-3">
         <Eye className="h-5 w-5 text-emerald-700" />
-        <h3 className="text-xl font-bold text-gray-800">{title}</h3>
+        <h3 className="text-xl font-bold text-gray-300">{title}</h3>
       </div>
       {children}
     </section>

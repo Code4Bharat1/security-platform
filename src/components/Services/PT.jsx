@@ -14,25 +14,35 @@ export default function PTPage() {
         { title: "Wireless & IoT PT", desc: "Assess Wi-Fi cracking, rogue access points..." },
         { title: "Social Engineering & Red Teaming", desc: "Conduct phishing campaigns..." }
     ];
-    
-    const approchData = {
-        firstRow: [
-            "Reconnaissance and threat modeling.",
-            "Vulnerability identification.",
-            "Exploitation and post-exploitation."
-        ],
-        secondRow: [
-            { text: "Attack path documentation.", colStart: "col-start-2" },
-            { text: "Reporting with PoCs and risk-based recommendations.", colStart: "col-start-4" }
-        ]
+
+    const keyaspectsData = {
+        title: "Penetration Testing",
+        desc: "Our key aspects :-",
+        imgPath:"/PTDiagram.png",
+
     };
+
+
+
+
+    // const approchData = {
+    //     firstRow: [
+    //         "Reconnaissance and threat modeling.",
+    //         "Vulnerability identification.",
+    //         "Exploitation and post-exploitation."
+    //     ],
+    //     secondRow: [
+    //         { text: "Attack path documentation.", colStart: "col-start-2" },
+    //         { text: "Reporting with PoCs and risk-based recommendations.", colStart: "col-start-4" }
+    //     ]
+    // };
 
     return (
         <ServicesLayout
             heroData={heroData}
             heroVideo="/PT.mp4"  
             methodologyData={methodologyData}
-            keyAspectsData={keyAspectsData}
+            keyAspectsData={keyaspectsData}
         />
     );
-}
+};

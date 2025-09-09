@@ -47,11 +47,11 @@ export default function EmailAttachmentAnalyzer() {
         }}
       />
 
-      <div className="bg-white shadow-lg rounded-xl p-6 w-full max-w-lg text-center">
+      <div className="bg-black text-white border border-white rounded-md p-6 w-full max-w-lg text-center">
         <input
           type="file"
           onChange={handleFileChange}
-          className="mb-4 border cursor-pointer file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:bg-green-700 file:text-white hover:file:bg-green-800"
+          className="mb-4 border cursor-pointer file:mr-4 file:py-2 file:px-4 file:rounded-l  file:bg-green-700 file:text-white hover:file:bg-green-800"
         />
 
         <button

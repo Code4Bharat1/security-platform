@@ -137,10 +137,10 @@ export default function SitemapForm() {
   };
 
   return (
-    <div className="flex flex-col bg-gradient-to-b from-black to-green-900 items-center mb-5 px-4">
+    <div className="min-h-screen bg-gradient-to-b from-black to-green-900 flex flex-col items-center pt-10 pb-24 px-4">
 
-      <GreenLayout 
-      heroData={Hero}  
+      <GreenLayout
+        heroData={Hero}
       ></GreenLayout>
 
       <div className="bg-black p-6 border border-white rounded-lg shadow-lg w-full max-w-4xl mt-8">
@@ -199,7 +199,7 @@ export default function SitemapForm() {
           )}
 
           {!loading && sitemapData && (
-            <div className="border rounded-lg p-4 bg-gray-50">
+            <div className="border rounded-lg p-4 bg-gray-200">
               <h2 className="text-xl font-bold text-green-800 mb-2">Sitemap Report</h2>
 
               {/* Warning if broken urls */}
@@ -275,7 +275,7 @@ export default function SitemapForm() {
               <div className="flex flex-col sm:flex-row gap-3 mt-4">
                 <button
                   onClick={() => setShowXml(true)}
-                  className="flex-1 bg-indigo-600 text-white py-2 px-4 rounded hover:bg-indigo-500 transition-colors duration-300 flex items-center justify-center gap-2"
+                  className="flex-1 bg-green-800 text-white py-2 px-4 rounded hover:bg-green-700 cursor-pointer transition-colors duration-300 flex items-center justify-center gap-2"
                 >
                   <Eye className="h-5 w-5" />
                   Preview XML
@@ -289,14 +289,14 @@ export default function SitemapForm() {
                 </button>
                 <button
                   onClick={downloadTXT}
-                  className="flex-1 bg-gray-200 text-gray-800 py-2 px-4 rounded hover:bg-gray-300 transition-colors duration-300 flex items-center justify-center gap-2"
+                  className="flex-1 bg-green-800 text-white py-2 px-4 rounded hover:bg-green-700 cursor-pointer transition-colors duration-300 flex items-center justify-center gap-2"
                 >
                   <FileText className="h-5 w-5" />
                   Download TXT
                 </button>
                 <button
                   onClick={downloadPDF}
-                  className="flex-1 bg-emerald-600 text-white py-2 px-4 rounded hover:bg-emerald-500 transition-colors duration-300 flex items-center justify-center gap-2"
+                  className="flex-1 bg-green-800 text-white py-2 px-4 rounded hover:bg-green-700 cursor-pointer transition-colors duration-300 flex items-center justify-center gap-2"
                 >
                   <FileText className="h-5 w-5" />
                   Download PDF

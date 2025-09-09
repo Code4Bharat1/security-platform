@@ -1,4 +1,4 @@
-export default function ServicesLayout({ heroData, methodologyData, approchData }) {
+export default function ServicesLayout({ heroData, methodologyData, approchData ,keyAspectsData}) {
     return (
         <div>
             <DescHero data={heroData}></DescHero>
@@ -109,38 +109,42 @@ function Methodology({ data }) {
   );
 }
 
-function KeyAspects() {
-  return (
-    <div className="py-16 px-6 sm:px-12 lg:px-20 bg-black text-center">
-      {/* Section Heading */}
-      <h2 className="text-sm uppercase tracking-wider text-orange-600 mb-2">
-        Key Aspects of
-      </h2>
-      <h1 className="text-2xl md:text-4xl font-bold mb-10">
-        Vulnerability Assessment Process
-      </h1>
 
-      {/* Diagram Image */}
+function KeyAspects({ data }) {
+  return (
+    <section className="relative w-full py-16 px-6 sm:px-12 lg:px-20 bg-black text-center text-white">
+      {/* Section Heading */}
+      <div className="max-w-4xl mx-auto">
+        <h2 className="text-sm uppercase tracking-wider text-indigo-500 mb-2">
+          {data?.desc || "Key Aspects of"}
+        </h2>
+        <h1 className="text-2xl md:text-4xl font-bold mb-8">
+          {data?.title || "Vulnerability Assessment Process"}
+        </h1>
+      </div>
+      
+      {/* Bottom Image */}
       <div className="flex justify-center">
         <img
-          src={data.imgPath} // <-- update with your actual image path
-          alt={data.imgAlt}
-          className="w-full max-w-5xl object-contain"
+          src={data?.imgPath || "/images/diagram.png"}
+          alt={data?.imgAlt || "Process Illustration"}
+          className="w-full max-w-5xl object-contain rounded-lg shadow-xl"
         />
       </div>
-      <button>
+      {/* CTA Button */}
+      <div className="flex justify-center">
         <a
           href="#next-section"
-            className="mt-6 inline-block bg-indigo-600 hover:bg-indigo-700 text-white font-semibold py-3 px-6 rounded-lg shadow-lg transition duration-300"
-                    >
-                        Free Consultation
-                    </a>
-                </button>
-    </div>
+          className="inline-block bg-indigo-600 hover:bg-indigo-700 text-white font-semibold py-3 px-6 rounded-xl shadow-lg transition-all duration-300"
+        >
+          Free Consultation
+        </a>
+      </div>
 
+
+    </section>
   );
 }
-
 
 
 

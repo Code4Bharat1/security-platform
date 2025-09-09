@@ -34,25 +34,31 @@ export default function SOCPage() {
             desc: "Perform final audit and issue SOC 1 report."
         }
     ];
+        const keyaspectsData = {
+        title: "SOC",
+        desc: "Our key aspects :-",
+        imgPath:"/PTDiagram.png",
 
-    // Approach Section
-    const approchData = {
-        firstRow: [
-            "Centralized log ingestion from multiple sources.",
-            "Apply correlation rules and anomaly detection.",
-            "Prioritize incidents by severity and impact."
-        ],
-        secondRow: [
-            {
-                text: "Provide rapid containment actions.",
-                colStart: "col-start-2"
-            },
-            {
-                text: "Generate compliance-ready reports.",
-                colStart: "col-start-4"
-            }
-        ]
     };
 
-    return (<ServicesLayout heroData={heroData} methodologyData={methodologyData} approchData={approchData}></ServicesLayout>)
+    // // Approach Section
+    // const approchData = {
+    //     firstRow: [
+    //         "Centralized log ingestion from multiple sources.",
+    //         "Apply correlation rules and anomaly detection.",
+    //         "Prioritize incidents by severity and impact."
+    //     ],
+    //     secondRow: [
+    //         {
+    //             text: "Provide rapid containment actions.",
+    //             colStart: "col-start-2"
+    //         },
+    //         {
+    //             text: "Generate compliance-ready reports.",
+    //             colStart: "col-start-4"
+    //         }
+    //     ]
+    // };
+
+    return (<ServicesLayout heroData={heroData} methodologyData={methodologyData} keyAspectsData={keyaspectsData}></ServicesLayout>)
 }

@@ -32,23 +32,29 @@ export default function NSPage() {
         }
     ];
 
-    const approchData = {
-        firstRow: [
-            "Review architecture and IAM configurations",
-            "Perform cloud security assessments.",
-            "Implement continuous monitoring solutions."
-        ],
-        secondRow: [
-            { text: "Provide remediation guidance.", colStart: 2 },
-            { text: "Ensure compliance readiness.", colStart: 4 }
-        ]
+        const keyaspectsData = {
+        title: "Network Security",
+        desc: "Our key aspects :-",
+        imgPath:"/PTDiagram.png",
+
     };
+    // const approchData = {
+    //     firstRow: [
+    //         "Review architecture and IAM configurations",
+    //         "Perform cloud security assessments.",
+    //         "Implement continuous monitoring solutions."
+    //     ],
+    //     secondRow: [
+    //         { text: "Provide remediation guidance.", colStart: 2 },
+    //         { text: "Ensure compliance readiness.", colStart: 4 }
+    //     ]
+    // };
 
     return (
         <ServicesLayout
             heroData={heroData}
             methodologyData={methodologyData}
-            approchData={approchData}
+            keyAspectsData={keyaspectsData}
         />
     );
 }
