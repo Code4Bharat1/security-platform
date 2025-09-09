@@ -72,16 +72,16 @@ export default function DashboardPage() {
           value={url}
           onChange={(e) => setUrl(e.target.value.trim())}
           required
-          className="border rounded px-4 py-2 w-full max-w-md text-black"
+          className="border rounded text-white px-4 py-2 w-full max-w-md text-black"
         />
         <button
-          type="submit"
-        className="mt-3 bg-black-600 text-white px-6 py-2 rounded border border-blue-500 hover:bg-blue-700"
+  type="submit"
+  className="mt-3 bg-blue-600 text-white px-6 py-2 rounded border border-blue-500"
+  disabled={loading}
+>
+  {loading ? "Scanning..." : "Scan URL"}
+</button>
 
-          disabled={loading}
-        >
-          {loading ? "Scanning..." : "Scan URL"}
-        </button>
       </form>
 
       {/* Error Message */}

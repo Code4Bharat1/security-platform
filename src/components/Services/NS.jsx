@@ -4,7 +4,8 @@ export default function NSPage() {
     const heroData = 
         {
             title: "Network Security",
-            desc: "Network Security involves implementing measures to protect the integrity, confidentiality, and availability of computer networks and data. Our services include threat detection, firewall management, and incident response to safeguard your network infrastructure."
+            desc: "Network Security focuses on safeguarding the integrity and confidentiality of data as it travels across enterprise networks. It encompasses the design and management of secure architectures, deployment of firewalls, intrusion detection and prevention systems, and segmentation of networks to reduce attack surfaces. Network security ensures that communication systems remain protected from unauthorized access, misuse, and disruptions.",
+            videoPath: "/Services/NS.mp4",
         }
 
     const methodologyData = [

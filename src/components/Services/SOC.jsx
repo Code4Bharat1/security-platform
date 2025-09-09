@@ -3,31 +3,35 @@ export default function SOCPage() {
     const heroData = 
         {
             title: "Security Operations Center",
-            desc: `Our Security Operations Center (SOC) provides 24/7 monitoring, detection, and response capabilities, combining advanced SIEM platforms, threat intelligence feeds, and AI-driven analytics. The SOC ensures businesses have continuous visibility into their threat landscape, enabling rapid incident response.`,
+            desc: `A Security Operations Center is a centralized facility responsible for continuous monitoring, detection, analysis, and response to cybersecurity incidents. It leverages advanced tools such as SIEM and threat intelligence to track malicious activity in real time. SOC operations are divided into levels, with Level 1 focusing on monitoring and alert triage, and Level 2 handling in-depth investigations, threat hunting, and coordinated response.`,
             videoPath: "/services/SOC.mp4"
         }
 
     // Methodology Section
     const methodologyData = [
         {
-            title: "24/7 Monitoring & Alerting",
-            desc: "Real-time oversight of networks, endpoints, and cloud workloads."
+            title: "Scoping & Planning",
+            desc: "Define scope, stakeholders, and timelines."
         },
         {
-            title: "Threat Intelligence Correlation",
-            desc: "Detection of zero-days, insider threats, and APTs."
+            title: "Documentation & Evidence Collection",
+            desc: "Gather SOPs, policies, logs, and system records."
         },
         {
-            title: "Incident Response & Containment",
-            desc: "Isolation of compromised devices and accounts."
+            title: "Control Assessment",
+            desc: "Evaluate design and implementation of controls."
         },
         {
-            title: "Log Management & Analysis",
-            desc: "Compliance-ready log retention with deep analytics."
+            title: "Gap Analysis & Remediation Guidance",
+            desc: "Identify weaknesses and recommend fixes."
         },
         {
-            title: "Executive Dashboards & Reporting",
-            desc: "Actionable insights for both technical and board-level stakeholders."
+            title: "Effectiveness Testing",
+            desc: "Test technical and operational controls."
+        },
+        {
+            title: "Final Audit & Reporting",
+            desc: "Perform final audit and issue SOC 1 report."
         }
     ];
 

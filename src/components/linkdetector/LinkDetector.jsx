@@ -4,6 +4,7 @@ import { useMemo, useState } from "react";
 import { Link2, RefreshCcw, Download, AlertTriangle, ShieldCheck } from "lucide-react";
 import { jsPDF } from "jspdf";
 import autoTable from "jspdf-autotable";
+import GreenLayout from "../GreenTeam/layout";
 
 const prettyDate = (iso) => (iso ? new Date(iso).toLocaleString() : "-");
 
@@ -277,17 +278,16 @@ export default function LinkDetector() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 flex flex-col items-center pt-10 pb-24 px-4">
-      <img src="/tools/card-images/link_dec.png" alt="verify" className="w-16 h-20 mb-2 mt-2" />
-      <div className="text-center mb-8">
-        <Link2 className="mx-auto mb-3 text-green-600" size={48} />
-        <h1 className="text-3xl font-bold text-green-800">Link Detector</h1>
-        <p className="text-gray-600 mt-1">
-          Detect malicious, suspicious, or unsafe links. Includes redirects, SSL, typosquatting, blacklist & more.
-        </p>
-      </div>
+    <div className="min-h-screen bg-gradient-to-b from-black to-green-900 flex flex-col items-center pt-10 pb-24 px-4">
+      <GreenLayout
+        heroData={{
+          imgPath: "/GreenTeam/link_dec.png",
+          title: "Link Detector",
+          desc: "Detect malicious, suspicious, or unsafe links. Includes redirects, SSL, typosquatting, blacklist & more."
+        }}
+      />
 
-      <div className="bg-white shadow-lg rounded-xl p-6 w-full max-w-3xl">
+      <div className="bg-black shadow-lg rounded-xl p-6 w-full max-w-3xl">
         {/* Mode toggle */}
         <div className="flex items-center justify-between mb-4">
           <div className="flex items-center gap-3">
@@ -319,7 +319,7 @@ export default function LinkDetector() {
               setBulkResults([]);
               setError("");
             }}
-            className="inline-flex items-center gap-2 text-sm px-3 py-2 rounded-md bg-gray-100 hover:bg-gray-200"
+            className="inline-flex items-center text-white bg-green-600 gap-2 text-sm px-3 py-2 rounded-md hover:bg-green-700"
           >
             <RefreshCcw size={16} /> Reset
           </button>
@@ -332,7 +332,7 @@ export default function LinkDetector() {
               placeholder="🔗 Enter link to check..."
               value={link}
               onChange={(e) => setLink(e.target.value)}
-              className="w-full px-4 py-3 mb-4 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-600 text-gray-800"
+              className="w-full text-white px-4 py-3 mb-4 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-600 text-gray-800"
             />
 
             <button
@@ -436,7 +436,7 @@ export default function LinkDetector() {
               placeholder="Paste 1 URL per line…"
               value={bulkText}
               onChange={(e) => setBulkText(e.target.value)}
-              className="w-full px-4 py-3 mb-4 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-600 text-gray-800"
+              className="w-full text-white px-4 py-3 mb-4 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-600 text-gray-800"
             />
             <div className="flex items-center gap-3">
               <button

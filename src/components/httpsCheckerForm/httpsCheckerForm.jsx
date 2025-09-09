@@ -330,20 +330,21 @@ export default function HttpsCheckerPage() {
       <div className="max-w-2xl mx-auto pt-10">
         {/* Header */}
         <div className="flex items-center justify-center gap-4 mb-8">
-          <img 
-            src="/tools/card-images/https-security.png" 
-            alt="verify" 
-            className="w-20 h-20 rounded-full"
-          />
-          <div className="text-left">
-            <h1 className="text-3xl font-bold text-white">
-              HTTPS Security Checker
-            </h1>
-            <p className="text-gray-200 text-lg">
-              Verify your website's HTTPS configuration and security headers
-            </p>
-          </div>
-        </div>
+  <img 
+    src="/BlueTeam/https security checker.png" 
+    alt="verify" 
+    className="w-20 h-20 rounded-full border-4 border-blue-500"
+  />
+  <div className="text-left">
+    <h1 className="text-3xl font-bold text-white">
+      HTTPS Security Checker
+    </h1>
+    <p className="text-gray-200 text-lg">
+      Verify your website's HTTPS configuration and security headers
+    </p>
+  </div>
+</div>
+
 
         {/* Main Card */}
         <div >
@@ -357,28 +358,29 @@ export default function HttpsCheckerPage() {
                 value={domain}
                 onChange={(e) => setDomain(e.target.value.trim())}
                 onKeyPress={handleKeyPress}
-                className="w-full pl-12 pr-4 py-3 border-2 border-blue-200 rounded-xl focus:border-blue-500 focus:ring-2 focus:ring-green-200 transition-all duration-200 text-gray-700 outline-none"
+                className="w-full pl-12 pr-4 py-3 border-2 border-blue-200 rounded-xl focus:border-blue-500 focus:ring-2 focus:ring-green-200 transition-all duration-200 text-white outline-none"
               />
             </div>
             
             <div className="flex justify-center">
   <button
-    onClick={handleCheck}
-    disabled={loading || !domain}
-    className="bg-black text-white font-semibold py-2 px-6 rounded-xl transition-all duration-200 transform hover:scale-[1.02] disabled:opacity-50 shadow-lg border border-blue-500"
-  >
-    {loading ? (
-      <div className="flex items-center justify-center gap-2">
-        <div className="w-5 h-5 border-2 border-blue-500 border-t-transparent rounded-full animate-spin"></div>
-        Analyzing Security...
-      </div>
-    ) : (
-      <div className="flex items-center justify-center gap-2">
-        <Shield className="w-5 h-5" />
-        Check HTTPS Security
-      </div>
-    )}
-  </button>
+  onClick={handleCheck}
+  disabled={loading || !domain}
+  className="bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-6 rounded-xl transition-all duration-200 transform hover:scale-[1.02] disabled:opacity-50 shadow-lg border border-blue-500"
+>
+  {loading ? (
+    <div className="flex items-center justify-center gap-2">
+      <div className="w-5 h-5 border-2 border-blue-200 border-t-transparent rounded-full animate-spin"></div>
+      Analyzing Security...
+    </div>
+  ) : (
+    <div className="flex items-center justify-center gap-2">
+      <Shield className="w-5 h-5" />
+      Check HTTPS Security
+    </div>
+  )}
+</button>
+
 </div>
 
           </div>

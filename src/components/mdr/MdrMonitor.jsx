@@ -30,22 +30,29 @@ export default function MdrMonitor() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-100 flex flex-col items-center pt-20 px-4">
-      <img src="/tools/card-images/MDR.png" alt="verify" className="w-16 h-20 mb-4 mt-7" />
-      <div className="text-center mb-10">
-        <ShieldCheck className="mx-auto mb-4 text-green-600" size={48} />
-        <h1 className="text-3xl font-bold text-green-800">MDR Monitor</h1>
-        <p className="text-gray-600 mt-2">
-          Monitors and responds to real-time security threats.
-        </p>
-      </div>
+    <div className="min-h-screen bg-black flex flex-col items-center pt-20 px-4">
+  {/* Row with image and text */}
+  <div className="flex items-center gap-4 mb-4">
+    <img
+      src="/BlueTeam/MDR.png"
+      alt="Reverse DNS"
+      className="w-20 h-20 rounded-full border-4 border-blue-500"
+    />
+    <div className="text-left">
+      <h1 className="text-3xl font-bold text-white">MDR Monitor</h1>
+      <p className="text-white mt-2">
+        Monitors and responds to real-time security threats.
+      </p>
+    </div>
+  </div>
 
-      <div className="bg-white shadow-lg rounded-xl p-6 w-full max-w-lg">
+
+      <div className="bg-black shadow-lg rounded-xl p-6 w-full max-w-lg">
         <input
           type="text"
           placeholder="🔗 Enter website URL..."
           value={url}
-          onChange={(e) => setUrl(e.target.value.trim())}         className="w-full px-4 py-3 mb-4 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-600 text-gray-800"
+          onChange={(e) => setUrl(e.target.value.trim())}         className="w-full px-4 py-3 mb-4 border border-blue-500 rounded-md text-white"
         />
 
         <button
@@ -53,8 +60,8 @@ export default function MdrMonitor() {
           disabled={loading || !url}
           className={`w-full py-3 rounded-md text-white font-semibold transition ${
             loading
-              ? "bg-green-400 cursor-not-allowed"
-              : "bg-green-700 hover:bg-green-800"
+              ? "bg-blue-500 cursor-not-allowed"
+              : "bg-blue-700 "
           }`}
         >
           {loading ? "Monitoring..." : "Start Monitoring"}

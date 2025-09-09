@@ -14,6 +14,7 @@ import {
 } from 'lucide-react';
 import { jsPDF } from 'jspdf';
 import autoTable from 'jspdf-autotable';
+import GreenLayout from '../GreenTeam/layout';
 
 const badge = (tone) =>
   ({
@@ -39,7 +40,11 @@ export default function MetaForm() {
     () => (process.env.NEXT_PUBLIC_PROD_API_URL || '').replace(/\/+$/, ''),
     []
   );
-
+const Hero={
+    title: "Protect Your Website",
+    desc: "Analyze security/SEO meta tags & headers, detect duplicates, preview Open Graph, and audit CORS.",
+    imgPath: "/GreenTeam/meta_tag.png"
+}
   async function analyze(e) {
     e?.preventDefault?.();
     if (!url) return;
@@ -245,24 +250,18 @@ table{border-collapse:collapse;width:100%;font-size:13px} td,th{border:1px solid
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-green-50 to-emerald-100 py-12 px-4">
+    <div className="min-h-screen bg-gradient-to-b from-black to-green-900 py-12 px-4">
       <div className="max-w-6xl mx-auto">
         {/* Header */}
-        <div className="text-center mb-10">
-          <div className="flex justify-center mb-5">
-            <div className="bg-white p-4 rounded-full shadow-lg">
-              <img src="/tools/card-images/meta_tag.png" alt="verify" className="w-10 h-10" />
-            </div>
-          </div>
-          <h1 className="text-4xl font-bold text-slate-800 mb-2">Protect Your Website</h1>
-          <p className="text-lg text-slate-600 max-w-3xl mx-auto">
-            Analyze security/SEO meta tags & headers, detect duplicates, preview Open Graph, and audit CORS.
-          </p>
-        </div>
+<GreenLayout 
+       heroData={Hero}  
+       ></GreenLayout>
+        {/* Card */}
+      
 
-        <div className="bg-white rounded-2xl shadow-2xl overflow-hidden">
+        <div className="bg-black border border-white rounded-2xl shadow-2xl overflow-hidden">
           {/* Card header */}
-          <div className="bg-gradient-to-r from-green-800 to-emerald-700 p-8 text-white text-center">
+          <div className="p-8 text-green-800 text-center">
             <div className="flex items-center justify-center gap-3 mb-2">
               <Shield className="h-8 w-8" />
               <h2 className="text-3xl font-bold">Meta Tag & CORS Analyzer</h2>
@@ -279,14 +278,15 @@ table{border-collapse:collapse;width:100%;font-size:13px} td,th{border:1px solid
                   placeholder="Enter website URL (e.g., https://example.com)"
                   value={url}
                   onChange={(e) => setUrl(e.target.value.trim())}
-                  className="w-full border-2 border-gray-200 rounded-xl p-4 text-lg focus:outline-none focus:ring-4 focus:ring-green-200 focus:border-green-600 pr-12"
+                  className="w-full text-white border-2 border-white rounded-xl p-4 text-lg focus:outline-none focus:ring-4 focus:ring-green-200 focus:border-green-600 pr-12"
                 />
                 <SearchIcon className="absolute right-4 top-1/2 -translate-y-1/2 h-6 w-6 text-gray-400" />
               </div>
+              <div className="justify-items-center">
               <button
                 type="submit"
                 disabled={loading || !url}
-                className="w-full bg-gradient-to-r from-green-800 to-emerald-700 text-white py-3 rounded-xl hover:from-green-700 hover:to-emerald-600 disabled:opacity-60 flex items-center justify-center gap-3 text-lg font-semibold"
+                className="w-75 bg-gradient-to-r from-green-800 to-emerald-700 text-white py-3 rounded-xl hover:from-green-700 hover:to-emerald-600 disabled:opacity-60 flex items-center justify-center gap-3 text-lg font-semibold"
               >
                 {loading ? (
                   <>
@@ -300,6 +300,7 @@ table{border-collapse:collapse;width:100%;font-size:13px} td,th{border:1px solid
                   </>
                 )}
               </button>
+              </div>
             </form>
 
             {/* Report */}
