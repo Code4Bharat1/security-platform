@@ -51,7 +51,11 @@ export default function SourceCodeAnalyzer() {
       setResult(data);
     } catch (err) {
       console.error("Error analyzing code:", err);
-      setResult({ issues: ["❌ An error occurred while analyzing the code."] });
+      setResult({
+        results: ["❌ An error occurred while analyzing the code."],
+        passed: 0,
+        failed: 0,
+      });
     } finally {
       setLoading(false);
     }
@@ -59,33 +63,28 @@ export default function SourceCodeAnalyzer() {
 
   return (
     <div className="bg-black min-h-screen text-white flex flex-col items-center justify-center p-6">
-      
       {/* Header Section */}
-<div className="flex flex-col items-start gap-6 mb-10 text-left w-full max-w-3xl">
-  <div className="flex items-center gap-6">
-    {/* Logo Image */}
-    <img
-      src="/RedTeam/code.png"
-      alt="Logo"
-      className="w-20 h-20 rounded-full border-4 border-red-600 object-cover"
-    />
-
-    <div>
-      <h1 className="text-4xl sm:text-5xl font-bold">
-        <span className="text-white">Source Code</span>{" "}
-        <span className="text-red-600">Analyzer</span>
-      </h1>
-      <p className="text-gray-300 text-lg mt-2">
-        Scan your code for XSS & SQL Injection vulnerabilities.
-      </p>
-    </div>
-  </div>
-</div>
-
+      <div className="flex flex-col items-start gap-6 mb-10 text-left w-full max-w-3xl">
+        <div className="flex items-center gap-6">
+          <img
+            src="/RedTeam/code.png"
+            alt="Logo"
+            className="w-20 h-20 rounded-full border-4 border-red-600 object-cover"
+          />
+          <div>
+            <h1 className="text-4xl sm:text-5xl font-bold">
+              <span className="text-white">Source Code</span>{" "}
+              <span className="text-red-600">Analyzer</span>
+            </h1>
+            <p className="text-gray-300 text-lg mt-2">
+              Scan your code for XSS & SQL Injection vulnerabilities.
+            </p>
+          </div>
+        </div>
+      </div>
 
       {/* Main Analyzer Box */}
       <div className="bg-black border border-white rounded-2xl p-6 w-full max-w-3xl">
-        
         {/* Paste Code */}
         <label className="block font-semibold mb-3 text-white text-base sm:text-lg md:text-xl">
           Paste Code:
@@ -129,11 +128,14 @@ export default function SourceCodeAnalyzer() {
         {result && (
           <div className="mt-6 bg-gray-900 border border-gray-700 p-4 rounded-md">
             <h3 className="font-bold text-base mb-2 text-white">Scan Result:</h3>
-            {result.issues?.length === 0 ? (
+            <p className="text-gray-400 text-sm mb-2">
+              ✅ Passed: {result.passed} | ❌ Failed: {result.failed}
+            </p>
+            {result.results?.length === 0 ? (
               <p className="text-green-500 text-sm">✅ No vulnerabilities found!</p>
             ) : (
               <ul className="list-disc pl-5 text-red-400 space-y-1 text-sm">
-                {result.issues?.map((issue, index) => (
+                {result.results?.map((issue, index) => (
                   <li key={index}>{issue}</li>
                 ))}
               </ul>

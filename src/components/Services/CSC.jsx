@@ -35,24 +35,29 @@ export default function SOCPage() {
             desc: "Advanced key management, DLP, and Zero-Trust controls.",
         },
     ];
+    const keyaspectsData = {
+        title: "Cyber Security Consultancy",
+        desc: "Our key aspects :-",
+        imgPath:"/PTDiagram.png",
 
-    const approchData = {
-        firstRow: [
-            "Review architecture and IAM configurations",
-            "Perform cloud security assessments",
-            "Implement continuous monitoring solutions",
-        ],
-        secondRow: [
-            { text: "Provide remediation guidance", colStart: "col-start-2"},
-            { text: "Ensure compliance readiness", colStart: "col-start-4"},
-        ],
     };
+    // const approchData = {
+    //     firstRow: [
+    //         "Review architecture and IAM configurations",
+    //         "Perform cloud security assessments",
+    //         "Implement continuous monitoring solutions",
+    //     ],
+    //     secondRow: [
+    //         { text: "Provide remediation guidance", colStart: "col-start-2"},
+    //         { text: "Ensure compliance readiness", colStart: "col-start-4"},
+    //     ],
+    // };
 
     return (
         <ServicesLayout
             heroData={heroData}
             methodologyData={methodologyData}
-            approchData={approchData}
+            keyAspectsData={keyaspectsData}
         />
     );
 }

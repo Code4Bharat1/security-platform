@@ -354,13 +354,13 @@ export default function LinkDetector() {
                   <div className="flex gap-2">
                     <button
                       onClick={() => downloadPdf(result, "link_report.pdf")}
-                      className="inline-flex items-center gap-2 px-3 py-2 rounded-md bg-gray-900 text-white hover:bg-black text-sm"
+                      className="inline-flex items-center gap-2 px-3 py-2 rounded-md bg-green-900 text-white hover:bg-green-700 cursor-pointer text-sm"
                     >
                       <Download size={16} /> PDF
                     </button>
                     <button
                       onClick={() => downloadTxt(buildTxtReport(result))}
-                      className="inline-flex items-center gap-2 px-3 py-2 rounded-md bg-gray-200 hover:bg-gray-300 text-sm"
+                      className="inline-flex items-center text-white gap-2 px-3 py-2 rounded-md bg-green-900 hover:bg-green-700 cursor-pointer text-sm"
                     >
                       <Download size={16} /> TXT
                     </button>
