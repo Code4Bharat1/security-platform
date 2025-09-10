@@ -66,7 +66,7 @@ export default function ToolsCard() {
     [
       {
         name: "WAF Scanner",
-        image: "/BlueTeam/WAF.png",
+        image: "/BlueTeam/waf.png",
         description:
           "Detects and analyzes WAF protection on a website, providing insights into security rules",
         slug: "firewallDashboard",
@@ -99,7 +99,7 @@ export default function ToolsCard() {
       },
       {
         name: "Obfuscation Detector",
-        image: "/BlueTeam/Obfuscation Detector.png",
+        image: "/BlueTeam/obfuscation Detector.png",
         description: "Identify obfuscation techniques in code.",
         slug: "obfuscationChecker",
         buttonLabel: "Obfuscation Detector",
@@ -125,7 +125,7 @@ export default function ToolsCard() {
       },
       {
         name: "Email Attachment Analyzer",
-        image: "/greenTeam/email.png",
+        image: "/GreenTeam/email.png",
         description: "Scans email attachments for malware or hidden threats.",
         slug: "email-attachment-analyzer",
         buttonLabel: "Analyze File",
@@ -133,7 +133,7 @@ export default function ToolsCard() {
       },
       {
         name: "IP Address Info Finder",
-        image: "/greenTeam/ip.png",
+        image: "/GreenTeam/ip.png",
         description: "Fetches location and network details of an IP address.",
         slug: "ip-address-info-finder",
         buttonLabel: "Find Info",
@@ -141,7 +141,7 @@ export default function ToolsCard() {
       },
       {
         name: "QR Tool",
-        image: "/greenTeam/QR.png",
+        image: "/GreenTeam/QR.png",
         description: "Unsafe QR & QR Generater.",
         slug: "fake-qr-code-detector",
         buttonLabel: "Scan QR",
@@ -149,7 +149,7 @@ export default function ToolsCard() {
       },
       {
         name: "Website Optimization Tool",
-        image: "/greenTeam/optimization.png",
+        image: "/GreenTeam/optimization.png",
         description:
           "Detects deployment issues like unused code, large assets, and slow-loading elements.",
         slug: "website-optimization-tool",
@@ -158,7 +158,7 @@ export default function ToolsCard() {
       },
       {
         name: "SEO Score Analyzer Tool",
-        image: "/greenTeam/seo-score.png",
+        image: "/GreenTeam/seo-score.png",
         description: "Analyzes website SEO and provides improvement tips.",
         slug: "seo-score-analyzer-tool",
         buttonLabel: "Analyze SEO",
