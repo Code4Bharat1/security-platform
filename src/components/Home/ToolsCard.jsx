@@ -10,7 +10,7 @@ export default function ToolsCard() {
     [
       {
         name: "Vulnerability Scanner",
-        image: "/tools/card-images/vuln_scanner.png",
+        image: "/RedTeam/vuln_scanner.png",
         description:
           "Scan websites for security weaknesses like XSS or SQL injection.",
         slug: "vuln-scanner",
@@ -19,7 +19,7 @@ export default function ToolsCard() {
       },
       {
         name: "Source Code Analyzer",
-        image: "/tools/card-images/tools/card-images/ode.png",
+        image: "/RedTeam/code.png",
         description:
           "Scan websites for security weaknesses like XSS or SQL injection.",
         slug: "Source-Code",
@@ -28,7 +28,7 @@ export default function ToolsCard() {
       },
       {
         name: "Checkmarx Scanner",
-        image: "/tools/card-images/tools/card-images/heckmarx.png",
+        image: "/RedTeam/heckmarx.png",
         description:
           "Scan websites for security weaknesses like XSS or SQL injection.",
         slug: "codeAnalysis",
@@ -37,7 +37,7 @@ export default function ToolsCard() {
       },
       {
         name: "Subdomain Scanner",
-        image: "/tools/card-images/subdomain.png",
+        image: "/RedTeam/subdomain.png",
         description:
           "Scan websites for analyzing subdomains and their security posture.",
         slug: "subdomainEnumeration",
@@ -46,16 +46,16 @@ export default function ToolsCard() {
       },
       {
         name: "Website Recon",
-        image: "/tools/card-images/web-recon.png",
+        image: "/RedTeam/web-recon.png",
         description:
-          "Perform an in-depth reconnaissance of a website to identify key metadata, technologies used.",
+          "Perform an-depth reconnaissance of a website to identify key metadata, technologies used.",
         slug: "webrecon",
         buttonLabel: "Website Recon",
         type: "red-team",
       },
       {
         name: "Technology Fingerprinter",
-        image: "/tools/card-images/fingerprint.png",
+        image: "/RedTeam/fingerprint.png",
         description:
           "Run an OWASP ZAP-powered automated security scan to detect vulnerabilities.",
         slug: "fingerPrint",
@@ -66,7 +66,7 @@ export default function ToolsCard() {
     [
       {
         name: "WAF Scanner",
-        image: "/tools/card-images/waf1.png",
+        image: "/BlueTeam/WAF.png",
         description:
           "Detects and analyzes WAF protection on a website, providing insights into security rules",
         slug: "firewallDashboard",
@@ -75,7 +75,7 @@ export default function ToolsCard() {
       },
       {
         name: "HTTPS Security Checker",
-        image: "/tools/card-images/https-security.png",
+        image: "/BlueTeam/https security checker.png",
         description: "Validate HTTPS security implementation.",
         slug: "httpsCheckerForm",
         buttonLabel: "HTTPS Security Checker",
@@ -83,7 +83,7 @@ export default function ToolsCard() {
       },
       {
         name: "JWT Signature Validator",
-        image: "/tools/card-images/jwt_signature.png",
+        image: "/BlueTeam/jwt_signature.png",
         description: "Ensure JWT signature integrity.",
         slug: "JWTSignatureValidator",
         buttonLabel: "JWT Signature Validator",
@@ -91,7 +91,7 @@ export default function ToolsCard() {
       },
       {
         name: "OAuth Token Analyzer",
-        image: "/tools/card-images/oauth.png",
+        image: "/BlueTeam/oauth_token.png",
         description: "Inspect OAuth tokens for security risks.",
         slug: "OAuthTokenInspector",
         buttonLabel: "OAuth Token Analyzer",
@@ -99,7 +99,7 @@ export default function ToolsCard() {
       },
       {
         name: "Obfuscation Detector",
-        image: "/tools/card-images/obfuscation.png",
+        image: "/BlueTeam/Obfuscation Detector.png",
         description: "Identify obfuscation techniques in code.",
         slug: "obfuscationChecker",
         buttonLabel: "Obfuscation Detector",
@@ -107,7 +107,7 @@ export default function ToolsCard() {
       },
       {
         name: "Regex Security Validator",
-        image: "/tools/card-images/regex.png",
+        image: "/BlueTeam/regex.png",
         description: "Check regular expressions for security flaws",
         slug: "regexDetector",
         buttonLabel: "Regex Security Validator",
@@ -117,7 +117,7 @@ export default function ToolsCard() {
     [
       {
         name: "WhatsApp Privacy Inspector",
-        image: "/tools/card-images/wp.png",
+        image: "/GreenTeam/wp.png",
         description: "Checks WhatsApp settings for potential privacy risks.",
         slug: "whatsapp-privacy-inspector",
         buttonLabel: "Inspect Now",
@@ -125,7 +125,7 @@ export default function ToolsCard() {
       },
       {
         name: "Email Attachment Analyzer",
-        image: "/tools/card-images/email.png",
+        image: "/greenTeam/email.png",
         description: "Scans email attachments for malware or hidden threats.",
         slug: "email-attachment-analyzer",
         buttonLabel: "Analyze File",
@@ -133,7 +133,7 @@ export default function ToolsCard() {
       },
       {
         name: "IP Address Info Finder",
-        image: "/tools/card-images/ip.png",
+        image: "/greenTeam/ip.png",
         description: "Fetches location and network details of an IP address.",
         slug: "ip-address-info-finder",
         buttonLabel: "Find Info",
@@ -141,7 +141,7 @@ export default function ToolsCard() {
       },
       {
         name: "QR Tool",
-        image: "/tools/card-images/QR.png",
+        image: "/greenTeam/QR.png",
         description: "Unsafe QR & QR Generater.",
         slug: "fake-qr-code-detector",
         buttonLabel: "Scan QR",
@@ -149,7 +149,7 @@ export default function ToolsCard() {
       },
       {
         name: "Website Optimization Tool",
-        image: "/tools/card-images/optimization.png",
+        image: "/greenTeam/optimization.png",
         description:
           "Detects deployment issues like unused code, large assets, and slow-loading elements.",
         slug: "website-optimization-tool",
@@ -158,7 +158,7 @@ export default function ToolsCard() {
       },
       {
         name: "SEO Score Analyzer Tool",
-        image: "/tools/card-images/seo-score.png",
+        image: "/greenTeam/seo-score.png",
         description: "Analyzes website SEO and provides improvement tips.",
         slug: "seo-score-analyzer-tool",
         buttonLabel: "Analyze SEO",
@@ -205,35 +205,82 @@ export default function ToolsCard() {
     },
   ];
 
-  // --- States (deterministic defaults) ---
-  const [categories, setCategories] = useState(initialCategories);
-  const [activeIndex, setActiveIndex] = useState(1);
-  const [buttons, setButtons] = useState(buttonList[1]);
-  const [activeGlow, setActiveGlow] = useState(initialCategories[1].glowColor);
-  const [activeButtonStyle, setActiveButtonStyle] = useState(initialCategories[1].buttonColor);
-  const [activeBorderGlow, setActiveBorderGlow] = useState(initialCategories[1].borderGlow);
+  // --- Helper function to get button list index from category title ---
+  const getButtonListIndex = (title) => {
+    if (title.includes("Red")) return 0;
+    if (title.includes("Blue")) return 1;
+    if (title.includes("Non-Tech")) return 2;
+    return 1; // default to blue team
+  };
 
-  // --- Restore state from localStorage (client only) ---
-  useEffect(() => {
+  // --- Initialize state from localStorage or defaults ---
+  const getInitialState = () => {
+    if (typeof window === 'undefined') {
+      // Server-side rendering fallback
+      return {
+        categories: initialCategories,
+        activeIndex: 1,
+        buttons: buttonList[1],
+        activeGlow: initialCategories[1].glowColor,
+        activeButtonStyle: initialCategories[1].buttonColor,
+        activeBorderGlow: initialCategories[1].borderGlow,
+      };
+    }
+
     const savedCategories = localStorage.getItem("categories");
     const savedIndex = localStorage.getItem("activeIndex");
 
     if (savedCategories) {
-      setCategories(JSON.parse(savedCategories));
-    }
-    if (savedIndex) {
+      const parsedCategories = JSON.parse(savedCategories);
+      const idx = savedIndex ? parseInt(savedIndex) : 1;
+      const buttonIndex = getButtonListIndex(parsedCategories[idx].title);
+      
+      return {
+        categories: parsedCategories,
+        activeIndex: idx,
+        buttons: buttonList[buttonIndex],
+        activeGlow: parsedCategories[idx].glowColor,
+        activeButtonStyle: parsedCategories[idx].buttonColor,
+        activeBorderGlow: parsedCategories[idx].borderGlow,
+      };
+    } else if (savedIndex) {
       const idx = parseInt(savedIndex);
-      setActiveIndex(idx);
-      setButtons(buttonList[idx]);
-      setActiveGlow(initialCategories[idx].glowColor);
-      setActiveButtonStyle(initialCategories[idx].buttonColor);
-      setActiveBorderGlow(initialCategories[idx].borderGlow);
+      const buttonIndex = getButtonListIndex(initialCategories[idx].title);
+      
+      return {
+        categories: initialCategories,
+        activeIndex: idx,
+        buttons: buttonList[buttonIndex],
+        activeGlow: initialCategories[idx].glowColor,
+        activeButtonStyle: initialCategories[idx].buttonColor,
+        activeBorderGlow: initialCategories[idx].borderGlow,
+      };
     }
-  }, []);
+
+    // Default fallback
+    return {
+      categories: initialCategories,
+      activeIndex: 1,
+      buttons: buttonList[1],
+      activeGlow: initialCategories[1].glowColor,
+      activeButtonStyle: initialCategories[1].buttonColor,
+      activeBorderGlow: initialCategories[1].borderGlow,
+    };
+  };
+
+  // --- States (initialized from localStorage or defaults) ---
+  const initialState = getInitialState();
+  const [categories, setCategories] = useState(initialState.categories);
+  const [activeIndex, setActiveIndex] = useState(initialState.activeIndex);
+  const [buttons, setButtons] = useState(initialState.buttons);
+  const [activeGlow, setActiveGlow] = useState(initialState.activeGlow);
+  const [activeButtonStyle, setActiveButtonStyle] = useState(initialState.activeButtonStyle);
+  const [activeBorderGlow, setActiveBorderGlow] = useState(initialState.activeBorderGlow);
 
   // --- Update buttons when activeIndex or categories change ---
   useEffect(() => {
-    setButtons(buttonList[activeIndex]);
+    const buttonIndex = getButtonListIndex(categories[activeIndex].title);
+    setButtons(buttonList[buttonIndex]);
     setActiveGlow(categories[activeIndex].glowColor);
     setActiveButtonStyle(categories[activeIndex].buttonColor);
     setActiveBorderGlow(categories[activeIndex].borderGlow);
@@ -241,34 +288,34 @@ export default function ToolsCard() {
 
   const handleCardClick = (index) => {
     if (index !== 1) {
+      // Swap the clicked card with the center card
       const newCategories = [...categories];
-      const typeTemp = newCategories[index];
-      const type =
-        typeTemp["title"].includes("Red") ? 0 :
-        typeTemp["title"].includes("Blue") ? 1 :
-        typeTemp["title"].includes("Non-Tech") ? 2 : 1;
-
       const temp = newCategories[1];
       newCategories[1] = newCategories[index];
       newCategories[index] = temp;
 
       setCategories(newCategories);
       setActiveIndex(1);
-      setButtons(buttonList[type]);
+
+      // Get the correct button list for the new center card
+      const buttonIndex = getButtonListIndex(newCategories[1].title);
+      setButtons(buttonList[buttonIndex]);
       setActiveGlow(newCategories[1].glowColor);
       setActiveButtonStyle(newCategories[1].buttonColor);
       setActiveBorderGlow(newCategories[1].borderGlow);
 
-      // ✅ Save entire state
+      // Save state to localStorage
       localStorage.setItem("categories", JSON.stringify(newCategories));
       localStorage.setItem("activeIndex", "1");
     } else {
-      setButtons(buttonList[activeIndex]);
+      // Center card clicked - just refresh the state
+      const buttonIndex = getButtonListIndex(categories[index].title);
+      setButtons(buttonList[buttonIndex]);
       setActiveGlow(categories[index].glowColor);
       setActiveButtonStyle(categories[index].buttonColor);
       setActiveBorderGlow(categories[index].borderGlow);
 
-      // ✅ Save active card even if it's already center
+      // Save state to localStorage
       localStorage.setItem("categories", JSON.stringify(categories));
       localStorage.setItem("activeIndex", index.toString());
     }
