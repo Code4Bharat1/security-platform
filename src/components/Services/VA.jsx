@@ -4,7 +4,7 @@ import { useState, useRef, useEffect } from "react";
 
 export default function VAPage() {
     const heroData = { title: "Vulnerability Assessment", desc: `Vulnerability Assessment (VA) is the first line of defense in a strong cybersecurity program. It is a structured process designed to uncover, analyze, and prioritize security weaknesses across an organization’s IT infrastructure, applications, cloud environments, and endpoints. Our VA services go beyond automated scans—every finding is validated by security experts and mapped against real-world attack scenarios, ensuring your remediation strategy is both actionable and business-focused.`,
-        videoPath: "/services/VA.mp4"
+        videoPath: "/services/VA1.mp4"
      }
 
     const methodologyData = [
@@ -69,7 +69,7 @@ function DescHero({ data }) {
                 muted
                 playsInline
             >
-                <source src="/VA.mp4" type="video/mp4" />
+                <source src="/Services/VA1.mp4" type="video/mp4" />
                 Your browser does not support the video tag.
             </video>
             

@@ -249,10 +249,10 @@ el.textContent = someUserInput; // safe
 
   return (
     <div className="min-h-screen bg-black text-white">
-      <div className="max-w-6xl mx-auto p-6">
+      <div className="max-w-4xl mx-auto p-6">
         {/* Header */}
         <div className="flex items-center gap-4 mb-6">
-          <div className="w-20 h-20 bg-gray-800 rounded-full border-4 border-red-500 flex items-center justify-center overflow-hidden">
+          <div className="w-30 h-30 bg-gray-800 rounded-full border-4 border-red-500 flex items-center justify-center overflow-hidden">
             <img src="/RedTeam/heckmarx.png" alt="Logo" className="w-full h-full object-cover" />
           </div>
           <div>

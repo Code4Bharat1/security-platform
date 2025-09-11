@@ -217,16 +217,18 @@
         <div className="container mx-auto px-4 py-8 max-w-4xl">
           {/* Header */}
 <div className="flex items-center gap-4 mb-8">
-  <div className="w-20 h-20 rounded-full overflow-hidden">
-    <img
-      src="/Redteam/session fixation.png" // <-- yahan apni image ka path dijiye
-      alt="Logo"
-      className="w-full h-full object-cover"
-    />
-  </div>
+  <div className="w-30 h-30 rounded-full overflow-hidden border-2 border-red-500">
+  <img
+    src="/Redteam/session fixation.png" // <-- yahan apni image ka path dijiye
+    alt="Logo"
+    className="w-full h-full object-cover"
+  />
+</div>
+
+
   <div>
-    <h1 className="text-xl font-bold text-white">Session Fixation Checker</h1>
-    <p className="text-gray-400 text-sm">Deep static checks + exports (JSON/CSV/PDF)</p>
+    <h1 className="text-2xl font-bold text-white">Session Fixation Checker</h1>
+    <p className="text-gray-400 text-xl">Deep static checks + exports (JSON/CSV/PDF)</p>
   </div>
 </div>
 

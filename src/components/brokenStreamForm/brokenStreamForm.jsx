@@ -1,8 +1,10 @@
 'use client';
 import { useMemo, useRef, useState } from 'react';
+import { jsPDF } from 'jspdf';
+import autoTable from 'jspdf-autotable';
 
 export default function BrokenStreamPage() {
-  const [url, setUrl] = useState('https://example.com');
+  const [url, setUrl] = useState('');
   const [items, setItems] = useState([]);
   const [loading, setLoading] = useState(false);
   const [progress, setProgress] = useState({ done: 0, total: 0 });
@@ -10,7 +12,7 @@ export default function BrokenStreamPage() {
   const eventSourceRef = useRef(null);
 
   const apiBase = useMemo(
-    () => ('').replace(/\/+$/, ''),
+    () => (process.env.NEXT_PUBLIC_PROD_API_URL || '').replace(/\/+$/, ''),
     []
   );
 
@@ -43,63 +45,42 @@ export default function BrokenStreamPage() {
     setSummary(null);
     setProgress({ done: 0, total: 0 });
 
-    // Simulate API call with mock data
-    setTimeout(() => {
-      const mockItems = [
-        {
-          url: 'https://example.com/broken-page',
-          finalUrl: null,
-          status: 404,
-          statusText: 'Not Found',
-          anchorText: 'Broken Link',
-          scope: 'Internal',
-          location: 'Navigation',
-          redirectHops: 0,
-          priorityScore: 8,
-          sourcePath: '/index.html',
-          suggestion: 'Update or remove this link'
-        },
-        {
-          url: 'https://example.com/redirect',
-          finalUrl: 'https://example.com/new-page',
-          status: 301,
-          statusText: 'Moved Permanently',
-          anchorText: 'Redirected Link',
-          scope: 'Internal',
-          location: 'Content',
-          redirectHops: 1,
-          priorityScore: 5,
-          sourcePath: '/about.html',
-          suggestion: 'Update to final URL'
-        },
-        {
-          url: 'https://external-site.com/page',
-          finalUrl: null,
-          status: 200,
-          statusText: 'OK',
-          anchorText: 'Working External Link',
-          scope: 'External',
-          location: 'Footer',
-          redirectHops: 0,
-          priorityScore: 3,
-          sourcePath: '/contact.html',
-          suggestion: null
-        }
-      ];
+    if (eventSourceRef.current) eventSourceRef.current.close();
 
-      const mockSummary = {
-        total: 3,
-        working: 1,
-        broken: 1,
-        redirects: 1,
-        diff: { broken: 0, fixed: 1 }
-      };
+    const es = new EventSource(
+      `${apiBase}/brokenlink/brokenlink-stream?url=${encodeURIComponent(url)}`
+    );
+    eventSourceRef.current = es;
 
-      setItems(mockItems);
-      setSummary(mockSummary);
-      setProgress({ done: 3, total: 3 });
+    es.onmessage = (event) => {
+      const data = JSON.parse(event.data || '{}');
+
+      if (data.type === 'total') {
+        setProgress((prev) => ({ ...prev, total: data.total || 0 }));
+      } else if (data.type === 'link') {
+        setItems((prev) => {
+          const k = `${data.url}::${data.sourcePath}`;
+          if (prev.some((r) => `${r.url}::${r.sourcePath}` === k)) return prev;
+          return [...prev, data];
+        });
+        setProgress((prev) => ({ ...prev, done: prev.done + 1 }));
+      } else if (data.type === 'summary') {
+        setSummary(data.payload);
+      } else if (data.type === 'done') {
+        setLoading(false);
+        es.close();
+      } else if (data.type === 'error') {
+        alert(data.message || 'Error occurred');
+        setLoading(false);
+        es.close();
+      }
+    };
+
+    es.onerror = () => {
+      alert('Connection error.');
       setLoading(false);
-    }, 2000);
+      es.close();
+    };
   }
 
   // Function to compute severity (Critical, Warning, OK, Redirect)
@@ -112,16 +93,17 @@ export default function BrokenStreamPage() {
   // Helper for status badge styling
   function severityBadge(sev) {
     const base = 'px-2 py-0.5 rounded text-xs font-semibold';
-    if (sev === 'critical') return `${base} bg-red-600 text-white`;
-    if (sev === 'redirect') return `${base} bg-yellow-600 text-white`;
-    return `${base} bg-green-600 text-white`; // ok/healthy
+    if (sev === 'critical') return `${base} bg-red-100 text-red-700 border border-red-300`;
+    if (sev === 'redirect') return `${base} bg-yellow-100 text-yellow-700 border border-yellow-300`;
+    return `${base} bg-green-100 text-green-700 border border-green-300`; // ok/healthy
   }
 
   // Helper for status tinting
   function statusTint(sev) {
-    if (sev === 'critical') return 'border-white-600 bg-red-900/20 text-red-200';
-    if (sev === 'redirect') return 'border-yellow-600 bg-yellow-900/20 text-yellow-200';
-    return 'border-green-600 bg-green-900/20 text-green-200'; // healthy
+    if (sev === 'critical') return 'border-red-700 bg-red-950/40 text-red-200';
+    if (sev === 'redirect')
+      return 'border-yellow-700 bg-yellow-950/40 text-yellow-200';
+    return 'border-green-700 bg-green-950/40 text-green-200'; // healthy
   }
 
   // ---------- Export Functions ----------
@@ -162,7 +144,7 @@ export default function BrokenStreamPage() {
       i.finalUrl || '',
       i.status,
       i.statusText,
-      computedSeverity(i),
+      i.severity,
       i.scope,
       i.location,
       i.redirectHops,
@@ -179,9 +161,8 @@ export default function BrokenStreamPage() {
   function downloadTXT() {
     const lines = [];
     items.forEach((i) => {
-      const severity = computedSeverity(i);
       lines.push(
-        `${(severity || '').toUpperCase()} | ${i.status} ${i.statusText} | ${i.scope}`
+        `${(i.severity || '').toUpperCase()} | ${i.status} ${i.statusText} | ${i.scope}`
       );
       lines.push(`Anchor: ${i.anchorText || '-'}`);
       lines.push(`URL: ${i.url}`);
@@ -194,78 +175,127 @@ export default function BrokenStreamPage() {
     downloadBlob(lines.join('\n'), 'broken-links.txt', 'text/plain;charset=utf-8');
   }
 
-  function downloadPDF() {
-    // Mock PDF download
-    const element = document.createElement('a');
-    const file = new Blob(['Broken Links Report'], { type: 'text/plain' });
-    element.href = URL.createObjectURL(file);
-    element.download = 'broken-links.pdf';
-    document.body.appendChild(element);
-    element.click();
-    document.body.removeChild(element);
+  async function toDataURL(path) {
+    const res = await fetch(path);
+    const blob = await res.blob();
+    return new Promise((resolve) => {
+      const reader = new FileReader();
+      reader.onload = () => resolve(reader.result);
+      reader.readAsDataURL(blob);
+    });
+  }
+
+  async function downloadPDF() {
+    const doc = new jsPDF({ unit: 'pt', format: 'a4' });
+
+    try {
+      const dataUrl = await toDataURL('/brokenlink1.png');
+      doc.addImage(dataUrl, 'PNG', 40, 28, 40, 50);
+    } catch {}
+
+    doc.setFontSize(16);
+    doc.text('Broken Link Scan Report', 90, 50);
+    doc.setFontSize(10);
+    doc.text(`Scanned URL: ${url}`, 90, 66);
+    if (summary) {
+      doc.text(
+        `Summary: Total ${summary.total} | Working ${summary.working} | Broken ${summary.broken} | Redirects ${summary.redirects}`,
+        90,
+        82
+      );
+      if (summary.diff) {
+        doc.text(
+          `Change vs last scan: broken ${summary.diff.broken >= 0 ? '+' : ''}${
+            summary.diff.broken
+          } | fixed ${summary.diff.fixed}`,
+          90,
+          98
+        );
+      }
+    }
+
+    const body = items.map((i) => [
+      i.severity,
+      `${i.status} ${i.statusText}`,
+      i.anchorText || '-',
+      i.url,
+      i.finalUrl && i.finalUrl !== i.url ? `${i.finalUrl} (${i.redirectHops})` : '-',
+      i.scope,
+      i.location,
+      i.priorityScore,
+      i.suggestion || '-',
+    ]);
+
+    autoTable(doc, {
+      startY: 120,
+      head: [
+        [
+          'Severity',
+          'Status',
+          'Anchor',
+          'URL',
+          'Final URL (hops)',
+          'Scope',
+          'Location',
+          'Priority',
+          'Suggestion',
+        ],
+      ],
+      body,
+      styles: { fontSize: 8, cellWidth: 'wrap' },
+      columnStyles: {
+        3: { cellWidth: 180 },
+        4: { cellWidth: 180 },
+        8: { cellWidth: 160 },
+      },
+    });
+
+    doc.save('broken-links.pdf');
   }
 
   return (
-    <div className="min-h-screen bg-black text-white p-6">
-      <div className="max-w-4xl mx-auto">
-        {/* Header */}
-        <div className="flex items-center gap-4 mb-8">
-  <img
-    src="/RedTeam/brokenlink.png"  // apni image ka path yahaan daaliye
-    alt="Broken Link Checker Logo"
-    className="w-20 h-20 rounded-full border-2 border-red-600 object-cover"
-  />
-  <div>
-    <h1 className="text-2xl font-bold text-white">
-      Broken Link Checker (Streaming)
-    </h1>
-    <p className="text-gray-300 text-sm">
-      Scans web pages for dead or broken links, helping<br />
-      maintain SEO integrity
-    </p>
-  </div>
-</div>
+    <main className="min-h-screen bg-neutral-950 text-slate-100 px-4">
+      <div className="max-w-4xl mx-auto pt-16 ">
+        <div className="flex items-center gap-4 mb-4">
+          <img 
+  src="/RedTeam/brokenlink.png" 
+  alt="verify" 
+  className="w-30 h-30 mt-2 border-4 border-red-600 rounded-full" 
+/>
 
-
-        {/* Features Box */}
-        <div className="mb-6">
-          <div className="px-4 py-2 border-2 border-white-600 text-white bg-transparent rounded text-sm inline-block">
-            Redirect tracking / Anchor & location / Priority & fixes / Exports
+          <div>
+            <h1 className="text-3xl font-bold">Broken Link Checker (Streaming)</h1>
+            <p className="text-sm text-slate-400">
+              Redirect tracking • Anchor & location • Priority & fixes • Exports
+            </p>
           </div>
         </div>
 
-        {/* Input Section */}
-        <div className="mb-6 space-y-4">
+        <div className="flex flex-col sm:flex-row gap-3 border border-white px-20 py-20">
           <input
-            type="text"
+            className="w-full bg-neutral-900 border border-red-600 text-slate-100 placeholder-slate-500 rounded px-3 py-2 outline-none focus:ring-2 focus:ring-blue-500"
+            placeholder="https://example.com"
             value={url}
             onChange={(e) => setUrl(e.target.value)}
-            className="w-full p-4 bg-black border-2 border-white-600 rounded-full text-white placeholder-gray-400 text-center"
-            placeholder="https://example.com"
             disabled={loading}
           />
-          
-          <div className="flex justify-center">
-           <button
-  onClick={startCheck}
-  className="px-6 py-2 border-2 border-white-600 text-white bg-red-600 rounded hover:bg-red-700 transition-colors disabled:opacity-60"
-  disabled={loading || !url}
->
-  {loading ? 'Checking…' : 'Check Links'}
-</button>
-
-          </div>
+          <button
+            onClick={startCheck}
+            className="shrink-0 bg-red-600 text-white px-4 py-2 rounded hover:bg-red-600 disabled:opacity-60"
+            disabled={loading || !url}
+          >
+            {loading ? 'Checking…' : 'Check Links'}
+          </button>
         </div>
 
-        {/* Progress Bar */}
         {progress.total > 0 && (
-          <div className="mb-6">
-            <div className="text-sm text-gray-300 mb-2">
+          <div className="mt-4">
+            <div className="text-sm text-slate-300 mb-1">
               Progress: {progress.done} / {progress.total} links
             </div>
-            <div className="w-full bg-gray-800 rounded-full h-2 border border-white-600">
+            <div className="w-full bg-neutral-800 rounded h-2">
               <div
-                className="bg-red-600 h-2 rounded-full transition-all duration-300"
+                className="bg-blue-600 h-2 rounded"
                 style={{
                   width: `${Math.min(100, (progress.done / progress.total) * 100)}%`,
                 }}
@@ -274,98 +304,88 @@ export default function BrokenStreamPage() {
           </div>
         )}
 
-        {/* Summary */}
         {summary && (
-          <div className="mb-6 p-4 border-2 border-white-600 rounded bg-black">
-            <div className="font-semibold text-white mb-2">Scan Summary</div>
-            <div className="text-sm text-gray-300">
-              Total: <span className="text-white font-bold">{summary.total}</span> · 
-              Working: <span className="text-green-400 font-bold">{summary.working}</span> · 
-              Broken: <span className="text-red-400 font-bold">{summary.broken}</span> · 
-              Redirects: <span className="text-yellow-400 font-bold">{summary.redirects}</span>
+          <div className="mt-4 p-3 border rounded bg-neutral-900/60 border-neutral-700">
+            <div className="font-semibold">Scan Summary</div>
+            <div className="text-sm">
+              Total: <b>{summary.total}</b> · Working:{' '}
+              <b className="text-green-400">{summary.working}</b> · Broken:{' '}
+              <b className="text-red-400">{summary.broken}</b> · Redirects:{' '}
+              <b className="text-yellow-400">{summary.redirects}</b>
             </div>
             {summary.diff && (
-              <div className="text-sm text-gray-300 mt-1">
+              <div className="text-sm mt-1">
                 Change vs last: Broken{' '}
-                <span className="text-white font-bold">
+                <b>
                   {summary.diff.broken >= 0 ? '+' : ''}
                   {summary.diff.broken}
-                </span>{' '}
-                · Fixed <span className="text-white font-bold">{summary.diff.fixed}</span>
+                </b>{' '}
+                · Fixed <b>{summary.diff.fixed}</b>
               </div>
             )}
           </div>
         )}
 
-        {/* Export Buttons */}
         {items.length > 0 && (
-          <div className="mb-6 flex gap-3">
+          <div className="mt-4 flex gap-2">
             <button
               onClick={downloadCSV}
-              className="px-4 py-2 border-2 border-white-600 text-white bg-transparent rounded hover:bg-red-600 transition-colors"
+              className="px-3 py-2 rounded border border-neutral-700 hover:bg-neutral-900"
             >
               Export CSV
             </button>
             <button
               onClick={downloadTXT}
-              className="px-4 py-2 border-2 border-white-600 text-white bg-transparent rounded hover:bg-red-600 transition-colors"
+              className="px-3 py-2 rounded border border-neutral-700 hover:bg-neutral-900"
             >
               Export TXT
             </button>
             <button
               onClick={downloadPDF}
-              className="px-4 py-2 border-2 border-white-600 text-white bg-transparent rounded hover:bg-red-600 transition-colors"
+              className="px-3 py-2 rounded border border-neutral-700 hover:bg-neutral-900"
             >
               Export PDF
             </button>
           </div>
         )}
 
-        {/* Results */}
-        <div className="grid md:grid-cols-1 gap-4">
+        <div className="mt-6 grid md:grid-cols-2 gap-3">
           {items.map((i, idx) => {
             const sev = computedSeverity(i);
             return (
               <div
                 key={`${i.url}-${idx}`}
-                className={`p-4 border-2 rounded ${statusTint(sev)}`}
+                className={`p-3 border rounded ${statusTint(sev)}`}
               >
-                <div className="flex items-center gap-3 mb-3">
-                  <span className={severityBadge(sev)}>
-                    {sev.toUpperCase()}
-                  </span>
-                  <span className="text-sm font-medium text-white">
+                <div className="flex items-center gap-2">
+                  <span className={severityBadge(sev)}>{sev}</span>
+                  <span className="text-sm font-medium">
                     [{i.status} {i.statusText}]
                   </span>
-                  <span className="ml-auto text-xs px-2 py-1 rounded border border-white-600 text-white">
+                  <span className="ml-auto text-xs px-2 py-0.5 rounded bg-neutral-900 border border-neutral-700">
                     {i.scope}
                   </span>
-                  <span className="text-xs px-2 py-1 rounded border border-white-600 text-white">
+                  <span className="text-xs px-2 py-0.5 rounded bg-neutral-900 border border-neutral-700">
                     {i.location}
                   </span>
                 </div>
-                
-                <div className="space-y-2 text-sm">
-                  <div className="text-gray-300">
-                    <span className="font-bold text-white">Anchor:</span> {i.anchorText || '-'}
+                <div className="mt-2 text-sm">
+                  <div className="text-slate-300">
+                    <b>Anchor:</b> {i.anchorText || '-'}
                   </div>
-                  
-                  <div>
-                    <a
-                      href={i.url}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="text-blue-400 hover:text-blue-300 underline break-all"
-                    >
-                      {i.url}
-                    </a>
-                  </div>
-                  
+                  <a
+                    href={i.url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="underline break-words text-blue-300 hover:text-blue-200"
+                  >
+                    {i.url}
+                  </a>
                   {i.finalUrl && i.finalUrl !== i.url && (
-                    <div className="text-gray-300">
-                      <span className="font-bold text-white">Final:</span>{' '}
+                    <div className="mt-1">
+                      <b>Final:</b>{' '}
                       <a
-                        className="text-blue-400 hover:text-blue-300 underline break-all"
+                        className="underline break-words"
                         href={i.finalUrl}
                         target="_blank"
                         rel="noreferrer"
@@ -375,18 +395,15 @@ export default function BrokenStreamPage() {
                       ({i.redirectHops} hops)
                     </div>
                   )}
-                  
-                  <div className="text-gray-300">
-                    <span className="font-bold text-white">Found on:</span> {i.sourcePath || '-'} | 
-                    <span className="font-bold text-white"> Priority:</span> {i.priorityScore}
+                  <div className="text-slate-300 mt-1">
+                    <b>Found on:</b> {i.sourcePath || '-'} | <b>Priority:</b> {i.priorityScore}
                   </div>
-                  
                   {i.suggestion && (
-                    <div className="text-gray-300">
-                      <span className="font-bold text-white">Suggestion:</span> {i.suggestion}{' '}
+                    <div className="mt-1">
+                      <b>Suggestion:</b> {i.suggestion}{' '}
                       <button
                         onClick={() => copyToClipboard(i.finalUrl || i.url)}
-                        className="ml-2 text-xs text-blue-400 hover:text-blue-300 underline"
+                        className="ml-2 text-xs underline"
                       >
                         Copy URL
                       </button>
@@ -398,6 +415,6 @@ export default function BrokenStreamPage() {
           })}
         </div>
       </div>
-    </div>
+    </main>
   );
 }

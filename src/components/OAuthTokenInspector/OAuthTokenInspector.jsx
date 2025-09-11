@@ -313,7 +313,7 @@ export default function OAuthTokenInspector() {
   <img
     src="/BlueTeam/oauth_token.png"
     alt="OAuth2"
-    className="w-20 h-20 rounded-full shadow-lg border-2 border-blue-500"
+    className="w-30 h-30 rounded-full shadow-lg border-2 border-blue-500"
   />
   <div className="text-left">
     <h1 className="text-4xl font-bold text-white mb-2">

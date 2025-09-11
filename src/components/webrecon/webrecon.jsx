@@ -136,7 +136,7 @@ export default function Webrecon() {
       <div className="max-w-4xl mx-auto p-6">
         {/* Header */}
         <div className="flex items-center gap-4 mb-8">
-          <div className="w-20 h-20 bg-gray-800 rounded-full border-4 border-red-500 flex items-center justify-center overflow-hidden">
+          <div className="w-30 h-30 bg-gray-800 rounded-full border-4 border-red-500 flex items-center justify-center overflow-hidden">
             <img
               src="/RedTeam/web-recon.png"
               alt="Logo"
@@ -153,7 +153,7 @@ export default function Webrecon() {
         </div>
 
         {/* DNS Lookup */}
-        <div className="bg-gray-900 border border-white-700 rounded-lg p-6 mb-6">
+        <div className="bg-gray-900 border border-white-700 rounded-lg p-6 mb-6 text-center">
           <h2 className="text-red-400 text-lg font-semibold mb-4">DNS Lookup</h2>
 
           <div className="flex gap-2 mb-4">

@@ -230,10 +230,10 @@ export default function Vulnscanner() {
 
   return (
     <div className="min-h-screen bg-black text-white p-6">
-      <div className="max-w-6xl mx-auto">
+      <div className="max-w-4xl mx-auto">
         {/* Header */}
         <div className="flex items-center mb-8 p-4">
-          <div className="w-20 h-20 bg-gray-800 rounded-full border-4 border-red-500 flex items-center justify-center overflow-hidden">
+          <div className="w-30 h-30 bg-gray-800 rounded-full border-4 border-red-500 flex items-center justify-center overflow-hidden">
             <img
               src="/RedTeam/vuln_scanner.png"
               alt="Security Scanner"
@@ -824,7 +824,7 @@ export default function Vulnscanner() {
               <div className="flex justify-end mb-6">
                 <button
                   onClick={generatePDF}
-                  className="bg-blue-600 hover:bg-blue-500 text-white py-2 px-4 rounded border border-white"
+                  className="bg-red-600 hover:bg-blue-500 text-white py-2 px-4 rounded border border-white"
                 >
                   Download PDF Report
                 </button>

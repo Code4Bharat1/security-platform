@@ -103,7 +103,7 @@ export default function SecretKeyScanner() {
   <img
     src="/Redteam/secret_key_scanner.png"   // <-- apna image path yaha daalo
     alt="Logo"
-    className="w-20 h-20 rounded-full border-4 border-red-500 bg-gray-800 object-cover"
+    className="w-30 h-30 rounded-full border-4 border-red-500 bg-gray-800 object-cover"
   />
   <div>
     <h1 className="text-3xl font-bold text-white mb-1">

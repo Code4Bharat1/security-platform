@@ -93,7 +93,7 @@ export default function WhoisLookup() {
       <div className="w-full max-w-4xl mx-auto">
         {/* Header (left) */}
         <div className="flex items-center gap-4 mb-4 ">
-          <div className="w-20 h-20 rounded-full overflow-hidden border-4 border-red-500 ml-30">
+          <div className="w-30 h-30 rounded-full overflow-hidden border-4 border-red-500 -ml-5">
             <img
               src="/Redteam/whois.png"
               alt="Logo"
@@ -108,9 +108,9 @@ export default function WhoisLookup() {
           </div>
         </div>
 
-        <div className="mb-4 text-left ml-30 ">
-          <p>WHOIS LOOKUP (Enhanced)</p>
-        </div>
+        <div className="border border-white mb-4 text-center px-10 py-10">
+  <p>WHOIS LOOKUP (Enhanced)</p>
+       
 
         {/* Centered form */}
         <div className="w-full flex justify-center">
@@ -213,6 +213,7 @@ export default function WhoisLookup() {
             </section>
           </>
         )}
+      </div>
       </div>
     </main>
   );

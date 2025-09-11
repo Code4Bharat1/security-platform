@@ -141,10 +141,10 @@ export default function XssTester() {
 
   return (
     <div className="min-h-screen bg-black text-white">
-      <div className="max-w-5xl mx-auto p-6 space-y-6">
+      <div className="max-w-4xl mx-auto p-6 space-y-6">
         {/* Header with Logo */}
         <div className="flex items-center gap-4 mb-8">
-  <div className="w-20 h-20 bg-white rounded-full flex items-center justify-center border-4 border-red-600 overflow-hidden">
+  <div className="w-30 h-30 bg-white rounded-full flex items-center justify-center border-4 border-red-600 overflow-hidden">
     <img
       src="/Redteam/xss.png" // <-- replace with your image path
       alt="Logo"
@@ -219,7 +219,7 @@ export default function XssTester() {
           )}
 
           {/* Action Buttons */}
-          <div className="flex items-center gap-3">
+          <div className="flex justify-center gap-3">
             <button
               type="button"
               onClick={handleTest}

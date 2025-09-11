@@ -32,22 +32,22 @@ export default function MdrMonitor() {
   return (
     <div className="min-h-screen bg-black flex flex-col items-center pt-20 px-4">
   {/* Row with image and text */}
-  <div className="flex items-center gap-4 mb-4">
-    <img
-      src="/BlueTeam/MDR.png"
-      alt="Reverse DNS"
-      className="w-20 h-20 rounded-full border-4 border-blue-500"
-    />
-    <div className="text-left">
-      <h1 className="text-3xl font-bold text-white">MDR Monitor</h1>
-      <p className="text-white mt-2">
-        Monitors and responds to real-time security threats.
-      </p>
-    </div>
+  <div className="flex items-center gap-4 mb-4 w-full justify-left ml-140">
+  <img
+    src="/BlueTeam/MDR.png"
+    alt="Reverse DNS"
+    className="w-30 h-30 rounded-full border-4 border-blue-500"
+  />
+  <div className="text-left">
+    <h1 className="text-3xl font-bold text-white">MDR Monitor</h1>
+    <p className="text-white mt-2">
+      Monitors and responds to real-time security threats.
+    </p>
   </div>
+</div>
 
 
-      <div className="bg-black shadow-lg rounded-xl p-6 w-full max-w-lg">
+      <div className="bg-black shadow-lg rounded-xl p-6 w-full max-w-4xl border border-white px-10 py-10">
         <input
           type="text"
           placeholder="🔗 Enter website URL..."

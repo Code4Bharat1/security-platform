@@ -180,7 +180,7 @@ export default function MochaForm() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-900">
+    <div className="min-h-screen bg-black-900">
       {/* Toast */}
       {showToast && (
         <div
@@ -203,23 +203,28 @@ export default function MochaForm() {
 
       {/* Header */}
       <div className="text-center pt-8 pb-6">
-        <div className="flex justify-center items-center mb-4">
-          <div className="bg-white p-3 rounded-full">
-            <div className="bg-red-500 text-white px-3 py-1 rounded text-sm font-bold">
-              img
-            </div>
-          </div>
-        </div>
-        <h1 className="text-3xl font-bold text-white mb-2">
-          Mocha API Testing
-        </h1>
-        <p className="text-gray-400 max-w-2xl mx-auto px-4 text-sm">
-          Test your API endpoints with ease. Enter your API details below and get instant feedback on performance and reliability.
-        </p>
-        <div className="mt-4 text-gray-400 text-sm">
-          <p>Connected to: localhost:5000</p>
-        </div>
-      </div>
+  {/* Header with Logo + Text in one row */}
+  <div className="flex justify-left items-center gap-2 px-80">
+    <img
+      src="/RedTeam/mocha-logo.png" 
+      alt="Mocha Logo"
+      className="w-30 h-30 object-contain"
+    />
+    <h1 className="text-3xl font-bold text-white">
+      Mocha API Testing
+    </h1>
+  </div>
+
+  {/* Subtext */}
+  <p className="text-gray-400 max-w-2xl mx-auto px-4 text-sm ">
+    Test your API endpoints with ease. Enter your API details below <br/> and get instant feedback on performance and reliability.
+  </p>
+
+  {/* Connection Info */}
+  <div className="mt-4 text-gray-400 text-sm">
+    <p>Connected to: localhost:5000</p>
+  </div>
+</div>
 
       {/* Main */}
       <div className="max-w-4xl mx-auto px-4 pb-12">

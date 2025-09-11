@@ -171,7 +171,7 @@ export default function SitemapForm() {
               min="1"
               max="5"
               value={depth}
-              onChange={(e) => setDepth(parseInt(e.target.value || '1', 10))}
+              onChange={(e) => setDepth(parseInt(e.target.value || '', 10))}
               className="w-full text-white border border-gray-300 rounded-lg p-2 focus:outline-none focus:ring-2 focus:ring-green-800 focus:border-green-800"
             />
           </div>

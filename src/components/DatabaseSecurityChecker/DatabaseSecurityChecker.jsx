@@ -41,9 +41,9 @@ export default function DbSecurityChecker() {
 
   return (
     <div className="min-h-screen flex flex-col items-center justify-start bg-gray-900 p-6">
-      {/* Header */}
-<div className="flex items-center mb-6 gap-4">
-  <div className="w-20 h-20 rounded-full border-4 border-red-600 overflow-hidden flex items-center justify-center bg-black">
+     {/* Header */}
+<div className="flex items-center mb-6 gap-4 -ml-90">
+  <div className="w-30 h-30 rounded-full border-4 border-red-600 overflow-hidden flex items-center justify-center bg-black">
     <img src="/RedTeam/DB-Security.png" alt="DB Logo" className="w-16 h-16 object-cover"/>
   </div>
   <div className="flex flex-col">
@@ -52,8 +52,9 @@ export default function DbSecurityChecker() {
   </div>
 </div>
 
+
       {/* Form Card */}
-      <div className="bg-black text-white p-6 rounded-2xl shadow-lg w-full max-w-md border-2 border-white-600">
+      <div className="bg-black text-white p-6 rounded-2xl shadow-lg w-full max-w-4xl border-2 border-white-600">
         <div className="mb-4">
           <label className="block mb-1">DB Type:</label>
           <select value={form.dbType} onChange={e => setForm({ ...form, dbType: e.target.value })}
