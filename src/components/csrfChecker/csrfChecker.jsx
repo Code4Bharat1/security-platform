@@ -9,8 +9,7 @@ export default function CSRFChecker() {
   const [loading, setLoading] = useState(false)
   const [toasts, setToasts] = useState([])
 
-  const API_BASE = '' // leave blank if you use a Next.js rewrite proxy
-
+  const API_BASE = process.env.NEXT_PUBLIC_PROD_API_URL
   const addToast = (message, type = 'info') => {
     const id = Date.now()
     setToasts(prev => [...prev, { id, message, type }])
