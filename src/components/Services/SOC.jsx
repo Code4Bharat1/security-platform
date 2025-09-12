@@ -4,40 +4,51 @@ export default function SOCPage() {
         {
             title: "Security Operations Center",
             desc: `A Security Operations Center is a centralized facility responsible for continuous monitoring, detection, analysis, and response to cybersecurity incidents. It leverages advanced tools such as SIEM and threat intelligence to track malicious activity in real time. SOC operations are divided into levels, with Level 1 focusing on monitoring and alert triage, and Level 2 handling in-depth investigations, threat hunting, and coordinated response.`,
-            videoPath: "/services/SOC.mp4"
+            videoPath: "/Services/SOC.mp4"
         }
 
     // Methodology Section
     const methodologyData = [
         {
-            title: "Scoping & Planning",
-            desc: "Define scope, stakeholders, and timelines."
+            title: "Log Inspection & Normalization",
+            desc: "Centralize logs from endpoints, servers, applications, and cloud services into SIEM platforms (Splunk, QRadar, ELK).",
+            imagePath:"/Services/SOC/1.png"
         },
         {
-            title: "Documentation & Evidence Collection",
-            desc: "Gather SOPs, policies, logs, and system records."
+            title: "Threat Intelligence Correlation",
+            desc: "Correlate data with global and internal threat feeds to detect zero-days, APTs, and insider threats.",
+            imagePath:"/Services/SOC/2.png"
         },
         {
-            title: "Control Assessment",
-            desc: "Evaluate design and implementation of controls."
+            title: "Real-Time Monitoring & Alerting",
+            desc: "Detect anomalies, unusual behaviors, and malicious activity across the environment.",
+            imagePath:"/Services/SOC/3.png"
         },
         {
-            title: "Gap Analysis & Remediation Guidance",
-            desc: "Identify weaknesses and recommend fixes."
+            title: "Incident Triage & Response",
+            desc: "Classify alerts by severity, investigate root causes, and contain threats quickly (isolating devices, disabling accounts).",
+            imagePath:"/Services/SOC/4.png"
         },
         {
-            title: "Effectiveness Testing",
-            desc: "Test technical and operational controls."
+            title: "Forensic Investigation & Post-Incident Review",
+            desc: "Perform in-depth analysis of breaches, preserve evidence, and strengthen defenses.",
+            imagePath:"/Services/SOC/5.png"
         },
         {
-            title: "Final Audit & Reporting",
-            desc: "Perform final audit and issue SOC 1 report."
+            title: "Executive Dashboards & Reporting",
+            desc: "Deliver actionable insights for both technical teams and executive stakeholders.",
+            imagePath:"/Services/SOC/6.png"
+        },
+        {
+            title: "Continuous Improvement & Threat Hunting",
+            desc: "Refine detection rules, hunt proactively for hidden threats, and update incident playbooks.",
+            imagePath:"/Services/SOC/7.png"
         }
     ];
         const keyaspectsData = {
-        title: "SOC",
+        title: "SOC Process",
         desc: "Our key aspects :-",
-        imgPath:"/PTDiagram.png",
+        imgPath:"/services/SOC1.png",
 
     };
 

@@ -75,7 +75,7 @@ export default function ToolsCard() {
       },
       {
         name: "HTTPS Security Checker",
-        image: "/BlueTeam/https security checker.png",
+        image: "/BlueTeam/https.png",
         description: "Validate HTTPS security implementation.",
         slug: "httpsCheckerForm",
         buttonLabel: "HTTPS Security Checker",
