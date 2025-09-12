@@ -64,18 +64,12 @@ const Footer = () => {
 
   return (
     <footer className="relative z-0 bg-[#9d7af0]/30 backdrop-blur-xl border border-white/20 shadow-lg transition-all duration-300 transform text-white pt-10 md:px-0 font-inter">
-      <div className="max-w-4xl mx-auto grid md:grid-cols-4 gap-8 px-2 md:px-3">
+         <div className="max-w-7xl mx-auto grid md:grid-cols-4 gap-8 px-2 md:px-3">
         {/* Left Section */}
         <div className="md:col-span-1">
-          {/* Logo Placeholder */}
-          <div className="h-30 w-30 bg-black mb-4">
-  <img 
-    src="/OurCoreServices/logo.png" 
-    alt="Logo" 
-    className="w-full h-full object-contain" 
-  />
+           <div className="w-full h-32 bg-black/10 mb-4">
+            <img src="/OurCoreServices/logo.png" alt="Logo" className="w-full h-full object-contain" />
 </div>
-
           <p className="text-base text-white/90">
             Our security platform provides advanced tools for red teaming, blue
             teaming, forensic analysis, and cloud security. Built for enterprise
