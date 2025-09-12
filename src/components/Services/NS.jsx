@@ -14,28 +14,31 @@ export default function NSPage() {
             desc: "Real-time cloud-native threat monitoring."
         },
         {
-            title: "Configuration & Policy Review "
+            title: "Configuration & Policy Review ",
+            desc: "Evaluate firewalls, IDS/IPS, VPN, Evaluate firewalls, IDS/IPS, VPN, segmentation, and routing policies.segmentation, and routing policies."
         },
         {
             title: "Traffic Analysis & Threat Detection ",
-            desc: "ISO 27017, PCI DSS, HIPAA, GDPR compliance readiness."
+            desc: "Use packet captures, NetFlow, and anomaly detection to uncover hidden risks."
         },
         {
-            title: "Attack Simulation "
+            title: "Attack Simulation ",
+            desc: "Conduct penetration attempts such as DoS, MITM, ARP spoofing, and lateral movement to test resilience.."
         },
         {
             title: "Vulnerability Remediation & Hardening",
-            desc: "Advanced key management, DLP, and Zero-Trust controls."
+            desc: "Patch weaknesses, strengthen configurations, and enforce segmentation."
         },
         {
-            title:"Continuous Monitoring & Alerting "
+            title:"Continuous Monitoring & Alerting ",
+            desc: "Integrate with SOC and SIEM for real-time protection."
         }
     ];
 
         const keyaspectsData = {
-        title: "Network Security",
+        title: "Network Security Process",
         desc: "Our key aspects :-",
-        imgPath:"/PTDiagram.png",
+        imgPath:"/services/NS1.png",
 
     };
     // const approchData = {

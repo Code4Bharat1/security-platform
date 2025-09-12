@@ -1,7 +1,28 @@
-'use client';
 import Link from "next/link";
+import { usePathname, useRouter } from "next/navigation";
+import { useEffect } from "react";
 
 const Footer = () => {
+  const router = useRouter();
+  const pathname = usePathname();
+
+  const scrollToSection = (id) => {
+    const section = document.getElementById(id);
+    if (section) {
+      section.scrollIntoView({ behavior: "smooth", block: "start" });
+    }
+  };
+
+  // Auto-scroll when hash exists in URL (on homepage)
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      const hash = window.location.hash.replace("#", "");
+      if (hash) {
+        setTimeout(() => scrollToSection(hash), 200);
+      }
+    }
+  }, [pathname]);
+
   const Section = ({ title, links }) => (
     <div className="w-full md:w-auto mb-4 md:mb-0 md:px-4 font-inter">
       <h3 className="w-full text-left text-lg font-bold md:font-bold text-white">
@@ -10,24 +31,36 @@ const Footer = () => {
       <ul className="mt-2 md:mt-4 space-y-2">
         {links.map((link, index) => (
           <li key={index}>
-            <Link
-              href={link.href}
-              className="text-white/90 cursor-pointer hover:underline transition-colors duration-200"
-            >
-              {link.label}
-            </Link>
+            {link.id ? (
+              <button
+                onClick={() => {
+                  if (pathname === "/") {
+                    // Already on homepage → smooth scroll
+                    scrollToSection(link.id);
+                  } else {
+                    // Navigate to homepage + hash
+                    router.push(`/#${link.id}`);
+                  }
+                }}
+                className="text-white/90 cursor-pointer hover:underline transition-colors duration-200"
+              >
+                {link.label}
+              </button>
+            ) : (
+              <Link
+                href={link.href}
+                className="text-white/90 cursor-pointer hover:underline transition-colors duration-200"
+              >
+                {link.label}
+              </Link>
+            )}
           </li>
         ))}
       </ul>
     </div>
   );
 
-   const scrollToSection = (id) => {
-    const section = document.getElementById(id);
-    if (section) {
-      section.scrollIntoView({ behavior: "smooth", block: "start" });
-    }
-  };
+
 
   return (
     <footer className="relative z-0 bg-[#9d7af0]/30 backdrop-blur-xl border border-white/20 shadow-lg transition-all duration-300 transform text-white pt-10 md:px-0 font-inter">
@@ -83,9 +116,12 @@ const Footer = () => {
         <Section
           title="Services"
           links={[
-            { label: "SOC", href: "/services/soc" },
             { label: "Vulnerability Assessment", href: "/services/vulnerability-assessment" },
             { label: "Penetration Testing", href: "/services/penetration-testing" },
+            { label: "Security Operation Center", href: "/services/security-operations-center" },
+            { label: "Cloud Security", href: "/services/cloud-security" },
+            { label: "Network Security", href: "/services/network-security" },
+            { label: "Cybersecurity Consultancy", href: "/services/cybersecurity-consultancy" },
 
           ]}
         />
@@ -104,15 +140,15 @@ const Footer = () => {
         />
 
         {/* Quick */}
-        <Section
+               <Section
           title="Quick"
           links={[
-            { label: "Blog", href: "/blog" },
-            { label: "Privacy Policy", href: "/privacy-policy" },
-            { label: "Terms and Conditions", href: "/terms" },
+            { label: "Blog", id: "blogs" },
+            { label: "Privacy Policy", href: "/tools/privacypolicy" },
+            { label: "Terms and Conditions", href: "/tools/termscondition" },
             { label: "Schedule Meeting", href: "/schedule-meeting" },
-            { label: "Why Choose Us", href: "/why-choose-us" },
-            { label: "Certificate", href: "/certificate" },
+            { label: "Why Choose Us", id: "why-us" },
+            { label: "Certificate", id: "certificates" },
           ]}
         />
       </div>

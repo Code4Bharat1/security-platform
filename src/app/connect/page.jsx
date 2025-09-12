@@ -76,7 +76,7 @@ export default function ContactPage() {
                         </li>
                         <li className="flex items-start gap-2">
                           <img src="/tool/card-images/distance.png" alt="Location" className="h-5 w-5 mt-0.5 shrink-0 object-contain" />
-                          <span>Off BKC, Mumbai, India 400070</span>
+                          <span>Off , India 400070</span>
                         </li>
                       </ul>
                     </div>

@@ -4,21 +4,23 @@ export default function PTPage() {
     const heroData = {
         title: "Penetration Testing",
         desc: `Penetration Testing is a controlled simulation of cyberattacks designed to evaluate the security of applications, networks, and infrastructure. By mimicking real-world attack techniques, penetration testing reveals exploitable vulnerabilities and validates the effectiveness of existing security controls. It goes beyond detection by demonstrating the actual impact of security flaws.`,
-        videoPath: "/services/PT.mp4"
+        videoPath: "/Services/PT.mp4"
     };
 
     const methodologyData = [
-        { title: "Web & API Penetration Testing", desc: "Exploit OWASP Top 10 flaws..." },
-        { title: "Network & Infrastructure PT", desc: "Simulate internal and external attacks..." },
-        { title: "Cloud Penetration Testing", desc: "Exploit misconfigured IAM roles..." },
-        { title: "Wireless & IoT PT", desc: "Assess Wi-Fi cracking, rogue access points..." },
-        { title: "Social Engineering & Red Teaming", desc: "Conduct phishing campaigns..." }
+        { title: "External & Internal Network Pen Testing", desc: "Simulating real-world attacks on both public-facing and internal systems to identify exploitable weaknesses." },
+        { title: "Web Application Pen Testing ", desc: "Testing authentication, input validation, session handling, and business logic to uncover critical flaws." },
+        { title: "Vulnerability Identification", desc: "Performing brute-force, dictionary, and privilege escalation attacks to identify weak or reused credentials." },
+        { title: "Password & Credential Security Testing", desc: "Performing brute-force, dictionary, and privilege escalation attacks to identify weak or reused credentials." },
+        { title: "Mobile & API Pen Testing  ", desc: "Assessing mobile apps and APIs for insecure data handling, authentication gaps, and potential data leaks." },
+        { title: "Social Engineering Simulation", desc:"Conducting phishing campaigns, email spoofing, and awareness testing to evaluate the human factor in security." },
+        { title: "Exploitation with PoC & Remediation Plan", desc: "Demonstrating vulnerabilities with proof-of-concept exploits and providing a structured hardening plan for remediation." }
     ];
 
     const keyaspectsData = {
-        title: "Penetration Testing",
+        title: "Penetration Testing Process",
         desc: "Our key aspects :-",
-        imgPath:"/PTDiagram.png",
+        imgPath:"/services/PT1.png",
 
     };
 

@@ -1,6 +1,6 @@
 export default function Certificates() {
   return (
-    <div className="relative">
+    <div id="certificates" className="relative">
       {/* Flipped Background Image */}
       <div className="absolute top-0 left-0 w-full h-full bg-[url('/15.jpg')] bg-no-repeat bg-cover scale-y-[-1] z-0" />
 

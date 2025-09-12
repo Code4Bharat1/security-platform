@@ -3,16 +3,19 @@
 import { useState, useRef, useEffect } from "react";
 
 export default function VAPage() {
-    const heroData = { title: "Vulnerability Assessment", desc: `Vulnerability Assessment (VA) is the first line of defense in a strong cybersecurity program. It is a structured process designed to uncover, analyze, and prioritize security weaknesses across an organization’s IT infrastructure, applications, cloud environments, and endpoints. Our VA services go beyond automated scans—every finding is validated by security experts and mapped against real-world attack scenarios, ensuring your remediation strategy is both actionable and business-focused.`,
-        videoPath: "/services/VA.mp4"
+    const heroData = {
+      title: "Vulnerability Assessment",
+      desc: `Vulnerability Assessment (VA) is the first line of defense in a strong cybersecurity program. It is a structured process designed to uncover, analyze, and prioritize security weaknesses across an organization’s IT infrastructure, applications, cloud environments, and endpoints. Our VA services go beyond automated scans—every finding is validated by security experts and mapped against real-world attack scenarios, ensuring your remediation strategy is both actionable and business-focused.`,
+      videoPath: "/Services/VA.mp4"
      }
 
     const methodologyData = [
-        { title: "Network Vulnerability Scanning", desc: "Detect open ports, weak services, and misconfigured firewalls." },
-        { title: "Web Application Assessment", desc: "Review business-critical applications for OWASP Top 10 flaws, insecure APIs, and broken authentication." },
-        { title: "Mobile Application Assessment", desc: "Analyze Android/iOS apps for insecure storage, permissions misuse, and unsafe data transmission." },
-        { title: "Cloud Vulnerability Assessment", desc: "Identify misconfigured IAM roles, exposed cloud storage, and insecure workloads across AWS, Azure, and GCP." },
-        { title: "Endpoint & Host Review", desc: "Evaluate OS patches, privilege escalations, insecure accounts, and device-level exposures." }
+        { title: "Network & System Scanning", desc: " Identifying open ports, services, and operating system vulnerabilities across IT assets." },
+        { title: "Web & Mobile Application VA", desc: "Assessing applications for common flaws such as OWASP Top 10 issues, insecure APIs, and mobile app security weaknesses." },
+        { title: "Patch & Configuration Review ", desc: "Checking for missing security patches, outdated software, and weak or default configurations." },
+        { title: "Database & Cloud Assessment ", desc: "Detecting misconfigurations, insecure permissions, and vulnerabilities in databases and cloud environments." },
+        { title: "Wireless Network VA", desc: "Evaluating Wi-Fi networks for weak encryption, rogue access points, and other wireless security risks." },
+        { title: "Risk-Based Reporting & Remediation Guidance", desc: " Categorizing vulnerabilities based on severity and providing actionable recommendations for remediation." }
     ];
     
     // const approchData = {
@@ -69,7 +72,7 @@ function DescHero({ data }) {
                 muted
                 playsInline
             >
-                <source src="/VA.mp4" type="video/mp4" />
+                <source src="/Services/VA.mp4" type="video/mp4" />
                 Your browser does not support the video tag.
             </video>
             
@@ -107,7 +110,7 @@ function KeyAspects() {
       {/* Diagram Image */}
       <div className="flex justify-center">
         <img
-          src="/images/va-process.png" // <-- update with your actual image path
+          src="/services/VA1.png" // <-- update with your actual image path
           alt="Vulnerability Assessment Process"
           className="w-full max-w-5xl object-contain"
         />
@@ -150,7 +153,6 @@ function Hero({ data }) {
     </div>
   );
 }
-
 
 function Methodology({ data }) {
   const [isVisible, setIsVisible] = useState(Array(data.length).fill(false));
@@ -196,30 +198,34 @@ function Methodology({ data }) {
         <span className="text-white">Services</span>
       </h2>
 
-      {/* Items in Center */}
-      <div className="flex flex-col items-center space-y-14 relative z-10">
+      {/* Timeline Layout */}
+      <div className="relative flex flex-col space-y-14 max-w-6xl mx-auto z-10">
         {data.map((item, index) => (
           <div
             key={index}
             ref={(el) => (methodologyRefs.current[index] = el)}
-            className={`grid md:grid-cols-2 gap-8 items-center max-w-4xl w-full transition-all duration-700 ease-out ${
+            className={`grid grid-cols-1 md:grid-cols-3 gap-6 items-center transition-all duration-700 ease-out ${
               isVisible[index]
                 ? "opacity-100 translate-y-0"
                 : "opacity-0 translate-y-10"
-            } ${index % 2 !== 0 ? "md:flex-row-reverse" : ""}`}
+            }`}
           >
-            {/* Text Section */}
-            <div className="text-center md:text-left">
-              <h3 className="text-xl md:text-2xl font-bold text-white mb-3">
-                {item.title}
-              </h3>
-              <p className="text-gray-300 text-base md:text-lg leading-relaxed">
-                {item.desc}
-              </p>
-            </div>
+            {/* Left Text */}
+            {index % 2 === 0 ? (
+              <div className="text-right md:pr-6">
+                <h3 className="text-xl md:text-2xl font-bold text-white mb-3">
+                  {item.title}
+                </h3>
+                <p className="text-gray-300 text-base md:text-lg leading-relaxed">
+                  {item.desc}
+                </p>
+              </div>
+            ) : (
+              <div></div>
+            )}
 
-            {/* Icon Section */}
-            <div className="flex justify-center md:justify-center">
+            {/* Icon in Center */}
+            <div className="flex justify-center">
               <div className="w-16 h-16 md:w-20 md:h-20 bg-indigo-500 rounded-full flex items-center justify-center shadow-lg">
                 <img
                   src={item.icon}
@@ -228,12 +234,27 @@ function Methodology({ data }) {
                 />
               </div>
             </div>
+
+            {/* Right Text */}
+            {index % 2 !== 0 ? (
+              <div className="text-left md:pl-6">
+                <h3 className="text-xl md:text-2xl font-bold text-white mb-3">
+                  {item.title}
+                </h3>
+                <p className="text-gray-300 text-base md:text-lg leading-relaxed">
+                  {item.desc}
+                </p>
+              </div>
+            ) : (
+              <div></div>
+            )}
           </div>
         ))}
       </div>
     </div>
   );
 }
+
 
 
 

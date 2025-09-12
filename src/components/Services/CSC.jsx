@@ -12,33 +12,33 @@ export default function SOCPage() {
     const methodologyData = [
         {
             title: "Initial Business & Security Assessment ",
-            desc: "Real-time cloud-native threat monitoring.",
+            desc: "Understand industry, business processes, current maturity level, and compliance obligations.",
         },
         {
             title: "Risk Analysis & Gap Identification ",
-            desc: "Assess IAM, APIs, workloads, and cloud storage.",
+            desc: "Perform risk assessments, threat modeling, and maturity benchmarking.",
         },
         {
             title: "Security Roadmap Development ",
-            desc: "ISO 27017, PCI DSS, HIPAA, GDPR compliance readiness.",
+            desc: "Build a phased roadmap covering people, processes, and technology improvements.",
         },
         {
             title: "Implementation Support ",
-            desc: "Detection of anomalies, misuse, and unauthorized access.",
+            desc: "Help deploy security frameworks, policies, awareness training, and technical controls.",
         },
         {
             title: "Ongoing Governance & Review ",
-            desc: "Advanced key management, DLP, and Zero-Trust controls.",
+            desc: "Provide periodic security audits, compliance checks, and board-level reporting with KPIs and metrics.",
         },
-{
+        {
             title: "Strategic Alignment",
-            desc: "Advanced key management, DLP, and Zero-Trust controls.",
+            desc: "Align security strategy with business goals to maximize ROI.",
         },
     ];
     const keyaspectsData = {
-        title: "Cyber Security Consultancy",
+        title: "Cyber Security Consultancy Process",
         desc: "Our key aspects :-",
-        imgPath:"/PTDiagram.png",
+        imgPath:"/services/CSC1.png",
 
     };
     // const approchData = {
@@ -58,6 +58,7 @@ export default function SOCPage() {
             heroData={heroData}
             methodologyData={methodologyData}
             keyAspectsData={keyaspectsData}
+            
         />
     );
 }

@@ -12,31 +12,52 @@ function DescHero({ data }) {
   const title = data.title;
 
   return (
-    <div className="h-screen font-inter overflow-hidden text-white relative">
-      {/* Background Video */}
-      <video
-        className="absolute top-0 left-0 w-screen h-[110%] object-cover z-0"
-        autoPlay
-        loop
-        muted
-        playsInline
-      >
-        <source src={data.videoPath} type="video/mp4" />
-        Your browser does not support the video tag.
-      </video>
+   <div className="h-screen font-inter overflow-hidden text-white relative">
+  {/* Background Video */}
+  <video
+    className="absolute top-0 left-0 w-screen h-[110%] object-cover z-0"
+    autoPlay
+    loop
+    muted
+    playsInline
+  >
+    <source src={data.videoPath} type="video/mp4" />
+    Your browser does not support the video tag.
+  </video>
 
-      {/* Overlay for contrast */}
-      <div className="absolute inset-0 bg-black/50 z-0"></div>
+  {/* Overlay for contrast */}
+  <div className="absolute inset-0 bg-black/50 z-0"></div>
 
-      {/* Content */}
-      <div className="relative flex flex-col items-center justify-center size-full mx-auto text-center z-10 px-4 sm:px-5 md:px-8 lg:px-12 xl:px-20">
-        <h1 className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-bold mb-6">
-          <span className="text-transparent bg-clip-text bg-gradient-to-r from-indigo-900 via-indigo-500 to-indigo-700">
-            {title}
-          </span>
-        </h1>
+  {/* Content */}
+  <div className="relative flex flex-col items-center justify-center size-full mx-auto text-center z-10 px-4 sm:px-5 md:px-8 lg:px-12 xl:px-20">
+    
+    {/* Title */}
+    <h1 className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-bold mb-6 
+      bg-clip-text text-transparent 
+      bg-gradient-to-r from-white via-indigo-300 to-indigo-600 
+      drop-shadow-[0_4px_12px_rgba(0,0,0,0.8)] 
+      px-4 py-2 rounded-xl bg-black/30 backdrop-blur-sm inline-block">
+      {title}
+    </h1>
+
+    {/* Subtitle */}
+    <p className="text-base sm:text-lg md:text-xl lg:text-2xl max-w-3xl text-gray-200 drop-shadow-md mb-8">
+      Elevate your experience with modern design, seamless performance, and an immersive interface built just for you.
+    </p>
+
+    {/* CTA Buttons */}
+    <div className="flex flex-wrap justify-center gap-4">
+      <div className="flex justify-center">
+        <a
+          href="#next-section"
+          className="inline-flex items-center justify-center px-8 py-3 text-lg font-semibold text-white bg-gradient-to-r from-purple-600 to-indigo-600 rounded-lg shadow-lg backdrop-blur-sm transition-all duration-300 ease-in-out hover:from-purple-700 hover:to-indigo-700 hover:shadow-xl hover:shadow-purple-500/30 hover:scale-105 w-fit group"
+        >
+          Free Consultation
+        </a>
       </div>
     </div>
+  </div>
+</div>
   );
 }
 
@@ -47,7 +68,7 @@ function Hero({ data }) {
   const rest = words.slice(2).join(" "); // remaining text
 
   return (
-    <div className="max-w-9xl bg-gradient-to-b from-black to-gray-800 mx-auto px-6 md:px-25 py-10 grid md:grid-cols-2 gap-8 items-center">
+    <div className="max-w-9xl bg-gradient-to-b from-black to-gray-800  mx-auto px-6 md:px-25 py-10 grid md:grid-cols-2 gap-8 items-center">
       {/* Left side - Text */}
       <div>
         <p className="text-lg md:text-xl text-gray-200 leading-relaxed">
@@ -67,8 +88,6 @@ function Hero({ data }) {
     </div>
   );
 }
-
-
 function Methodology({ data }) {
   return (
     <div className="relative min-h-screen py-16 px-6 md:px-12 lg:px-20">
@@ -88,9 +107,16 @@ function Methodology({ data }) {
             className="flex flex-col md:flex-row items-center gap-8 bg-white/5 backdrop-blur-xl p-6 rounded-xl shadow-lg hover:scale-[1.02] hover:shadow-indigo-500/30 transition-all duration-300 mx-auto w-full md:w-5/6 lg:w-3/4"
           >
             {/* Image/Icon */}
-            <div className="flex-shrink-0 w-24 h-24 rounded-full bg-indigo-600 flex items-center justify-center text-white text-2xl font-bold shadow-md">
-              {/* Replace with actual image if needed */}
-              {index + 1}
+            <div className="flex-shrink-0 w-24 h-24 rounded-full bg-indigo-200 flex items-center justify-center text-white text-2xl font-bold shadow-md overflow-hidden">
+              {object.imagePath ? (
+                <img
+                  src={object.imagePath}
+                  alt={object.title}
+                  className="w-full h-full object-cover"
+                />
+              ) : (
+                index + 1
+              )}
             </div>
 
             {/* Text */}
@@ -108,7 +134,6 @@ function Methodology({ data }) {
     </div>
   );
 }
-
 
 function KeyAspects({ data }) {
   return (
@@ -130,15 +155,6 @@ function KeyAspects({ data }) {
           alt={data?.imgAlt || "Process Illustration"}
           className="w-full max-w-5xl object-contain rounded-lg shadow-xl"
         />
-      </div>
-      {/* CTA Button */}
-      <div className="flex justify-center">
-        <a
-          href="#next-section"
-          className="inline-block bg-indigo-600 hover:bg-indigo-700 text-white font-semibold py-3 px-6 rounded-xl shadow-lg transition-all duration-300"
-        >
-          Free Consultation
-        </a>
       </div>
 
 
