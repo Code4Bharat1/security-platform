@@ -135,8 +135,8 @@ export default function Webrecon() {
     <div className="min-h-screen bg-black text-white">
       <div className="max-w-4xl mx-auto p-6">
         {/* Header */}
-        <div className="flex items-center gap-4 mb-8">
-          <div className="w-30 h-30 bg-gray-800 rounded-full border-4 border-red-500 flex items-center justify-center overflow-hidden">
+        <div className="flex flex-col sm:flex-row items-center gap-4 mb-8 text-center sm:text-left">
+          <div className="w-24 h-24 sm:w-30 sm:h-30 bg-gray-800 rounded-full border-4 border-red-500 flex items-center justify-center overflow-hidden">
             <img
               src="/RedTeam/web-recon.png"
               alt="Logo"
@@ -144,8 +144,8 @@ export default function Webrecon() {
             />
           </div>
           <div>
-            <h1 className="text-3xl font-bold text-white">Website Recon Tool</h1>
-            <p className="text-gray-400 text-lg">
+            <h1 className="text-2xl sm:text-3xl font-bold text-white">Website Recon Tool</h1>
+            <p className="text-gray-400 text-base sm:text-lg">
               Perform an in-depth reconnaissance of a website to identify key
               metadata and technologies used.
             </p>
@@ -156,18 +156,19 @@ export default function Webrecon() {
         <div className="bg-gray-900 border border-white-700 rounded-lg p-6 mb-6 text-center">
           <h2 className="text-red-400 text-lg font-semibold mb-4">DNS Lookup</h2>
 
-          <div className="flex gap-2 mb-4">
+          {/* Responsive Input + Select + Button */}
+          <div className="flex flex-col sm:flex-row gap-2 mb-4">
             <input
               type="text"
               placeholder="Enter domain (e.g., example.com)"
               value={domain}
               onChange={(e) => setDomain(e.target.value)}
-              className="flex-1 bg-gray-800 text-white border border-white-600 rounded px-3 py-2"
+              className="w-full bg-gray-800 text-white border border-white-600 rounded px-3 py-2"
             />
             <select
               value={recordType}
               onChange={(e) => setRecordType(e.target.value)}
-              className="bg-gray-800 text-white border border-white-600 rounded px-3 py-2"
+              className="w-full sm:w-auto bg-gray-800 text-white border border-white-600 rounded px-3 py-2"
             >
               {RECORD_TYPES.map((rt) => (
                 <option key={rt} value={rt}>{rt}</option>
@@ -176,7 +177,7 @@ export default function Webrecon() {
             <button
               onClick={handleLookup}
               disabled={loading}
-              className="bg-gray-700 hover:bg-gray-600 text-white px-4 py-2 rounded border border-white-600 disabled:opacity-50"
+              className="w-full sm:w-auto bg-gray-700 hover:bg-gray-600 text-white px-4 py-2 rounded border border-white-600 disabled:opacity-50"
             >
               {loading ? "Looking up…" : "DNS Lookup"}
             </button>
@@ -185,10 +186,10 @@ export default function Webrecon() {
           {error && <p className="text-red-400 mb-4">{error}</p>}
 
           {result && (
-            <div className="bg-gray-800 border border-white-600 rounded p-4 mb-4">
+            <div className="bg-gray-800 border border-white-600 rounded p-4 mb-4 overflow-x-auto">
               <h3 className="text-white font-semibold mb-2">DNS Results</h3>
               {Array.isArray(result.Answer) && result.Answer.length > 0 && (
-                <ul className="space-y-2">
+                <ul className="space-y-2 text-left">
                   {result.Answer.map((rec, i) => (
                     <li key={i} className="text-gray-300 text-sm">
                       <div><span className="text-gray-400">Name:</span> {rec.name}</div>
@@ -205,14 +206,14 @@ export default function Webrecon() {
 
         {/* Deep Scan */}
         <div className="bg-gray-900 border border-white-700 rounded-lg p-6">
-          <div className="flex items-center justify-between mb-4">
-            <h3 className="text-gray-300 text-lg">
+          <div className="flex flex-col sm:flex-row items-center justify-between gap-3 mb-4">
+            <h3 className="text-gray-300 text-lg text-center sm:text-left">
               Deep Scan (WHOIS, SSL, Tech, GeoIP, DNS)
             </h3>
             <button
               onClick={handleDeepScan}
               disabled={scanLoading}
-              className="px-4 py-2 bg-blue-600 text-white rounded-lg shadow hover:bg-blue-700 disabled:opacity-50"
+              className="w-full sm:w-auto px-4 py-2 bg-red-600 text-white rounded-lg shadow hover:bg-red-700 disabled:opacity-50"
             >
               {scanLoading ? "Scanning…" : "Run Deep Scan"}
             </button>
@@ -228,7 +229,7 @@ export default function Webrecon() {
               <div className="text-sm text-gray-400 mb-4">
                 Scanned URL: {scan.urlUsed || "-"}
               </div>
-              <div className="grid md:grid-cols-2 gap-6">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div>
                   <h3 className="text-white font-semibold mb-3">WHOIS</h3>
                   <div className="space-y-1 text-gray-300">
@@ -248,43 +249,8 @@ export default function Webrecon() {
               </div>
             </div>
 
-            {/* Technologies */}
-            {/* <div className="bg-gray-900 border border-white-700 rounded-lg p-6">
-              <h3 className="text-white font-semibold mb-3">Technologies Detected</h3>
-              <div className="grid md:grid-cols-2 gap-6">
-                <div>
-                  <div className="text-sm text-gray-400 mb-2">Frontend</div>
-                  <ul className="list-disc list-inside text-gray-300">
-                    {(scan.technologies?.frontend || []).map((t, i) => (
-                      <li key={i}>{t}</li>
-                    ))}
-                    {!scan.technologies?.frontend?.length && (
-                      <li className="text-gray-500">-</li>
-                    )}
-                  </ul>
-                </div>
-                <div>
-                  <div className="text-sm text-gray-400 mb-2">Backend</div>
-                  <ul className="list-disc list-inside text-gray-300">
-                    {(scan.technologies?.backend || []).map((t, i) => (
-                      <li key={i}>{t}</li>
-                    ))}
-                    {!scan.technologies?.backend?.length && (
-                      <li className="text-gray-500">-</li>
-                    )}
-                  </ul>
-                </div>
-              </div>
-
-              <details className="mt-4">
-                <summary className="cursor-pointer text-sm text-gray-400 hover:text-gray-300">
-                  Response Headers
-                </summary>
-                <pre className="text-xs mt-2 bg-gray-800 text-gray-300 p-3 border border-white-600 rounded overflow-x-auto">
-                  {JSON.stringify(scan.technologies?.headers || {}, null, 2)}
-                </pre>
-              </details>
-            </div> */}
+            {/* Technologies (commented out by you) */}
+            {/* ... */}
 
             {/* GeoIP */}
             <div className="bg-gray-900 border border-white-700 rounded-lg p-6">
@@ -301,15 +267,15 @@ export default function Webrecon() {
             </div>
 
             {/* DNS */}
-            <div className="bg-gray-900 border border-white-700 rounded-lg p-6">
+            <div className="bg-gray-900 border border-white-700 rounded-lg p-6 overflow-x-auto">
               <h3 className="text-white font-semibold mb-4">DNS (A/AAAA/MX/TXT/NS)</h3>
-              <div className="grid md:grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 {["A", "AAAA", "MX", "TXT", "NS"].map((k) => (
                   <div key={k}>
                     <div className="text-gray-300 font-medium mb-1">{k}</div>
                     <ul className="list-disc list-inside text-sm">
                       {(scan.dns?.[k]?.Answer || []).map((rec, i) => (
-                        <li key={i} className="text-gray-400">
+                        <li key={i} className="text-gray-400 break-words">
                           {rec.name} • {getTypeName(rec.type)} • {rec.TTL}s • {rec.data}
                         </li>
                       ))}
@@ -323,16 +289,16 @@ export default function Webrecon() {
             </div>
 
             {/* Downloads */}
-            <div className="flex gap-2">
+            <div className="flex flex-col sm:flex-row gap-2">
               <button
                 onClick={downloadCSV}
-                className="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded"
+                className="w-full sm:w-auto bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded"
               >
                 Download CSV
               </button>
               <button
                 onClick={downloadPDF}
-                className="bg-rose-600 hover:bg-rose-700 text-white px-4 py-2 rounded"
+                className="w-full sm:w-auto bg-rose-600 hover:bg-rose-700 text-white px-4 py-2 rounded"
               >
                 Download PDF
               </button>

@@ -44,11 +44,12 @@ const Navbar = () => {
   }, [pathname]);
 
   const handleLogout = () => {
-    localStorage.removeItem('token');
-    localStorage.removeUser('user');
-    setUserName('');
-    window.location.href = '/';
-  };
+  localStorage.removeItem('token');
+  localStorage.removeItem('user'); // ✅ sahi tarika
+  setUserName('');
+  window.location.href = '/';
+};
+
 
   const getInitials = (name) => {
     const words = name.trim().split(' ');

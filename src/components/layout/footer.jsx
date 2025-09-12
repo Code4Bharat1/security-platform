@@ -1,49 +1,82 @@
-'use client';
 import Link from "next/link";
+import { usePathname, useRouter } from "next/navigation";
+import { useEffect } from "react";
 
 const Footer = () => {
-  const Section = ({ title, links }) => (
-    <div className="w-full md:w-auto mb-4 md:mb-0 md:px-4 font-inter">
-      <h3 className="w-full text-left text-lg font-bold md:font-bold text-white">
-        {title}
-      </h3>
-      <ul className="mt-2 md:mt-4 space-y-2">
-        {links.map((link, index) => (
-          <li key={index}>
-            <Link
-              href={link.href}
-              className="text-white/90 cursor-pointer hover:underline transition-colors duration-200"
-            >
-              {link.label}
-            </Link>
-          </li>
-        ))}
-      </ul>
-    </div>
-  );
+  const router = useRouter();
+  const pathname = usePathname();
 
-   const scrollToSection = (id) => {
+  const scrollToSection = (id) => {
     const section = document.getElementById(id);
     if (section) {
       section.scrollIntoView({ behavior: "smooth", block: "start" });
     }
   };
 
+  // Auto-scroll when hash exists in URL (on homepage)
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      const hash = window.location.hash.replace("#", "");
+      if (hash) {
+        setTimeout(() => scrollToSection(hash), 200);
+      }
+    }
+  }, [pathname]);
+
+  const Section = ({ title, links }) => (
+    <div className="w-full md:w-auto mb-6 md:mb-0 md:px-4 font-inter">
+      <h3 className="w-full text-left text-lg font-bold text-white">
+        {title}
+      </h3>
+      <ul className="mt-2 space-y-2">
+        {links.map((link, index) => (
+          <li key={index}>
+            {link.id ? (
+              <button
+                onClick={() => {
+                  if (pathname === "/") {
+                    // Already on homepage → smooth scroll
+                    scrollToSection(link.id);
+                  } else {
+                    // Navigate to homepage + hash
+                    router.push(`/#${link.id}`);
+                  }
+                }}
+                className="text-white/90 cursor-pointer hover:underline transition-colors duration-200"
+              >
+                {link.label}
+              </button>
+            ) : (
+              <Link
+                href={link.href}
+                className="text-white/90 cursor-pointer hover:underline transition-colors duration-200"
+              >
+                {link.label}
+              </Link>
+            )}
+          </li>
+        ))}
+      </ul>
+    </div>
+  );
+
+
+
   return (
-    <footer className="relative z-0 bg-[#9d7af0]/30 backdrop-blur-xl border border-white/20 shadow-lg transition-all duration-300 transform text-white pt-10 md:px-0 font-inter">
-      <div className="max-w-4xl mx-auto grid md:grid-cols-4 gap-8 px-2 md:px-3">
+    <footer className="relative z-0 bg-[#9d7af0]/30 backdrop-blur-xl border border-white/20 shadow-lg transition-all duration-300 transform text-white pt-10 px-4 md:px-0 font-inter">
+      <div className="max-w-4xl mx-auto grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-6 md:gap-8">
         {/* Left Section */}
         <div className="md:col-span-1">
-          {/* Logo Placeholder */}
-          <div className="h-30 w-30 bg-black mb-4">
-  <img 
-    src="/OurCoreServices/logo.png" 
-    alt="Logo" 
-    className="w-full h-full object-contain" 
-  />
-</div>
+          {/* Logo */}
+          <div className="h-24 w-24 mb-4 mx-auto md:mx-0">
+            <img 
+              src="/OurCoreServices/logo.png" 
+              alt="Logo" 
+              className="w-full h-full object-contain" 
+            />
+          </div>
 
-          <p className="text-base text-white/90">
+          <p className="text-sm sm:text-base text-white/90 text-center md:text-left">
             Our security platform provides advanced tools for red teaming, blue
             teaming, forensic analysis, and cloud security. Built for enterprise
             environments, it delivers real-time threat detection, proactive risk
@@ -51,10 +84,10 @@ const Footer = () => {
             protection of your critical digital assets.
           </p>
 
-          {/* Placeholder Social Icons */}
-          <div className="flex space-x-4 mt-4">
+          {/* Social Icons */}
+          <div className="flex justify-center md:justify-start space-x-3 mt-4">
             <Link
-              href=" https://www.instagram.com/nexcorealliance/"
+              href="https://www.instagram.com/nexcorealliance/"
               target="_blank"
               className="w-10 h-10 bg-gradient-to-br from-yellow-400 to-pink-500 rounded-lg flex items-center justify-center text-white font-bold text-xl"
             >
@@ -88,9 +121,12 @@ const Footer = () => {
         <Section
           title="Services"
           links={[
-            { label: "SOC", href: "/services/soc" },
             { label: "Vulnerability Assessment", href: "/services/vulnerability-assessment" },
             { label: "Penetration Testing", href: "/services/penetration-testing" },
+            { label: "Security Operation Center", href: "/services/security-operations-center" },
+            { label: "Cloud Security", href: "/services/cloud-security" },
+            { label: "Network Security", href: "/services/network-security" },
+            { label: "Cybersecurity Consultancy", href: "/services/cybersecurity-consultancy" },
 
           ]}
         />
@@ -109,25 +145,24 @@ const Footer = () => {
         />
 
         {/* Quick */}
-        <Section
+               <Section
           title="Quick"
           links={[
-            { label: "Blog", href: "/blog" },
-            { label: "Privacy Policy", href: "/privacy-policy" },
-            { label: "Terms and Conditions", href: "/terms" },
+            { label: "Blog", id: "blogs" },
+            { label: "Privacy Policy", href: "/tools/privacypolicy" },
+            { label: "Terms and Conditions", href: "/tools/termscondition" },
             { label: "Schedule Meeting", href: "/schedule-meeting" },
-            { label: "Why Choose Us", href: "/why-choose-us" },
-            { label: "Certificate", href: "/certificate" },
+            { label: "Why Choose Us", id: "why-us" },
+            { label: "Certificate", id: "certificates" },
           ]}
         />
       </div>
 
       {/* Footer Bottom */}
-      <div className="flex justify-center flex-col md:flex-row mt-10 text-center text-sm text-[#9d7af0] bg-white md:py-3 border-b-5 border-b-black">
+      <div className="flex flex-col md:flex-row justify-center items-center mt-10 text-center text-sm text-[#9d7af0] border-t border-white/20 py-3 gap-1 md:gap-4">
         <div>©2025<span className="hidden md:inline">&nbsp;|&nbsp;</span></div>
         <div>
-          Developed By&nbsp;
-          <span className="font-bold text-black">Code4Bharat</span>
+          Developed By&nbsp;<span className="font-bold text-black">Code4Bharat</span>
           <span className="hidden md:inline">&nbsp;|&nbsp;</span>
         </div>
         <div>All Rights Reserved.</div>
@@ -135,4 +170,5 @@ const Footer = () => {
     </footer>
   );
 }
+
 export default Footer;

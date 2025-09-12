@@ -288,7 +288,7 @@ export default function KeywordIntelligencePage() {
         }}
       />
       <div className="max-w-5xl mx-auto p-6 space-y-6">
-      <div className="text-sm text-slate-400">📊 Keyword Intelligence Report — {dateStr}</div>
+      <div className="text-sm text-slate-400">📊 Keyword Generation {dateStr}</div>
 
         <section className="rounded-2xl border border-white bg-[#0f1523] p-5 shadow-[0_0_0_1px_rgba(0,0,0,0.3)]">
           <div className="flex flex-col md:flex-row gap-3 md:items-end">
@@ -297,7 +297,7 @@ export default function KeywordIntelligencePage() {
               <input
                 value={url}
                 onChange={(e) => setUrl(e.target.value)}
-                placeholder="https://codedbharat.com/"
+                placeholder="https://example.com/"
                 className="w-full rounded-lg border border-slate-700 bg-slate-900 text-slate-100 placeholder-slate-400 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500/40"
               />
             </div>

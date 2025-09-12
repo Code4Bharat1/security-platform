@@ -69,7 +69,7 @@ export default function SourceCodeAnalyzer() {
           <img
             src="/RedTeam/code.png"
             alt="Logo"
-            className="w-20 h-20 rounded-full border-4 border-red-600 object-cover"
+            className="w-30 h-30 rounded-full border-4 border-red-600 object-cover"
           />
           <div>
             <h1 className="text-4xl sm:text-5xl font-bold">

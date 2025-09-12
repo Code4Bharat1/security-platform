@@ -1,7 +1,8 @@
 'use client';
 import { useState } from 'react';
-import { Eye, EyeOff } from 'lucide-react';
+import { Eye, EyeOff, X } from 'lucide-react'; 
 import Link from 'next/link';
+import axios from 'axios';
 import { useRouter } from 'next/navigation';
 
 export default function GainAccess() {
@@ -16,55 +17,78 @@ export default function GainAccess() {
     setErrors({ ...errors, [e.target.name]: '' });
   };
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
+ const handleSubmit = async (e) => {
+  e.preventDefault();
 
-    const newErrors = {};
-    if (!formData.email) newErrors.email = 'Email is required';
-    if (!formData.password) newErrors.password = 'Password is required';
-    setErrors(newErrors);
+  const newErrors = {};
+  if (!formData.email) newErrors.email = 'Email is required';
+  if (!formData.password) newErrors.password = 'Password is required';
+  setErrors(newErrors);
 
-    if (Object.keys(newErrors).length === 0) {
-      try {
-        setLoading(true);
-        const res = await fetch(`${process.env.NEXT_PUBLIC_PROD_API_URL}/auth/login`, {
-          method: 'POST',
+  if (Object.keys(newErrors).length === 0) {
+    try {
+      setLoading(true);
+
+      const res = await axios.post(
+        `${process.env.NEXT_PUBLIC_PROD_API_URL}/auth/login`,
+        formData, // ✅ Payload goes here directly
+        {
           headers: {
             'Content-Type': 'application/json',
           },
-          body: JSON.stringify(formData),
-        });
-
-        const result = await res.json();
-        console.log('Login Response:', result);
-
-        if (res.ok && result.token) {
-          alert('Login successful! ✅');
-          localStorage.setItem('token', result.token);
-          localStorage.setItem('user', JSON.stringify(result.user));
-          window.location.href = '/';
-
-        } else {
-          alert(result.message || 'Login failed');
         }
-      } catch (err) {
-        console.error('Login error:', err);
-        alert('Something went wrong. Try again.');
-      } finally {
-        setLoading(false);
+      );
+
+      const result = res.data;
+      console.log('Login Response:', result);
+
+      if (res.status === 200 && result.token) {
+        alert('Login successful! ✅');
+        localStorage.setItem('token', result.token);
+        localStorage.setItem('user', JSON.stringify(result.user));
+
+        // Redirect to previous page if from same origin, else home
+        if (
+          document.referrer &&
+          new URL(document.referrer).origin === window.location.origin
+        ) {
+          router.back();
+        } else {
+          router.push('/');
+        }
+      } else {
+        alert(result.message || 'Login failed');
       }
+    } catch (err) {
+      console.error('Login error:', err);
+      alert(err.response?.data?.message || 'Something went wrong. Try again.');
+    } finally {
+      setLoading(false);
     }
-  };
+  }
+};
+
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-black p-4">
-      <div className="bg-[#1e293b] text-white rounded-2xl shadow-lg p-8 w-full max-w-md">
+      <div className="relative bg-[#1e293b] text-white rounded-2xl shadow-lg p-8 w-full max-w-md">
+        
+        {/* Close Button */}
+        <button
+          onClick={() => router.back()}
+          className="absolute top-3 right-3 text-gray-400 hover:text-white"
+          aria-label="Close"
+        >
+          <X size={24} />
+        </button>
+
         <h2 className="text-4xl font-extrabold mb-2 text-gray-200 text-center">Welcome Back</h2>
         <p className="text-sm text-gray-100 mb-6 text-center">
           Please enter your credentials to Gain Access
         </p>
 
         <form onSubmit={handleSubmit}>
+          {/* Email */}
           <div className="mb-4">
             <label className="block text-gray-100 text-sm font-medium mb-1">Email</label>
             <input
@@ -81,6 +105,7 @@ export default function GainAccess() {
             {errors.email && <p className="text-red-500 text-sm mt-1">{errors.email}</p>}
           </div>
 
+          {/* Password */}
           <div className="mb-4 relative">
             <label className="block text-white text-sm font-medium mb-1">Password</label>
             <input
@@ -105,6 +130,7 @@ export default function GainAccess() {
             {errors.password && <p className="text-red-500 text-sm mt-1">{errors.password}</p>}
           </div>
 
+          {/* Submit Button */}
           <button
             type="submit"
             disabled={loading}
@@ -112,7 +138,7 @@ export default function GainAccess() {
               loading ? 'opacity-50 cursor-not-allowed' : ''
             }`}
           >
-            {loading ? 'Autheticating...' : 'Gain Access'}
+            {loading ? 'Authenticating...' : 'Gain Access'}
           </button>
         </form>
 

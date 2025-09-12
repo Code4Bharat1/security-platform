@@ -11,30 +11,38 @@ export default function SOCPage() {
 
     const methodologyData = [
         {
-            title: "Cloud SOC",
-            desc: "Real-time cloud-native threat monitoring.",
+            title: "Cloud Architecture & IAM Review",
+            desc: "Evaluate identity and access management (IAM), roles, policies, and cloud configurations.",
         },
         {
-            title: "Cloud VAPT",
-            desc: "Assess IAM, APIs, workloads, and cloud storage.",
+            title: "Security Benchmarking",
+            desc: "Assess environments against frameworks (CIS Benchmarks, NIST, ISO, CSA).",
         },
         {
-            title: "Compliance Alignment",
-            desc: "ISO 27017, PCI DSS, HIPAA, GDPR compliance readiness.",
+            title: "Threat Modeling",
+            desc: "Identify cloud-specific risks (misconfigured storage, insecure APIs, excessive permissions).",
         },
         {
-            title: "Activity & Log Analysis",
-            desc: "Detection of anomalies, misuse, and unauthorized access.",
+            title: "Vulnerability & Compliance Assessment",
+            desc: "Scan for security misconfigurations, exposed services, and compliance gaps (GDPR, HIPAA,  SOC 2, PCI DSS).",
         },
         {
-            title: "Data Security & Encryption",
-            desc: "Advanced key management, DLP, and Zero-Trust controls.",
+            title: "Continuous Monitoring & Automation",
+            desc: "Deploy CSPM (Cloud Security Posture Management), CWPP (Cloud Workload Protection), and SIEM solutions.",
         },
+        {
+            title: "Remediation Guidance",
+            desc: "Provide clear steps to fix misconfigurations, enforce least privilege, encrypt workloads, and enable logging.",
+        },
+        {
+            title: "Compliance Readiness",
+            desc: "Ensure alignment with regulatory standards and provide audit support."
+        }
     ];
     const keyaspectsData = {
-        title: "Cloud Security",
+        title: "Cloud Security Process",
         desc: "Our key aspects :-",
-        imgPath:"/PTDiagram.png",
+        imgPath:"/services/CS1.png",
 
     };
     // const approchData = {

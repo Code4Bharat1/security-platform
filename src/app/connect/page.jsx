@@ -1,6 +1,5 @@
 'use client';
 import { useState } from 'react';
-import Link from 'next/link';
 import { Mail, Phone, MapPin } from 'lucide-react';
 
 export default function ContactPage() {
@@ -76,7 +75,7 @@ export default function ContactPage() {
                         </li>
                         <li className="flex items-start gap-2">
                           <img src="/tool/card-images/distance.png" alt="Location" className="h-5 w-5 mt-0.5 shrink-0 object-contain" />
-                          <span>Off BKC, Mumbai, India 400070</span>
+                          <span>Off , India 400070</span>
                         </li>
                       </ul>
                     </div>
@@ -149,36 +148,40 @@ export default function ContactPage() {
                 </div>
               </form>
 
-              {status && <p className="mt-5 text-center text-xs text-emerald-300">{status}</p>}
-            </div>
+            {status && <p className="mt-5 text-center text-xs text-emerald-300">{status}</p>}
           </div>
+        </div>
 
-          {/* === Mobile contact details === */}
-          <div className="mt-6 w-full md:hidden">
-            <div className="rounded-[14px] p-[2px] bg-gradient-to-b from-purple-400 via-purple-500 to-black shadow-lg">
-              <div className="rounded-[13px] bg-black/70 backdrop-blur-md p-4">
-                <h3 className="mb-2 text-base font-semibold text-purple-200">Contact Details</h3>
-                <div className="mb-3 h-[2px] w-22 bg-purple-400/40" />
-                <ul className="space-y-2 text-[11px] text-white/90">
-                  <li className="flex items-center gap-2">
-                    <a href="mailto:director@nexcorealliance.com" className="ml-2 hover:text-purple-200">
-                      director@nexcorealliance.com
-                    </a>
-                  </li>
-                  <li className="flex items-center gap-2">
-                    <a href="tel:+919594430295" className="ml-2 hover:text-purple-200">
-                      +91 95944 30295
-                    </a>
-                  </li>
-                  <li className="flex items-start gap-2">
-                    <span className="ml-2">Off BKC, Mumbai, India 400070</span>
-                  </li>
-                </ul>
-              </div>
+        {/* === Mobile Contact Details === */}
+        <div className="mt-6 w-full md:hidden">
+          <div className="rounded-[14px] p-[2px] bg-gradient-to-b from-purple-400 via-purple-500 to-black shadow-lg">
+            <div className="rounded-[13px] bg-black/70 backdrop-blur-md p-4">
+              <h3 className="mb-2 text-base font-semibold text-purple-200">Contact Details</h3>
+              <div className="mb-3 h-[2px] w-22 bg-purple-400/40" />
+              <ul className="space-y-2 text-[11px] text-white/90">
+                <li className="flex items-center gap-2">
+                  <Mail className="h-5 w-5 text-purple-300 shrink-0" />
+                  <a href="mailto:director@nexcorealliance.com" className="ml-2 hover:text-purple-200">
+                    director@nexcorealliance.com
+                  </a>
+                </li>
+                <li className="flex items-center gap-2">
+                  <Phone className="h-5 w-5 text-size-50 text-purple-300 shrink-0" />
+                  <a href="tel:+919594430295" className="ml-2 hover:text-purple-200">
+                    +91 95944 30295
+                  </a>
+                </li>
+                <li className="flex items-start gap-2">
+                  <MapPin className="h-5 w-5 text-purple-300 shrink-0 mt-0.5" />
+                  <span className="ml-2">Off BKC, Mumbai, India 400070</span>
+                </li>
+              </ul>
             </div>
           </div>
         </div>
+
       </div>
+    </div>
     </div>
   );
 }
