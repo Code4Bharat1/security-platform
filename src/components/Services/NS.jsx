@@ -5,35 +5,42 @@ export default function NSPage() {
         {
             title: "Network Security",
             desc: "Network Security focuses on safeguarding the integrity and confidentiality of data as it travels across enterprise networks. It encompasses the design and management of secure architectures, deployment of firewalls, intrusion detection and prevention systems, and segmentation of networks to reduce attack surfaces. Network security ensures that communication systems remain protected from unauthorized access, misuse, and disruptions.",
-            videoPath: "/Services/NS.mp4",
+            videoPath: "/Services/NS2.mp4",
         }
 
     const methodologyData = [
-        {
-            title: "Network Asset Discovery & Mapping ",
-            desc: "Real-time cloud-native threat monitoring."
-        },
-        {
-            title: "Configuration & Policy Review ",
-            desc: "Evaluate firewalls, IDS/IPS, VPN, Evaluate firewalls, IDS/IPS, VPN, segmentation, and routing policies.segmentation, and routing policies."
-        },
-        {
-            title: "Traffic Analysis & Threat Detection ",
-            desc: "Use packet captures, NetFlow, and anomaly detection to uncover hidden risks."
-        },
-        {
-            title: "Attack Simulation ",
-            desc: "Conduct penetration attempts such as DoS, MITM, ARP spoofing, and lateral movement to test resilience.."
-        },
-        {
-            title: "Vulnerability Remediation & Hardening",
-            desc: "Patch weaknesses, strengthen configurations, and enforce segmentation."
-        },
-        {
-            title:"Continuous Monitoring & Alerting ",
-            desc: "Integrate with SOC and SIEM for real-time protection."
-        }
-    ];
+  {
+    title: "Network Asset Discovery & Mapping",
+    desc: "Real-time cloud-native threat monitoring.",
+    imagePath: "/Services/Network1.png"
+  },
+  {
+    title: "Configuration & Policy Review",
+    desc: "Evaluate firewalls, IDS/IPS, VPN, segmentation, and routing policies.",
+    imagePath: "/Services/Network2.png"
+  },
+  {
+    title: "Traffic Analysis & Threat Detection",
+    desc: "Use packet captures, NetFlow, and anomaly detection to uncover hidden risks.",
+    imagePath: "/Services/Network3.png"
+  },
+  {
+    title: "Attack Simulation",
+    desc: "Conduct penetration attempts such as DoS, MITM, ARP spoofing, and lateral movement to test resilience.",
+    imagePath: "/Services/Network4.png"
+  },
+  {
+    title: "Vulnerability Remediation & Hardening",
+    desc: "Patch weaknesses, strengthen configurations, and enforce segmentation.",
+    imagePath: "/Services/Network6.png"
+  },
+  {
+    title: "Continuous Monitoring & Alerting",
+    desc: "Integrate with SOC and SIEM for real-time protection.",
+    imagePath: "/Services/Network5.png"
+  }
+];
+
 
         const keyaspectsData = {
         title: "Network Security Process",
