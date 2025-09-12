@@ -44,7 +44,10 @@ export default function DashboardPage() {
       {/* Header Section */}
       <div className="flex items-center gap-4 mb-8">
         {/* Image */}
-        <div className="w-20 h-20 rounded-full overflow-hidden border-4 border-blue-500">
+       <div className="w-30 h-30 rounded-full overflow-hidden border-4 border-blue-500">
+  {/* content here */}
+
+
           <img
             src="/BlueTeam/waf.png" // apna image path yahan do
             alt="Firewall Logo"
@@ -64,7 +67,7 @@ export default function DashboardPage() {
       {/* Form under header */}
       <form
         onSubmit={handleScan}
-        className="mb-6 flex flex-col items-center justify-center w-full"
+        className="mb-6 flex flex-col items-center w-full max-w-4xl border border-white-600 rounded-lg p-6 sm:p-8"
       >
         <input
           type="url"
@@ -72,21 +75,20 @@ export default function DashboardPage() {
           value={url}
           onChange={(e) => setUrl(e.target.value.trim())}
           required
-          className="border rounded text-white px-4 py-2 w-full max-w-md text-black"
+          className="border rounded px-4 py-2 w-full text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
         />
         <button
-  type="submit"
-  className="mt-3 bg-blue-600 text-white px-6 py-2 rounded border border-blue-500"
-  disabled={loading}
->
-  {loading ? "Scanning..." : "Scan URL"}
-</button>
-
+          type="submit"
+          className="mt-4 bg-blue-600 text-white px-6 py-2 rounded border border-blue-500 w-full sm:w-auto"
+          disabled={loading}
+        >
+          {loading ? "Scanning..." : "Scan URL"}
+        </button>
       </form>
 
       {/* Error Message */}
       {error && (
-        <div className="mb-4 p-3 bg-red-100 text-red-700 rounded max-w-md w-full text-center">
+        <div className="mb-4 p-3 bg-red-100 text-red-700 rounded max-w-sm w-full text-center">
           {error}
         </div>
       )}

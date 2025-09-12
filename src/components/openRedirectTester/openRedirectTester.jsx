@@ -36,7 +36,7 @@ const SEV_BADGE = {
 
 export default function DarkThemeOpenRedirectTester() {
   const [inputUrl, setInputUrl] = useState(
-    "https://victim.com/login?redirect=https://example.com"
+    ""
   );
   const [manualParam, setManualParam] = useState("redirect");
   const [autoScan, setAutoScan] = useState(true);
@@ -166,11 +166,14 @@ export default function DarkThemeOpenRedirectTester() {
        {/* Header */}
 <div className="flex items-center gap-4 mb-8">
   {/* Replace logo div with image */}
+  <div className="w-30 h-30 rounded-full border-4 border-red-500 flex items-center justify-center overflow-hidden">
   <img
     src="/Redteam/open-redirect.png"   // <-- yaha apni image ka path daalna
     alt="Logo"
-    className="w-20 h-20 rounded-full border-4 border-red-500 object-cover"
+    className="w-24 h-24 rounded-full object-cover"
   />
+</div>
+
 
   <div>
     <h1 className="text-3xl font-bold text-white mb-1">

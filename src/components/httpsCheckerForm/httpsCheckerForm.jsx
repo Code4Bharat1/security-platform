@@ -327,13 +327,13 @@ export default function HttpsCheckerPage() {
 
   return (
     <div className="min-h-screen bg-black p-4 ">
-      <div className="max-w-2xl mx-auto pt-10">
+      <div className="max-w-4xl mx-auto pt-10">
         {/* Header */}
-        <div className="flex items-center justify-center gap-4 mb-8">
+        <div className="flex items-center justify-left gap-4 mb-8">
   <img 
     src="/BlueTeam/https security checker.png" 
     alt="verify" 
-    className="w-20 h-20 rounded-full border-4 border-blue-600"
+    className="w-30 h-30 rounded-full border-4 border-blue-600"
   />
   <div className="text-left">
     <h1 className="text-3xl font-bold text-white">
@@ -347,9 +347,9 @@ export default function HttpsCheckerPage() {
 
 
         {/* Main Card */}
-        <div >
+        <div className="border border-white-600 px-10 py-15"  >
           {/* Input Section */}
-          <div className="space-y-4 mb-6">
+          <div className="space-y-4 mb-6 ">
             <div className="relative">
               <Globe className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-white-500" />
               <input
@@ -366,7 +366,7 @@ export default function HttpsCheckerPage() {
   <button
   onClick={handleCheck}
   disabled={loading || !domain}
-  className="bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-6 rounded-xl transition-all duration-200 transform hover:scale-[1.02] disabled:opacity-50 shadow-lg border border-blue-500"
+  className="bg-blue-600 hover:bg-blue-600 text-white font-semibold py-2 px-6 rounded-xl transition-all duration-200 transform hover:scale-[1.02] disabled:opacity-50 shadow-lg border border-blue-500"
 >
   {loading ? (
     <div className="flex items-center justify-center gap-2">

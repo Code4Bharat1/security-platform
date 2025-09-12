@@ -159,14 +159,15 @@ export default function NexposeScanner() {
       {/* Header with logo and title */}
 {/* Header with logo and title */}
 <div className="text-center mb-4">
-  <div className="flex items-center justify-center mb-4">
-    <div className="w-20 h-20 rounded-full overflow-hidden mr-4 border-4 border-red-500">
-      <img
-        src="/Redteam/sql_injection.png" // <-- apni image path
-        alt="Logo"
-        className="w-full h-full object-cover"
-      />
-    </div>
+  <div className="flex items-center justify-center mb-4 -ml-90">
+    <div className="w-30 h-30 rounded-full border-4 border-red-500 flex items-center justify-center overflow-hidden mr-4">
+  <img
+    src="/Redteam/sql_injection.png" // <-- apni image path
+    alt="Logo"
+    className="w-full h-full object-cover rounded-full"
+  />
+</div>
+
     <div className="text-left">
       <h1 className="text-2xl font-bold text-white">SQLi Scanner</h1>
       <p className="text-gray-400 text-sm">
@@ -179,7 +180,7 @@ export default function NexposeScanner() {
 
 
       {/* Main scanner box */}
-      <div className="bg-black border-2 border-white-600 rounded-lg p-6 w-full max-w-md">
+      <div className="bg-black border-2 border-white-600 rounded-lg p-6 w-full max-w-4xl">
         {/* URL input with validation */}
         <label className="block text-white font-medium mb-2">Target URL</label>
         <input
@@ -219,7 +220,7 @@ export default function NexposeScanner() {
 
       {/* Results section */}
       {result && (
-        <div className="mt-8 w-full max-w-6xl space-y-6">
+        <div className="mt-8 w-full max-w-4xl space-y-6">
           {/* Summary */}
           <div className="bg-gray-900 border border-white-700 rounded-lg p-6">
             {/* Status banners */}

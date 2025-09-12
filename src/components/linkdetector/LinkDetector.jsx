@@ -100,11 +100,11 @@ export default function LinkDetector() {
       );
     if (status === "invalid")
       return (
-        <span className="inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-semibold bg-gray-200 text-gray-700">
+        <span className="inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-semibold bg-white text-green-700">
           Invalid
         </span>
       );
-    return <span className="px-2 py-1 rounded-full text-xs bg-gray-100">Unknown</span>;
+    return <span className="px-2 py-1 rounded-full text-xs bg-white">Unknown</span>;
   };
 
   const downloadTxt = (payload, fileName = "link_report.txt") => {
@@ -291,7 +291,7 @@ export default function LinkDetector() {
         {/* Mode toggle */}
         <div className="flex items-center justify-between mb-4">
           <div className="flex items-center gap-3">
-            <label className="text-sm font-medium text-gray-700">Bulk Mode</label>
+            <label className="text-sm font-medium text-white">Bulk Mode</label>
             <button
               onClick={() => {
                 setBulkMode(!bulkMode);
@@ -300,7 +300,7 @@ export default function LinkDetector() {
                 setError("");
               }}
               className={`w-12 h-7 rounded-full transition relative ${
-                bulkMode ? "bg-green-600" : "bg-gray-300"
+                bulkMode ? "bg-green-600" : "bg-white"
               }`}
               aria-pressed={bulkMode}
             >
@@ -332,7 +332,7 @@ export default function LinkDetector() {
               placeholder="🔗 Enter link to check..."
               value={link}
               onChange={(e) => setLink(e.target.value)}
-              className="w-full text-white px-4 py-3 mb-4 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-600 text-gray-800"
+              className="w-full text-white px-4 py-3 mb-4 border border-whit rounded-md focus:outline-none focus:ring-2 focus:ring-green-600 text-white"
             />
 
             <button
@@ -367,7 +367,7 @@ export default function LinkDetector() {
                   </div>
                 </div>
 
-                <div className="mt-3 text-sm text-gray-700 space-y-1">
+                <div className="mt-3 text-sm text-white-700 space-y-1">
                   <p><span className="font-semibold">URL:</span> {result.url}</p>
                   <p><span className="font-semibold">Final:</span> {result.finalUrl || "-"}</p>
                   <p>
@@ -379,7 +379,7 @@ export default function LinkDetector() {
                   <p><span className="font-semibold">Message:</span> {result.message}</p>
 
                   <details className="mt-2">
-                    <summary className="cursor-pointer font-semibold text-gray-800">Redirect Chain</summary>
+                    <summary className="cursor-pointer font-semibold text-white">Redirect Chain</summary>
                     <ul className="list-decimal ml-6">
                       {(result.redirectChain || []).map((u, i) => (
                         <li key={i} className="break-all">{u}</li>
@@ -388,7 +388,7 @@ export default function LinkDetector() {
                   </details>
 
                   <details>
-                    <summary className="cursor-pointer font-semibold text-gray-800">Suspicious Indicators</summary>
+                    <summary className="cursor-pointer font-semibold text-white">Suspicious Indicators</summary>
                     <div className="mt-2">
                       <p><span className="font-semibold">Keywords:</span> {(result.suspicious?.keywordsFound || []).join(", ") || "Not Found"}</p>
                       <p><span className="font-semibold">Typosquat of:</span> {result.suspicious?.typosquatOf || "-"}</p>
@@ -404,7 +404,7 @@ export default function LinkDetector() {
                   </details>
 
                   <details>
-                    <summary className="cursor-pointer font-semibold text-gray-800">Content Findings</summary>
+                    <summary className="cursor-pointer font-semibold text-white">Content Findings</summary>
                     <div className="mt-2">
                       <p>CryptoMiner: {result.contentFindings?.hasCryptoMiner ? "Yes" : "No"}</p>
                       <p>Suspicious Eval: {result.contentFindings?.suspiciousInlineEval ? "Yes" : "No"}</p>
@@ -414,17 +414,17 @@ export default function LinkDetector() {
                   </details>
 
                   <details>
-                    <summary className="cursor-pointer font-semibold text-gray-800">Geo & Hosting</summary>
+                    <summary className="cursor-pointer font-semibold text-white">Geo & Hosting</summary>
                     <div className="mt-2">
                       <p>IP: {result.geo?.ip || "-"}</p>
                       <p>Country/Region/City: {result.geo?.country || "-"} / {result.geo?.region || "-"} / {result.geo?.city || "-"}</p>
                       {result.screenshotPath ? (
-                        <p className="text-xs text-gray-500">Screenshot saved at: {result.screenshotPath}</p>
+                        <p className="text-xs text-white">Screenshot saved at: {result.screenshotPath}</p>
                       ) : null}
                     </div>
                   </details>
 
-                  <p className="text-xs text-gray-500 mt-2">Checked At: {prettyDate(result.scannedAt)}</p>
+                  <p className="text-xs text-white mt-2">Checked At: {prettyDate(result.scannedAt)}</p>
                 </div>
               </div>
             )}
@@ -436,7 +436,7 @@ export default function LinkDetector() {
               placeholder="Paste 1 URL per line…"
               value={bulkText}
               onChange={(e) => setBulkText(e.target.value)}
-              className="w-full text-white px-4 py-3 mb-4 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-600 text-gray-800"
+              className="w-full text-white px-4 py-3 mb-4 border border-white rounded-md focus:outline-none focus:ring-2 focus:ring-green-600 text-white"
             />
             <div className="flex items-center gap-3">
               <button
@@ -451,7 +451,7 @@ export default function LinkDetector() {
               {bulkResults.length > 0 && (
                 <button
                   onClick={() => downloadCsv(bulkResults)}
-                  className="inline-flex items-center gap-2 px-3 py-2 rounded-md bg-gray-900 text-white hover:bg-black text-sm"
+                  className="inline-flex items-center gap-2 px-3 py-2 rounded-md bg-white text-white hover:bg-black text-sm"
                 >
                   <Download size={16} /> CSV
                 </button>
@@ -462,7 +462,7 @@ export default function LinkDetector() {
               <div className="mt-6 overflow-x-auto">
                 <table className="min-w-full text-sm">
                   <thead>
-                    <tr className="text-left bg-gray-100">
+                    <tr className="text-left bg-white-">
                       <th className="p-2">Status</th>
                       <th className="p-2">URL</th>
                       <th className="p-2">Final</th>

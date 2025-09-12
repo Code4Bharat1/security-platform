@@ -79,10 +79,10 @@ export default function IPInfoFinder() {
 
             {/* Basic Info */}
             <div>
-              <h2 className="font-bold text-lg text-green-700 mb-2">
+              <h2 className="font-bold text-lg text-white mb-2">
                 🔹 Basic Information:
               </h2>
-              <ul className="space-y-1 pl-4">
+              <ul className="space-y-1 pl-4 text-white">
                 <li>IP Address: {info.basicInformation?.ipAddress}</li>
                 <li>Version: {info.basicInformation?.version}</li>
                 <li>Reverse DNS: {info.basicInformation?.reverseDNS}</li>
@@ -92,10 +92,10 @@ export default function IPInfoFinder() {
 
             {/* Location Data */}
             <div>
-              <h2 className="font-bold text-lg text-green-700 mb-2">
+              <h2 className="font-bold text-lg text-white mb-2">
                 🌍 Location Data:
               </h2>
-              <ul className="space-y-1 pl-4">
+              <ul className="space-y-1 pl-4 text-white">
                 <li>Country: {info.locationData?.country}</li>
                 <li>Region: {info.locationData?.region}</li>
                 <li>City: {info.locationData?.city}</li>
@@ -107,10 +107,10 @@ export default function IPInfoFinder() {
 
             {/* Network Details */}
             <div>
-              <h2 className="font-bold text-lg text-green-700 mb-2">
+              <h2 className="font-bold text-lg text-white mb-2">
                 🛰️ Network Details:
               </h2>
-              <ul className="space-y-1 pl-4">
+              <ul className="space-y-1 pl-4 text-white">
                 <li>ISP: {info.networkDetails?.isp}</li>
                 <li>Organization: {info.networkDetails?.organization}</li>
                 <li>ASN: {info.networkDetails?.asn}</li>
@@ -121,10 +121,10 @@ export default function IPInfoFinder() {
 
             {/* Security & Threat Intel */}
             <div>
-              <h2 className="font-bold text-lg text-green-700 mb-2">
+              <h2 className="font-bold text-lg text-white mb-2">
                 ⚠️ Security & Threat Intelligence:
               </h2>
-              <ul className="space-y-1 pl-4">
+              <ul className="space-y-1 pl-4 text-white">
                 <li>Proxy/VPN: {info.securityThreatIntel?.proxyOrVpn}</li>
                 <li>Tor Exit Node: {info.securityThreatIntel?.torExitNode}</li>
                 <li>

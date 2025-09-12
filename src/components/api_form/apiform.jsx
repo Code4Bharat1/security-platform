@@ -36,11 +36,13 @@ const Apiform = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
 
+    // Ensure URL has protocol
     let formattedUrl = formData.url.trim();
     if (formattedUrl && !/^https?:\/\//i.test(formattedUrl)) {
       formattedUrl = "https://" + formattedUrl;
     }
     
+    // Validate URL
     try {
       new URL(formattedUrl);
     } catch {
@@ -52,6 +54,7 @@ const Apiform = () => {
     setLoading(true);
     setResults(null);
 
+    // Parse headers
     let headers = {};
     try {
       headers = formData.headers ? JSON.parse(formData.headers) : {};
@@ -62,6 +65,7 @@ const Apiform = () => {
       return;
     }
 
+    // Parse body for non-GET
     let body = {};
     if (formData.method !== "GET") {
       try {
@@ -74,6 +78,7 @@ const Apiform = () => {
       }
     }
 
+    // Simulate the real API call - replace this section with your actual API call
     setTimeout(() => {
       const mockResults = {
         status: 200,
@@ -117,6 +122,41 @@ const Apiform = () => {
       setResults(mockResults);
       setLoading(false);
     }, 2000);
+
+    /* 
+    // Uncomment and replace the setTimeout above with this for real API calls
+    const requestData = {
+      url: formattedUrl,
+      method: formData.method,
+      headers,
+      body,
+      options: { timeout: parseInt(formData.timeout, 10) || 5000 },
+    };
+
+    const backendUrl = process.env.NEXT_PUBLIC_PROD_API_URL;
+    const fullUrl = `${backendUrl.replace(/\/$/, "")}/apiTest/apitest-scan`;
+
+    try {
+      const response = await fetch(fullUrl, {
+        method: 'POST',
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(requestData)
+      });
+
+      const data = await response.json();
+
+      if (data?.error) {
+        setError(`⚠️ ${data.error}`);
+        return;
+      }
+      setResults(data);
+    } catch (err) {
+      console.error("API Test Error:", err);
+      setError(`⚠️ Something went wrong. Please try again.`);
+    } finally {
+      setLoading(false);
+    }
+    */
   };
   
   const getSeverityColor = (score) => {
@@ -162,15 +202,15 @@ const Apiform = () => {
   };
   
   return (
-    <div className="flex flex-col items-center min-h-screen" style={{backgroundColor: '#1a1a1a'}}>
-      <div className="flex items-center mt-8 mb-6">
+    <div className="flex flex-col items-center min-h-screen   " style={{backgroundColor: '#1a1a1a'}}>
+      <div className="flex items-center mt-8 mb-6 md:w-full justify-left px-60">
         <img 
-      src="/Redteam/api.png" 
-      alt="Logo" 
-      className="w-25 h-25 rounded-full mr-4" 
-    />
+          src="/Redteam/api.png" 
+          alt="Logo" 
+          className="w-30 h-30 rounded-full mr-4" 
+        />
         <div>
-          <h1 className="text-white text-2xl font-bold">API Security Tester</h1>
+          <h1 className="text-white text-2xl md:text-3xl -font-bold">API Security Tester</h1>
           <p className="text-gray-400 text-sm">
             Test your API endpoints for security vulnerabilities<br/>
             and best practices compliance
@@ -178,7 +218,7 @@ const Apiform = () => {
         </div>
       </div>
       
-      <div className="w-full max-w-md mx-4">
+      <div className="w-full max-w-md md:max-w-5xl mx-4">
         <div className="bg-red-600 text-white p-3 rounded-t-lg">
           <h2 className="text-lg font-semibold">API Security Analysis</h2>
         </div>
@@ -489,6 +529,54 @@ const Apiform = () => {
                       </div>
                     </div>
                   )}
+                  
+                  {results.securityChecks?.sensitiveDataExposure && (
+                    <div className="bg-gray-800 p-3 rounded border border-white-600">
+                      <h5 className="font-medium text-blue-400">Sensitive Data Exposure</h5>
+                      <div className="mt-1">
+                        <div className="text-sm flex items-center gap-1">
+                          <span>{results.securityChecks.sensitiveDataExposure.status === "No obvious data exposure" ? "✅" : "⚠️"}</span>
+                          <span className="font-medium text-gray-300">Status: </span>
+                          <span className={results.securityChecks.sensitiveDataExposure.status === "No obvious data exposure" ? "text-green-600" : "text-orange-600"}>
+                            {results.securityChecks.sensitiveDataExposure.status}
+                          </span>
+                        </div>
+                        {results.securityChecks.sensitiveDataExposure.details && 
+                         results.securityChecks.sensitiveDataExposure.details !== "No sensitive data patterns detected in response" && (
+                          <div className="bg-gray-600 p-2 rounded mt-2 text-sm">
+                            <div className="font-medium text-gray-300">Details:</div>
+                            <pre className="text-xs overflow-auto max-h-40 text-gray-400">
+                              {JSON.stringify(results.securityChecks.sensitiveDataExposure.details, null, 2)}
+                            </pre>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  )}
+                  
+                  {results.securityChecks?.injectionVulnerability && (
+                    <div className="bg-gray-800 p-3 rounded border border-white-600">
+                      <h5 className="font-medium text-blue-400">Injection Vulnerabilities</h5>
+                      <div className="mt-1">
+                        <div className="text-sm flex items-center gap-1">
+                          <span>{results.securityChecks.injectionVulnerability.status === "No obvious vulnerabilities" ? "✅" : "⚠️"}</span>
+                          <span className="font-medium text-gray-300">Status: </span>
+                          <span className={results.securityChecks.injectionVulnerability.status === "No obvious vulnerabilities" ? "text-green-600" : "text-orange-600"}>
+                            {results.securityChecks.injectionVulnerability.status}
+                          </span>
+                        </div>
+                        {results.securityChecks.injectionVulnerability.details && 
+                         results.securityChecks.injectionVulnerability.details !== "No common error patterns detected in response" && (
+                          <div className="bg-gray-600 p-2 rounded mt-2 text-sm">
+                            <div className="font-medium text-gray-300">Details:</div>
+                            <pre className="text-xs overflow-auto max-h-40 text-gray-400">
+                              {JSON.stringify(results.securityChecks.injectionVulnerability.details, null, 2)}
+                            </pre>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  )}
                 </div>
               </div>
               
@@ -520,8 +608,6 @@ const Apiform = () => {
           )}
         </div>
       </div>
-      
-
     </div>
   );
 };

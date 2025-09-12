@@ -3,7 +3,7 @@ import { useState } from "react";
 import { Loader2, Shield, ClipboardPaste } from 'lucide-react';
 
 const WordPressScanner = () => {
-  const [url, setUrl] = useState("https://example.com");
+  const [url, setUrl] = useState("");
   const [error, setError] = useState("");
   const [scanData, setScanData] = useState(null);
   const [loading, setLoading] = useState(false);
@@ -61,13 +61,13 @@ const WordPressScanner = () => {
 
   return (
     <div className="min-h-screen bg-black text-white p-6">
-      <div className="max-w-2xl mx-auto">
+      <div className="max-w-4xl mx-auto">
         {/* Header */}
 <div className="flex items-center gap-4 mb-8">
   <img
     src="/RedTeam/wordpress-secure.png"  // <-- apni image ka path yahan daaliye
     alt="Secure Your WordPress Logo"
-    className="w-20 h-20 rounded-full border-2 border-red-600 object-cover"
+    className="w-30 h-30 rounded-full border-2 border-red-600 object-cover"
   />
   <div>
     <h1 className="text-2xl font-bold text-white">Secure Your WordPress</h1>
@@ -81,10 +81,9 @@ const WordPressScanner = () => {
 
         {/* Tool Title */}
         <div className="mb-6">
-          <div className="px-4 py-2 border-2 border-white-600 text-white bg-transparent rounded text-center">
+          <div className="bg-gray-900 border border-white rounded-lg p-10 mb-6 text-center">
             WordPress Security Scanner
-          </div>
-        </div>
+         
 
         {/* Input Section */}
         <div className="mb-6 space-y-4">
@@ -97,14 +96,14 @@ const WordPressScanner = () => {
               required
               className="flex-1 p-4 bg-black border-2 border-white rounded-full text-white placeholder-gray-400 text-center focus:outline-none focus:border-red-600"
             />
-            <button
-              type="button"
-              onClick={handlePaste}
-              title="Paste from clipboard"
-              className="px-3 py-2 border-2 border-white text-white bg-transparent rounded-full hover:bg-white hover:text-black transition-colors"
-            >
-              <ClipboardPaste className="w-5 h-5" />
-            </button>
+              {/* <button
+                type="button"
+                onClick={handlePaste}
+                title="Paste from clipboard"
+                className="px-3 py-2 border-2 border-white text-white bg-transparent rounded-full hover:bg-white hover:text-black transition-colors"
+              >
+                <ClipboardPaste className="w-5 h-5" />
+              </button> */}
           </div>
 
           {error && (
@@ -169,6 +168,8 @@ const WordPressScanner = () => {
         )}
       </div>
     </div>
+     </div>
+      </div>
   );
 };
 

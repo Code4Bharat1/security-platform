@@ -29,10 +29,10 @@ export default function Cards() {
 
     return (
         <div className="min-h-screen bg-black flex items-center justify-center px-4">
-            <div className="max-w-sm w-full bg-black rounded-2xl p-6">
+            <div className="max-w-4xl w-full bg-black rounded-2xl p-6">
                 {/* Header with logo */}
 <div className="flex items-center gap-4 mb-6">
-  <div className="w-20 h-20 rounded-full border-4 border-purple-600 overflow-hidden shadow-lg flex-shrink-0">
+  <div className="w-30 h-30 rounded-full border-4 border-purple-600 overflow-hidden shadow-lg flex-shrink-0">
     <img
       src="/cyber.jpg"
       alt="Logo"

@@ -270,7 +270,7 @@ export default function ReverseDNSLookup() {
         <img
   src="/BlueTeam/reverse dns.png"
   alt="Reverse DNS"
-  className="w-20 h-20 rounded-full border-4 border-blue-500"
+  className="w-30 h-30 rounded-full border-4 border-blue-500"
 />
 
         <div className="text-white">
@@ -298,13 +298,13 @@ export default function ReverseDNSLookup() {
                   validationMsg
                     ? "border-red-300 focus:border-red-500 focus:ring-red-100"
                     : valid
-                    ? "border-green-300 focus:border-green-500 focus:ring-green-100"
+                    ? "border-blue-300 focus:border-blue-500 focus:ring-blue-100"
                     : "border-blue-500 focus:border-blue-400 focus:ring-blue-50"
                 } text-gray-700 font-mono`}
               />
               <Globe
                 className={`absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 ${
-                  validationMsg ? "text-red-400" : valid ? "text-green-500" : "text-gray-400"
+                  validationMsg ? "text-red-400" : valid ? "text-white" : "text-gray-400"
                 }`}
               />
               {valid && (
@@ -364,23 +364,23 @@ export default function ReverseDNSLookup() {
 
       {/* Results */}
       {data && (
-        <div className="bg-white/80 backdrop-blur-sm rounded-2xl shadow-xl border border-blue-200 p-6 space-y-6">
+        <div className="bg-black backdrop-blur-sm rounded-2xl shadow-xl border border-blue-200 p-6 space-y-6">
           {/* Top summary + exports */}
           <div className="flex items-center justify-between gap-3 flex-wrap">
             <div className="space-y-1">
-              <div className="text-xl font-semibold">Reverse DNS Summary</div>
+              <div className="text-xl text-white font-semibold">Reverse DNS Summary</div>
               <div className="text-sm text-gray-500">{data.ip}</div>
             </div>
             <div className="flex gap-2">
               <button
                 onClick={downloadPDF}
-                className="px-3 py-2 rounded-lg border border-blue-700 text-emerald-700 hover:bg-emerald-50 flex items-center gap-2"
+                className="px-3 py-2 rounded-lg border border-blue-700 text-white hover:bg-emerald-50 flex items-center gap-2"
               >
                 <Download className="w-4 h-4" /> Download PDF
               </button>
               <button
                 onClick={downloadTXT}
-                className="px-3 py-2 rounded-lg border border-blue-700 text-emerald-700 hover:bg-emerald-50 flex items-center gap-2"
+                className="px-3 py-2 rounded-lg border border-blue-700 text-white hover:bg-emerald-50 flex items-center gap-2"
               >
                 <FileText className="w-4 h-4" /> Download TXT
               </button>
@@ -428,7 +428,7 @@ export default function ReverseDNSLookup() {
 
           {/* PTR list */}
           <div>
-            <div className="font-semibold mb-2">PTR Domains</div>
+            <div className="font-semibold mb-2 text-white">PTR Domains</div>
             {data.ptr?.length ? (
               <ul className="list-disc list-inside text-sm text-gray-800">
                 {data.ptr.map((d) => (
@@ -445,12 +445,12 @@ export default function ReverseDNSLookup() {
           {/* Geo + ASN */}
           <div className="grid md:grid-cols-2 gap-4">
             <div className="rounded-lg border border-blue-200 p-4">
-              <div className="font-semibold mb-2 flex items-center gap-2">
+              <div className="font-semibold mb-2 flex text-white items-center gap-2">
                 <MapPin className="w-4 h-4 text-green-600" />
                 Geolocation
               </div>
               {data.geo ? (
-                <div className="text-sm text-gray-700 space-y-1">
+                <div className="text-sm text-white space-y-1">
                   <div>
                     Country: <span className="font-medium">{human(data.geo.country)}</span>
                   </div>
@@ -467,10 +467,10 @@ export default function ReverseDNSLookup() {
                 <div className="text-sm text-gray-500">Not available</div>
               )}
             </div>
-            <div className="rounded-lg border border-blue-200 p-4">
+            <div className="rounded-lg border border-blue-200 text-white p-4">
               <div className="font-semibold mb-2">ASN / WHOIS</div>
               {data.asn ? (
-                <div className="text-sm text-gray-700 space-y-1">
+                <div className="text-sm text-white space-y-1">
                   <div>
                     ASN: <span className="font-medium">{human(data.asn.asn)}</span>
                   </div>
@@ -486,7 +486,7 @@ export default function ReverseDNSLookup() {
 
           {/* DNSBL */}
           <div className="rounded-lg border border-blue-200 p-4">
-            <div className="font-semibold mb-2">DNSBL / Blacklist</div>
+            <div className="font-semibold mb-2 text-white">DNSBL / Blacklist</div>
             <div className="text-sm text-gray-700 mb-2">
               Listed on{" "}
               <span className="font-semibold">
@@ -501,7 +501,7 @@ export default function ReverseDNSLookup() {
                   className={`p-3 rounded border text-sm ${
                     z.listed
                       ? "bg-red-50 border-red-200 text-red-700"
-                      : "bg-green-50 border-green-200 text-green-700"
+                      : "bg-blackborder-white text-white"
                   }`}
                 >
                   <div className="flex items-center justify-between">
@@ -525,10 +525,10 @@ export default function ReverseDNSLookup() {
 
           {/* Forward validation */}
           <div className="rounded-lg border border-blue-200 p-4">
-            <div className="font-semibold mb-2">Forward DNS Validation</div>
+            <div className="font-semibold mb-2 text-white">Forward DNS Validation</div>
             <div className="text-sm mb-3">
               {forwardVerdict.verified ? (
-                <span className="inline-flex items-center gap-1 text-green-700">
+                <span className="inline-flex items-center gap-1 text-white">
                   <Check className="w-4 h-4" /> All mappings verified
                 </span>
               ) : forwardVerdict.suspicious ? (
@@ -546,8 +546,8 @@ export default function ReverseDNSLookup() {
                   key={f.domain}
                   className={`p-3 rounded border text-sm ${
                     f.matches
-                      ? "bg-green-50 border-green-200 text-green-700"
-                      : "bg-red-50 border-red-200 text-red-700"
+                      ? "bg-black border-green-200 text-white"
+                      : "bg-red-50 border-white text-red-700"
                   }`}
                 >
                   <div className="flex items-center justify-between">
@@ -567,8 +567,8 @@ export default function ReverseDNSLookup() {
 
           {/* Security usefulness line */}
           <div className="rounded-lg border border-blue-200">
-            <div className="font-semibold mb-1">Security notes</div>
-            <ul className="list-disc pl-5 text-sm text-gray-700 space-y-1">
+            <div className="font-semibold mb-2 text-white">Security notes</div>
+            <ul className="list-disc pl-5 text-sm text-white space-y-1">
               <li>
                 DNSBL listing and reverse/forward mismatch are common signals of potential
                 abuse/spoofing.
