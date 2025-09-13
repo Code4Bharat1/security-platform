@@ -6,17 +6,42 @@ export default function VAPage() {
     const heroData = {
       title: "Vulnerability Assessment",
       desc: `Vulnerability Assessment (VA) is the first line of defense in a strong cybersecurity program. It is a structured process designed to uncover, analyze, and prioritize security weaknesses across an organization’s IT infrastructure, applications, cloud environments, and endpoints. Our VA services go beyond automated scans—every finding is validated by security experts and mapped against real-world attack scenarios, ensuring your remediation strategy is both actionable and business-focused.`,
-      videoPath: "/Services/VA.mp4"
+      videoPath: "/Services/VA2.mp4"
      }
 
-    const methodologyData = [
-        { title: "Network & System Scanning", desc: " Identifying open ports, services, and operating system vulnerabilities across IT assets." },
-        { title: "Web & Mobile Application VA", desc: "Assessing applications for common flaws such as OWASP Top 10 issues, insecure APIs, and mobile app security weaknesses." },
-        { title: "Patch & Configuration Review ", desc: "Checking for missing security patches, outdated software, and weak or default configurations." },
-        { title: "Database & Cloud Assessment ", desc: "Detecting misconfigurations, insecure permissions, and vulnerabilities in databases and cloud environments." },
-        { title: "Wireless Network VA", desc: "Evaluating Wi-Fi networks for weak encryption, rogue access points, and other wireless security risks." },
-        { title: "Risk-Based Reporting & Remediation Guidance", desc: " Categorizing vulnerabilities based on severity and providing actionable recommendations for remediation." }
-    ];
+const methodologyData = [
+  {
+    title: "Network & System Scanning",
+    desc: "Identifying open ports, services, and operating system vulnerabilities across IT assets.",
+    imagePath: "/Services/VA01.png"
+  },
+  {
+    title: "Web & Mobile Application VA",
+    desc: "Assessing applications for common flaws such as OWASP Top 10 issues, insecure APIs, and mobile app security weaknesses.",
+    imagePath: "/Services/VA3.png"
+  },
+  {
+    title: "Patch & Configuration Review",
+    desc: "Checking for missing security patches, outdated software, and weak or default configurations.",
+    imagePath: "/Services/patch.png"
+  },
+  {
+    title: "Database & Cloud Assessment",
+    desc: "Detecting misconfigurations, insecure permissions, and vulnerabilities in databases and cloud environments.",
+    imagePath: "/Services/VA4.png"
+  },
+  {
+    title: "Wireless Network VA",
+    desc: "Evaluating Wi-Fi networks for weak encryption, rogue access points, and other wireless security risks.",
+    imagePath: "/Services/VA6.png"
+  },
+  {
+    title: "Risk-Based Reporting & Remediation Guidance",
+    desc: "Categorizing vulnerabilities based on severity and providing actionable recommendations for remediation.",
+    imagePath: "/Services/VA7.png"
+  }
+];
+
     
     // const approchData = {
     //     firstRow: [
@@ -72,7 +97,7 @@ function DescHero({ data }) {
                 muted
                 playsInline
             >
-                <source src="/VA.mp4" type="video/mp4" />
+                <source src="/Services/VA2.mp4" type="video/mp4" />
                 Your browser does not support the video tag.
             </video>
             
@@ -86,7 +111,7 @@ function DescHero({ data }) {
                     <h1 className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-bold text-left md:w-2/5">
                         {firstPart}
                     </h1>
-                    <div className="hidden md:block w-1 h-32 bg-gradient-to-b from-transparent via-[#9d7af0] to-transparent mx-8"></div>
+                    <div className="hidden md:block w-1 h-32 mx-8"></div>
                     <h1 className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-bold text-right md:w-2/5 mt-4 md:mt-0">
                         {secondPart}
                     </h1>
@@ -110,7 +135,7 @@ function KeyAspects() {
       {/* Diagram Image */}
       <div className="flex justify-center">
         <img
-          src="/services/VA1.png" // <-- update with your actual image path
+          src="/Services/VA1.png" // <-- update with your actual image path
           alt="Vulnerability Assessment Process"
           className="w-full max-w-5xl object-contain"
         />
@@ -226,11 +251,11 @@ function Methodology({ data }) {
 
             {/* Icon in Center */}
             <div className="flex justify-center">
-              <div className="w-16 h-16 md:w-20 md:h-20 bg-indigo-500 rounded-full flex items-center justify-center shadow-lg">
+              <div className="w-30 h-30 md:w-30 md:h-30  justify-center shadow-lg">
                 <img
-                  src={item.icon}
+                  src={item.imagePath}
                   alt={item.title}
-                  className="w-8 h-8 md:w-10 md:h-10 object-contain"
+                  className="w-30 h-30 md:w-30 md:h-30 object-contain"
                 />
               </div>
             </div>

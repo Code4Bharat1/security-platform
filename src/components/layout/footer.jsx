@@ -24,11 +24,11 @@ const Footer = () => {
   }, [pathname]);
 
   const Section = ({ title, links }) => (
-    <div className="w-full md:w-auto mb-4 md:mb-0 md:px-4 font-inter">
-      <h3 className="w-full text-left text-lg font-bold md:font-bold text-white">
+    <div className="w-full md:w-auto mb-6 md:mb-0 md:px-4 font-inter">
+      <h3 className="w-full text-left text-lg font-bold text-white">
         {title}
       </h3>
-      <ul className="mt-2 md:mt-4 space-y-2">
+      <ul className="mt-2 space-y-2">
         {links.map((link, index) => (
           <li key={index}>
             {link.id ? (
@@ -63,14 +63,16 @@ const Footer = () => {
 
 
   return (
-    <footer className="relative z-0 bg-[#9d7af0]/30 backdrop-blur-xl border border-white/20 shadow-lg transition-all duration-300 transform text-white pt-10 md:px-0 font-inter">
-         <div className="max-w-7xl mx-auto grid md:grid-cols-4 gap-8 px-2 md:px-3">
+    <footer className="relative z-0 bg-[#9d7af0]/30 backdrop-blur-xl border border-white/20 shadow-lg transition-all duration-300 transform text-white pt-10 px-4 md:px-0 font-inter">
+      <div className="max-w-7xl mx-auto grid md:grid-cols-4 gap-8 px-2 md:px-3">
         {/* Left Section */}
         <div className="md:col-span-1">
            <div className="w-full h-32 bg-black/10 mb-4">
             <img src="/OurCoreServices/logo.png" alt="Logo" className="w-full h-full object-contain" />
 </div>
-          <p className="text-base text-white/90">
+
+
+          <p className="text-sm sm:text-base text-white/90 text-center md:text-left">
             Our security platform provides advanced tools for red teaming, blue
             teaming, forensic analysis, and cloud security. Built for enterprise
             environments, it delivers real-time threat detection, proactive risk
@@ -78,10 +80,10 @@ const Footer = () => {
             protection of your critical digital assets.
           </p>
 
-          {/* Placeholder Social Icons */}
-          <div className="flex space-x-4 mt-4">
+          {/* Social Icons */}
+          <div className="flex justify-center md:justify-start space-x-3 mt-4">
             <Link
-              href=" https://www.instagram.com/nexcorealliance/"
+              href="https://www.instagram.com/nexcorealliance/"
               target="_blank"
               className="w-10 h-10 bg-gradient-to-br from-yellow-400 to-pink-500 rounded-lg flex items-center justify-center text-white font-bold text-xl"
             >
@@ -131,8 +133,8 @@ const Footer = () => {
           links={[
             { label: "WAF Scanner", href: "/tools/firewallDashboard" },
             { label: "Vulnerability Scanner", href: "/tools/vuln-scanner" },
-            { label: "Database Security Checker", href: "/tools/db-security" },
-            { label: "Link Detector", href: "/tools/link-detector" },
+            { label: "Database Security Checker", href: "/tools/DbSecurityChecker" },
+            { label: "Link Detector", href: "/tools/check-link" },
             { label: "IP Address Info Finder", href: "/tools/ip-address-info-finder" },
             { label: "Source Code Analyzer", href: "/tools/Source-Code" },
           ]}
@@ -148,16 +150,15 @@ const Footer = () => {
             { label: "Schedule Meeting", href: "/schedule-meeting" },
             { label: "Why Choose Us", id: "why-us" },
             { label: "Certificate", id: "certificates" },
-          ]}
+             { label: "Connect", href: "/connect" },          ]}
         />
       </div>
 
       {/* Footer Bottom */}
-      <div className="flex justify-center flex-col md:flex-row mt-10 text-center text-sm text-[#9d7af0] bg-white md:py-3 border-b-5 border-b-black">
+      <div className="flex flex-col md:flex-row justify-center items-center mt-10 text-center text-sm text-[#9d7af0] border-t border-white/20 py-3 gap-1 md:gap-4">
         <div>©2025<span className="hidden md:inline">&nbsp;|&nbsp;</span></div>
         <div>
-          Developed By&nbsp;
-          <span className="font-bold text-black">Code4Bharat</span>
+          Developed By&nbsp;<span className="font-bold text-black">Code4Bharat</span>
           <span className="hidden md:inline">&nbsp;|&nbsp;</span>
         </div>
         <div>All Rights Reserved.</div>
@@ -165,4 +166,5 @@ const Footer = () => {
     </footer>
   );
 }
+
 export default Footer;

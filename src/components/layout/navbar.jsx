@@ -44,11 +44,12 @@ const Navbar = () => {
   }, [pathname]);
 
   const handleLogout = () => {
-    localStorage.removeItem('token');
-    localStorage.removeUser('user');
-    setUserName('');
-    window.location.href = '/';
-  };
+  localStorage.removeItem('token');
+  localStorage.removeItem('user'); // ✅ sahi tarika
+  setUserName('');
+  window.location.href = '/';
+};
+
 
   const getInitials = (name) => {
     const words = name.trim().split(' ');
@@ -110,10 +111,10 @@ const Navbar = () => {
       {/* Nav links for desktop */}
       <ul className="hidden md:flex md:font-normal lg:font-semibold md:justify-center md:items-center md:w-full md:gap-10 w-screen z-10">
         <li>
-          <Link href="/" className={navLinkClasses("/")}>Home</Link>
+          <Link href="/" className={navLinkClasses("/")}>Base</Link>
         </li>
         <li>
-          <Link href="/about" className={navLinkClasses("/about")}>About Us</Link>
+          <Link href="/about" className={navLinkClasses("/about")}>Our Vision</Link>
         </li>
 
         {/* Toolkit Dropdown (Desktop) */}
@@ -135,9 +136,9 @@ const Navbar = () => {
         <li>
           <Link href="/services" className={navLinkClasses("/services")}>Services</Link>
         </li>
-        <li>
+        {/* <li>
           <Link href="/connect" className={navLinkClasses("/connect")}>Connect</Link>
-        </li>
+        </li> */}
       </ul>
 
       {/* Nav links for mobile */}

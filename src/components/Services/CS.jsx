@@ -13,26 +13,33 @@ export default function SOCPage() {
         {
             title: "Cloud Architecture & IAM Review",
             desc: "Evaluate identity and access management (IAM), roles, policies, and cloud configurations.",
+            image: "/Services/Cloud1.png"
         },
         {
             title: "Security Benchmarking",
             desc: "Assess environments against frameworks (CIS Benchmarks, NIST, ISO, CSA).",
+            image: "/Services/Cloud2.png"
         },
         {
             title: "Threat Modeling",
             desc: "Identify cloud-specific risks (misconfigured storage, insecure APIs, excessive permissions).",
+            image: "/Services/Cloud3.png"
         },
         {
             title: "Vulnerability & Compliance Assessment",
             desc: "Scan for security misconfigurations, exposed services, and compliance gaps (GDPR, HIPAA,  SOC 2, PCI DSS).",
+            image: "/Services/Cloud4.png"
         },
         {
             title: "Continuous Monitoring & Automation",
             desc: "Deploy CSPM (Cloud Security Posture Management), CWPP (Cloud Workload Protection), and SIEM solutions.",
+            image: "/Services/Cloud5.png"
         },
         {
             title: "Remediation Guidance",
             desc: "Provide clear steps to fix misconfigurations, enforce least privilege, encrypt workloads, and enable logging.",
+            image: "/Services/Cloud6.png"
+
         },
         {
             title: "Compliance Readiness",
@@ -62,6 +69,7 @@ export default function SOCPage() {
             heroData={heroData}
             methodologyData={methodologyData}
             keyAspectsData={keyaspectsData}
+            methodologyLayout="zigzag"
         />
     );
 }
