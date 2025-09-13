@@ -64,17 +64,13 @@ const Footer = () => {
 
   return (
     <footer className="relative z-0 bg-[#9d7af0]/30 backdrop-blur-xl border border-white/20 shadow-lg transition-all duration-300 transform text-white pt-10 px-4 md:px-0 font-inter">
-      <div className="max-w-4xl mx-auto grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-6 md:gap-8">
+      <div className="max-w-7xl mx-auto grid md:grid-cols-4 gap-8 px-2 md:px-3">
         {/* Left Section */}
         <div className="md:col-span-1">
-          {/* Logo */}
-          <div className="h-24 w-24 mb-4 mx-auto md:mx-0">
-            <img 
-              src="/OurCoreServices/logo.png" 
-              alt="Logo" 
-              className="w-full h-full object-contain" 
-            />
-          </div>
+           <div className="w-full h-32 bg-black/10 mb-4">
+            <img src="/OurCoreServices/logo.png" alt="Logo" className="w-full h-full object-contain" />
+</div>
+
 
           <p className="text-sm sm:text-base text-white/90 text-center md:text-left">
             Our security platform provides advanced tools for red teaming, blue
@@ -137,8 +133,8 @@ const Footer = () => {
           links={[
             { label: "WAF Scanner", href: "/tools/firewallDashboard" },
             { label: "Vulnerability Scanner", href: "/tools/vuln-scanner" },
-            { label: "Database Security Checker", href: "/tools/db-security" },
-            { label: "Link Detector", href: "/tools/link-detector" },
+            { label: "Database Security Checker", href: "/tools/DbSecurityChecker" },
+            { label: "Link Detector", href: "/tools/check-link" },
             { label: "IP Address Info Finder", href: "/tools/ip-address-info-finder" },
             { label: "Source Code Analyzer", href: "/tools/Source-Code" },
           ]}
