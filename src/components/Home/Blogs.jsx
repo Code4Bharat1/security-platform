@@ -111,18 +111,18 @@ export default function Blogs() {
         
         {/* Refresh button and status */}
         <div className="flex items-center gap-3 text-sm text-white/70">
-          {error && (
+          {/* {error && (
             <span className="text-red-300">
               Error: {error.substring(0, 30)}...
             </span>
-          )}
-          <button
+          )} */}
+          {/* <button
             onClick={handleRefreshNews}
             disabled={loading}
             className="bg-[#9d7af0]/20 hover:bg-[#9d7af0]/30 px-3 py-1 rounded-md border border-white/20 transition-colors disabled:opacity-50"
           >
             {loading ? '↻ Loading...' : '↻ Refresh News'}
-          </button>
+          </button> */}
         </div>
       </div>
 

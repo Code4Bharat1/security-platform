@@ -371,9 +371,7 @@ export default function ToolsCard() {
                   <h3 className={`${isActive && isCenter ? 'text-3xl md:text-4xl' : 'text-xl md:text-2xl'} font-bold ${cat.textColorClass} transition-all duration-300`}>
                     {cat.title}
                   </h3>
-                  <div className={`${isActive && isCenter ? 'text-lg' : 'text-sm'} ${cat.textColorClass} bg-white/20 backdrop-blur-sm px-3 py-1 rounded-full font-semibold transition-all duration-300`}>
-                    {cat.toolCount} tools
-                  </div>
+              
                 </div>
                 <p className={`${isActive && isCenter ? 'text-lg md:text-xl' : 'text-sm md:text-base'} ${cat.textColorClass} whitespace-pre-line leading-relaxed transition-all duration-300 opacity-90`}>
                   {cat.description}
@@ -482,7 +480,7 @@ function SampleToolCard({
         <button
           className={`mt-4 ${buttonColor} text-white py-2 px-4 rounded-lg text-sm transition-colors cursor-pointer`}
         >
-          Try Now
+          Check Security
         </button>
       </div>
     </div>
