@@ -13,10 +13,10 @@ export default function Branches() {
         Your browser does not support the video tag.
       </video>
 
-      {/* Page Content */}
-      <h1 className="text-left text-white text-2xl sm:text-2xl lg:text-5xl font-bold mt-15 mb-8 sm:mb-5 relative z-10">
+      Page Content
+      {/* <h1 className="text-left text-white text-2xl sm:text-2xl lg:text-5xl font-bold mt-15 mb-8 sm:mb-5 relative z-10">
   <span className="text-[#9d7af0]">About Us</span>
-</h1>
+</h1> */}
 
 
 

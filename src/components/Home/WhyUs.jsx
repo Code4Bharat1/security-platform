@@ -1,12 +1,10 @@
 export default function WhyUs() {
   return (
     <div id="why-us" className="flex flex-col w-full lg:h-screen min-h-screen bg-[url('/15.jpg')] bg-no-repeat bg-cover px-4 sm:px-6 md:px-15 py-6">
-        <h2 className="text-white text-2xl sm:text-3xl md:text-4xl font-inter font-bold mb-10 text-center sm:text-left leading-tight py-4">
-          Why Choose Security Platform<br />
-          <span className="underline underline-offset-4 decoration-from-font decoration-[#9d7af0]">
-            For Cyber Security?
-          </span>
-        </h2>
+        <h2 className="text-white text-2xl sm:text-3xl md:text-4xl font-inter font-bold mb-10 text-center leading-tight py-4">
+  Securing the Future with Security Platform<br />
+</h2>
+
 
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 h-full w-5/6 mx-auto">
           {/* Block Template */}

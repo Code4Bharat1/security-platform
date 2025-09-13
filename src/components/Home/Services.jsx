@@ -104,7 +104,7 @@ export default function ServicesPage() {
             <div className="flex justify-center mt-8 mb-6">
                 <button 
                     onClick={handleViewAllServices}
-                    className="group relative inline-flex items-center justify-center px-8 py-4 text-lg font-bold text-white bg-gradient-to-r from-[#9d7af0] to-[#7c5ce0] border-2 border-[#9d7af0]/50 rounded-2xl shadow-2xl backdrop-blur-sm transition-all duration-500 ease-out hover:from-[#bba6f3] hover:to-[#9d7af0] hover:shadow-2xl hover:shadow-[#9d7af0]/50 hover:scale-105 hover:-translate-y-1 hover:border-[#9d7af0]/80 focus:outline-none focus:ring-4 focus:ring-[#9d7af0]/30 focus:ring-offset-2 focus:ring-offset-transparent active:scale-95"
+                    className="group relative inline-flex items-center justify-center px-8 py-4 text-lg font-bold text-white bg-gradient-to-r from-purple-600 to-indigo-600 border-2 border-[#9d7af0]/50 rounded-2xl shadow-2xl backdrop-blur-sm transition-all duration-500 ease-out hover:from-purple-700 hover:to-indigo-700 hover:shadow-2xl hover:shadow-[#9d7af0]/50 hover:scale-105 hover:-translate-y-1 hover:border-[#9d7af0]/80 focus:outline-none focus:ring-4 focus:ring-[#9d7af0]/30 focus:ring-offset-2 focus:ring-offset-transparent active:scale-95"
                 >
                     <span className="mr-3">View All Services</span>
                     <div className="relative">
