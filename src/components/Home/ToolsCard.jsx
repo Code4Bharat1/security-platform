@@ -66,7 +66,7 @@ export default function ToolsCard() {
     [
       {
         name: "WAF Scanner",
-        image: "/BlueTeam/waf.png",
+        image: "/BlueTeam/WAF.png",
         description:
           "Detects and analyzes WAF protection on a website, providing insights into security rules",
         slug: "firewallDashboard",
@@ -99,7 +99,7 @@ export default function ToolsCard() {
       },
       {
         name: "Obfuscation Detector",
-        image: "/BlueTeam/obfuscation Detector.png",
+        image: "/BlueTeam/Obfuscation Detector.png",
         description: "Identify obfuscation techniques in code.",
         slug: "obfuscationChecker",
         buttonLabel: "Obfuscation Detector",

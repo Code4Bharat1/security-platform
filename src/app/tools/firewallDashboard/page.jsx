@@ -49,7 +49,7 @@ export default function DashboardPage() {
 
 
           <img
-            src="/BlueTeam/waf.png" // apna image path yahan do
+            src="/BlueTeam/WAF.png" // apna image path yahan do
             alt="Firewall Logo"
             className="w-full h-full object-cover"
           />
