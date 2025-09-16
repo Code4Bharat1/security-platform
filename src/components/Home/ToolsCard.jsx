@@ -66,7 +66,7 @@ export default function ToolsCard() {
     [
       {
         name: "WAF Scanner",
-        image: "/BlueTeam/waf.png",
+        image: "/BlueTeam/WAF.png",
         description:
           "Detects and analyzes WAF protection on a website, providing insights into security rules",
         slug: "firewallDashboard",
@@ -99,7 +99,7 @@ export default function ToolsCard() {
       },
       {
         name: "Obfuscation Detector",
-        image: "/BlueTeam/obfuscation Detector.png",
+        image: "/BlueTeam/Obfuscation Detector.png",
         description: "Identify obfuscation techniques in code.",
         slug: "obfuscationChecker",
         buttonLabel: "Obfuscation Detector",
@@ -167,7 +167,7 @@ export default function ToolsCard() {
     ],
   ];
 
-  // --- Categories ---
+  // --- Categories with tool counts ---
   const initialCategories = [
     {
       title: "Red Teaming",
@@ -179,6 +179,7 @@ export default function ToolsCard() {
       glowColor: "#D01A1A",
       buttonColor: "bg-[#D01A1A] hover:bg-[#b31515]",
       borderGlow: "hover:border-[#D01A1A] hover:shadow-[0_0_15px_#D01A1A]",
+      toolCount: 21,
     },
     {
       title: "Blue Teaming",
@@ -190,6 +191,7 @@ export default function ToolsCard() {
       glowColor: "#3C6DFF",
       buttonColor: "bg-[#3C6DFF] hover:bg-[#2a5de0]",
       borderGlow: "hover:border-[#3C6DFF] hover:shadow-[0_0_15px_#3C6DFF]",
+      toolCount: 7,
     },
     {
       title: "Non-Tech",
@@ -202,6 +204,7 @@ export default function ToolsCard() {
       glowColor: "#008000",
       buttonColor: "bg-[#008000] hover:bg-[#006400]",
       borderGlow: "hover:border-[#008000] hover:shadow-[0_0_15px_#008000]",
+      toolCount: 19,
     },
   ];
 
@@ -331,50 +334,86 @@ export default function ToolsCard() {
         <div className="w-full h-1 bg-gradient-to-r from-transparent via-[#9d7af0] to-transparent mx-auto"></div>
       </div>
 
-      {/* Team Section */}
-      <div className="flex flex-col lg:flex-row gap-12 mb-12 justify-center">
+      {/* Team Section with Center Focus */}
+      <div className="flex flex-col lg:flex-row gap-6 gap-x-15 mb-12 justify-center items-center">
         {categories.map((cat, index) => {
           const isActive = activeIndex === index;
+          const isCenter = index === 1;
+          
           return (
             <div
               key={index}
               className={`
-                flex-1 rounded-2xl p-8 cursor-pointer transition-all duration-300
-                ${cat.bgColorClass} ${
-                isActive
-                  ? "ring-4 ring-white ring-opacity-90 scale-105 shadow-2xl"
-                  : "opacity-90 hover:opacity-100 hover:scale-102"
-              }
-                relative overflow-hidden min-h-[260px] flex flex-col justify-center
+                rounded-2xl p-6 cursor-pointer transition-all duration-500 ease-in-out
+                ${cat.bgColorClass}
+                ${isActive && isCenter
+                  ? "ring-4 ring-white ring-opacity-90 shadow-2xl scale-110 lg:scale-125 z-20 flex-[0.9]"
+                  : isCenter
+                  ? "shadow-xl scale-105 lg:scale-110 z-10 flex-[0.80]"
+                  : "opacity-80 hover:opacity-90 scale-95 lg:scale-90 hover:scale-100 flex-1"
+                }
+                relative overflow-hidden flex flex-col justify-between
                 ${cat.bgImageClass}
+                ${isActive && isCenter ? 'min-h-[250px]' : 'min-h-[250px]'}
+                transform-gpu
               `}
               onClick={() => handleCardClick(index)}
+              style={{
+                boxShadow: isActive && isCenter 
+                  ? `0 20px 40px ${cat.glowColor}40, 0 0 30px ${cat.glowColor}30`
+                  : isCenter 
+                  ? `0 10px 25px rgba(0,0,0,0.3)`
+                  : `0 5px 15px rgba(0,0,0,0.2)`
+              }}
             >
-              <h3
-                className={`text-2xl md:text-3xl font-bold mb-3 z-10 ${cat.textColorClass}`}
-              >
-                {cat.title}
-              </h3>
-              <p
-                className={`text-base md:text-lg z-10 whitespace-pre-line ${cat.textColorClass} leading-relaxed`}
-              >
-                {cat.description}
-              </p>
+              <div className="z-10">
+                <div className="flex justify-between items-start mb-3">
+                  <h3 className={`${isActive && isCenter ? 'text-3xl md:text-4xl' : 'text-xl md:text-2xl'} font-bold ${cat.textColorClass} transition-all duration-300`}>
+                    {cat.title}
+                  </h3>
+              
+                </div>
+                <p className={`${isActive && isCenter ? 'text-lg md:text-xl' : 'text-sm md:text-base'} ${cat.textColorClass} whitespace-pre-line leading-relaxed transition-all duration-300 opacity-90`}>
+                  {cat.description}
+                </p>
+              </div>
 
+              {/* Active indicator */}
+              {isActive && isCenter && (
+                <div className="absolute top-4 right-4 w-3 h-3 bg-white rounded-full animate-pulse shadow-lg z-20"></div>
+              )}
+
+              {/* Overlay image */}
               {cat.overlayImg && (
                 <img
                   src={cat.overlayImg}
                   alt=""
-                  className="absolute top-0 right-0 h-24 md:h-32 pointer-events-none opacity-70"
+                  className={`absolute top-0 right-0 ${isActive && isCenter ? 'h-32 md:h-40' : 'h-24 md:h-32'} pointer-events-none opacity-70 transition-all duration-300`}
                 />
               )}
+              
+              {/* Gradient overlay for better text readability */}
+              <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent pointer-events-none"></div>
             </div>
           );
         })}
       </div>
 
+      {/* Active Team Indicator */}
+      <div className="text-center mb-8">
+        <div className="inline-flex items-center gap-3 bg-white/10 backdrop-blur-md px-6 py-3 rounded-full border border-white/20">
+          <div 
+            className="w-4 h-4 rounded-full animate-pulse"
+            style={{ backgroundColor: activeGlow }}
+          ></div>
+          <span className="text-white font-semibold text-lg">
+            {categories[activeIndex].title} - {categories[activeIndex].toolCount} Tools Available
+          </span>
+        </div>
+      </div>
+
       {/* Tools Section */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
         {buttons.map((tool, i) => (
           <SampleToolCard
             key={i}
@@ -390,7 +429,7 @@ export default function ToolsCard() {
       </div>
 
       {/* View All */}
-      <div className="mt-5 text-center">
+      <div className="mt-8 text-center">
         <button
           onClick={() => {
             let path = "";
@@ -403,10 +442,11 @@ export default function ToolsCard() {
             }
             push(path);
           }}
-          className={`px-6 py-2 border-[#9d7af0] text-white font-semibold rounded-lg shadow-md 
-               transition-all duration-300 ease-in-out ${activeButtonStyle} hover:scale-105 cursor-pointer`}
+          className={`px-8 py-3 border-2 border-[#9d7af0] text-white font-semibold rounded-lg shadow-md 
+               transition-all duration-300 ease-in-out ${activeButtonStyle} hover:scale-105 cursor-pointer
+               backdrop-blur-sm bg-white/5 hover:bg-white/10`}
         >
-          View All
+          View All {categories[activeIndex].toolCount} {categories[activeIndex].title} Tools
         </button>
       </div>
     </div>
@@ -440,7 +480,7 @@ function SampleToolCard({
         <button
           className={`mt-4 ${buttonColor} text-white py-2 px-4 rounded-lg text-sm transition-colors cursor-pointer`}
         >
-          Try Now
+          Check Security
         </button>
       </div>
     </div>

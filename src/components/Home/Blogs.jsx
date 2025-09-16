@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 export default function Blogs() {
   const [dynamicNews, setDynamicNews] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
 
   // Static news data
   const staticNews = [
@@ -23,21 +24,41 @@ export default function Blogs() {
   useEffect(() => {
     const fetchNews = async () => {
       try {
-        const response = await fetch('/api/hacker-news');
+        setLoading(true);
+        setError(null);
+
+        const response = await fetch('{process.env.NEXT_PUBLIC_DEV_API_URL}/blogs',
+           {
+          method: 'GET',
+          headers: {
+            'Cache-Control': 'no-cache',
+          }
+        });
+        
+
         const data = await response.json();
-        if (data.success) {
+        console.log('API Response:', data); // Debug log
+        
+        if (data.success && data.article) {
           setDynamicNews(data.article);
+        } else {
+          throw new Error(data.error || 'Invalid response from API');
         }
-        setLoading(false);
+        
       } catch (error) {
         console.error('Error fetching news:', error);
-        // Fallback to static content if API fails
+        setError(error.message);
+        
+        // Fallback to static content
         setDynamicNews({
-          title: "Latest Tech News",
-          description: "Stay updated with the latest cybersecurity and technology news from around the world.",
+          title: "Latest Cybersecurity News",
+          description: "Stay updated with the latest cybersecurity threats, vulnerabilities, and security breaches. Click to visit The Hacker News for more information.",
           image: "/blogs/3.png",
-          link: "https://thehackernews.com/"
+          link: "https://thehackernews.com/",
+          publishedAt: new Date().toISOString(),
+          source: 'The Hacker News'
         });
+      } finally {
         setLoading(false);
       }
     };
@@ -45,15 +66,65 @@ export default function Blogs() {
     fetchNews();
   }, []);
 
+  // Force refresh news
+  const handleRefreshNews = () => {
+    const fetchNews = async () => {
+      try {
+        setLoading(true);
+        setError(null);
+
+        const response = await fetch('{process.env.NEXT_PUBLIC_DEV_API_URL}/blogs' + new Date().getTime(), {
+          method: 'GET',
+          headers: {
+            'Cache-Control': 'no-cache',
+          }
+        });
+        
+        const data = await response.json();
+        if (data.success) {
+          setDynamicNews(data.article);
+        } else {
+          throw new Error(data.error || 'Failed to refresh');
+        }
+        
+      } catch (error) {
+        console.error('Error refreshing news:', error);
+        setError(error.message);
+      } finally {
+        setLoading(false);
+      }
+    };
+    
+    fetchNews();
+  };
+
   return (
     <div id="blogs" className="mb-10 text-white">
       {/* Horizontal line */}
       <div className="w-full h-[2px] bg-[#9d7af0]/70 backdrop-blur-xl border border-white/20 shadow-lg mt-6 md:mt-15"></div>
       
       {/* Heading */}
-      <h2 className="mx-5 md:mx-20 text-2xl sm:text-3xl md:text-4xl md:mt-10 font-inter font-bold underline underline-offset-8 md:underline-offset-12 decoration-[#9d7af0]/70 shadow-lg">
-        Blogs&nbsp;
-      </h2>
+      <div className="flex items-center justify-between mx-5 md:mx-20">
+        <h2 className="text-2xl sm:text-3xl md:text-4xl md:mt-10 font-inter font-bold underline underline-offset-8 md:underline-offset-12 decoration-[#9d7af0]/70 shadow-lg">
+          Blogs&nbsp;
+        </h2>
+        
+        {/* Refresh button and status */}
+        <div className="flex items-center gap-3 text-sm text-white/70">
+          {/* {error && (
+            <span className="text-red-300">
+              Error: {error.substring(0, 30)}...
+            </span>
+          )} */}
+          {/* <button
+            onClick={handleRefreshNews}
+            disabled={loading}
+            className="bg-[#9d7af0]/20 hover:bg-[#9d7af0]/30 px-3 py-1 rounded-md border border-white/20 transition-colors disabled:opacity-50"
+          >
+            {loading ? '↻ Loading...' : '↻ Refresh News'}
+          </button> */}
+        </div>
+      </div>
 
       {/* Blog cards section with gradient background */}
       <div className="px-4 sm:px-6 md:px-10 mt-10 bg-white/10 backdrop-blur-2xl border border-white/20 shadow-lg py-10 flex">
@@ -81,9 +152,11 @@ export default function Blogs() {
             <BlogCard
               image={dynamicNews?.image || "/blogs/3.png"}
               text={dynamicNews?.description || dynamicNews?.title || "Latest tech news update"}
-              link={dynamicNews?.link || "https://thehackernews.com/"}
+              link={dynamicNews?.link || dynamicNews?.url || "https://thehackernews.com/"}
               isStatic={false}
               title={dynamicNews?.title}
+              publishedAt={dynamicNews?.publishedAt}
+           
             />
           )}
         </div>
@@ -94,7 +167,7 @@ export default function Blogs() {
   );
 }
 
-function BlogCard({ image, text, link, isStatic, title }) {
+function BlogCard({ image, text, link, isStatic, title, publishedAt, error }) {
   return (
     <div className="relative bg-white/90 backdrop-blur-2xl border border-white/20 shadow-lg text-black rounded-br-3xl rounded-tl-3xl w-full sm:w-[80%] md:w-[30%] p-2 lg:p-6">
       <div className="flex-1 flex flex-col gap-5">
@@ -104,10 +177,23 @@ function BlogCard({ image, text, link, isStatic, title }) {
             src={image}
             alt="Blog"
             className="w-full rounded-tl-4xl object-cover max-h-52 sm:max-h-60 md:max-h-64"
+            onError={(e) => {
+              e.target.src = "/blogs/3.png";
+            }}
           />
-          {!isStatic && (
+          {!isStatic && !error && (
             <div className="absolute top-2 right-2 bg-green-500 text-white px-2 py-1 rounded-full text-xs font-semibold">
               LIVE
+            </div>
+          )}
+          {error && !isStatic && (
+            <div className="absolute top-2 right-2 bg-red-500 text-white px-2 py-1 rounded-full text-xs font-semibold">
+              ERROR
+            </div>
+          )}
+          {publishedAt && !error && (
+            <div className="absolute bottom-2 left-2 bg-black/50 text-white px-2 py-1 rounded text-xs">
+              {new Date(publishedAt).toLocaleDateString()}
             </div>
           )}
         </div>
