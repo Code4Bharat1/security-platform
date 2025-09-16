@@ -10,7 +10,7 @@ export default function WhatsappPrivacyChecker() {
   const [score, setScore] = useState(null);
   const [messages, setMessages] = useState([]);
   const [settings, setSettings] = useState({});
-  const [isLoading, setIsLoading] = useState(false); // loading state
+  const [isLoading, setIsLoading] = useState(false); 
 
   const MAX_IMAGES = 5;
   const MIN_IMAGES = 2;
