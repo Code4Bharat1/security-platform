@@ -27,7 +27,7 @@ export default function Blogs() {
         setLoading(true);
         setError(null);
 
-        const response = await fetch(`${process.env.NEXT_PUBLIC_DEV_API_URL}/blogs`,
+        const response = await fetch('{process.env.NEXT_PUBLIC_DEV_API_URL}/blogs',
            {
           method: 'GET',
           headers: {
