@@ -27,7 +27,7 @@ export default function Blogs() {
         setLoading(true);
         setError(null);
 
-        const response = await fetch('{process.env.NEXT_PUBLIC_DEV_API_URL}/blogs',
+        const response = await fetch(`${process.env.NEXT_PUBLIC_DEV_API_URL}/blogs`,
            {
           method: 'GET',
           headers: {
@@ -73,7 +73,7 @@ export default function Blogs() {
         setLoading(true);
         setError(null);
 
-        const response = await fetch('{process.env.NEXT_PUBLIC_DEV_API_URL}/blogs' + new Date().getTime(), {
+        const response = await fetch(`${process.env.NEXT_PUBLIC_DEV_API_URL}/blogs` + new Date().getTime(), {
           method: 'GET',
           headers: {
             'Cache-Control': 'no-cache',
@@ -110,20 +110,7 @@ export default function Blogs() {
         </h2>
         
         {/* Refresh button and status */}
-        <div className="flex items-center gap-3 text-sm text-white/70">
-          {/* {error && (
-            <span className="text-red-300">
-              Error: {error.substring(0, 30)}...
-            </span>
-          )} */}
-          {/* <button
-            onClick={handleRefreshNews}
-            disabled={loading}
-            className="bg-[#9d7af0]/20 hover:bg-[#9d7af0]/30 px-3 py-1 rounded-md border border-white/20 transition-colors disabled:opacity-50"
-          >
-            {loading ? '↻ Loading...' : '↻ Refresh News'}
-          </button> */}
-        </div>
+    
       </div>
 
       {/* Blog cards section with gradient background */}
