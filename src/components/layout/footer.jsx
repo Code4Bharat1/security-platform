@@ -150,7 +150,9 @@ const Footer = () => {
             { label: "Schedule Meeting", href: "/schedule-meeting" },
             { label: "Why Choose Us", id: "why-us" },
             { label: "Certificate", id: "certificates" },
-             { label: "Connect", href: "/connect" },          ]}
+             { label: "Connect", href: "/connect" },          
+            {label: "Feedback", href: "/tools/feedback"},            
+            ]}
         />
       </div>
 
