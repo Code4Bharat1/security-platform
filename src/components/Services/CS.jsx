@@ -49,7 +49,7 @@ export default function SOCPage() {
     const keyaspectsData = {
         title: "Cloud Security Process",
         desc: "Our key aspects :-",
-        image:"/Services/CSC1.png",
+        image:"/Services/CS1.png",
 
     };
     // const approchData = {
