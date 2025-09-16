@@ -5,10 +5,11 @@ export default function Certificates() {
       <div className="absolute top-0 left-0 w-full h-full bg-[url('/15.jpg')] bg-no-repeat bg-cover scale-y-[-1] z-0" />
 
       {/* Content div over the background */}
-      <div className="relative z-10 w-full h-full flex flex-col items-center justify-around px-2 py-5">
+      <div className="relative z-10 w-full h-full flex flex-col items-center justify-around px-2 py-5 mb-30">
         <h2 className="text-center text-white text-2xl sm:text-3xl md:text-4xl font-inter font-bold">
           Certifications
         </h2>
+        <div className="w-full h-1 bg-gradient-to-r from-transparent via-[#9d7af0] to-transparent mx-auto"></div>
 
         <div className="flex flex-col md:flex-row items-center justify-evenly gap-10 mt-10 w-full max-w-6xl ">
           <img

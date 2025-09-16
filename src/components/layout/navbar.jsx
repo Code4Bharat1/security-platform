@@ -125,7 +125,7 @@ const Navbar = () => {
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
             </svg>
           </button>
-          <ul className={`absolute top-full mt-2 left-0 w-40 ${textColor === 'text-white' ? 'bg-black/80' : 'bg-white/80'} backdrop-blur-md rounded-md shadow-lg py-2 z-30 transition-opacity duration-200 ${toolkitOpen ? 'opacity-100 visible' : 'opacity-0 invisible'}`}>
+          <ul className={`absolute top-full mt-2 left-0 w-40 ${textColor === 'text-white' ? 'bg-black-transparnet' : 'bg-white/80'} backdrop-blur-md rounded-md shadow-lg py-2 z-30 transition-opacity duration-200 ${toolkitOpen ? 'opacity-100 visible' : 'opacity-0 invisible'}`}>
             <li><Link href="/tools/red-team" className={`block px-4 py-2 ${textColor === 'text-white' ? 'hover:bg-[#2a2a2a]' : 'hover:bg-gray-200'} ${textColor}`} onClick={() => setToolkitOpen(false)}>Red Team</Link></li>
             <li><Link href="/tools/blue-team" className={`block px-4 py-2 ${textColor === 'text-white' ? 'hover:bg-[#2a2a2a]' : 'hover:bg-gray-200'} ${textColor}`} onClick={() => setToolkitOpen(false)}>Blue Team</Link></li>
             <li><Link href="/tools/green-team" className={`block px-4 py-2 ${textColor === 'text-white' ? 'hover:bg-[#2a2a2a]' : 'hover:bg-gray-200'} ${textColor}`} onClick={() => setToolkitOpen(false)}>Green Team</Link></li>
@@ -148,10 +148,10 @@ const Navbar = () => {
   `}
       >
         <li>
-          <Link href="/" className={navLinkClasses("/")} onClick={() => setMenuOpen(false)}>Home</Link>
+          <Link href="/" className={navLinkClasses("/")} onClick={() => setMenuOpen(false)}>Base</Link>
         </li>
         <li>
-          <Link href="/about" className={navLinkClasses("/about")} onClick={() => setMenuOpen(false)}>About Us</Link>
+          <Link href="/about" className={navLinkClasses("/about")} onClick={() => setMenuOpen(false)}>Our Vision</Link>
         </li>
         <li className="w-full">
           <details className="w-full group">
@@ -169,9 +169,9 @@ const Navbar = () => {
         <li>
           <Link href="/services" className={navLinkClasses("/services")} onClick={() => setMenuOpen(false)}>Services</Link>
         </li>
-        <li>
+        {/* <li>
           <Link href="/connect" className={navLinkClasses("/connect")} onClick={() => setMenuOpen(false)}>Connect</Link>
-        </li>
+        </li> */}
       </ul>
 
       {/* Right: Login / Initials */}

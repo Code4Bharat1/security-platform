@@ -48,7 +48,7 @@ export default function SOCPage() {
         const keyaspectsData = {
         title: "SOC Process",
         desc: "Our key aspects :-",
-        imgPath:"/services/SOC1.png",
+        image:"/services/SOC1.png",
 
     };
 

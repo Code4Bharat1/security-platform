@@ -32,7 +32,7 @@ export default function PTPage() {
     const keyAspectsData = {
         title: "Penetration Testing Process",
         desc: "Our key aspects:",
-        imgPath: "/services/PT1.png"
+        image: "/services/PT1.png"
     };
 
     return (

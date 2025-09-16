@@ -18,27 +18,27 @@ export default function SOCPage() {
         {
             title: "Risk Analysis & Gap Identification ",
             desc: "Perform risk assessments, threat modeling, and maturity benchmarking.",
-            image: "/Services/CSC2.png"
+            image: "/Services/Consulting2.png"
         },
         {
             title: "Security Roadmap Development ",
             desc: "Build a phased roadmap covering people, processes, and technology improvements.",
-            image: "/Services/CSC3.png"
+            image: "/Services/Consulting3.png"
         },
         {
             title: "Implementation Support ",
             desc: "Help deploy security frameworks, policies, awareness training, and technical controls.",
-            image: "/Services/CSC4.png"
+            image: "/Services/Consulting4.png"
         },
         {
             title: "Ongoing Governance & Review ",
             desc: "Provide periodic security audits, compliance checks, and board-level reporting with KPIs and metrics.",
-            image: "/Services/CSC5.png"
+            image: "/Services/Consulting5.png"
         },
         {
             title: "Strategic Alignment",
             desc: "Align security strategy with business goals to maximize ROI.",
-            image: "/Services/CSC6.png"
+            image: "/Services/Consulting6.png"
         },
     ];
     const keyaspectsData = {

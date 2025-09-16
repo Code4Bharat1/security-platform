@@ -114,7 +114,7 @@ function Methodology({ data, layout = "default" }) {
       <div className="absolute inset-0 bg-gradient-to-b from-gray-800 to-black z-0"></div>
 
       {/* Title */}
-      <h2 className="relative z-10 text-center text-3xl sm:text-4xl md:text-6xl font-inter font-bold underline underline-offset-8 md:underline-offset-12 decoration-indigo-500/70 text-white mb-16">
+      <h2 className="relative z-10 text-center text-3xl sm:text-4xl md:text-6xl font-inter font-bold underline underline-offset-8 md:underline-offset-12 decoration-indigo-500/70 text-white mb-25">
         Services
       </h2>
 
@@ -130,9 +130,9 @@ function DefaultLayout({ data }) {
       {data.map((object, index) => (
         <div
           key={index}
-          className="flex flex-col md:flex-row items-center gap-8 bg-white/5 backdrop-blur-xl p-6 rounded-xl shadow-lg hover:scale-[1.02] hover:shadow-indigo-500/30 transition-all duration-300 mx-auto w-full md:w-5/6 lg:w-3/4"
+          className="flex flex-col md:flex-row items-center gap-8  p-6 rounded-xl shadow-lg hover:scale-[1.02] hover:shadow-indigo-500/30 transition-all duration-300 mx-auto w-full md:w-5/6 lg:w-3/4"
         >
-          <div className="flex-shrink-0 w-24 h-24 rounded-full bg-indigo-200 flex items-center justify-center text-white text-2xl font-bold shadow-md overflow-hidden">
+          <div className="flex-shrink-0 w-24 h-24  flex items-center justify-center text-white text-2xl font-bold shadow-md overflow-hidden">
             {object.imagePath ? (
               <img
                 src={object.imagePath}
@@ -172,12 +172,12 @@ function CardsLayout({ data }) {
           </div>
           
           {/* Icon area */}
-          <div className="w-16 h-16 rounded-lg bg-gradient-to-r from-indigo-500/20 to-purple-600/20 flex items-center justify-center mb-6 group-hover:scale-110 transition-transform duration-300">
+          <div className="w-20 h-20 to-purple-600/20 flex items-center justify-center mb-6 group-hover:scale-110 transition-transform duration-300">
             {object.imagePath ? (
               <img
                 src={object.imagePath}
                 alt={object.title}
-                className="w-10 h-10 object-cover rounded"
+                className="w-16 h-16 object-cover rounded"
               />
             ) : (
               <div className="w-8 h-8 bg-indigo-400 rounded"></div>
@@ -354,7 +354,7 @@ function CircularLayout({ data }) {
                 {/* Image */}
                 <div className="w-16 h-16 mb-3 rounded-full overflow-hidden shadow-md">
                   <img
-                    src={`/Services/${object.imageName}`} 
+                    src={`${object.image}`} 
                     alt={object.title}
                     className="w-full h-full object-cover"
                   />
@@ -390,9 +390,7 @@ function ZigzagLayout({ data }) {
           {/* Content */}
           <div className="flex-1 bg-gradient-to-br from-indigo-900/30 to-purple-900/30 backdrop-blur-xl p-8 rounded-2xl shadow-xl border border-indigo-500/20 hover:border-indigo-400/50 transition-all duration-500 hover:scale-105 hover:shadow-2xl hover:shadow-indigo-500/25">
             <div className="flex items-center gap-4 mb-4">
-              <div className="w-12 h-12 rounded-full bg-gradient-to-r from-indigo-500 to-purple-600 flex items-center justify-center text-white font-bold">
-                {index + 1}
-              </div>
+              
               <h3 className="text-xl font-bold text-white">
                 {object.title}
               </h3>
@@ -404,13 +402,13 @@ function ZigzagLayout({ data }) {
 
           {/* Decorative element */}
           <div className="flex-shrink-0 w-32 h-32 relative">
-            <div className="absolute inset-0 bg-gradient-to-br from-indigo-600/20 to-purple-600/20 rounded-full border-2 border-dashed border-indigo-400/30"></div>
-            <div className="absolute inset-4 bg-gradient-to-r from-indigo-500 to-purple-600 rounded-full flex items-center justify-center">
+            {/* <div "></div> */}
+            <div className="absolute flex items-center justify-center">
               {object.imagePath ? (
                 <img
                   src={object.imagePath}
                   alt={object.title}
-                  className="w-16 h-16 object-cover rounded-full"
+                  className="w-25 h-25 object-cover rounded-full"
                 />
               ) : (
                 <div className="w-8 h-8 bg-white/20 rounded"></div>
@@ -439,7 +437,7 @@ function KeyAspects({ data }) {
       {/* Bottom Image */}
       <div className="flex justify-center">
         <img
-          src={data?.imgPath || "/images/diagram.png"}
+          src={data?.image || "/Services/CS1.png"}
           alt={data?.imgAlt || "Process Illustration"}
           className="w-full max-w-5xl object-contain rounded-lg shadow-xl"
         />

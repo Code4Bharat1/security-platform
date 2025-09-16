@@ -73,7 +73,7 @@ const methodologyData = [
 
 function ServicesLayout({ heroData, methodologyData, approchData ,keyAspectsData}) {
     return (
-        <div className="bg-gradient-to-b from-gray-900 to-black text-white">
+        <div className="bg-gradient-to-b from-gray-900 to-black text-white ">
             <DescHero data={heroData} />
             <Hero data={heroData} />
             <Methodology data={methodologyData} />
@@ -107,7 +107,7 @@ function DescHero({ data }) {
             {/* Content */}
             <div className="relative flex flex-col h-full justify-center items-center z-2 px-4 sm:px-6 md:px-8 lg:px-12 xl:px-20">
                 {/* Split Title */}
-                <div className="flex flex-col md:flex-row w-full max-w-6xl justify-between items-center mb-8">
+                <div className="flex flex-col md:flex-row w-full max-w-6xl justify-between items-center mb-2">
                     <h1 className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-bold text-left md:w-2/5">
                         {firstPart}
                     </h1>
@@ -251,7 +251,7 @@ function Methodology({ data }) {
 
             {/* Icon in Center */}
             <div className="flex justify-center">
-              <div className="w-30 h-30 md:w-30 md:h-30  justify-center shadow-lg">
+              <div className="w-30 h-30 md:w-20 md:h-20  justify-center shadow-lg">
                 <img
                   src={item.imagePath}
                   alt={item.title}

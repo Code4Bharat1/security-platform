@@ -43,7 +43,7 @@ export default function NSPage() {
   const keyaspectsData = {
     title: "Network Security Process",
     desc: "Our key aspects :-",
-    imgPath: "/services/NS1.png",
+    image: "/Services/NS1.png",
   };
 
   return (
