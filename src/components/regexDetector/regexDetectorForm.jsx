@@ -283,14 +283,13 @@ const regex = new RegExp(userInput); // ⚠️ Unescaped input`
   {/* Row with image + text */}
   <div className="flex items-center justify-left gap-4 mb-6">
     {/* Logo circle */}
-    <div className=" rounded-full overflow-hidden border-2 border-blue-400">
-     <img 
-  src="/BlueTeam/regex.png"  // <-- apna image path daalna
-  alt="Logo"
-  className=" w-30 h-30 object-cover"
-/>
-
-    </div>
+    <div className="w-30 h-30 sm:w-24 sm:h-24 md:w-30 md:h-30 rounded-full overflow-hidden border-2 border-blue-400 flex-shrink-0">
+  <img 
+    src="/BlueTeam/regex.png"  // <-- apna image path daalna
+    alt="Logo"
+    className="w-full h-full object-cover"
+  />
+</div>
 
     {/* Text */}
     <div className="text-left">

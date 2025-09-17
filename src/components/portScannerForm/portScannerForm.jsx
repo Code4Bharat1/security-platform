@@ -108,7 +108,7 @@ export default function PortScannerForm() {
   return (
     <div className="min-h-screen w-full bg-black">
       {/* Header Section */}
-      <div className="flex items-center justify-left pt-12 pb-8 px-100">
+      <div className="flex items-center justify-left pt-12 pb-8 lg:px-100">
         <div className="flex items-center">
           <img 
             src="/RedTeam/port_scan.png"

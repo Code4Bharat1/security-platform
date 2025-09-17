@@ -331,7 +331,7 @@ export default function HttpsCheckerPage() {
         {/* Header */}
         <div className="flex items-center justify-left gap-4 mb-8">
   <img 
-    src="/BlueTeam/https security checker.png" 
+    src="/BlueTeam/https.png" 
     alt="verify" 
     className="w-30 h-30 rounded-full border-4 border-blue-600"
   />

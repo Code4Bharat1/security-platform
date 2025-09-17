@@ -80,18 +80,26 @@ export default function TechnologyFingerprinter() {
     <div className="p-4 max-w-4xl mx-auto">
      <div className="flex items-center justify-left gap-10 mt-15 mb-10">
   {/* Image with circle border */}
-  <div className="w-30 h-30 rounded-full border-4 border-red-600 flex items-left justify-center overflow-hidden">
+ <div className="flex flex-row items-center gap-4 flex-wrap">
+  {/* Image always on left */}
+  <div className="w-20 h-20 sm:w-28 sm:h-28 rounded-full border-4 border-red-600 flex items-center justify-center flex-shrink-0 overflow-hidden">
     <img
       src="/RedTeam/fingerprint.png"
       alt="verify"
-      className="w-30 h-30 object-contain"
+      className="w-30 h-30 sm:w-24 sm:h-24 object-contain"
     />
   </div>
 
-  {/* Big Heading */}
-  <h2 className="text-4xl text-white font-extrabold">
+  {/* Heading always on right */}
+  <h2 className="text-xl sm:text-3xl md:text-4xl text-white font-extrabold">
   Technology Fingerprinter
-  </h2>
+</h2>
+<p className="text-white text-sm sm:text-base md:text-lg mt-2">
+  Run an OWASP ZAP-powered automated security scan to detect vulnerabilities.
+</p>
+
+</div>
+
 </div>
 
 <div className="border border-white p-20 mb-40 rounded">
@@ -106,7 +114,7 @@ export default function TechnologyFingerprinter() {
     <button
       onClick={analyzeTech}
       disabled={loading}
-      className="bg-red-900 text-white px-4 py-2 rounded hover:bg-red-700 disabled:opacity-60 transition"
+      className="bg-red-900 text-white px-2 py-2 rounded hover:bg-red-700 disabled:opacity-60 transition"
     >
       {loading ? 'Analyzing...' : 'Analyze'}
     </button>

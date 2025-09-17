@@ -114,9 +114,11 @@ function Methodology({ data, layout = "default" }) {
       <div className="absolute inset-0 bg-gradient-to-b from-gray-800 to-black z-0"></div>
 
       {/* Title */}
-      <h2 className="relative z-10 text-center text-3xl sm:text-4xl md:text-6xl font-inter font-bold underline underline-offset-8 md:underline-offset-12 decoration-indigo-500/70 text-white mb-25">
-        Services
-      </h2>
+      <h2 className="relative z-10 text-center text-3xl sm:text-4xl md:text-6xl font-inter font-bold text-white mb-20">
+  Services
+  <div className="w-70 h-1 bg-gradient-to-r from-transparent via-[#9d7af0] to-transparent mx-auto mt-3"></div>
+</h2>
+
 
       {renderLayout()}
     </div>
@@ -167,9 +169,9 @@ function CardsLayout({ data }) {
           className="group relative bg-gradient-to-br from-indigo-900/30 to-purple-900/30 backdrop-blur-xl p-8 rounded-2xl shadow-xl border border-indigo-500/20 hover:border-indigo-400/50 transition-all duration-500 hover:scale-105 hover:shadow-2xl hover:shadow-indigo-500/25"
         >
           {/* Floating number */}
-          <div className="absolute -top-4 -right-4 w-12 h-12 bg-gradient-to-r from-indigo-500 to-purple-600 rounded-full flex items-center justify-center text-white font-bold text-lg shadow-lg group-hover:scale-110 transition-transform duration-300">
+          {/* <div className="absolute -top-4 -right-4 w-12 h-12 bg-gradient-to-r from-indigo-500 to-purple-600 rounded-full flex items-center justify-center text-white font-bold text-lg shadow-lg group-hover:scale-110 transition-transform duration-300">
             {index + 1}
-          </div>
+          </div> */}
           
           {/* Icon area */}
           <div className="w-20 h-20 to-purple-600/20 flex items-center justify-center mb-6 group-hover:scale-110 transition-transform duration-300">

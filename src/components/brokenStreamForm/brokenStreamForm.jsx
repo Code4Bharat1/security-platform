@@ -264,7 +264,7 @@ export default function BrokenStreamPage() {
 />
 
           <div>
-            <h1 className="text-3xl font-bold">Broken Link Checker (Streaming)</h1>
+            <h1 className="text-2xl font-bold">Broken Link Checker (Streaming)</h1>
             <p className="text-sm text-slate-400">
               Redirect tracking • Anchor & location • Priority & fixes • Exports
             </p>

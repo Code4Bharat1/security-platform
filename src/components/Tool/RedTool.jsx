@@ -168,5 +168,24 @@ export default function RedTool() {
         type: "red-team"
     }
     ]
-    return (<ToolLayout team="red" toolList={toolList}></ToolLayout>)
+    return (
+    <div className="relative w-full min-h-screen">
+            {/* Background Video */}
+            {/* <video
+                className="absolute top-0 left-0 w-full h-full object-cover z-0"
+                autoPlay
+                loop
+                muted
+                playsInline
+            >
+                <source src="/RedTeam/Red-Team.mp4" type="video/mp4" />
+                Your browser does not support the video tag.
+            </video> */}
+
+            {/* Tool Layout */}
+            <div className="relative z-10">
+                <ToolLayout team="red" toolList={toolList} />
+            </div>
+        </div>
+    );
 }

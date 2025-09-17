@@ -201,30 +201,37 @@ export default function MochaForm() {
         </div>
       )}
 
-      {/* Header */}
-      <div className="text-center pt-8 pb-6">
-  {/* Header with Logo + Text in one row */}
-  <div className="flex justify-left items-center gap-2 px-80">
+   {/* Header */}
+<div className="pt-8 pb-6 px-4 sm:px-6 lg:px-8 bg-black">
+  <div className="max-w-5xl flex items-center gap-4 lg:ml-70">
+    {/* Logo always left */}
     <img
-      src="/RedTeam/mocha-logo.png" 
+      src="/RedTeam/mocha-logo.png"
       alt="Mocha Logo"
-      className="w-30 h-30 object-contain"
+      className="w-30 h-30 object-contain flex-shrink-0"
     />
-    <h1 className="text-3xl font-bold text-white">
-      Mocha API Testing
-    </h1>
-  </div>
 
-  {/* Subtext */}
-  <p className="text-gray-400 max-w-2xl mx-auto px-4 text-sm ">
-    Test your API endpoints with ease. Enter your API details below <br/> and get instant feedback on performance and reliability.
-  </p>
+    {/* Text always right */}
+    <div className="text-left">
+      <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold text-white">
+        Mocha API Testing
+      </h1>
 
-  {/* Connection Info */}
-  <div className="mt-4 text-gray-400 text-sm">
-    <p>Connected to: localhost:5000</p>
+      {/* Subtext */}
+      <p className="text-gray-400 max-w-2xl mt-2 text-sm sm:text-base">
+        Test your API endpoints with ease. Enter your API details below <br />
+        and get instant feedback on performance and reliability.
+      </p>
+
+      {/* Connection Info */}
+      <div className="mt-4 text-gray-400 text-sm">
+        <p>Connected to: localhost:5000</p>
+      </div>
+    </div>
   </div>
 </div>
+
+
 
       {/* Main */}
       <div className="max-w-4xl mx-auto px-4 pb-12">

@@ -84,21 +84,28 @@ export default function SubdomainScanner() {
     <div className="min-h-screen bg-black text-white">
       <div className="max-w-4xl mx-auto p-8">
         {/* Header */}
-        <div className="flex items-center gap-4 mb-8">
-          <div className="w-30 h-30 rounded-full border-4 border-red-500 overflow-hidden flex items-center justify-center bg-gray-800">
-            <img
-              src="/RedTeam/subdomain.png"
-              alt="Logo"
-              className="w-full h-full object-cover"
-            />
-          </div>
-          <div>
-            <h1 className="text-3xl font-bold text-white">Subdomain Scanner</h1>
-            <p className="text-gray-400 text-lg">
-              Scan websites for analyzing subdomains and their security posture.
-            </p>
-          </div>
-        </div>
+        {/* Header */}
+<div className="flex items-center justify-between mb-8 gap-4 sm:gap-6">
+  {/* Logo (Left) */}
+  <div className="w-30 h-30 sm:w-30 sm:h-30 rounded-full border-4 border-red-500 overflow-hidden flex items-center justify-center bg-gray-800">
+    <img
+      src="/RedTeam/subdomain.png"
+      alt="Logo"
+      className="w-full h-full object-cover"
+    />
+  </div>
+
+  {/* Title + Description (Right) */}
+  <div className="flex-1 text-left">
+    <h1 className="text-2xl sm:text-3xl font-bold text-white">
+      Subdomain Scanner
+    </h1>
+    <p className="text-gray-400 text-base sm:text-lg mt-1">
+      Scan websites for analyzing subdomains and their security posture.
+    </p>
+  </div>
+</div>
+
 
         {/* Main Form */}
         <div className="bg-gray-900 border border-white-700 rounded-lg p-6">
@@ -184,7 +191,7 @@ export default function SubdomainScanner() {
 
             <button
               onClick={downloadPDF}
-              className="mt-4 w-full bg-green-600 hover:bg-green-700 text-white py-3 rounded-lg font-semibold transition-colors"
+              className="mt-4 w-full bg-red-600 hover:bg-red-700 text-white py-3 rounded-lg font-semibold transition-colors"
             >
               Download PDF
             </button>

@@ -134,23 +134,23 @@ export default function Webrecon() {
   return (
     <div className="min-h-screen bg-black text-white">
       <div className="max-w-4xl mx-auto p-6">
-        {/* Header */}
-        <div className="flex flex-col sm:flex-row items-center gap-4 mb-8 text-center sm:text-left">
-          <div className="w-24 h-24 sm:w-30 sm:h-30 bg-gray-800 rounded-full border-4 border-red-500 flex items-center justify-center overflow-hidden">
-            <img
-              src="/RedTeam/web-recon.png"
-              alt="Logo"
-              className="w-full h-full object-cover"
-            />
-          </div>
-          <div>
-            <h1 className="text-2xl sm:text-3xl font-bold text-white">Website Recon Tool</h1>
-            <p className="text-gray-400 text-base sm:text-lg">
-              Perform an in-depth reconnaissance of a website to identify key
-              metadata and technologies used.
-            </p>
-          </div>
-        </div>
+       {/* Header */}
+<div className="flex flex-row items-center gap-4 mb-8 text-left">
+  <div className="w-30 h-30 bg-gray-800 rounded-full border-4 border-red-500 flex items-center justify-center overflow-hidden flex-shrink-0">
+    <img
+      src="/RedTeam/web-recon.png"
+      alt="Logo"
+      className="w-full h-full object-cover"
+    />
+  </div>
+  <div>
+    <h1 className="text-2xl sm:text-3xl font-bold text-white">Website Recon Tool</h1>
+    <p className="text-gray-400 text-base sm:text-lg">
+      Perform an in-depth reconnaissance of a website to identify key
+      metadata and technologies used.
+    </p>
+  </div>
+</div>
 
         {/* DNS Lookup */}
         <div className="bg-gray-900 border border-white-700 rounded-lg p-6 mb-6 text-center">

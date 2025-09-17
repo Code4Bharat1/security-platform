@@ -293,7 +293,7 @@ def frame_headers(get_response):
 
   {/* Title + Description */}
   <div className="flex flex-col">
-    <h1 className="text-3xl font-bold text-white mb-1">
+    <h1 className="text-2xl font-bold text-white mb-1">
       Clickjacking Security Tester
     </h1>
     <p className="text-gray-400 text-lg max-w-2xl mt-1">

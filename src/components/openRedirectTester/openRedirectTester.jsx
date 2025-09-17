@@ -166,13 +166,14 @@ export default function DarkThemeOpenRedirectTester() {
        {/* Header */}
 <div className="flex items-center gap-4 mb-8">
   {/* Replace logo div with image */}
-  <div className="w-30 h-30 rounded-full border-4 border-red-500 flex items-center justify-center overflow-hidden">
+  <div className="w-20 h-20 sm:w-30 sm:h-30 md:w-30 md:h-30 rounded-full border-4 border-red-500 flex items-center justify-center overflow-hidden flex-shrink-0">
   <img
     src="/Redteam/open-redirect.png"   // <-- yaha apni image ka path daalna
     alt="Logo"
-    className="w-24 h-24 rounded-full object-cover"
+    className="w-full h-full object-cover rounded-full"
   />
 </div>
+
 
 
   <div>

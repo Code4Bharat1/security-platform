@@ -93,13 +93,14 @@ export default function WhoisLookup() {
       <div className="w-full max-w-4xl mx-auto">
         {/* Header (left) */}
         <div className="flex items-center gap-4 mb-4 ">
-          <div className="w-30 h-30 rounded-full overflow-hidden border-4 border-red-500 -ml-5">
-            <img
-              src="/Redteam/whois.png"
-              alt="Logo"
-              className="w-full h-full object-cover"
-            />
-          </div>
+          <div className="w-30 h-30 sm:w-24 md:w-30 sm:h-24 md:h-30 rounded-full overflow-hidden border-4 border-red-500 -ml-2 sm:-ml-3 md:-ml-5 flex-shrink-0">
+  <img
+    src="/Redteam/whois.png"
+    alt="Logo"
+    className="w-full h-full object-cover"
+  />
+</div>
+
           <div className="text-left">
             <h1 className="text-3xl font-bold">Whois Domain Lookup</h1>
             <p className="text-sm text-gray-400">

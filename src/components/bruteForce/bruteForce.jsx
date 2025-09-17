@@ -98,35 +98,38 @@ export default function DirectoryBruteForcer() {
 
   return (
     <div className="p-6 max-w-5xl mx-auto bg-black text-white min-h-screen">
-      {/* Header */}
-      <div className="flex items-center gap-6 mb-6">
-        <div className="w-24 h-24 rounded-full border-4 border-red-600 flex items-center justify-center overflow-hidden bg-white/5">
-          <img
-            src="/RedTeam/brute-force.png"
-            alt="brute-force"
-            className="w-20 h-20 object-contain"
-          />
-        </div>
+    {/* Header */}
+<div className="flex flex-row items-center gap-4 mb-6">
+  {/* Image always left */}
+  <div className="w-30 h-30 rounded-full border-4 border-red-600 flex items-center justify-center overflow-hidden flex-shrink-0 bg-white/5">
+    <img
+      src="/RedTeam/brute-force.png"
+      alt="brute-force"
+      className="w-30 h-30 object-contain"
+    />
+  </div>
 
-        <div>
-          <h2 className="text-4xl font-extrabold leading-tight">
-            Directory / File Brute Forcer
-          </h2>
-          <p className="text-sm text-gray-300 mt-1">
-            Scan a target host for common files and directories.
-          </p>
-        </div>
-      </div>
+  {/* Text */}
+  <div>
+    <h2 className="text-3xl font-extrabold leading-tight">
+      Directory / File Brute Forcer
+    </h2>
+    <p className="text-sm text-gray-300 mt-1">
+      Scan a target host for common files and directories.
+    </p>
+  </div>
+</div>
+
 
       {/* Control box */}
-      <div className="border border-white/10 rounded-md p-4 mb-6 bg-black/60">
-        <label className="block mb-2 text-sm text-gray-300">Target URL</label>
+      <div className="border border-white rounded-md p-4 mb-6 bg-black/60">
+        <label className="block mb-2 text-xl text-white text-center">Target URL</label>
         <input
           type="text"
           value={target}
           onChange={(e) => setTarget(e.target.value)}
           placeholder="https://example.com"
-          className="w-full bg-transparent text-white placeholder-gray-400 border border-white/10 p-2 rounded mb-3 focus:outline-none focus:ring-2 focus:ring-red-600"
+          className="w-full bg-transparent text-white placeholder-gray-400 border border-white p-2 rounded mb-3 focus:outline-none focus:ring-2 focus:ring-red-600"
         />
 
         <div className="flex items-center gap-4">

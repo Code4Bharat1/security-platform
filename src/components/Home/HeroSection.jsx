@@ -177,12 +177,14 @@ export default function HeroSection() {
           {/* Hero Image */}
           <div className="relative mt-16 w-full max-w-5xl mx-auto animate-fade-in-up" style={{ animationDelay: '1s' }}>
             <div className="relative rounded-lg overflow-hidden shadow-2xl">
-              <div className="absolute inset-0 bg-gradient-to-tr from-blue-950/30 to-transparent z-10" />
-              <img
-                src="https://images.pexels.com/photos/5380642/pexels-photo-5380642.jpeg?auto=compress&cs=tinysrgb&w=1600"
-                alt="Security Dashboard"
-                className="w-full h-auto object-cover"
-              />
+              <div className="relative mt-16 w-full max-w-5xl mx-auto animate-fade-in-up" style={{ animationDelay: '1s' }}>
+ 
+    <img
+      src="https://images.pexels.com/photos/5380642/pexels-photo-5380642.jpeg?auto=compress&cs=tinysrgb&w=1600"
+      alt="Security Dashboard"
+      className="w-full h-60 sm:h-72 md:h-96 lg:h-[500px] xl:h-[600px] object-cover rounded-lg"
+    />
+
             </div>
 
              <GradientButtonLink

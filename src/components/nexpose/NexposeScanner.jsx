@@ -158,26 +158,26 @@ export default function NexposeScanner() {
     <div className="min-h-screen bg-black flex flex-col items-center pt-10 px-4">
       {/* Header with logo and title */}
 {/* Header with logo and title */}
-<div className="text-center mb-4">
-  <div className="flex items-center justify-center mb-4 -ml-90">
-    <div className="w-30 h-30 rounded-full border-4 border-red-500 flex items-center justify-center overflow-hidden mr-4">
-  <img
-    src="/Redteam/sql_injection.png" // <-- apni image path
-    alt="Logo"
-    className="w-full h-full object-cover rounded-full"
-  />
-</div>
+<div className="text-center mb-4 px-2 sm:px-4">
+  <div className="flex flex-row items-center justify-start mb-4">
+    {/* Logo */}
+    <div className="w-30 h-30 sm:w-24 md:w-30 sm:h-24 md:h-30 rounded-full border-4 border-red-500 flex items-center justify-center overflow-hidden mr-4 flex-shrink-0">
+      <img
+        src="/Redteam/sql_injection.png" // <-- apni image path
+        alt="Logo"
+        className="w-full h-full object-cover rounded-full"
+      />
+    </div>
 
+    {/* Text */}
     <div className="text-left">
-      <h1 className="text-2xl font-bold text-white">SQLi Scanner</h1>
-      <p className="text-gray-400 text-sm">
+      <h1 className="text-lg sm:text-xl md:text-2xl font-bold text-white">SQLi Scanner</h1>
+      <p className="text-gray-400 text-xs sm:text-sm md:text-base">
         Detect error-based, union-based, boolean/time-based blind SQLi.
       </p>
     </div>
   </div>
 </div>
-
-
 
       {/* Main scanner box */}
       <div className="bg-black border-2 border-white-600 rounded-lg p-6 w-full max-w-4xl">

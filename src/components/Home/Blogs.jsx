@@ -114,8 +114,9 @@ export default function Blogs() {
       </div>
 
       {/* Blog cards section with gradient background */}
-      <div className="px-4 sm:px-6 md:px-10 mt-10 bg-white/10 backdrop-blur-2xl border border-white/20 shadow-lg py-10 flex">
-        <div className="flex flex-wrap justify-center gap-6 sm:gap-8 lg:gap-10 w-full max-w-screen-xl mx-auto items-stretch">
+      <div className="px-1 sm:px-2 md:px-3 mt-10 bg-white/10 backdrop-blur-2xl border border-white/20 shadow-lg py-10 flex">
+  <div className="flex flex-wrap justify-center gap-12 sm:gap-14 lg:gap-16 w-full max-w-screen-xl mx-auto items-stretch">
+
           {/* Static Blog Card 1 */}
           <BlogCard
             image={staticNews[0].image}

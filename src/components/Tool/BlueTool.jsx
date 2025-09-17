@@ -13,7 +13,7 @@ export default function BlueTool() {
   },
   {
     name: "HTTPS Security Checker",
-    image: "/BlueTeam/https security checker.png",
+    image: "/BlueTeam/https.png",
     description: "Validate HTTPS security implementation.",
     slug: "httpsCheckerForm",
     buttonLabel: "HTTPS Security Checker",
@@ -84,5 +84,20 @@ export default function BlueTool() {
   //   type: "blue-team"
   // },
     ]
-    return (<ToolLayout team="blue" toolList={toolList}></ToolLayout>)
+    return( <div className="relative w-full h-full">
+            {/* Background Video */}
+            {/* <video
+                autoPlay
+                loop
+                muted
+                className="absolute top-0 left-0 w-full h-full object-cover "
+            >
+                <source src="/BlueTeam/Blue-Team.mp4" type="video/mp4" />
+                Your browser does not support the video tag.
+            </video> */}
+
+            {/* Tool Layout */}
+            <ToolLayout team="blue" toolList={toolList} />
+        </div>
+    );
 }

@@ -9,7 +9,7 @@ export default function Certificates() {
         <h2 className="text-center text-white text-2xl sm:text-3xl md:text-4xl font-inter font-bold">
           Certifications
         </h2>
-        <div className="w-full h-1 bg-gradient-to-r from-transparent via-[#9d7af0] to-transparent mx-auto"></div>
+        <div className="w-70 h-1 bg-gradient-to-r from-transparent via-[#9d7af0] to-transparent mx-auto"></div>
 
         <div className="flex flex-col md:flex-row items-center justify-evenly gap-10 mt-10 w-full max-w-6xl ">
           <img

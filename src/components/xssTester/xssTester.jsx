@@ -144,13 +144,14 @@ export default function XssTester() {
       <div className="max-w-4xl mx-auto p-6 space-y-6">
         {/* Header with Logo */}
         <div className="flex items-center gap-4 mb-8">
-  <div className="w-30 h-30 bg-white rounded-full flex items-center justify-center border-4 border-red-600 overflow-hidden">
+  <div className="w-30 h-30 sm:w-24 md:w-30 sm:h-24 md:h-30 bg-white rounded-full flex items-center justify-center border-4 border-red-600 overflow-hidden flex-shrink-0">
     <img
       src="/Redteam/xss.png" // <-- replace with your image path
       alt="Logo"
       className="w-full h-full object-cover"
     />
-  </div>
+</div>
+
   <div>
     <h1 className="text-3xl font-bold text-white">Advanced XSS Scanner</h1>
     <p className="text-gray-400 text-sm">Identify Cross-Site Scripting (XSS) risks</p>
