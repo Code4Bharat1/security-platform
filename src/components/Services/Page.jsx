@@ -76,7 +76,7 @@ export default function ServicePage() {
     return (
         <div className="min-h-screen bg-gradient-to-b from-gray-900 to-black text-white py-12 px-4 md:px-8 lg:px-16">
             <div className="text-center mb-16">
-                <h1 className="text-5xl md:text-6xl lg:text-7xl font-black bg-clip-text text-transparent bg-gradient-to-r from-purple-400 to-indigo-500 mb-4">
+                <h1 className="text-5xl md:text-6xl lg:text-7xl font-black bg-clip-text text-transparent bg-gradient-to-r from-purple-400 to-indigo-500 mb-4 mt-4">
                     OUR SERVICES
                 </h1>
                 <p className="text-xl md:text-2xl text-gray-300 max-w-3xl mx-auto">
