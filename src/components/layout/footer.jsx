@@ -68,7 +68,7 @@ const Footer = () => {
         {/* Left Section */}
         <div className="md:col-span-1">
            <div className="w-full h-32 bg-black/10 mb-4">
-            <img src="/OurCoreServices/logo.png" alt="Logo" className="w-full h-full object-contain" />
+            <img src="/logo.png" alt="Logo" className="w-full h-full object-contain" />
 </div>
 
 

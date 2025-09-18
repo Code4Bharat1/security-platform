@@ -168,13 +168,13 @@ function Hero({ data }) {
       </div>
 
       {/* Right side - Image */}
-      <div className="flex justify-center">
+      {/* <div className="flex justify-center">
         <img
           src="/OurCoreServices/va-diagram.png"
           alt="Vulnerability Assessment"
           className="rounded-xl shadow-lg w-full max-w-md object-contain"
         />
-      </div>
+      </div> */}
     </div>
   );
 }
@@ -214,72 +214,85 @@ function Methodology({ data }) {
   }, [data.length]);
 
   return (
-    <div className="relative py-20 px-6 sm:px-10 md:px-16 lg:px-20 bg-black">
+    <div className="relative py-16 px-4 sm:px-8 md:px-16 lg:px-20 bg-black">
       <div className="absolute inset-0 bg-gradient-to-b from-gray-900 to-black z-0"></div>
 
       {/* Section Title */}
-      <h2 className="text-4xl md:text-5xl font-bold text-center mb-16 text-indigo-500 relative z-10">
+      <h2 className="text-3xl sm:text-4xl md:text-5xl font-bold text-center mb-12 text-indigo-500 relative z-10">
         Vulnerability Assessment <br />
         <span className="text-white">Services</span>
       </h2>
 
       {/* Timeline Layout */}
-      <div className="relative flex flex-col space-y-14 max-w-6xl mx-auto z-10">
+      <div className="relative flex flex-col space-y-12 max-w-6xl mx-auto z-10">
         {data.map((item, index) => (
           <div
             key={index}
             ref={(el) => (methodologyRefs.current[index] = el)}
-            className={`grid grid-cols-1 md:grid-cols-3 gap-6 items-center transition-all duration-700 ease-out ${
+            className={`transition-all duration-700 ease-out ${
               isVisible[index]
                 ? "opacity-100 translate-y-0"
-                : "opacity-0 translate-y-10"
+                : "opacity-0 translate-y-6"
             }`}
           >
-            {/* Left Text */}
-            {index % 2 === 0 ? (
-              <div className="text-right md:pr-6">
-                <h3 className="text-xl md:text-2xl font-bold text-white mb-3">
-                  {item.title}
-                </h3>
-                <p className="text-gray-300 text-base md:text-lg leading-relaxed">
-                  {item.desc}
-                </p>
-              </div>
-            ) : (
-              <div></div>
-            )}
+            {/* Mobile View → Stack vertically */}
+            <div className="flex flex-col items-center text-center md:hidden">
+              <img
+                src={item.imagePath}
+                alt={item.title}
+                className="w-20 h-20 mb-4 object-contain"
+              />
+              <h3 className="text-lg sm:text-xl font-bold text-white mb-2">
+                {item.title}
+              </h3>
+              <p className="text-gray-300 text-sm sm:text-base leading-relaxed">
+                {item.desc}
+              </p>
+            </div>
 
-            {/* Icon in Center */}
-            <div className="flex justify-center">
-              <div className="w-30 h-30 md:w-20 md:h-20  justify-center shadow-lg">
+            {/* Desktop View → Left/Right alignment */}
+            <div className="hidden md:grid md:grid-cols-3 gap-6 items-center">
+              {index % 2 === 0 ? (
+                <div className="text-right md:pr-6">
+                  <h3 className="text-xl md:text-2xl font-bold text-white mb-3">
+                    {item.title}
+                  </h3>
+                  <p className="text-gray-300 text-base md:text-lg leading-relaxed">
+                    {item.desc}
+                  </p>
+                </div>
+              ) : (
+                <div></div>
+              )}
+
+              {/* Icon in Center */}
+              <div className="flex justify-center">
                 <img
                   src={item.imagePath}
                   alt={item.title}
-                  className="w-30 h-30 md:w-30 md:h-30 object-contain"
+                  className="w-20 h-20 object-contain"
                 />
               </div>
-            </div>
 
-            {/* Right Text */}
-            {index % 2 !== 0 ? (
-              <div className="text-left md:pl-6">
-                <h3 className="text-xl md:text-2xl font-bold text-white mb-3">
-                  {item.title}
-                </h3>
-                <p className="text-gray-300 text-base md:text-lg leading-relaxed">
-                  {item.desc}
-                </p>
-              </div>
-            ) : (
-              <div></div>
-            )}
+              {index % 2 !== 0 ? (
+                <div className="text-left md:pl-6">
+                  <h3 className="text-xl md:text-2xl font-bold text-white mb-3">
+                    {item.title}
+                  </h3>
+                  <p className="text-gray-300 text-base md:text-lg leading-relaxed">
+                    {item.desc}
+                  </p>
+                </div>
+              ) : (
+                <div></div>
+              )}
+            </div>
           </div>
         ))}
       </div>
     </div>
   );
 }
-
 
 
 

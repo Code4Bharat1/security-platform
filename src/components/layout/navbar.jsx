@@ -106,7 +106,7 @@ const Navbar = () => {
 
       {/* Logo */}
       <Link href="/" className="z-10">
-        <img src="/logo.png" alt="Site Logo" className="h-10 md:h-12" />
+        <img src="/logo.png" alt="Site Logo" className="h-15 md:h-17" />
       </Link>
 
       {/* Nav links for desktop */}
