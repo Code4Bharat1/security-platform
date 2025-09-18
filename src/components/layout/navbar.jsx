@@ -64,7 +64,8 @@ const Navbar = () => {
     }`;
 
   return (
-    <nav className={`relative flex items-center justify-between md:justify-start md:gap-10 ${textColor} font-semibold font-inter text-base px-2 lg:px-8 py-1 z-10 w-full`}>
+     <nav className={`fixed top-0 left-0 w-full flex items-center justify-between md:justify-start md:gap-10 ${textColor} font-semibold font-inter text-base px-2 lg:px-8 py-1 z-50`}>
+
       
       {/* Left: Hamburger (mobile only) */}
       <button

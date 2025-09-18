@@ -32,7 +32,7 @@ export default function ToolLayout({ team = "green", toolList = [] }) {
 
         return (    
             <div>
-                <button className={`block mx-auto p-5 w-2/3 rounded-3xl border-2 ${borderColor} text-white text-2xl sm:text-4xl md:text-6xl font-bold leading-snug text-center`}>
+                <button className={`block mx-auto p-5 w-2/3 rounded-3xl border-2 ${borderColor} text-white text-2xl sm:text-4xl md:text-6xl font-bold leading-snug text-center mt-15`}>
                     <span className={`${textColor} `}>{team.toUpperCase()}</span>&nbsp;Team Toolkit
                 </button>
 

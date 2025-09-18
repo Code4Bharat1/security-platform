@@ -100,18 +100,19 @@ export default function ServicePage() {
                             <p className="text-lg md:text-xl text-gray-300 mb-8 leading-relaxed">
                                 {service.description}
                             </p>
-                            <Link 
-                                href={`/services/${service.title.toLowerCase().replace(/\s+/g, "-")}`}
-                                className="inline-flex items-center justify-center px-8 py-3 text-lg font-semibold text-white bg-gradient-to-r from-purple-600 to-indigo-600 rounded-lg shadow-lg backdrop-blur-sm transition-all duration-300 ease-in-out hover:from-purple-700 hover:to-indigo-700 hover:shadow-xl hover:shadow-purple-500/30 hover:scale-105 w-fit group"
-                            >
-                                Know More
-                                <svg className="w-5 h-5 ml-2 transition-transform duration-300 group-hover:translate-x-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 8l4 4m0 0l-4 4m4-4H3" />
-                                </svg>
-                            </Link>
-                        </div>
+                            {/* Button - Desktop only */}
+                        <Link 
+                            href={`/services/${service.title.toLowerCase().replace(/\s+/g, "-")}`}
+                            className="hidden md:inline-flex items-center justify-center px-8 py-3 text-lg font-semibold text-white bg-gradient-to-r from-purple-600 to-indigo-600 rounded-lg shadow-lg backdrop-blur-sm transition-all duration-300 ease-in-out hover:from-purple-700 hover:to-indigo-700 hover:shadow-xl hover:shadow-purple-500/30 hover:scale-105 w-fit group"
+                        >
+                            Know More
+                            <svg className="w-5 h-5 ml-2 transition-transform duration-300 group-hover:translate-x-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 8l4 4m0 0l-4 4m4-4H3" />
+                            </svg>
+                        </Link>
 
-                        {/* Image with Hover Effect */}
+                        </div>
+                                                {/* Image with Hover Effect */}
                         <div className="w-full md:w-1/2 relative group">
                             <div className="relative overflow-hidden rounded-2xl shadow-2xl">
                                 <div className="absolute inset-0 bg-gradient-to-b from-transparent to-black opacity-60 z-10"></div>
@@ -128,7 +129,21 @@ export default function ServicePage() {
                                 <div className="absolute -top-4 -right-4 w-8 h-8 bg-purple-500 rounded-full blur-xl"></div>
                                 <div className="absolute -bottom-4 -left-4 w-8 h-8 bg-indigo-500 rounded-full blur-xl"></div>
                             </div>
+
+                            {/* Button - Mobile only */}
+                            <Link 
+                                href={`/services/${service.title.toLowerCase().replace(/\s+/g, "-")}`}
+                                className="mt-6 block md:hidden text-center px-8 py-3 text-lg font-semibold text-white bg-gradient-to-r from-purple-600 to-indigo-600 rounded-lg shadow-lg backdrop-blur-sm transition-all duration-300 ease-in-out hover:from-purple-700 hover:to-indigo-700 hover:shadow-xl hover:shadow-purple-500/30 hover:scale-105 group"
+                            >
+                                Know More
+                                <svg className="w-5 h-5 ml-2 inline transition-transform duration-300 group-hover:translate-x-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 8l4 4m0 0l-4 4m4-4H3" />
+                                </svg>
+                            </Link>
                         </div>
+
+                        
+                        
                     </div>
                 ))}
             </div>
