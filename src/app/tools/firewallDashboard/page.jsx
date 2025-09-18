@@ -42,7 +42,7 @@ export default function DashboardPage() {
   return (
     <div className="min-h-screen bg-black text-white flex flex-col items-center p-6">
       {/* Header Section */}
-<div className="flex items-center gap-2 sm:gap-4 mb-6 sm:mb-8 px-2 sm:px-0">
+<div className="flex items-center gap-2 sm:gap-4 mb-6 sm:mb-8 px-2 sm:px-0 mt-15">
   {/* Image */}
   <div className="w-30 h-30 sm:w-24 sm:h-24 md:w-30 md:h-30 rounded-full overflow-hidden border-4 border-blue-500 flex-shrink-0">
     <img

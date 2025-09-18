@@ -279,7 +279,7 @@ const regex = new RegExp(userInput); // ⚠️ Unescaped input`
 
       <div className="container mx-auto px-6 py-8 max-w-4xl">
         {/* Header */}
-<div className="text-center mb-8">
+<div className="text-center mb-8 mt-15">
   {/* Row with image + text */}
   <div className="flex items-center justify-left gap-4 mb-6">
     {/* Logo circle */}
