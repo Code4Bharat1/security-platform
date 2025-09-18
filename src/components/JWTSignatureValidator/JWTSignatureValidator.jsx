@@ -168,7 +168,7 @@ export default function JWTSignatureValidator() {
     <div className="min-h-screen bg-black py-8 px-4 text-white">
       <div className="max-w-4xl mx-auto">
         {/* Header */}
-<div className="flex items-center justify-start gap-4 mb-6">
+<div className="flex items-center justify-start gap-4 mb-6 mt-15">
   <img
     src="/BlueTeam/jwt_signature.png"
     alt="verify"
