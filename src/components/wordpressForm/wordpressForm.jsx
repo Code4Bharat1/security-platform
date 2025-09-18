@@ -63,7 +63,7 @@ const WordPressScanner = () => {
     <div className="min-h-screen bg-black text-white p-6">
       <div className="max-w-4xl mx-auto">
         {/* Header */}
-<div className="flex items-center gap-4 mb-8">
+<div className="flex items-center gap-4 mb-8 mt-15">
   <img
     src="/RedTeam/wordpress-secure.png"  // <-- apni image ka path yahan daaliye
     alt="Secure Your WordPress Logo"

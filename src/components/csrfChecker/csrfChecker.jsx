@@ -108,7 +108,7 @@ export default function CSRFChecker() {
       <div className="container mx-auto px-4 py-8 max-w-4xl">
         {/* Header */}
 <div className="text-left mb-8">
-  <div className="flex items-center justify-start gap-4 mb-6">
+  <div className="flex items-center justify-start gap-4 mb-6 mt-15">
     <img 
       src="/RedTeam/csrf.png" 
       alt="CSRF Checker" 

@@ -141,6 +141,7 @@ export default function HeroSection() {
             <Shield size={16} />
             <span className="text-sm font-medium">Enterprise-grade security for everyone</span>
           </div>
+          </div>
 
           <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold tracking-tight max-w-4xl mb-6 animate-fade-in-up text-gray-900" style={{ animationDelay: '0.2s' }}>
             Protecting Your Digital Assets in an

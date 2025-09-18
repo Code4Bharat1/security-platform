@@ -291,7 +291,7 @@ export default function Vulnscanner() {
   }, []); // run once on mount
 
   return (
-    <div className="min-h-screen bg-black text-white p-4 sm:p-6 md:p-8">
+    <div className="min-h-screen bg-black text-white p-4 sm:p-6 md:p-8 mt-15">
       <div className="max-w-5xl mx-auto">
         {/* Header */}
         <div className="flex items-center gap-4 mb-6">

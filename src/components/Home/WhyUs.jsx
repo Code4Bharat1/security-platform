@@ -1,6 +1,6 @@
 export default function WhyUs() {
   return (
-    <div id="why-us" className="flex flex-col w-full lg:h-screen min-h-screen bg-[url('/15.jpg')] bg-no-repeat bg-cover px-4 sm:px-6 md:px-15 py-6">
+    <div id="why-us" className="flex flex-col w-full lg:h-screen min-h-screen bg-[url('/15.jpg')] bg-no-repeat bg-cover px-4 sm:px-6 md:px-15 py-6 mt-15">
         <h2 className="text-white text-2xl sm:text-3xl md:text-4xl font-inter font-bold mb-10 text-center leading-tight py-4">
   Securing the Future with Security Platform
   <div className="w-full h-1 bg-gradient-to-r from-transparent via-[#9d7af0] to-transparent mx-auto mt-3"></div>

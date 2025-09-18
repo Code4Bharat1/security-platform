@@ -203,7 +203,7 @@ const Apiform = () => {
   
   return (
     <div className="flex flex-col items-center min-h-screen   " style={{backgroundColor: '#1a1a1a'}}>
-      <div className="flex items-center mt-8 mb-6 md:w-full justify-left lg:px-60">
+      <div className="flex items-center mt-15 mb-10 md:w-full justify-left lg:px-60">
         <img 
           src="/Redteam/api.png" 
           alt="Logo" 

@@ -92,7 +92,7 @@ export default function WhoisLookup() {
     <main className="min-h-screen bg-black text-white p-6">
       <div className="w-full max-w-4xl mx-auto">
         {/* Header (left) */}
-        <div className="flex items-center gap-4 mb-4 ">
+        <div className="flex items-center gap-4 mb-4 mt-15">
           <div className="w-30 h-30 sm:w-24 md:w-30 sm:h-24 md:h-30 rounded-full overflow-hidden border-4 border-red-500 -ml-2 sm:-ml-3 md:-ml-5 flex-shrink-0">
   <img
     src="/Redteam/whois.png"
