@@ -16,14 +16,12 @@ const Navbar = () => {
 
   useEffect(() => {
     if (typeof window !== 'undefined') {
-      // Set text color based on background
       const isDark =
         document.body.className.includes('bg-black') ||
         document.body.className.includes('dark') ||
         document.documentElement.className.includes('dark');
       setTextColor(isDark ? 'text-white' : 'text-black');
 
-      // Get user from localStorage
       const storedUser = localStorage.getItem('user');
       if (storedUser) {
         const parsedUser = JSON.parse(storedUser);
@@ -32,11 +30,9 @@ const Navbar = () => {
     }
 
     const handleClickOutside = (event) => {
-      // Close user dropdown
       if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
         setShowDropdown(false);
       }
-      // Close toolkit dropdown
       if (toolkitRef.current && !toolkitRef.current.contains(event.target)) {
         setToolkitOpen(false);
       }
@@ -105,19 +101,13 @@ const Navbar = () => {
       </button>
 
       {/* Logo */}
-<Link
-  href="/"
-  className="z-10 flex items-center ml-10 md:ml-0"
->
-  <img
-    src="/logo.png"
-    alt="Site Logo"
-    className="h-10 md:h-18 lg:h-18 w-auto object-contain"
-  />
-</Link>
-
-
-
+      <Link href="/" className="z-10 flex items-center ml-10 md:ml-0">
+        <img
+          src="/logo.png"
+          alt="Site Logo"
+          className="h-10 md:h-18 lg:h-18 w-auto object-contain"
+        />
+      </Link>
 
       {/* Nav links for desktop */}
       <ul className="hidden md:flex md:font-normal lg:font-semibold md:justify-center md:items-center md:w-full md:gap-10 w-screen z-10">
@@ -204,9 +194,20 @@ const Navbar = () => {
                 Purple Team
               </Link>
             </li>
+            {/* ✅ VA Added */}
+            <li>
+              <Link
+                href="/tools/VulnerabilityAssessment"
+                className={`block px-4 py-2 ${
+                  textColor === 'text-white' ? 'hover:bg-[#2a2a2a]' : 'hover:bg-gray-200'
+                } ${textColor}`}
+                onClick={() => setToolkitOpen(false)}
+              >
+                VA
+              </Link>
+            </li>
           </ul>
         </li>
-
         <li>
           <Link href="/services" className={navLinkClasses('/services')}>
             Services
@@ -283,6 +284,18 @@ const Navbar = () => {
                   Purple Team
                 </Link>
               </li>
+              {/* ✅ VA Added */}
+              <li>
+                <Link
+                  href="/tools/va"
+                  className={`block px-4 py-1 ${
+                    textColor === 'text-white' ? 'hover:bg-[#2a2a2a]' : 'hover:bg-gray-200'
+                  }`}
+                  onClick={() => setMenuOpen(false)}
+                >
+                  VA
+                </Link>
+              </li>
             </ul>
           </details>
         </li>
@@ -330,6 +343,6 @@ const Navbar = () => {
       </div>
     </nav>
   );
-};  
+};
 
 export default Navbar;

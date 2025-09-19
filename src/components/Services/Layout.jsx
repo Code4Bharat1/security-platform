@@ -128,13 +128,17 @@ function Methodology({ data, layout = "default" }) {
 // Layout 1: Default (Original)
 function DefaultLayout({ data }) {
   return (
-    <div className="relative z-10 flex flex-col gap-12">
+    <div className="relative z-10 flex flex-col gap-8 sm:gap-12">
       {data.map((object, index) => (
         <div
           key={index}
-          className="flex flex-col md:flex-row items-center gap-8  p-6 rounded-xl shadow-lg hover:scale-[1.02] hover:shadow-indigo-500/30 transition-all duration-300 mx-auto w-full md:w-5/6 lg:w-3/4"
+          className="flex flex-col md:flex-row items-center gap-6 sm:gap-8  
+          p-4 sm:p-6 rounded-xl shadow-lg 
+          hover:scale-[1.02] hover:shadow-indigo-500/30 transition-all duration-300 
+          mx-auto w-full max-w-sm sm:max-w-md md:w-5/6 lg:w-3/4"
         >
-          <div className="flex-shrink-0 w-24 h-24  flex items-center justify-center text-white text-2xl font-bold shadow-md overflow-hidden">
+          {/* Icon / Image */}
+          <div className="flex-shrink-0 w-16 h-16 sm:w-20 sm:h-20 md:w-24 md:h-24 flex items-center justify-center text-white text-lg sm:text-xl md:text-2xl font-bold shadow-md overflow-hidden">
             {object.imagePath ? (
               <img
                 src={object.imagePath}
@@ -145,11 +149,13 @@ function DefaultLayout({ data }) {
               index + 1
             )}
           </div>
+
+          {/* Text */}
           <div className="text-center md:text-left">
-            <h3 className="text-2xl font-bold text-indigo-300 mb-2">
+            <h3 className="text-lg sm:text-xl md:text-2xl font-bold text-indigo-300 mb-1 sm:mb-2">
               {object.title}
             </h3>
-            <p className="text-lg text-gray-200 leading-relaxed">
+            <p className="text-sm sm:text-base md:text-lg text-gray-200 leading-relaxed">
               {object.desc}
             </p>
           </div>
@@ -271,18 +277,29 @@ function TimelineLayout({ data }) {
 
 function HexagonLayout({ data }) {
   return (
-    <div className="relative z-10 flex flex-wrap justify-center gap-8 max-w-6xl mx-auto">
+    <div className="relative z-10 flex flex-wrap justify-center gap-6 sm:gap-8 max-w-6xl mx-auto px-4">
       {data.map((object, index) => (
         <div
           key={index}
-          className="group relative w-80 h-80"
+          className="group relative w-full max-w-xs sm:max-w-sm md:w-80 
+                     h-64 sm:h-72 md:h-80"
         >
-          {/* Hexagon background */}
-          <div className="absolute inset-0 transform rotate-45 bg-gradient-to-br from-indigo-900/40 to-purple-900/40 backdrop-blur-xl rounded-3xl border border-indigo-500/30 group-hover:border-indigo-400/60 transition-all duration-500 group-hover:scale-110 group-hover:shadow-xl group-hover:shadow-indigo-500/25"></div>
+          {/* Hexagon background: rotated only on md+ */}
+          <div className="absolute inset-0 
+                          bg-gradient-to-br from-indigo-900/40 to-purple-900/40 
+                          backdrop-blur-xl rounded-3xl border border-indigo-500/30 
+                          transition-all duration-500 
+                          md:transform md:rotate-45 
+                          group-hover:scale-105 sm:group-hover:scale-110 md:group-hover:scale-110 
+                          group-hover:shadow-xl group-hover:shadow-indigo-500/25">
+          </div>
 
           {/* Content */}
-          <div className="relative z-10 p-8 h-full flex flex-col justify-center items-center text-center">
-            <div className="w-16 h-16 rounded-full flex items-center justify-center text-white font-bold text-xl mb-6 overflow-hidden group-hover:scale-110 transition-transform duration-300">
+          <div className="relative z-10 p-4 sm:p-6 md:p-8 h-full flex flex-col justify-center items-center text-center">
+            <div className="w-12 h-12 sm:w-14 md:w-16 rounded-full flex items-center justify-center 
+                            text-white font-bold text-lg sm:text-xl md:text-xl mb-3 sm:mb-6 
+                            overflow-hidden group-hover:scale-105 sm:group-hover:scale-110 md:group-hover:scale-110 
+                            transition-transform duration-300">
               {index < 6 ? (
                 <img
                   src={object.image}
@@ -294,10 +311,11 @@ function HexagonLayout({ data }) {
               )}
             </div>
 
-            <h3 className="text-lg font-bold text-white mb-4 group-hover:text-indigo-300 transition-colors duration-300">
+            <h3 className="text-sm sm:text-base md:text-lg font-bold text-white mb-2 sm:mb-4 
+                           group-hover:text-indigo-300 transition-colors duration-300">
               {object.title}
             </h3>
-            <p className="text-gray-300 text-sm leading-relaxed">
+            <p className="text-xs sm:text-sm md:text-sm text-gray-300 leading-relaxed">
               {object.desc}
             </p>
           </div>
@@ -306,6 +324,7 @@ function HexagonLayout({ data }) {
     </div>
   );
 }
+
 
 // Layout 5: Circular Arrangement
 // Layout 5: Circular Arrangement with Image
