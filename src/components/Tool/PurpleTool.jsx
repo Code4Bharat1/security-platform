@@ -5,7 +5,7 @@ export default function PurpleTool() {
     const toolList = [// Non-Tech
         {
             name: "Cyber Fraud Identifier",
-            image: "/cyber.jpg",
+            image: "/cyber.png",
             description: "Flags potential online fraud by previous records",
             slug: "cyber-fraud-identifier",
             buttonLabel: "Identify Fraudster",

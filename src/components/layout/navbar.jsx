@@ -105,9 +105,19 @@ const Navbar = () => {
       </button>
 
       {/* Logo */}
-      <Link href="/" className="z-10">
-        <img src="/logo.png" alt="Site Logo" className="h-15 md:h-17" />
-      </Link>
+<Link
+  href="/"
+  className="z-10 flex items-center ml-10 md:ml-0"
+>
+  <img
+    src="/logo.png"
+    alt="Site Logo"
+    className="h-10 md:h-18 lg:h-18 w-auto object-contain"
+  />
+</Link>
+
+
+
 
       {/* Nav links for desktop */}
       <ul className="hidden md:flex md:font-normal lg:font-semibold md:justify-center md:items-center md:w-full md:gap-10 w-screen z-10">
