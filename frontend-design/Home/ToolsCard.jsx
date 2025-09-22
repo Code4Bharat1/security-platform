@@ -143,7 +143,7 @@ export default function ToolsCard() {
     type: "non-tech"
   },], [{
     name: "Cyber Fraud Identifier",
-    image: "/cyber-fraud-identifier.png",
+    image: "/cyber.png",
     description: "Flags potential online fraud by previous records",
     slug: "cyber-fraud-identifier",
     buttonLabel: "Identify Fraudster",

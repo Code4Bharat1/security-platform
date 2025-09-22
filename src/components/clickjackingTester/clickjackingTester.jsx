@@ -281,7 +281,7 @@ def frame_headers(get_response):
     <div className="min-h-screen bg-black via-emerald-50 to-teal-50 p-6">
       <div className="max-w-4xl mx-auto" ref={reportRef}>
        {/* Header */}
-<div className="flex items-center gap-4 mb-8">
+<div className="flex items-center gap-4 mb-8 mt-15">
   {/* Logo */}
   <div className="w-30 h-30 rounded-full overflow-hidden">
     <img

@@ -42,7 +42,7 @@ export default function DbSecurityChecker() {
   return (
     <div className="min-h-screen flex flex-col items-center justify-start bg-gray-900 p-6">
      {/* Header */}
-<div className="flex items-center mb-6 gap-4 ml-0">
+<div className="flex items-center mb-6 gap-4  mt-15">
   <div className="w-30 h-30 sm:w-24 sm:h-24 md:w-30 md:h-30 rounded-full border-4 border-red-600 overflow-hidden flex items-center justify-center bg-black flex-shrink-0">
   <img 
     src="/RedTeam/DB-Security.png" 

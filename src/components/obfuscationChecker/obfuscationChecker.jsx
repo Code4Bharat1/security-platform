@@ -209,7 +209,7 @@ export default function CodeObfuscationChecker() {
     <div className="min-h-screen bg-black text-white p-6">
       <div className="max-w-4xl mx-auto">
         {/* Header */}
-        <div className="flex items-center gap-4 mb-8">
+        <div className="flex items-center gap-4 mb-8 mt-15">
           <img
           src="/BlueTeam/Obfuscation Detector.png"
           alt="Obfuscation Icon"

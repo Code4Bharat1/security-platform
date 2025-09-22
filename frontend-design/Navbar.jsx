@@ -46,7 +46,7 @@ export default function Navbar() {
           <img
             src="/logo.png"
             alt="Site Logo"
-            className="h-10 md:h-12"
+            className="h-5 md:h-12"
           />
         </a>
       {/* Nav links for desktop */}

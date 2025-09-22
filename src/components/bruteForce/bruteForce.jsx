@@ -97,7 +97,7 @@ export default function DirectoryBruteForcer() {
   };
 
   return (
-    <div className="p-6 max-w-5xl mx-auto bg-black text-white min-h-screen">
+    <div className="p-6 max-w-5xl mx-auto bg-black text-white min-h-screen mt-15">
     {/* Header */}
 <div className="flex flex-row items-center gap-4 mb-6">
   {/* Image always left */}

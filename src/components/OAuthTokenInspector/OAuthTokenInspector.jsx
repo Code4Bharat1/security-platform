@@ -309,7 +309,7 @@ export default function OAuthTokenInspector() {
 
   <div className="max-w-5xl mx-auto">
    {/* Header */}
-<div className="flex items-center justify-left gap-6 mb-8 pt-8">
+<div className="flex items-center justify-left gap-6 mb-8 pt-8 mt-15">
   <img
     src="/BlueTeam/oauth_token.png"
     alt="OAuth2"

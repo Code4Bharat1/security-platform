@@ -133,7 +133,7 @@ export default function Webrecon() {
 
   return (
     <div className="min-h-screen bg-black text-white">
-      <div className="max-w-4xl mx-auto p-6">
+      <div className="max-w-4xl mx-auto p-6 mt-15">
        {/* Header */}
 <div className="flex flex-row items-center gap-4 mb-8 text-left">
   <div className="w-30 h-30 bg-gray-800 rounded-full border-4 border-red-500 flex items-center justify-center overflow-hidden flex-shrink-0">

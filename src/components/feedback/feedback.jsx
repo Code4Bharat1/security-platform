@@ -53,7 +53,7 @@ const FeedbackForm = () => {
   };
 
   return (
-    <div className="flex flex-col w-full min-h-screen bg-[url('/15.jpg')] bg-no-repeat bg-cover px-4 sm:px-6 lg:px-20 py-12">
+    <div className="flex flex-col w-full min-h-screen bg-[url('/15.jpg')] bg-no-repeat bg-cover px-4 sm:px-6 lg:px-20 py-12 mt-15">
       <motion.div
         initial={{ opacity: 0, y: 40 }}
         animate={{ opacity: 1, y: 0 }}

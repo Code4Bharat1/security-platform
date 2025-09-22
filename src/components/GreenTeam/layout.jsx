@@ -9,7 +9,7 @@ export default function GreenLayout({heroData}) {
 
 function Hero({ data }) {
   return (
-    <div className="max-w-6xl mx-auto px-6 md:px-12 py-10 flex flex-col md:flex-row items-center justify-center gap-8">
+    <div className="max-w-6xl mx-auto px-6 md:px-12 py-10 flex flex-col md:flex-row items-center justify-center gap-8 mt-15">
       
       {/* Left side - Image */}
       <div className="flex justify-center">

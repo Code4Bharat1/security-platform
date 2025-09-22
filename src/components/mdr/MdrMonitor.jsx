@@ -32,7 +32,8 @@ export default function MdrMonitor() {
   return (
     <div className="min-h-screen bg-black flex flex-col items-center pt-20 px-4">
   {/* Row with image and text */}
-  <div className="flex items-center gap-4 mb-4 w-full justify-left lg:ml-140">
+  <div className="flex items-center gap-4 mb-4 w-full justify-start lg:px-80 mt-15">
+
   <img
     src="/BlueTeam/MDR.png"
     alt="Reverse DNS"

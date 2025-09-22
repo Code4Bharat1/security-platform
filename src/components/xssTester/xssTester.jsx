@@ -143,7 +143,7 @@ export default function XssTester() {
     <div className="min-h-screen bg-black text-white">
       <div className="max-w-4xl mx-auto p-6 space-y-6">
         {/* Header with Logo */}
-        <div className="flex items-center gap-4 mb-8">
+        <div className="flex items-center gap-4 mb-8 mt-15">
   <div className="w-30 h-30 sm:w-24 md:w-30 sm:h-24 md:h-30 bg-white rounded-full flex items-center justify-center border-4 border-red-600 overflow-hidden flex-shrink-0">
     <img
       src="/Redteam/xss.png" // <-- replace with your image path

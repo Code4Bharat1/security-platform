@@ -34,7 +34,7 @@ export default function Cards() {
 <div className="flex items-center gap-4 mb-6">
   <div className="w-30 h-30 rounded-full border-4 border-purple-600 overflow-hidden shadow-lg flex-shrink-0">
     <img
-      src="/cyber.jpg"
+      src="/cyber.png"
       alt="Logo"
       className="w-full h-full object-cover rounded-full"
     />

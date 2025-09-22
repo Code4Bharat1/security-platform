@@ -99,7 +99,7 @@ export default function SecretKeyScanner() {
     <div className="min-h-screen bg-black text-white flex flex-col items-center p-6">
       
 {/* Header */}
-<div className="flex items-center gap-4 mb-8 w-full max-w-3xl mx-auto pl-4">
+<div className="flex items-center gap-4 mb-8 w-full max-w-3xl mx-auto pl-4 mt-15">
   <img
     src="/Redteam/secret_key_scanner.png"   // <-- apna image path yaha daalo
     alt="Logo"
