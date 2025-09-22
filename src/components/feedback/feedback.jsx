@@ -10,7 +10,7 @@ const FeedbackForm = () => {
 
   const handleChange = (e) => {
     setForm({ ...form, [e.target.name]: e.target.value });
-    setError(""); // clear error when typing
+    setError("");
   };
 
   const validateForm = () => {
@@ -18,7 +18,6 @@ const FeedbackForm = () => {
       setError("⚠️ All fields are required.");
       return false;
     }
-    // simple email validation
     if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email)) {
       setError("⚠️ Please enter a valid email.");
       return false;
@@ -28,20 +27,26 @@ const FeedbackForm = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-
     if (!validateForm()) return;
 
     setLoading(true);
 
     try {
-      // Simulate API delay
-      await new Promise((resolve) => setTimeout(resolve, 1200));
+      const res = await fetch(`${process.env.NEXT_PUBLIC_PROD_API_URL}/feedback`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(form),
+      });
+
+      const data = await res.json();
+
+      if (!res.ok) throw new Error(data.error || "Failed to send feedback");
 
       setSubmitted(true);
-      setForm({ name: "", email: "", feedback: "" }); // reset form
+      setForm({ name: "", email: "", feedback: "" });
     } catch (err) {
-      console.error("Error submitting feedback:", err);
-      setError("Something went wrong. Please try again.");
+      console.error(err);
+      setError(err.message);
     } finally {
       setLoading(false);
     }
@@ -81,10 +86,7 @@ const FeedbackForm = () => {
             )}
 
             <div>
-              <label
-                htmlFor="name"
-                className="block font-medium mb-1 text-gray-200"
-              >
+              <label htmlFor="name" className="block font-medium mb-1 text-gray-200">
                 Name
               </label>
               <input
@@ -93,17 +95,13 @@ const FeedbackForm = () => {
                 name="name"
                 value={form.name}
                 onChange={handleChange}
-                required
-                className="w-full px-5 py-3 border rounded-xl shadow-sm bg-white/20 text-white placeholder-gray-300 focus:ring-2 focus:ring-purple-500 focus:outline-none"
                 placeholder="Your Name"
+                className="w-full px-5 py-3 border rounded-xl shadow-sm bg-white/20 text-white placeholder-gray-300 focus:ring-2 focus:ring-purple-500 focus:outline-none"
               />
             </div>
 
             <div>
-              <label
-                htmlFor="email"
-                className="block font-medium mb-1 text-gray-200"
-              >
+              <label htmlFor="email" className="block font-medium mb-1 text-gray-200">
                 Email
               </label>
               <input
@@ -112,17 +110,13 @@ const FeedbackForm = () => {
                 name="email"
                 value={form.email}
                 onChange={handleChange}
-                required
-                className="w-full px-5 py-3 border rounded-xl shadow-sm bg-white/20 text-white placeholder-gray-300 focus:ring-2 focus:ring-purple-500 focus:outline-none"
                 placeholder="you@example.com"
+                className="w-full px-5 py-3 border rounded-xl shadow-sm bg-white/20 text-white placeholder-gray-300 focus:ring-2 focus:ring-purple-500 focus:outline-none"
               />
             </div>
 
             <div>
-              <label
-                htmlFor="feedback"
-                className="block font-medium mb-1 text-gray-200"
-              >
+              <label htmlFor="feedback" className="block font-medium mb-1 text-gray-200">
                 Feedback
               </label>
               <textarea
@@ -130,10 +124,9 @@ const FeedbackForm = () => {
                 name="feedback"
                 value={form.feedback}
                 onChange={handleChange}
-                required
                 rows="4"
-                className="w-full px-5 py-3 border rounded-xl shadow-sm bg-white/20 text-white placeholder-gray-300 focus:ring-2 focus:ring-purple-500 focus:outline-none"
                 placeholder="Write your thoughts here..."
+                className="w-full px-5 py-3 border rounded-xl shadow-sm bg-white/20 text-white placeholder-gray-300 focus:ring-2 focus:ring-purple-500 focus:outline-none"
               />
             </div>
 
