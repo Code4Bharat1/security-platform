@@ -13,7 +13,7 @@ export default function ToolLayout({ team = "green", toolList = [] }) {
             "red": "border-[#D01A1A]/70",
             "blue": "border-[#3C6DFF]/70",
             "purple": "border-[#A020F0]/70",
-            "va":"border-[#A020F0]/70",
+            "va":"border-[#D4AF37]/70",
             "green": "border-[#008000]/70"
         }[team] || "border-gray-500";
 
@@ -21,7 +21,7 @@ export default function ToolLayout({ team = "green", toolList = [] }) {
             "red": "text-[#D01A1A]/70",
             "blue": "text-[#3C6DFF]/70",
             "purple": "text-[#A020F0]/70",
-            "va":"border-[#A020F0]/70",
+            "va":"  text-[#D4AF37       ]/50",
             "green": "text-[#008000]/70"
         }[team] || "text-gray-500";
 
@@ -29,7 +29,7 @@ export default function ToolLayout({ team = "green", toolList = [] }) {
             "red": "bg-[#D01A1A]/70",
             "blue": "bg-[#3C6DFF]/70",
             "purple": "bg-[#A020F0]/70",
-            "va":"border-[#A020F0]/70",
+            "va":   "bg-[#D4AF37]/70",
             "green": "bg-[#008000]/70"
         }[team] || "bg-gray-500";
 

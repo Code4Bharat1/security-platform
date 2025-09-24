@@ -9,19 +9,20 @@ import {
   Cookie,
   FileText,
   BarChart,
+  AlertTriangle,
+  CheckCircle,
+  XCircle,
+  Info,
 } from "lucide-react";
 import { jsPDF } from "jspdf";
 import autoTable from "jspdf-autotable";
 
 /**
- * Responsive Vulnerability Scanner component
- * - Keeps original logic (validateUrl, fetchHistory, handleSubmit, generatePDF, etc.)
- * - Adds mobile-first responsive Tailwind classes
- * - Ensures tables are horizontally scrollable on small screens
- * - Buttons are full-width on mobile, inline on larger screens
- * - Reduces large paddings and images on small screens
- *
- * Replace your existing component file with this. All original features preserved.
+ * Enhanced Vulnerability Scanner component
+ * - Updated to handle new backend functionalities
+ * - Added support for new vulnerability types
+ * - Enhanced security analysis display
+ * - Improved vulnerability categorization and severity handling
  */
 
 export default function Vulnscanner() {
@@ -104,6 +105,8 @@ export default function Vulnscanner() {
 
   const getSeverityColor = (severity) => {
     switch ((severity || "").toLowerCase()) {
+      case "critical":
+        return "bg-purple-500/20 text-purple-400 border-purple-500";
       case "high":
         return "bg-red-500/20 text-red-400 border-red-500";
       case "medium":
@@ -112,6 +115,21 @@ export default function Vulnscanner() {
         return "bg-blue-500/20 text-blue-400 border-blue-500";
       default:
         return "bg-gray-500/20 text-gray-400 border-gray-500";
+    }
+  };
+
+  const getSeverityIcon = (severity) => {
+    switch ((severity || "").toLowerCase()) {
+      case "critical":
+        return <XCircle className="w-4 h-4 text-purple-400" />;
+      case "high":
+        return <XCircle className="w-4 h-4 text-red-400" />;
+      case "medium":
+        return <AlertTriangle className="w-4 h-4 text-yellow-400" />;
+      case "low":
+        return <Info className="w-4 h-4 text-blue-400" />;
+      default:
+        return <Info className="w-4 h-4 text-gray-400" />;
     }
   };
 
@@ -126,6 +144,25 @@ export default function Vulnscanner() {
       default:
         return "text-gray-400";
     }
+  };
+
+  const getVulnerabilityTypeLabel = (type) => {
+    const typeLabels = {
+      ssl: "SSL/TLS",
+      clickjacking: "Clickjacking",
+      form: "Form Security",
+      cleartext_credentials: "Cleartext Credentials",
+      external_url: "External URLs",
+      cgi_http_error: "CGI HTTP Errors",
+      cgi_load: "CGI Load Issues",
+      cgi_injectable: "CGI Injection",
+      header: "Security Headers",
+      information_disclosure: "Information Disclosure",
+      cookie: "Cookie Security",
+      csp: "Content Security Policy",
+      exposure: "Resource Exposure"
+    };
+    return typeLabels[type] || type.replace(/_/g, " ");
   };
 
   const generatePDF = () => {
@@ -157,9 +194,13 @@ export default function Vulnscanner() {
       ["Response Time", scanData.timespan ? `${scanData.timespan} ms` : "—"],
     ];
 
+    if (scanData.headers?._benchmark?.grade) {
+      keyRows.push(["Security Grade", scanData.headers._benchmark.grade]);
+    }
+
     autoTable(doc, {
       startY: 44,
-      head: [["Header", "Value"]],
+      head: [["Metric", "Value"]],
       body: keyRows,
     });
 
@@ -167,7 +208,7 @@ export default function Vulnscanner() {
     if (Array.isArray(scanData.vulnerabilities) && scanData.vulnerabilities.length) {
       const vulnerabilityData = scanData.vulnerabilities.map((v) => [
         (v.severity || "").toUpperCase(),
-        (v.type || "").replace(/_/g, " "),
+        getVulnerabilityTypeLabel(v.type || ""),
         v.description || "—",
         v.recommendation || "—",
       ]);
@@ -223,6 +264,29 @@ export default function Vulnscanner() {
           styles: { fontSize: 9 },
         });
       }
+    }
+
+    // Benchmark data
+    if (scanData.headers?._benchmark) {
+      const benchmarkData = [
+        ["Security Grade", scanData.headers._benchmark.grade],
+        ["Compared to last", `${scanData.headers._benchmark.comparedTo} scans`],
+      ];
+      if (scanData.headers._benchmark.deltas) {
+        const deltas = scanData.headers._benchmark.deltas;
+        benchmarkData.push(
+          ["Vulnerability Count Δ", String(deltas.vulnCountDelta)],
+          ["Missing Sec Headers Δ", String(deltas.missingSecHeadersDelta)],
+          ["Weak Cookies Δ", String(deltas.weakCookiesDelta)],
+          ["CSP Issues Δ", String(deltas.cspIssuesDelta)]
+        );
+      }
+      autoTable(doc, {
+        startY: doc.lastAutoTable ? doc.lastAutoTable.finalY + 8 : 0,
+        head: [["Benchmark", "Value"]],
+        body: benchmarkData,
+        styles: { fontSize: 10 },
+      });
     }
 
     // Footer
@@ -281,6 +345,16 @@ export default function Vulnscanner() {
     </div>
   );
 
+  const getCriticalVulnCount = () => {
+    if (!scanData?.vulnerabilities) return 0;
+    return scanData.vulnerabilities.filter(v => v.severity?.toLowerCase() === 'critical').length;
+  };
+
+  const getHighVulnCount = () => {
+    if (!scanData?.vulnerabilities) return 0;
+    return scanData.vulnerabilities.filter(v => v.severity?.toLowerCase() === 'high').length;
+  };
+
   useEffect(() => {
     // If user had a domain in the url already, fetch history proactively
     if (validateUrl(url)) {
@@ -296,12 +370,12 @@ export default function Vulnscanner() {
         {/* Header */}
         <div className="flex items-center gap-4 mb-6">
           <div className="w-30 h-30 bg-gray-800 rounded-full border-2 border-red-500 flex items-center justify-center overflow-hidden">
-  <img
-    src="/RedTeam/vuln_scanner.png"
-    alt="Security Scanner"
-    className="w-30 h-30 object-contain"
-  />
-</div>
+            <img
+              src="/RedTeam/vuln_scanner.png"
+              alt="Security Scanner"
+              className="w-30 h-30 object-contain"
+            />
+          </div>
 
           <div className="flex-1">
             <h1 className="text-xl sm:text-3xl font-bold">
@@ -384,21 +458,31 @@ export default function Vulnscanner() {
                     </p>
                   </div>
 
-                  <div className="mt-2 sm:mt-0">
-                    <span className="font-bold text-white mr-2">Risk Level:</span>
-                    <span
-                      className={`font-bold ${getRiskLevelColor(
-                        scanData.riskLevel
-                      )}`}
-                    >
-                      {scanData.riskLevel?.toUpperCase() || "—"}
-                    </span>
+                  <div className="flex flex-col sm:flex-row items-start sm:items-center gap-2 sm:gap-4">
+                    {scanData.headers?._benchmark?.grade && (
+                      <div>
+                        <span className="font-bold text-white mr-2">Grade:</span>
+                        <span className="text-blue-400 font-bold">
+                          {scanData.headers._benchmark.grade}
+                        </span>
+                      </div>
+                    )}
+                    <div>
+                      <span className="font-bold text-white mr-2">Risk Level:</span>
+                      <span
+                        className={`font-bold ${getRiskLevelColor(
+                          scanData.riskLevel
+                        )}`}
+                      >
+                        {scanData.riskLevel?.toUpperCase() || "—"}
+                      </span>
+                    </div>
                   </div>
                 </div>
               </div>
 
-              {/* Top stats - stacked on mobile, grid on md+ */}
-              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+              {/* Top stats - Enhanced with new metrics */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
                 <StatCard
                   title="SSL Certificate"
                   value={
@@ -409,27 +493,33 @@ export default function Vulnscanner() {
                     )
                   }
                   hint={
-                    scanData.ssl?.daysRemaining > 0
-                      ? `Expires in ${scanData.ssl.daysRemaining} days`
-                      : "Certificate expired"
+                    scanData.ssl?.daysRemaining !== undefined
+                      ? scanData.ssl.daysRemaining > 0
+                        ? `Expires in ${scanData.ssl.daysRemaining} days`
+                        : "Certificate expired"
+                      : "Certificate status unknown"
                   }
                   icon={<Shield className="text-green-400" size={20} />}
                 />
                 <StatCard
-                  title="Security Issues"
+                  title="Critical Issues"
                   value={
-                    <span
-                      className={
-                        scanData.vulnerabilityCount > 0
-                          ? "text-red-400"
-                          : "text-green-400"
-                      }
-                    >
-                      {scanData.vulnerabilityCount || 0}
+                    <span className="text-purple-400">
+                      {getCriticalVulnCount()}
                     </span>
                   }
-                  hint="Vulnerabilities detected"
-                  icon={<FileText className="text-red-400" size={20} />}
+                  hint="Immediate attention required"
+                  icon={<XCircle className="text-purple-400" size={20} />}
+                />
+                <StatCard
+                  title="High Risk Issues"
+                  value={
+                    <span className="text-red-400">
+                      {getHighVulnCount()}
+                    </span>
+                  }
+                  hint="Should be addressed soon"
+                  icon={<AlertTriangle className="text-red-400" size={20} />}
                 />
                 <StatCard
                   title="Response Time"
@@ -478,29 +568,82 @@ export default function Vulnscanner() {
               <div>
                 {/* Overview */}
                 {activeTab === "overview" && (
-                  <div className="bg-black p-4 rounded-xl border border-white">
-                    <h3 className="text-lg font-semibold mb-3 text-white">
-                      Summary
-                    </h3>
-                    <ul className="list-disc list-inside text-sm text-gray-300 space-y-1">
-                      <li>
-                        Status:{" "}
-                        <span className={getRiskLevelColor(scanData.riskLevel)}>
-                          {scanData.riskLevel?.toUpperCase() || "—"}
-                        </span>
-                      </li>
-                      <li>Vulnerabilities: {scanData.vulnerabilityCount || 0}</li>
-                      <li>
-                        HTTP:{" "}
-                        {scanData.headers?.httpVersion
-                          ? `HTTP/${scanData.headers.httpVersion}`
-                          : "—"}{" "}
-                        • Status:{" "}
-                        {scanData.headers?.statusCode
-                          ? `${scanData.headers.statusCode} ${scanData.headers.statusMessage || ""}`
-                          : "—"}
-                      </li>
-                    </ul>
+                  <div className="space-y-4">
+                    <div className="bg-black p-4 rounded-xl border border-white">
+                      <h3 className="text-lg font-semibold mb-3 text-white">
+                        Security Summary
+                      </h3>
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div>
+                          <ul className="list-disc list-inside text-sm text-gray-300 space-y-1">
+                            <li>
+                              Risk Level:{" "}
+                              <span className={getRiskLevelColor(scanData.riskLevel)}>
+                                {scanData.riskLevel?.toUpperCase() || "—"}
+                              </span>
+                            </li>
+                            <li>Total Vulnerabilities: {scanData.vulnerabilityCount || 0}</li>
+                            <li>Critical Issues: {getCriticalVulnCount()}</li>
+                            <li>High Risk Issues: {getHighVulnCount()}</li>
+                          </ul>
+                        </div>
+                        <div>
+                          <ul className="list-disc list-inside text-sm text-gray-300 space-y-1">
+                            <li>
+                              HTTP:{" "}
+                              {scanData.headers?.httpVersion
+                                ? `HTTP/${scanData.headers.httpVersion}`
+                                : "—"}{" "}
+                              • Status:{" "}
+                              {scanData.headers?.statusCode
+                                ? `${scanData.headers.statusCode} ${scanData.headers.statusMessage || ""}`
+                                : "—"}
+                            </li>
+                            <li>
+                              Security Grade:{" "}
+                              {scanData.headers?._benchmark?.grade ? (
+                                <span className="text-blue-400 font-medium">
+                                  {scanData.headers._benchmark.grade}
+                                </span>
+                              ) : (
+                                "Not available"
+                              )}
+                            </li>
+                          </ul>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Quick vulnerability breakdown */}
+                    {scanData.vulnerabilities?.length > 0 && (
+                      <div className="bg-black p-4 rounded-xl border border-white">
+                        <h3 className="text-lg font-semibold mb-3 text-white">
+                          Vulnerability Breakdown
+                        </h3>
+                        <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+                          {['critical', 'high', 'medium', 'low'].map(severity => {
+                            const count = scanData.vulnerabilities.filter(
+                              v => v.severity?.toLowerCase() === severity
+                            ).length;
+                            return (
+                              <div key={severity} className="text-center">
+                                <div className={`text-2xl font-bold ${
+                                  severity === 'critical' ? 'text-purple-400' :
+                                  severity === 'high' ? 'text-red-400' :
+                                  severity === 'medium' ? 'text-yellow-400' :
+                                  'text-blue-400'
+                                }`}>
+                                  {count}
+                                </div>
+                                <div className="text-xs text-gray-400 uppercase">
+                                  {severity}
+                                </div>
+                              </div>
+                            );
+                          })}
+                        </div>
+                      </div>
+                    )}
                   </div>
                 )}
 
@@ -521,6 +664,9 @@ export default function Vulnscanner() {
                               Description
                             </th>
                             <th className="px-4 py-2 border-b border-white text-left text-xs font-medium text-gray-400 uppercase tracking-wider">
+                              Details
+                            </th>
+                            <th className="px-4 py-2 border-b border-white text-left text-xs font-medium text-gray-400 uppercase tracking-wider">
                               Recommendation
                             </th>
                           </tr>
@@ -529,26 +675,29 @@ export default function Vulnscanner() {
                           {scanData.vulnerabilities.map((v, i) => (
                             <tr key={i} className="hover:bg-gray-900 align-top">
                               <td className="px-4 py-3 whitespace-nowrap align-top">
-                                <span
-                                  className={`inline-block px-2 py-1 text-xs rounded-full border ${getSeverityColor(
-                                    v.severity
-                                  )}`}
-                                >
-                                  {v.severity?.toUpperCase()}
-                                </span>
+                                <div className="flex items-center gap-2">
+                                  {getSeverityIcon(v.severity)}
+                                  <span
+                                    className={`inline-block px-2 py-1 text-xs rounded-full border ${getSeverityColor(
+                                      v.severity
+                                    )}`}
+                                  >
+                                    {v.severity?.toUpperCase()}
+                                  </span>
+                                </div>
                               </td>
                               <td className="px-4 py-3 whitespace-nowrap text-sm font-medium text-white align-top">
-                                {(v.type || "").replace(/_/g, " ")}
+                                {getVulnerabilityTypeLabel(v.type || "")}
                               </td>
-                              <td className="px-4 py-3 text-sm text-gray-300 align-top max-w-[28rem] break-words">
-                                <div>
-                                  <p>{v.description}</p>
-                                  {v.details && (
-                                    <p className="text-xs mt-1 text-gray-500">
-                                      {v.details}
-                                    </p>
-                                  )}
-                                </div>
+                              <td className="px-4 py-3 text-sm text-gray-300 align-top max-w-[20rem] break-words">
+                                {v.description}
+                              </td>
+                              <td className="px-4 py-3 text-sm text-gray-400 align-top max-w-[16rem] break-words">
+                                {v.details && (
+                                  <p className="text-xs text-gray-500">
+                                    {v.details}
+                                  </p>
+                                )}
                               </td>
                               <td className="px-4 py-3 text-sm text-gray-400 align-top max-w-[20rem] break-words">
                                 {v.recommendation || "—"}
@@ -559,6 +708,7 @@ export default function Vulnscanner() {
                       </table>
                     ) : (
                       <div className="text-center py-8">
+                        <CheckCircle className="w-16 h-16 text-green-400 mx-auto mb-4" />
                         <p className="text-green-400 font-medium">
                           No vulnerabilities detected!
                         </p>
@@ -583,15 +733,22 @@ export default function Vulnscanner() {
                                 Status
                               </td>
                               <td className="px-4 py-3 text-sm">
-                                <span
-                                  className={
-                                    scanData.ssl.valid
-                                      ? "text-green-400 font-medium"
-                                      : "text-red-400 font-medium"
-                                  }
-                                >
-                                  {scanData.ssl.valid ? "Valid" : "Invalid"}
-                                </span>
+                                <div className="flex items-center gap-2">
+                                  {scanData.ssl.valid ? (
+                                    <CheckCircle className="w-4 h-4 text-green-400" />
+                                  ) : (
+                                    <XCircle className="w-4 h-4 text-red-400" />
+                                  )}
+                                  <span
+                                    className={
+                                      scanData.ssl.valid
+                                        ? "text-green-400 font-medium"
+                                        : "text-red-400 font-medium"
+                                    }
+                                  >
+                                    {scanData.ssl.valid ? "Valid" : "Invalid"}
+                                  </span>
+                                </div>
                               </td>
                             </tr>
                             <tr>
@@ -641,6 +798,7 @@ export default function Vulnscanner() {
                       </div>
                     ) : (
                       <div className="text-center py-8">
+                        <XCircle className="w-16 h-16 text-red-400 mx-auto mb-4" />
                         <p className="text-red-400 font-medium">
                           SSL certificate information not available
                         </p>
@@ -772,6 +930,7 @@ export default function Vulnscanner() {
                       </div>
                     ) : (
                       <div className="text-center py-8">
+                        <Cookie className="w-16 h-16 text-gray-400 mx-auto mb-4" />
                         <p className="text-gray-400 font-medium">No cookies set.</p>
                       </div>
                     )}
@@ -783,52 +942,81 @@ export default function Vulnscanner() {
                   <div className="bg-black p-4 sm:p-6 rounded-xl border border-white">
                     {scanData?.headers?.csp ? (
                       <>
-                        <div className="mb-4">
-                          <h3 className="text-lg font-semibold mb-1 text-white">
+                        <div className="flex items-center gap-2 mb-4">
+                          <Shield className="text-blue-400" />
+                          <h3 className="text-lg font-semibold text-white">
                             Content-Security-Policy
                           </h3>
-                          <p className="text-sm text-gray-300 break-words">
-                            {scanData.headers.csp.present
-                              ? scanData.headers.csp.policy || "(empty policy)"
-                              : "Missing CSP header"}
-                          </p>
+                          <div className="flex items-center gap-1">
+                            {scanData.headers.csp.present ? (
+                              <CheckCircle className="w-4 h-4 text-green-400" />
+                            ) : (
+                              <XCircle className="w-4 h-4 text-red-400" />
+                            )}
+                            <span className={`text-sm font-medium ${
+                              scanData.headers.csp.present ? 'text-green-400' : 'text-red-400'
+                            }`}>
+                              {scanData.headers.csp.present ? 'Present' : 'Missing'}
+                            </span>
+                          </div>
                         </div>
-                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        
+                        {scanData.headers.csp.present && (
+                          <div className="mb-4">
+                            <h4 className="font-semibold mb-2 text-white">Policy</h4>
+                            <p className="text-sm text-gray-300 break-words bg-gray-900 p-3 rounded border">
+                              {scanData.headers.csp.policy || "(empty policy)"}
+                            </p>
+                          </div>
+                        )}
+                        
+                        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
                           <div>
-                            <h4 className="font-semibold mb-2 text-white">Issues</h4>
+                            <h4 className="font-semibold mb-2 text-white flex items-center gap-2">
+                              <AlertTriangle className="w-4 h-4 text-red-400" />
+                              Issues ({Array.isArray(scanData.headers.csp.issues) ? scanData.headers.csp.issues.length : 0})
+                            </h4>
                             {Array.isArray(scanData.headers.csp.issues) &&
                             scanData.headers.csp.issues.length ? (
-                              <ul className="list-disc list-inside text-sm text-red-400">
-                                {scanData.headers.csp.issues.map((i, idx) => (
-                                  <li key={idx}>{i}</li>
+                              <ul className="list-disc list-inside text-sm text-red-400 space-y-1">
+                                {scanData.headers.csp.issues.map((issue, idx) => (
+                                  <li key={idx}>{issue}</li>
                                 ))}
                               </ul>
                             ) : (
-                              <p className="text-sm text-green-400">None</p>
+                              <p className="text-sm text-green-400 flex items-center gap-2">
+                                <CheckCircle className="w-4 h-4" />
+                                No issues found
+                              </p>
                             )}
                           </div>
                           <div>
                             <h4 className="font-semibold mb-2 text-white">Directives</h4>
                             {scanData.headers.csp.directives &&
                             Object.keys(scanData.headers.csp.directives).length ? (
-                              <ul className="text-sm text-gray-300 space-y-1">
+                              <div className="text-sm text-gray-300 space-y-2 max-h-60 overflow-y-auto">
                                 {Object.entries(
                                   scanData.headers.csp.directives
                                 ).map(([k, vals]) => (
-                                  <li key={k}>
-                                    <span className="font-medium">{k}:</span>{" "}
-                                    {Array.isArray(vals) ? vals.join(" ") : String(vals)}
-                                  </li>
+                                  <div key={k} className="bg-gray-900 p-2 rounded">
+                                    <span className="font-medium text-blue-400">{k}:</span>{" "}
+                                    <span className="text-gray-300">
+                                      {Array.isArray(vals) ? vals.join(" ") : String(vals)}
+                                    </span>
+                                  </div>
                                 ))}
-                              </ul>
+                              </div>
                             ) : (
-                              <p className="text-sm text-gray-400">—</p>
+                              <p className="text-sm text-gray-400">No directives found</p>
                             )}
                           </div>
                         </div>
                       </>
                     ) : (
-                      <p className="text-gray-400">No CSP data available.</p>
+                      <div className="text-center py-8">
+                        <Shield className="w-16 h-16 text-gray-400 mx-auto mb-4" />
+                        <p className="text-gray-400">No CSP data available.</p>
+                      </div>
                     )}
                   </div>
                 )}
@@ -838,130 +1026,182 @@ export default function Vulnscanner() {
                   <div className="bg-black p-4 sm:p-6 rounded-xl border border-white">
                     {scanData?.headers?._benchmark ? (
                       <>
-                        <div className="flex items-center gap-2 mb-3">
+                        <div className="flex items-center gap-2 mb-4">
                           <BarChart className="text-slate-400" />
-                          <h3 className="text-lg font-semibold text-white">Benchmark</h3>
+                          <h3 className="text-lg font-semibold text-white">Security Benchmark</h3>
+                          <div className="ml-auto">
+                            <span className="text-2xl font-bold text-blue-400">
+                              {scanData.headers._benchmark.grade}
+                            </span>
+                            <span className="text-sm text-gray-400 ml-1">Grade</span>
+                          </div>
                         </div>
                         <p className="text-sm text-gray-400 mb-4">
-                          Compared against last {scanData.headers._benchmark.comparedTo} scans for this domain.
+                          Compared against the last {scanData.headers._benchmark.comparedTo} scans for this domain.
                         </p>
-                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                          <div className="bg-black p-3 rounded border border-white">
-                            <div className="text-sm text-gray-300">
-                              <div className="mb-1">
-                                <span className="font-medium text-white">Grade:</span>{" "}
-                                <span className="text-slate-300">
-                                  {scanData.headers._benchmark.grade}
-                                </span>
+                        
+                        {scanData.headers._benchmark.deltas && (
+                          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                            <div className="bg-black p-4 rounded border border-white">
+                              <h4 className="font-semibold mb-3 text-white">Performance Deltas</h4>
+                              <div className="space-y-2 text-sm">
+                                {Object.entries(scanData.headers._benchmark.deltas).map(([key, delta]) => {
+                                  const label = key
+                                    .replace(/([A-Z])/g, ' $1')
+                                    .replace(/^./, str => str.toUpperCase())
+                                    .replace('Delta', '');
+                                  const isImprovement = delta < 0;
+                                  return (
+                                    <div key={key} className="flex items-center justify-between">
+                                      <span className="text-gray-300">{label}:</span>
+                                      <span className={`font-medium ${
+                                        isImprovement ? 'text-green-400' : 
+                                        delta > 0 ? 'text-red-400' : 'text-gray-400'
+                                      }`}>
+                                        {delta > 0 ? '+' : ''}{delta}
+                                        {isImprovement && ' ↓'}
+                                        {delta > 0 && ' ↑'}
+                                      </span>
+                                    </div>
+                                  );
+                                })}
                               </div>
-                              {scanData.headers._benchmark.deltas && (
-                                <ul className="list-disc list-inside text-sm text-gray-300">
-                                  <li>
-                                    Vuln Count Δ: {scanData.headers._benchmark.deltas.vulnCountDelta}
-                                  </li>
-                                  <li>
-                                    Missing Sec Headers Δ: {scanData.headers._benchmark.deltas.missingSecHeadersDelta}
-                                  </li>
-                                  <li>
-                                    Weak Cookies Δ: {scanData.headers._benchmark.deltas.weakCookiesDelta}
-                                  </li>
-                                  <li>
-                                    CSP Issues Δ: {scanData.headers._benchmark.deltas.cspIssuesDelta}
-                                  </li>
-                                </ul>
-                              )}
+                            </div>
+                            <div className="bg-black p-4 rounded border border-white">
+                              <h4 className="font-semibold mb-3 text-white">Recommendations</h4>
+                              <div className="text-sm text-gray-300 space-y-2">
+                                <p>• Negative deltas indicate improvement</p>
+                                <p>• Focus on critical and high-severity issues first</p>
+                                <p>• For grades C or D, prioritize security headers and CSP</p>
+                                {scanData.headers._benchmark.grade === 'D' && (
+                                  <p className="text-red-400">• Immediate attention required for security posture</p>
+                                )}
+                              </div>
                             </div>
                           </div>
-                          <div className="bg-black p-3 rounded border border-white">
-                            <div className="text-sm text-gray-300">
-                              <div className="mb-1 font-medium text-white">Notes</div>
-                              <p className="text-sm text-gray-400">
-                                Negative deltas are good (improvement). If the grade is
-                                C or D, prioritize fixing missing security headers and
-                                CSP issues first.
-                              </p>
-                            </div>
-                          </div>
-                        </div>
+                        )}
                       </>
                     ) : (
-                      <p className="text-gray-400">Benchmark not available.</p>
+                      <div className="text-center py-8">
+                        <BarChart className="w-16 h-16 text-gray-400 mx-auto mb-4" />
+                        <p className="text-gray-400">Benchmark data not available.</p>
+                        <p className="text-sm text-gray-500 mt-2">
+                          Run more scans to establish baseline metrics.
+                        </p>
+                      </div>
+                    )}
+                  </div>
+                )}
+
+                {/* History */}
+                {activeTab === "history" && (
+                  <div className="bg-black p-4 sm:p-6 rounded-xl border border-white">
+                    <div className="flex items-center gap-2 mb-4">
+                      <History className="text-slate-400" />
+                      <h3 className="text-lg font-semibold text-white">Scan History</h3>
+                    </div>
+                    {!history ? (
+                      <div className="text-center py-4">
+                        <Loader2 className="w-6 h-6 animate-spin text-gray-400 mx-auto mb-2" />
+                        <p className="text-gray-400">Loading history...</p>
+                      </div>
+                    ) : history?.error ? (
+                      <div className="text-center py-8">
+                        <XCircle className="w-16 h-16 text-red-400 mx-auto mb-4" />
+                        <p className="text-red-400 text-sm">{history.error}</p>
+                      </div>
+                    ) : history?.items?.length ? (
+                      <div>
+                        <p className="text-sm text-gray-400 mb-4">
+                          Showing {history.items.length} recent scans for {history.domain}
+                        </p>
+                        <div className="overflow-x-auto">
+                          <table className="min-w-full bg-black border border-white text-white">
+                            <thead>
+                              <tr className="bg-black">
+                                <th className="px-3 py-2 border-b border-white text-left text-xs font-medium text-gray-400 uppercase tracking-wider">
+                                  Date
+                                </th>
+                                <th className="px-3 py-2 border-b border-white text-left text-xs font-medium text-gray-400 uppercase tracking-wider">
+                                  Vulnerabilities
+                                </th>
+                                <th className="px-3 py-2 border-b border-white text-left text-xs font-medium text-gray-400 uppercase tracking-wider">
+                                  Risk Level
+                                </th>
+                                <th className="px-3 py-2 border-b border-white text-left text-xs font-medium text-gray-400 uppercase tracking-wider">
+                                  Grade
+                                </th>
+                                <th className="px-3 py-2 border-b border-white text-left text-xs font-medium text-gray-400 uppercase tracking-wider">
+                                  Response Time
+                                </th>
+                                <th className="px-3 py-2 border-b border-white text-left text-xs font-medium text-gray-400 uppercase tracking-wider">
+                                  SSL Status
+                                </th>
+                              </tr>
+                            </thead>
+                            <tbody className="divide-y divide-white">
+                              {history.items.map((row, i) => (
+                                <tr key={i} className="hover:bg-gray-900">
+                                  <td className="px-3 py-2 text-xs sm:text-sm text-gray-300">
+                                    {new Date(row.timestamp).toLocaleString()}
+                                  </td>
+                                  <td className="px-3 py-2 text-xs sm:text-sm text-center">
+                                    <span className={`font-medium ${
+                                      (row.vulnerabilityCount || 0) === 0 ? 'text-green-400' :
+                                      (row.vulnerabilityCount || 0) <= 2 ? 'text-yellow-400' :
+                                      'text-red-400'
+                                    }`}>
+                                      {row.vulnerabilityCount ?? "—"}
+                                    </span>
+                                  </td>
+                                  <td className="px-3 py-2 text-xs sm:text-sm">
+                                    <span className={`${getRiskLevelColor(row.riskLevel)} font-medium`}>
+                                      {row.riskLevel?.toUpperCase() || "—"}
+                                    </span>
+                                  </td>
+                                  <td className="px-3 py-2 text-xs sm:text-sm text-center">
+                                    <span className="text-blue-400 font-medium">
+                                      {row?.headers?._benchmark?.grade || "—"}
+                                    </span>
+                                  </td>
+                                  <td className="px-3 py-2 text-xs sm:text-sm text-gray-300 text-center">
+                                    {typeof row.timespan === "number" ? `${row.timespan} ms` : "—"}
+                                  </td>
+                                  <td className="px-3 py-2 text-xs sm:text-sm text-center">
+                                    {row.ssl?.valid !== undefined ? (
+                                      <span className={row.ssl.valid ? 'text-green-400' : 'text-red-400'}>
+                                        {row.ssl.valid ? '✓' : '✗'}
+                                      </span>
+                                    ) : '—'}
+                                  </td>
+                                </tr>
+                              ))}
+                            </tbody>
+                          </table>
+                        </div>
+                      </div>
+                    ) : (
+                      <div className="text-center py-8">
+                        <History className="w-16 h-16 text-gray-400 mx-auto mb-4" />
+                        <p className="text-gray-400">No scan history available.</p>
+                        <p className="text-sm text-gray-500 mt-2">
+                          This is the first scan for this domain.
+                        </p>
+                      </div>
                     )}
                   </div>
                 )}
 
                 {/* Download PDF Button */}
-                <div className="flex justify-center sm:justify-end mt-4">
-                  <button
-                    onClick={generatePDF}
-                    className="bg-red-600 hover:bg-red-500 text-white py-2 px-4 rounded border border-white flex items-center gap-2"
-                  >
-                    <FileText className="h-4 w-4" />
-                    <span className="text-sm">Download PDF Report</span>
-                  </button>
-                </div>
-
-                {/* History */}
-                {activeTab === "history" && (
-                  <div className="bg-black p-4 sm:p-6 rounded-xl border border-white">
-                    <div className="flex items-center gap-2 mb-3">
-                      <History className="text-slate-400" />
-                      <h3 className="text-lg font-semibold text-white">Recent History</h3>
-                    </div>
-                    {!history ? (
-                      <p className="text-gray-400">Loading…</p>
-                    ) : history?.error ? (
-                      <p className="text-red-400 text-sm">{history.error}</p>
-                    ) : history?.items?.length ? (
-                      <div className="overflow-x-auto">
-                        <table className="min-w-full bg-black border border-white text-white">
-                          <thead>
-                            <tr className="bg-black">
-                              <th className="px-3 py-2 border-b border-white text-left text-xs font-medium text-gray-400 uppercase tracking-wider">
-                                Date
-                              </th>
-                              <th className="px-3 py-2 border-b border-white text-left text-xs font-medium text-gray-400 uppercase tracking-wider">
-                                Vulnerabilities
-                              </th>
-                              <th className="px-3 py-2 border-b border-white text-left text-xs font-medium text-gray-400 uppercase tracking-wider">
-                                Risk
-                              </th>
-                              <th className="px-3 py-2 border-b border-white text-left text-xs font-medium text-gray-400 uppercase tracking-wider">
-                                Grade
-                              </th>
-                              <th className="px-3 py-2 border-b border-white text-left text-xs font-medium text-gray-400 uppercase tracking-wider">
-                                Time
-                              </th>
-                            </tr>
-                          </thead>
-                          <tbody className="divide-y divide-white">
-                            {history.items.map((row, i) => (
-                              <tr key={i} className="hover:bg-gray-900">
-                                <td className="px-3 py-2 text-xs sm:text-sm text-gray-300">
-                                  {new Date(row.timestamp).toLocaleString()}
-                                </td>
-                                <td className="px-3 py-2 text-xs sm:text-sm text-gray-300">
-                                  {row.vulnerabilityCount ?? "—"}
-                                </td>
-                                <td className="px-3 py-2 text-xs sm:text-sm">
-                                  <span className={`${getRiskLevelColor(row.riskLevel)} font-medium`}>
-                                    {row.riskLevel?.toUpperCase() || "—"}
-                                  </span>
-                                </td>
-                                <td className="px-3 py-2 text-xs sm:text-sm text-gray-300">
-                                  {row?.headers?._benchmark?.grade || "—"}
-                                </td>
-                                <td className="px-3 py-2 text-xs sm:text-sm text-gray-300">
-                                  {typeof row.timespan === "number" ? `${row.timespan} ms` : "—"}
-                                </td>
-                              </tr>
-                            ))}
-                          </tbody>
-                        </table>
-                      </div>
-                    ) : (
-                      <p className="text-gray-400">No history.</p>
-                    )}
+                {scanData && (
+                  <div className="flex justify-center sm:justify-end mt-6 pt-4 border-t border-white">
+                    <button
+                      onClick={generatePDF}
+                      className="bg-red-600 hover:bg-red-500 text-white py-2 px-6 rounded border border-white flex items-center gap-2 transition-colors"
+                    >
+                      <FileText className="h-4 w-4" />
+                      <span className="text-sm">Download PDF Report</span>
+                    </button>
                   </div>
                 )}
               </div>
@@ -971,4 +1211,4 @@ export default function Vulnscanner() {
       </div>
     </div>
   );
-}
+}     

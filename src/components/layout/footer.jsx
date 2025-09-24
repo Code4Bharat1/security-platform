@@ -67,8 +67,9 @@ const Footer = () => {
       <div className="max-w-7xl mx-auto grid md:grid-cols-4 gap-8 px-2 md:px-3">
         {/* Left Section */}
         <div className="md:col-span-1">
-           <div className="w-full h-32 bg-black/10 mb-4">
-            <img src="/logo1.png" alt="Logo" className="w-full h-full object-contain" />
+          {/* className="w-full h-32 bg-black/10 mb-4" */}
+           <div className="">
+            <img src="/logo1.png" alt="Logo" className="w-50 h-50 object-contain" />
 </div>
 
 
@@ -147,7 +148,7 @@ const Footer = () => {
             { label: "Blog", id: "blogs" },
             { label: "Privacy Policy", href: "/tools/privacypolicy" },
             { label: "Terms and Conditions", href: "/tools/termscondition" },
-            { label: "Schedule Meeting", href: "/schedule-meeting" },
+            { label: "Schedule Meeting", href: "/tools/schedulemeeting" },
             { label: "Why Choose Us", id: "why-us" },
             { label: "Certificate", id: "certificates" },
              { label: "Connect", href: "/connect" },          
