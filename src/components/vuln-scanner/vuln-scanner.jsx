@@ -1,5 +1,7 @@
 "use client";
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useEffect, useMemo, useState,  } from "react";
+import { useRouter } from "next/navigation";
+
 import {
   Loader2,
   Search as SearchIcon,
@@ -25,12 +27,14 @@ import autoTable from "jspdf-autotable";
  */
 
 export default function Vulnscanner() {
+  const router = useRouter();
   const [url, setUrl] = useState("");
   const [error, setError] = useState("");
   const [scanData, setScanData] = useState(null);
   const [loading, setLoading] = useState(false);
   const [activeTab, setActiveTab] = useState("overview");
   const [history, setHistory] = useState(null);
+
 
   const API_BASE = useMemo(
     () => (process.env.NEXT_PUBLIC_PROD_API_URL || "").replace(/\/+$/, ""),
@@ -62,45 +66,83 @@ export default function Vulnscanner() {
     }
   };
 
-  const handleSubmit = async (e) => {
-    if (e && e.preventDefault) e.preventDefault();
+const handleSubmit = async (e) => {
+  if (e && e.preventDefault) e.preventDefault();
 
-    if (!validateUrl(url)) {
-      setError("Please enter a valid website URL.");
+  if (!validateUrl(url)) {
+    setError("Please enter a valid website URL.");
+    return;
+  }
+
+  const token = localStorage.getItem("token");
+  if (!token) {
+    router.push("/gain-access"); // ✅ Not logged in → redirect
+    return;
+  }
+
+  const domain = domainFromUrl(url);
+  setError("");
+  setLoading(true);
+  setScanData(null);
+  setHistory(null);
+
+  try {
+    // ✅ Step 1: Inspect token
+    const inspectRes = await fetch("http://localhost:4180/api/auth/inspect-token", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
+      },
+      body: JSON.stringify({ token }),
+    });
+
+    const inspectData = await inspectRes.json();
+    if (!inspectRes.ok || inspectData.meta?.isExpired) {
+      setError("Your session expired. Please login again.");
+      router.push("/gain-access");
       return;
     }
 
-    const domain = domainFromUrl(url);
-    setError("");
-    setLoading(true);
-    setScanData(null);
-    setHistory(null);
+    // ✅ Step 2: Run scan (your original code)
+    const response = await fetch(`${API_BASE}/scan/run-scan`, {
+      method: "POST",
+      headers: { 
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`, // 👈 
+      },
+      body: JSON.stringify({ url: `https://${domain}` }),
+    });
 
-    try {
-      const response = await fetch(`${API_BASE}/scan/run-scan`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ url: `https://${domain}` }),
-      });
-
-      const result = await response.json();
-      if (result.error) {
-        setError(result.error);
-        setLoading(false);
-        return;
-      }
-
-      setScanData(result);
-      setActiveTab("overview");
+    const result = await response.json();
+    if (result.error) {
+      setError(result.error);
       setLoading(false);
-
-      fetchHistory(domain);
-    } catch (err) {
-      console.error("Error:", err);
-      setError("Something went wrong.");
-      setLoading(false);
+      return;
     }
-  };
+
+    setScanData(result);
+    setActiveTab("overview");
+    fetchHistory(domain);
+
+    // ✅ Step 3: Deduct 1 credit after success
+    await fetch("http://localhost:4180/api/auth/recharge-credits", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
+      },
+      body: JSON.stringify({ amount: -1 }), // 👈 credit deduct
+    });
+
+  } catch (err) {
+    console.error("Error:", err);
+    setError("Something went wrong.");
+  } finally {
+    setLoading(false);
+  }
+};
+
 
   const getSeverityColor = (severity) => {
     switch ((severity || "").toLowerCase()) {

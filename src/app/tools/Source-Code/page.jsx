@@ -1,13 +1,15 @@
 "use client";
 import { useState } from "react";
+import { useRouter } from "next/navigation";
 
 export default function SourceCodeAnalyzer() {
+  const router = useRouter();
   const [code, setCode] = useState("");
   const [file, setFile] = useState(null);
   const [result, setResult] = useState(null);
   const [loading, setLoading] = useState(false);
 
-  // Utility to read file as text
+  // Utility: read file as text
   const readFileAsText = (file) => {
     return new Promise((resolve, reject) => {
       const reader = new FileReader();
@@ -22,35 +24,71 @@ export default function SourceCodeAnalyzer() {
     setLoading(true);
 
     try {
-      let finalCode = code.trim();
+      // 1️⃣ Token check
+      const token = localStorage.getItem("token");
+      console.log("Token:", token);
+      if (!token) {
+        router.push("/gain-access");
+        return;
+      }
 
+      // 2️⃣ Prepare code
+      let finalCode = code.trim();
       if (!file && finalCode === "") {
         alert("Please paste code or upload a file.");
         setLoading(false);
         return;
       }
+      if (file) finalCode = await readFileAsText(file);
 
-      if (file) {
-        finalCode = await readFileAsText(file);
+      // 3️⃣ Inspect token
+      const inspectRes = await fetch(
+        `${process.env.NEXT_PUBLIC_PROD_API_URL}/auth/inspect-token`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+          body: JSON.stringify({ token }),
+        }
+      );
+      const inspectData = await inspectRes.json();
+      console.log("Inspect response:", inspectData);
+      if (!inspectRes.ok || inspectData.meta?.isExpired) {
+        alert("Your session expired. Please login again.");
+        router.push("/gain-access");
+        return;
       }
 
+      // 4️⃣ Run code analysis API
       const res = await fetch(
         `${process.env.NEXT_PUBLIC_PROD_API_URL}/analyze/analyzeCode`,
         {
           method: "POST",
-          headers: { "Content-Type": "application/json" },
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
           body: JSON.stringify({ code: finalCode }),
         }
       );
-
-      if (!res.ok) {
-        throw new Error(`API error: ${res.statusText}`);
-      }
-
+      if (!res.ok) throw new Error(`API error: ${res.statusText}`);
       const data = await res.json();
+      console.log("Scan API response:", data);
       setResult(data);
+
+      // 5️⃣ Deduct 1 credit
+      await fetch(`${process.env.NEXT_PUBLIC_PROD_API_URL}/auth/recharge-credits`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({ amount: -1 }),
+      });
     } catch (err) {
-      console.error("Error analyzing code:", err);
+      console.error("Error:", err);
       setResult({
         results: ["❌ An error occurred while analyzing the code."],
         passed: 0,
@@ -63,7 +101,7 @@ export default function SourceCodeAnalyzer() {
 
   return (
     <div className="bg-black min-h-screen text-white flex flex-col items-center justify-center p-6">
-      {/* Header Section */}
+      {/* Header */}
       <div className="flex flex-col items-start gap-6 mb-10 text-left w-full max-w-3xl">
         <div className="flex items-center gap-6">
           <img
