@@ -1,11 +1,14 @@
 "use client";
 import { useMemo, useState } from 'react';
 import axios from 'axios';
+import useProtectedAction from '../UseProtectedAction/UseProtectedAction';
+// import { headers } from 'next/headers';
 
 // Build a sane API base: prefer env, else /api, trim trailing slashes
 const API_BASE = (process.env.NEXT_PUBLIC_PROD_API_URL || 'http://localhost:4180/api').replace(/\/+$/, '');
 
 export default function AnalyzerPage() {
+  const protectedAction = useProtectedAction();
   const [code, setCode] = useState('');
   const [language, setLanguage] = useState('javascript'); // 'javascript'|'typescript'|'react'|'vue'|'php'
   const [issues, setIssues] = useState([]);
@@ -96,6 +99,9 @@ el.textContent = someUserInput; // safe
   };
 
   async function analyze() {
+    await protectedAction (async (token) => {
+
+
     setIsLoading(true);
     setError('');
     setRawResponse('');
@@ -105,7 +111,9 @@ el.textContent = someUserInput; // safe
       const response = await axios.post(`${API_BASE}/analyze/analyzeCode`, {
         code,
         language
-      });
+      },
+    {headers:{Authorization: `Bearer ${token}`}}
+    );
       
       const data = response.data;
       setRawResponse(JSON.stringify(data, null, 2));
@@ -152,6 +160,7 @@ el.textContent = someUserInput; // safe
     } finally {
       setIsLoading(false);
     }
+  });
   }
 
   const applyFix = (fix, snippet) => {
@@ -253,7 +262,8 @@ el.textContent = someUserInput; // safe
         {/* Header */}
         <div className="flex items-center gap-4 mb-6 mt-15">
           <div className="w-30 h-30 bg-gray-800 rounded-full border-4 border-red-500 flex items-center justify-center overflow-hidden">
-            <img src="/RedTeam/heckmarx.png" alt="Logo" className="w-full h-full object-cover" />
+            <img src="/RedTeam/heckmarx.png" 
+            alt="Logo" className="w-full h-full object-cover" />
           </div>
           <div>
             <h1 className="text-3xl font-bold text-white">JavaScript Security Analyzer</h1>

@@ -1,8 +1,10 @@
 "use client";
 import { useState } from "react";
 import axios from "axios";
+import useProtectedAction from "../UseProtectedAction/UseProtectedAction";
 
 export default function SubdomainScanner() {
+  const protectedAction = useProtectedAction();
   const [domain, setDomain] = useState("");
   const [results, setResults] = useState([]);
   const [stats, setStats] = useState(null);
@@ -32,6 +34,7 @@ export default function SubdomainScanner() {
   };
 
   const handleSubmit = async () => {
+    await protectedAction(async(token) => {    
   setLoading(true);
   setError("");
   setResults([]);
@@ -47,7 +50,8 @@ export default function SubdomainScanner() {
   try {
     const response = await axios.post(
       `${API_URL}/subdomain/subdomains-scan`,
-      { domain: cleanDomain }
+      { domain: cleanDomain },
+      {headers: {Authorization: `Bearer${token}`}}
     );
 
     const data = response.data;
@@ -69,6 +73,7 @@ export default function SubdomainScanner() {
   } finally {
     setLoading(false);
   }
+  });
 };
 
 

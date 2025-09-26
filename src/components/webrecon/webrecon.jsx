@@ -3,11 +3,14 @@ import { useMemo, useState } from "react";
 import jsPDF from "jspdf";
 import autoTable from "jspdf-autotable";
 
+import useProtectedAction from "../UseProtectedAction/UseProtectedAction";
+
 const dnsTypeMap = { 1: "A", 28: "AAAA", 15: "MX", 16: "TXT", 2: "NS" };
 const getTypeName = (n) => dnsTypeMap[n] || `Type ${n}`;
 const RECORD_TYPES = ["A", "AAAA", "MX", "TXT", "NS"];
 
 export default function Webrecon() {
+  const protectedAction = useProtectedAction();
   const [domain, setDomain] = useState("");
   const [recordType, setRecordType] = useState("A");
   const [result, setResult] = useState(null);
@@ -56,6 +59,7 @@ export default function Webrecon() {
 
   // Deep Scan
   const handleDeepScan = async () => {
+    await protectedAction (async (token) => {
     setScanError("");
     setScan(null);
     setScanLoading(true);
@@ -70,7 +74,7 @@ export default function Webrecon() {
     try {
       const res = await fetch(`${API_BASE}/dns/recon-scan`, {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: { "Content-Type": "application/json" , "Authorization" : `Bearer ${token}` },
         body: JSON.stringify({ domain: target }),
       });
 
@@ -83,6 +87,7 @@ export default function Webrecon() {
     } finally {
       setScanLoading(false);
     }
+  });
   };
 
   // CSV export

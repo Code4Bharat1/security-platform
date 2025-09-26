@@ -1,7 +1,9 @@
 'use client';
 import { useMemo, useState } from 'react';
+import useProtectedAction from '../UseProtectedAction/UseProtectedAction';
 
 export default function TechnologyFingerprinter() {
+  const protectedAction = useProtectedAction();
   const [url, setUrl] = useState('');
   const [results, setResults] = useState([]);    // array of strings
   const [meta, setMeta] = useState(null);        // { startedAt, finishedAt, durationMs, status, finalUrl, contentLength }
@@ -24,6 +26,7 @@ export default function TechnologyFingerprinter() {
   };
 
   const analyzeTech = async () => {
+    await protectedAction(async (token) => {
     setLoading(true);
     setError('');
     setResults([]);
@@ -32,7 +35,7 @@ export default function TechnologyFingerprinter() {
     try {
       const res = await fetch(`${process.env.NEXT_PUBLIC_PROD_API_URL}/fingerprint/fingerprint-scan`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 'Content-Type': 'application/json', "Authorization": `Bearer ${token}`},
         body: JSON.stringify({ url: url.trim() }),
       });
 
@@ -48,6 +51,7 @@ export default function TechnologyFingerprinter() {
     } finally {
       setLoading(false);
     }
+   })
   };
 
   // Quick categorization on the client by keyword

@@ -2,6 +2,7 @@
 import { useState } from 'react';
 import { jsPDF } from 'jspdf';
 import autoTable from 'jspdf-autotable';
+import useProtectedAction from '../UseProtectedAction/UseProtectedAction';
 
 /**
  * DirectoryBruteForcer.jsx
@@ -13,6 +14,7 @@ import autoTable from 'jspdf-autotable';
  */
 
 export default function DirectoryBruteForcer() {
+  const protectedAction = useProtectedAction();
   const [target, setTarget] = useState('');
   const [recursive, setRecursive] = useState(true);
   const [results, setResults] = useState([]);
@@ -20,6 +22,7 @@ export default function DirectoryBruteForcer() {
   const [loading, setLoading] = useState(false);
 
   const startScan = async () => {
+    await protectedAction(async(token) =>{
     const cleanTarget = target.trim();
     if (!cleanTarget) return;
     setLoading(true);
@@ -27,11 +30,11 @@ export default function DirectoryBruteForcer() {
     setMeta(null);
 
     try {
-      const res = await fetch(
+      const res = await fetch(        
         `${process.env.NEXT_PUBLIC_PROD_API_URL}/bruteForce/brute-Force`,
         {
           method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
+          headers: { 'Content-Type': 'application/json', 'Authorization':`Bearer ${token}` },
           body: JSON.stringify({ target: cleanTarget, recursive }),
         }
       );
@@ -48,6 +51,7 @@ export default function DirectoryBruteForcer() {
     } finally {
       setLoading(false);
     }
+  });
   };
 
   const formatDuration = (ms) => {
