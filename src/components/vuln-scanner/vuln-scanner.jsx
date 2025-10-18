@@ -15,6 +15,9 @@ import {
   CheckCircle,
   XCircle,
   Info,
+  Code,
+  Globe,
+  FileCode
 } from "lucide-react";
 import { jsPDF } from "jspdf";
 import autoTable from "jspdf-autotable";
@@ -38,7 +41,7 @@ export default function Vulnscanner() {
 
 
   const API_BASE = useMemo(
-    () => (process.env.NEXT_PUBLIC_PROD_API_URL || "").replace(/\/+$/, ""),
+    () => (process.env.NEXT_PUBLIC_PROD_API_URL ).replace(/\/+$/, ""),
     []
   );
 
@@ -116,6 +119,11 @@ const handleSubmit = async (e) => {
     });
 
     const result = await response.json();
+
+    console.log("SCAN RESULT:", result);
+console.log("RAW HEADERS (as sent):", result?.headers?.rawHeaders);
+console.log("COOKIES (as sent):", result?.headers?.cookieFindings ?? result?.headers?.cookies);
+
     if (result.error) {
       setError(result.error);
       setLoading(false);
@@ -278,6 +286,7 @@ const handleSubmit = async (e) => {
         head: [["SSL Details", "Value"]],
         body: sslRows,
         styles: { fontSize: 10 },
+        
       });
     }
 
@@ -339,41 +348,83 @@ const handleSubmit = async (e) => {
     doc.save("scan_report.pdf");
   };
 
+  // put this inside the component (above the return)
+const getCookieArray = (h) => {
+  if (!h) return [];
+  if (Array.isArray(h.cookieFindings)) return h.cookieFindings;   // new normalized field
+  if (Array.isArray(h.cookies)) return h.cookies;                 // fallback: old format already parsed
+  if (typeof h.cookies === "string" && h.cookies.trim()) {        // fallback: raw Set-Cookie string
+    // naive split into "cookie=value; ...", good enough to show something
+    return h.cookies
+      .split(/,(?=[^;]+=[^;]+)/)
+      .map((s) => ({
+        name: s.split("=")[0]?.trim() || "(unnamed)",
+        flags: [],
+        issues: [],
+        raw: s.trim(),
+      }));
+  }
+  return [];
+};
+
+
+  // Turn rawHeaders into an array no matter how it's stored
+const normalizeRawHeaders = (raw) => {
+  if (Array.isArray(raw)) return raw;
+  if (typeof raw === "string" && raw.trim()) {
+    // split on ", " to rebuild [key, value, key, value, ...]
+    const flat = raw.split(/,\s*/);
+    const out = [];
+    for (let i = 0; i < flat.length; i += 2) out.push(flat[i], flat[i + 1] ?? "");
+    return out;
+  }
+  // if it's an object {key:value,...}, flatten it
+  if (raw && typeof raw === "object") {
+    return Object.entries(raw).flat();
+  }
+  return [];
+};
+
+
   const renderRawHeaders = (raw) => {
-    if (!Array.isArray(raw) || raw.length === 0) return null;
-    const rows = [];
-    for (let i = 0; i < raw.length; i += 2) {
-      rows.push([raw[i], raw[i + 1]]);
-    }
-    return (
-      <div className="overflow-x-auto">
-        <table className="min-w-full bg-black border border-white text-white">
-          <thead>
-            <tr className="bg-black">
-              <th className="px-4 py-2 border-b border-white text-left text-xs font-medium text-gray-400 uppercase tracking-wider">
-                Header
-              </th>
-              <th className="px-4 py-2 border-b border-white text-left text-xs font-medium text-gray-400 uppercase tracking-wider">
-                Value
-              </th>
+  const flat = normalizeRawHeaders(raw);
+  if (!flat.length) return null;
+
+  const rows = [];
+  for (let i = 0; i < flat.length; i += 2) {
+    rows.push([flat[i], flat[i + 1]]);
+  }
+
+  return (
+    <div className="overflow-x-auto">
+      <table className="min-w-full bg-black border border-white text-white">
+        <thead>
+          <tr className="bg-black">
+            <th className="px-4 py-2 border-b border-white text-left text-xs font-medium text-gray-400 uppercase tracking-wider">
+              Header
+            </th>
+            <th className="px-4 py-2 border-b border-white text-left text-xs font-medium text-gray-400 uppercase tracking-wider">
+              Value
+            </th>
+          </tr>
+        </thead>
+        <tbody className="divide-y divide-white">
+          {rows.map(([k, v], idx) => (
+            <tr key={idx} className="hover:bg-gray-900">
+              <td className="px-4 py-3 whitespace-nowrap text-sm font-medium text-white">
+                {k}
+              </td>
+              <td className="px-4 py-3 text-sm text-gray-300 break-words max-w-xs">
+                {v}
+              </td>
             </tr>
-          </thead>
-          <tbody className="divide-y divide-white">
-            {rows.map(([k, v], idx) => (
-              <tr key={idx} className="hover:bg-gray-900">
-                <td className="px-4 py-3 whitespace-nowrap text-sm font-medium text-white">
-                  {k}
-                </td>
-                <td className="px-4 py-3 text-sm text-gray-300 break-words max-w-xs">
-                  {v}
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
-    );
-  };
+          ))}
+        </tbody>
+      </table>
+    </div>
+  );
+};
+
 
   // Small stat card - responsive
   const StatCard = ({ title, value, hint, icon }) => (
@@ -588,6 +639,7 @@ const handleSubmit = async (e) => {
                     ["raw", "Raw Headers"],
                     ["cookies", "Cookies"],
                     ["csp", "CSP"],
+                    ["webapp", "Web App"],
                     ["benchmark", "Benchmark"],
                     ["history", "History"],
                   ].map(([key, label]) => (
@@ -914,70 +966,69 @@ const handleSubmit = async (e) => {
                   </div>
                 )}
 
-                {/* Raw Headers */}
+                {/* Raw Headers
                 {activeTab === "raw" && (
                   <div>{scanData?.headers?.rawHeaders?.length ? renderRawHeaders(scanData.headers.rawHeaders) : (
                     <div className="text-center py-8">
                       <p className="text-gray-400 font-medium">No raw headers.</p>
                     </div>
                   )}</div>
-                )}
+                )} */}
 
                 {/* Cookies */}
                 {activeTab === "cookies" && (
-                  <div>
-                    {Array.isArray(scanData?.headers?.cookies) &&
-                    scanData.headers.cookies.length ? (
-                      <div className="overflow-x-auto">
-                        <table className="min-w-full bg-black border border-white text-white">
-                          <thead>
-                            <tr className="bg-black">
-                              <th className="px-4 py-2 border-b border-white text-left text-xs font-medium text-gray-400 uppercase tracking-wider">
-                                Cookie
-                              </th>
-                              <th className="px-4 py-2 border-b border-white text-left text-xs font-medium text-gray-400 uppercase tracking-wider">
-                                Flags
-                              </th>
-                              <th className="px-4 py-2 border-b border-white text-left text-xs font-medium text-gray-400 uppercase tracking-wider">
-                                Issues
-                              </th>
-                            </tr>
-                          </thead>
-                          <tbody className="divide-y divide-white">
-                            {scanData.headers.cookies.map((c, i) => (
-                              <tr key={i} className="hover:bg-gray-900">
-                                <td className="px-4 py-3 whitespace-nowrap text-sm font-medium text-white">
-                                  {c.name || "(unnamed)"}
-                                </td>
-                                <td className="px-4 py-3 text-sm text-gray-300">
-                                  {Array.isArray(c.flags) && c.flags.length
-                                    ? c.flags.join(", ")
-                                    : "—"}
-                                </td>
-                                <td className="px-4 py-3 text-sm">
-                                  {Array.isArray(c.issues) && c.issues.length ? (
-                                    <ul className="list-disc list-inside text-red-400">
-                                      {c.issues.map((x, idx) => (
-                                        <li key={idx}>{x}</li>
-                                      ))}
-                                    </ul>
-                                  ) : (
-                                    <span className="text-green-400">None</span>
-                                  )}
-                                </td>
-                              </tr>
-                            ))}
-                          </tbody>
-                        </table>
-                      </div>
+  <div>
+    {(() => {
+      const cookies = getCookieArray(scanData?.headers);
+      return cookies.length ? (
+        <div className="overflow-x-auto">
+          <table className="min-w-full bg-black border border-white text-white">
+            <thead>
+              <tr className="bg-black">
+                <th className="px-4 py-2 border-b border-white text-left text-xs font-medium text-gray-400 uppercase tracking-wider">
+                  Cookie
+                </th>
+                <th className="px-4 py-2 border-b border-white text-left text-xs font-medium text-gray-400 uppercase tracking-wider">
+                  Flags
+                </th>
+                <th className="px-4 py-2 border-b border-white text-left text-xs font-medium text-gray-400 uppercase tracking-wider">
+                  Issues
+                </th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-white">
+              {cookies.map((c, i) => (
+                <tr key={i} className="hover:bg-gray-900">
+                  <td className="px-4 py-3 whitespace-nowrap text-sm font-medium text-white">
+                    {c.name || "(unnamed)"}
+                  </td>
+                  <td className="px-4 py-3 text-sm text-gray-300">
+                    {Array.isArray(c.flags) && c.flags.length ? c.flags.join(", ") : "—"}
+                  </td>
+                  <td className="px-4 py-3 text-sm">
+                    {Array.isArray(c.issues) && c.issues.length ? (
+                      <ul className="list-disc list-inside text-red-400">
+                        {c.issues.map((x, idx) => <li key={idx}>{x}</li>)}
+                      </ul>
                     ) : (
-                      <div className="text-center py-8">
-                        <Cookie className="w-16 h-16 text-gray-400 mx-auto mb-4" />
-                        <p className="text-gray-400 font-medium">No cookies set.</p>
-                      </div>
+                      <span className="text-green-400">None</span>
                     )}
-                  </div>
-                )}
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      ) : (
+        <div className="text-center py-8">
+          <Cookie className="w-16 h-16 text-gray-400 mx-auto mb-4" />
+          <p className="text-gray-400 font-medium">No cookies set.</p>
+        </div>
+      );
+    })()}
+  </div>
+)}
+
 
                 {/* CSP */}
                 {activeTab === "csp" && (
@@ -1135,6 +1186,19 @@ const handleSubmit = async (e) => {
                   </div>
                 )}
 
+                {activeTab === "raw" && (
+  <div>
+    {normalizeRawHeaders(scanData?.headers?.rawHeaders).length
+      ? renderRawHeaders(scanData.headers.rawHeaders)
+      : (
+        <div className="text-center py-8">
+          <p className="text-gray-400 font-medium">No raw headers.</p>
+        </div>
+      )}
+  </div>
+)}
+
+
                 {/* History */}
                 {activeTab === "history" && (
                   <div className="bg-black p-4 sm:p-6 rounded-xl border border-white">
@@ -1233,6 +1297,238 @@ const handleSubmit = async (e) => {
                     )}
                   </div>
                 )}
+                {activeTab === "webapp" && (
+  <div className="space-y-4">
+    {/* HTML Analysis */}
+    {scanData.htmlAnalysis && (
+      <div className="bg-black p-4 rounded-xl border border-white">
+        <div className="flex items-center gap-2 mb-4">
+          <Code className="text-blue-400" />
+          <h3 className="text-lg font-semibold text-white">HTML Form Analysis</h3>
+        </div>
+        
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-4">
+          <div className="text-center">
+            <div className="text-2xl font-bold text-white">{scanData.htmlAnalysis.formsFound || 0}</div>
+            <div className="text-xs text-gray-400">Forms Found</div>
+          </div>
+          <div className="text-center">
+            <div className="text-2xl font-bold text-white">{scanData.htmlAnalysis.passwordFields || 0}</div>
+            <div className="text-xs text-gray-400">Password Fields</div>
+          </div>
+          <div className="text-center">
+            <div className={`text-2xl font-bold ${scanData.htmlAnalysis.insecureActions?.length ? 'text-red-400' : 'text-green-400'}`}>
+              {scanData.htmlAnalysis.insecureActions?.length || 0}
+            </div>
+            <div className="text-xs text-gray-400">Insecure Actions</div>
+          </div>
+          <div className="text-center">
+            <div className={`text-2xl font-bold ${scanData.htmlAnalysis.autoCompleteIssues?.length ? 'text-yellow-400' : 'text-green-400'}`}>
+              {scanData.htmlAnalysis.autoCompleteIssues?.length || 0}
+            </div>
+            <div className="text-xs text-gray-400">Autocomplete Issues</div>
+          </div>
+        </div>
+
+        {scanData.htmlAnalysis.insecureActions?.length > 0 && (
+          <div className="bg-gray-900 p-3 rounded border border-red-500/30">
+            <h4 className="text-sm font-semibold text-red-400 mb-2">Insecure Form Actions:</h4>
+            <ul className="list-disc list-inside text-xs text-gray-300 space-y-1">
+              {scanData.htmlAnalysis.insecureActions.map((action, i) => (
+                <li key={i}>{action}</li>
+              ))}
+            </ul>
+          </div>
+        )}
+      </div>
+    )}
+
+    {/* Sitemap */}
+    <div className="bg-black p-4 rounded-xl border border-white">
+  <div className="flex items-center gap-2 mb-3">
+    <FileCode className="text-green-400" />
+    <h3 className="text-lg font-semibold text-white">Sitemap</h3>
+  </div>
+
+  {scanData.sitemap?.present ? (
+    <div className="space-y-2">
+      <div className="flex items-center gap-2">
+        <CheckCircle className="w-4 h-4 text-green-400" />
+        <span className="text-green-400 font-medium">Sitemap Found</span>
+      </div>
+
+      {scanData.sitemap.summary && (
+        <div className="bg-gray-900 p-3 rounded text-sm text-gray-300">
+          <p>
+            Type:{' '}
+            <span className="text-white font-medium">
+              {scanData.sitemap.summary.type}
+            </span>
+          </p>
+
+          {scanData.sitemap.summary.totalUrls && (
+            <p>
+              Total URLs:{' '}
+              <span className="text-white font-medium">
+                {scanData.sitemap.summary.totalUrls}
+              </span>
+            </p>
+          )}
+
+          {scanData.sitemap.summary.totalSitemaps && (
+            <p>
+              Total Sitemaps:{' '}
+              <span className="text-white font-medium">
+                {scanData.sitemap.summary.totalSitemaps}
+              </span>
+            </p>
+          )}
+
+          {/* ✅ Add this block to show all URLs */}
+          {scanData.sitemap.summary.urls?.length > 0 && (
+            <div className="mt-3">
+              <p className="font-semibold text-white mb-2">
+                Discovered URLs:
+              </p>
+              <div className="max-h-48 overflow-y-auto space-y-1 border border-gray-700 rounded-md p-2 bg-black/30">
+                {scanData.sitemap.summary.urls.map((url, index) => (
+                  <div key={index} className="truncate">
+                    <a
+                      href={url}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-blue-400 hover:text-blue-300 underline break-all"
+                    >
+                      {url}
+                    </a>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+        </div>
+      )}
+    </div>
+  ) : (
+    <div className="flex items-center gap-2">
+      <XCircle className="w-4 h-4 text-gray-400" />
+      <span className="text-gray-400">No sitemap.xml found</span>
+    </div>
+  )}
+</div>
+
+
+    
+
+{/* 🧭 Robots.txt */}
+<div className="bg-black p-4 rounded-xl border border-white">
+  <div className="flex items-center gap-2 mb-3">
+    <Globe className="text-purple-400" />
+    <h3 className="text-lg font-semibold text-white">Robots.txt</h3>
+  </div>
+
+  {scanData.robots?.present ? (
+    <div className="space-y-2">
+      <div className="flex items-center gap-2">
+        <CheckCircle className="w-4 h-4 text-green-400" />
+        <span className="text-green-400 font-medium">robots.txt Found</span>
+      </div>
+
+      <div className="bg-gray-900 p-3 rounded text-sm text-gray-300 space-y-2">
+        <p>
+          Allows All:{" "}
+          <span
+            className={`font-medium ${
+              scanData.robots.allowsAll ? "text-yellow-400" : "text-green-400"
+            }`}
+          >
+            {scanData.robots.allowsAll ? "Yes" : "No"}
+          </span>
+        </p>
+
+        {/* ✅ Show Allow Rules */}
+        {scanData.robots.allowRules?.length > 0 && (
+          <div>
+            <p className="font-semibold text-green-400">Allowed Paths:</p>
+            <ul className="list-disc ml-5 space-y-1">
+              {scanData.robots.allowRules.map((path, i) => (
+                <li key={i}>
+                  <a
+                    href={`https://${scanData.domain}${path}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-blue-400 underline"
+                  >
+                    {path}
+                  </a>
+                </li>
+              ))}
+            </ul>
+          </div>
+        )}
+
+        {/* ✅ Show Disallow Rules */}
+        {scanData.robots.disallowRules?.length > 0 && (
+          <div>
+            <p className="font-semibold text-red-400">Disallowed Paths:</p>
+            <ul className="list-disc ml-5 space-y-1">
+              {scanData.robots.disallowRules.map((path, i) => (
+                <li key={i}>
+                  <span className="text-gray-400">{path}</span>
+                </li>
+              ))}
+            </ul>
+          </div>
+        )}
+
+        {/* Show sitemap links found inside robots.txt */}
+        {scanData.robots.sitemapsInRobots?.length > 0 && (
+          <div className="mt-2">
+            <p className="text-gray-400">Sitemaps Found in robots.txt:</p>
+            <ul className="list-disc ml-5 mt-1 space-y-1">
+              {scanData.robots.sitemapsInRobots.map((link, i) => (
+                <li key={i}>
+                  <a
+                    href={link}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-blue-400 underline"
+                  >
+                    {link}
+                  </a>
+                </li>
+              ))}
+            </ul>
+          </div>
+        )}
+
+        {scanData.robots.fetchedUrl && (
+          <p>
+            Fetched From:{" "}
+            <a
+              href={scanData.robots.fetchedUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-blue-400 underline"
+            >
+              {scanData.robots.fetchedUrl}
+            </a>
+          </p>
+        )}
+      </div>
+    </div>
+  ) : (
+    <div className="flex items-center gap-2">
+      <XCircle className="w-4 h-4 text-gray-400" />
+      <span className="text-gray-400">No robots.txt found</span>
+    </div>
+  )}
+</div>
+
+
+
+  </div>
+)}
 
                 {/* Download PDF Button */}
                 {scanData && (
