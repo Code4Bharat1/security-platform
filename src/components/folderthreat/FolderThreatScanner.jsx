@@ -2,11 +2,14 @@
 import { FolderSearch, ChevronDown, ChevronUp } from "lucide-react";
 import { useState } from "react";
 import GreenLayout from "../GreenTeam/layout";
+import useProtectedAction from "../UseProtectedAction/UseProtectedAction";
 
 export default function FileThreatScanner() {
   const [files, setFiles] = useState([]);
   const [scanning, setScanning] = useState(false);
   const [results, setResults] = useState([]);
+
+  const protectedAction = useProtectedAction();
 
   const handleFileChange = (e) => {
     setFiles(Array.from(e.target.files));
@@ -20,23 +23,25 @@ export default function FileThreatScanner() {
 
     const formData = new FormData();
     files.forEach((file) => formData.append("file", file));
+    await protectedAction(async (userToken) => {
+      try {
+        const res = await fetch(
+          `${process.env.NEXT_PUBLIC_PROD_API_URL}/file/scan`,
+          {
+            method: "POST",
+            body: formData,
+            headers: { Authorization: `Bearer ${userToken}` },
+          }
+        );
 
-    try {
-      const res = await fetch(
-        `${process.env.NEXT_PUBLIC_PROD_API_URL}/file/scan`,
-        {
-          method: "POST",
-          body: formData,
-        }
-      );
+        const data = await res.json();
+        setResults(data.files || []);
+      } catch (err) {
+        setResults([{ fileName: "Error", status: "❌ Failed to scan file." }]);
+      }
 
-      const data = await res.json();
-      setResults(data.files || []);
-    } catch (err) {
-      setResults([{ fileName: "Error", status: "❌ Failed to scan file." }]);
-    }
-
-    setScanning(false);
+      setScanning(false);
+    });
   };
 
   const getStatusColor = (status) => {
@@ -48,7 +53,6 @@ export default function FileThreatScanner() {
 
   return (
     <div className="min-h-screen bg-black flex flex-col items-center pt-20 px-4">
-  
       <GreenLayout
         heroData={{
           imgPath: "/GreenTeam/folder-scan.png",

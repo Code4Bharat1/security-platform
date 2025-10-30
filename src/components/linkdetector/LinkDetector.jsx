@@ -1,10 +1,17 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import { Link2, RefreshCcw, Download, AlertTriangle, ShieldCheck } from "lucide-react";
+import {
+  Link2,
+  RefreshCcw,
+  Download,
+  AlertTriangle,
+  ShieldCheck,
+} from "lucide-react";
 import { jsPDF } from "jspdf";
 import autoTable from "jspdf-autotable";
 import GreenLayout from "../GreenTeam/layout";
+import useProtectedAction from "../UseProtectedAction/UseProtectedAction";
 
 const prettyDate = (iso) => (iso ? new Date(iso).toLocaleString() : "-");
 
@@ -21,6 +28,7 @@ export default function LinkDetector() {
   const [result, setResult] = useState(null);
   const [bulkResults, setBulkResults] = useState([]);
   const [error, setError] = useState("");
+  const protectedAction = useProtectedAction();
 
   const handleScan = async () => {
     if (!link.trim()) return;
@@ -29,24 +37,29 @@ export default function LinkDetector() {
     setResult(null);
     setError("");
 
-    try {
-      const res = await fetch(`${API_BASE}/link-detector/link-scan`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ url: link.trim() }),
-      });
-      const data = await res.json();
-      if (res.ok) {
-        setResult(data);
-      } else {
-        setError(data?.message || "❌ Link check failed.");
+    await protectedAction(async (userToken) => {
+      try {
+        const res = await fetch(`${API_BASE}/link-detector/link-scan`, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${userToken}`,
+          },
+          body: JSON.stringify({ url: link.trim() }),
+        });
+        const data = await res.json();
+        if (res.ok) {
+          setResult(data);
+        } else {
+          setError(data?.message || "❌ Link check failed.");
+        }
+      } catch (err) {
+        console.error("Request error:", err);
+        setError("❌ Failed to check the link.");
+      } finally {
+        setScanning(false);
       }
-    } catch (err) {
-      console.error("Request error:", err);
-      setError("❌ Failed to check the link.");
-    } finally {
-      setScanning(false);
-    }
+    });
   };
 
   const handleBulk = async () => {
@@ -104,7 +117,9 @@ export default function LinkDetector() {
           Invalid
         </span>
       );
-    return <span className="px-2 py-1 rounded-full text-xs bg-white">Unknown</span>;
+    return (
+      <span className="px-2 py-1 rounded-full text-xs bg-white">Unknown</span>
+    );
   };
 
   const downloadTxt = (payload, fileName = "link_report.txt") => {
@@ -127,20 +142,32 @@ export default function LinkDetector() {
     lines.push(`Onion: ${r.onion ? "Yes" : "No"}`);
     lines.push(`Redirect Chain:`);
     (r.redirectChain || []).forEach((u, i) => lines.push(`  ${i + 1}. ${u}`));
-    lines.push(`Suspicious Keywords: ${(r.suspicious?.keywordsFound || []).join(", ") || "-"}`);
+    lines.push(
+      `Suspicious Keywords: ${
+        (r.suspicious?.keywordsFound || []).join(", ") || "-"
+      }`
+    );
     lines.push(`Typosquat of: ${r.suspicious?.typosquatOf || "-"}`);
-    lines.push(`Shortener Expanded: ${r.suspicious?.shortenerExpanded ? "Yes" : "No"}`);
-    lines.push(`Suspicious Domain: ${r.suspicious?.suspiciousDomain ? "Yes" : "No"}`);
+    lines.push(
+      `Shortener Expanded: ${r.suspicious?.shortenerExpanded ? "Yes" : "No"}`
+    );
+    lines.push(
+      `Suspicious Domain: ${r.suspicious?.suspiciousDomain ? "Yes" : "No"}`
+    );
     if (r.suspicious?.cnameChain?.length) {
       lines.push(`CNAME Chain: ${r.suspicious.cnameChain.join(" -> ")}`);
     }
     if (r.suspicious?.blacklistMatches?.length) {
-      lines.push(`Blacklist Matches: ${r.suspicious.blacklistMatches.join(", ")}`);
+      lines.push(
+        `Blacklist Matches: ${r.suspicious.blacklistMatches.join(", ")}`
+      );
     }
     if (r.contentFindings) {
       lines.push(`Content Findings:`);
       lines.push(
-        `  CryptoMiner: ${r.contentFindings.hasCryptoMiner ? "Yes" : "No"}, Suspicious Eval: ${
+        `  CryptoMiner: ${
+          r.contentFindings.hasCryptoMiner ? "Yes" : "No"
+        }, Suspicious Eval: ${
           r.contentFindings.suspiciousInlineEval ? "Yes" : "No"
         }, External JS: ${r.contentFindings.externalJsCount ?? "-"}, Forms: ${
           r.contentFindings.formsCount ?? "-"
@@ -149,7 +176,9 @@ export default function LinkDetector() {
     }
     if (r.geo) {
       lines.push(
-        `Geo/IP: ${r.geo.ip || "-"} ${r.geo.country || ""} ${r.geo.region || ""} ${r.geo.city || ""}`
+        `Geo/IP: ${r.geo.ip || "-"} ${r.geo.country || ""} ${
+          r.geo.region || ""
+        } ${r.geo.city || ""}`
       );
     }
     lines.push(`Screenshot: ${r.screenshotPath || "-"}`);
@@ -191,7 +220,10 @@ export default function LinkDetector() {
     });
 
     const suspRows = [
-      ["Keywords", (r.suspicious?.keywordsFound || []).join(", ") || "Not Found"],
+      [
+        "Keywords",
+        (r.suspicious?.keywordsFound || []).join(", ") || "Not Found",
+      ],
       ["Typosquat of", r.suspicious?.typosquatOf || "-"],
       ["Shortener Expanded", r.suspicious?.shortenerExpanded ? "Yes" : "No"],
       ["Suspicious Domain", r.suspicious?.suspiciousDomain ? "Yes" : "No"],
@@ -283,7 +315,7 @@ export default function LinkDetector() {
         heroData={{
           imgPath: "/GreenTeam/link_dec.png",
           title: "Link Detector",
-          desc: "Detect malicious, suspicious, or unsafe links. Includes redirects, SSL, typosquatting, blacklist & more."
+          desc: "Detect malicious, suspicious, or unsafe links. Includes redirects, SSL, typosquatting, blacklist & more.",
         }}
       />
 
@@ -339,7 +371,9 @@ export default function LinkDetector() {
               onClick={handleScan}
               disabled={scanning || !link.trim()}
               className={`w-full py-3 rounded-md text-white font-semibold transition ${
-                scanning ? "bg-green-400 cursor-not-allowed" : "bg-green-700 hover:bg-green-800"
+                scanning
+                  ? "bg-green-400 cursor-not-allowed"
+                  : "bg-green-700 hover:bg-green-800"
               }`}
             >
               {scanning ? "Scanning..." : "Check Link"}
@@ -368,63 +402,128 @@ export default function LinkDetector() {
                 </div>
 
                 <div className="mt-3 text-sm text-white-700 space-y-1">
-                  <p><span className="font-semibold">URL:</span> {result.url}</p>
-                  <p><span className="font-semibold">Final:</span> {result.finalUrl || "-"}</p>
+                  <p>
+                    <span className="font-semibold">URL:</span> {result.url}
+                  </p>
+                  <p>
+                    <span className="font-semibold">Final:</span>{" "}
+                    {result.finalUrl || "-"}
+                  </p>
                   <p>
                     <span className="font-semibold">Trust Index:</span>{" "}
                     {result.trustIndex ?? "-"} / 100
                   </p>
-                  <p><span className="font-semibold">HTTPS:</span> {result.ssl?.isHttps ? "Yes" : "No"}</p>
-                  <p><span className="font-semibold">Onion:</span> {result.onion ? "Yes" : "No"}</p>
-                  <p><span className="font-semibold">Message:</span> {result.message}</p>
+                  <p>
+                    <span className="font-semibold">HTTPS:</span>{" "}
+                    {result.ssl?.isHttps ? "Yes" : "No"}
+                  </p>
+                  <p>
+                    <span className="font-semibold">Onion:</span>{" "}
+                    {result.onion ? "Yes" : "No"}
+                  </p>
+                  <p>
+                    <span className="font-semibold">Message:</span>{" "}
+                    {result.message}
+                  </p>
 
                   <details className="mt-2">
-                    <summary className="cursor-pointer font-semibold text-white">Redirect Chain</summary>
+                    <summary className="cursor-pointer font-semibold text-white">
+                      Redirect Chain
+                    </summary>
                     <ul className="list-decimal ml-6">
                       {(result.redirectChain || []).map((u, i) => (
-                        <li key={i} className="break-all">{u}</li>
+                        <li key={i} className="break-all">
+                          {u}
+                        </li>
                       ))}
                     </ul>
                   </details>
 
                   <details>
-                    <summary className="cursor-pointer font-semibold text-white">Suspicious Indicators</summary>
+                    <summary className="cursor-pointer font-semibold text-white">
+                      Suspicious Indicators
+                    </summary>
                     <div className="mt-2">
-                      <p><span className="font-semibold">Keywords:</span> {(result.suspicious?.keywordsFound || []).join(", ") || "Not Found"}</p>
-                      <p><span className="font-semibold">Typosquat of:</span> {result.suspicious?.typosquatOf || "-"}</p>
-                      <p><span className="font-semibold">Shortener:</span> {result.suspicious?.shortenerExpanded ? "Yes" : "No"}</p>
-                      <p><span className="font-semibold">Suspicious Domain:</span> {result.suspicious?.suspiciousDomain ? "Yes" : "No"}</p>
+                      <p>
+                        <span className="font-semibold">Keywords:</span>{" "}
+                        {(result.suspicious?.keywordsFound || []).join(", ") ||
+                          "Not Found"}
+                      </p>
+                      <p>
+                        <span className="font-semibold">Typosquat of:</span>{" "}
+                        {result.suspicious?.typosquatOf || "-"}
+                      </p>
+                      <p>
+                        <span className="font-semibold">Shortener:</span>{" "}
+                        {result.suspicious?.shortenerExpanded ? "Yes" : "No"}
+                      </p>
+                      <p>
+                        <span className="font-semibold">
+                          Suspicious Domain:
+                        </span>{" "}
+                        {result.suspicious?.suspiciousDomain ? "Yes" : "No"}
+                      </p>
                       {result.suspicious?.cnameChain?.length ? (
-                        <p><span className="font-semibold">CNAME Chain:</span> {result.suspicious.cnameChain.join(" → ")}</p>
+                        <p>
+                          <span className="font-semibold">CNAME Chain:</span>{" "}
+                          {result.suspicious.cnameChain.join(" → ")}
+                        </p>
                       ) : null}
                       {result.suspicious?.blacklistMatches?.length ? (
-                        <p><span className="font-semibold">Blacklist:</span> {result.suspicious.blacklistMatches.join(", ")}</p>
+                        <p>
+                          <span className="font-semibold">Blacklist:</span>{" "}
+                          {result.suspicious.blacklistMatches.join(", ")}
+                        </p>
                       ) : null}
                     </div>
                   </details>
 
                   <details>
-                    <summary className="cursor-pointer font-semibold text-white">Content Findings</summary>
+                    <summary className="cursor-pointer font-semibold text-white">
+                      Content Findings
+                    </summary>
                     <div className="mt-2">
-                      <p>CryptoMiner: {result.contentFindings?.hasCryptoMiner ? "Yes" : "No"}</p>
-                      <p>Suspicious Eval: {result.contentFindings?.suspiciousInlineEval ? "Yes" : "No"}</p>
-                      <p>External JS Count: {result.contentFindings?.externalJsCount ?? "-"}</p>
-                      <p>Forms Count: {result.contentFindings?.formsCount ?? "-"}</p>
+                      <p>
+                        CryptoMiner:{" "}
+                        {result.contentFindings?.hasCryptoMiner ? "Yes" : "No"}
+                      </p>
+                      <p>
+                        Suspicious Eval:{" "}
+                        {result.contentFindings?.suspiciousInlineEval
+                          ? "Yes"
+                          : "No"}
+                      </p>
+                      <p>
+                        External JS Count:{" "}
+                        {result.contentFindings?.externalJsCount ?? "-"}
+                      </p>
+                      <p>
+                        Forms Count: {result.contentFindings?.formsCount ?? "-"}
+                      </p>
                     </div>
                   </details>
 
                   <details>
-                    <summary className="cursor-pointer font-semibold text-white">Geo & Hosting</summary>
+                    <summary className="cursor-pointer font-semibold text-white">
+                      Geo & Hosting
+                    </summary>
                     <div className="mt-2">
                       <p>IP: {result.geo?.ip || "-"}</p>
-                      <p>Country/Region/City: {result.geo?.country || "-"} / {result.geo?.region || "-"} / {result.geo?.city || "-"}</p>
+                      <p>
+                        Country/Region/City: {result.geo?.country || "-"} /{" "}
+                        {result.geo?.region || "-"} / {result.geo?.city || "-"}
+                      </p>
                       {result.screenshotPath ? (
-                        <p className="text-xs text-white">Screenshot saved at: {result.screenshotPath}</p>
+                        <p className="text-xs text-white">
+                          Screenshot saved at: {result.screenshotPath}
+                        </p>
                       ) : null}
                     </div>
                   </details>
 
-                  <p className="text-xs text-white mt-2">Checked At: {prettyDate(result.scannedAt)}</p>
+                  <p className="text-xs text-white mt-2">
+                    Checked At: {prettyDate(result.scannedAt)}
+                  </p>
                 </div>
               </div>
             )}
@@ -443,7 +542,9 @@ export default function LinkDetector() {
                 onClick={handleBulk}
                 disabled={scanning || !bulkText.trim()}
                 className={`flex-1 py-3 rounded-md text-white font-semibold transition ${
-                  scanning ? "bg-green-400 cursor-not-allowed" : "bg-green-700 hover:bg-green-800"
+                  scanning
+                    ? "bg-green-400 cursor-not-allowed"
+                    : "bg-green-700 hover:bg-green-800"
                 }`}
               >
                 {scanning ? "Scanning..." : "Scan All"}
@@ -491,7 +592,9 @@ export default function LinkDetector() {
           </>
         )}
 
-        {error && <div className="mt-6 text-red-600 font-semibold">{error}</div>}
+        {error && (
+          <div className="mt-6 text-red-600 font-semibold">{error}</div>
+        )}
       </div>
     </div>
   );

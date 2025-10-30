@@ -1,6 +1,6 @@
-'use client';
+"use client";
 
-import { useMemo, useState } from 'react';
+import { useMemo, useState } from "react";
 import {
   Search as SearchIcon,
   Shield,
@@ -11,66 +11,73 @@ import {
   FileText,
   FileJson,
   Download,
-} from 'lucide-react';
-import { jsPDF } from 'jspdf';
-import autoTable from 'jspdf-autotable';
-import GreenLayout from '../GreenTeam/layout';
+} from "lucide-react";
+import { jsPDF } from "jspdf";
+import autoTable from "jspdf-autotable";
+import GreenLayout from "../GreenTeam/layout";
+import useProtectedAction from "../UseProtectedAction/UseProtectedAction";
 
 const badge = (tone) =>
   ({
-    good: 'bg-green-50 border-green-300 text-green-700',
-    warn: 'bg-yellow-50 border-yellow-300 text-yellow-700',
-    bad: 'bg-red-50 border-red-300 text-red-700',
-    info: 'bg-blue-50 border-blue-300 text-blue-700',
-  }[tone] || 'bg-gray-50 border-gray-300 text-gray-700');
+    good: "bg-green-50 border-green-300 text-green-700",
+    warn: "bg-yellow-50 border-yellow-300 text-yellow-700",
+    bad: "bg-red-50 border-red-300 text-red-700",
+    info: "bg-blue-50 border-blue-300 text-blue-700",
+  }[tone] || "bg-gray-50 border-gray-300 text-gray-700");
 
 const chip = (tone) =>
   ({
-    good: 'text-green-700 bg-green-100',
-    warn: 'text-yellow-700 bg-yellow-100',
-    bad: 'text-red-700 bg-red-100',
-    info: 'text-blue-700 bg-blue-100',
-  }[tone] || 'text-gray-700 bg-gray-100');
+    good: "text-green-700 bg-green-100",
+    warn: "text-yellow-700 bg-yellow-100",
+    bad: "text-red-700 bg-red-100",
+    info: "text-blue-700 bg-blue-100",
+  }[tone] || "text-gray-700 bg-gray-100");
 
 export default function MetaForm() {
-  const [url, setUrl] = useState('');
+  const [url, setUrl] = useState("");
   const [report, setReport] = useState(null);
   const [loading, setLoading] = useState(false);
   const apiBase = useMemo(
-    () => (process.env.NEXT_PUBLIC_PROD_API_URL || '').replace(/\/+$/, ''),
+    () => (process.env.NEXT_PUBLIC_PROD_API_URL || "").replace(/\/+$/, ""),
     []
   );
-const Hero={
+  const protectedAction = useProtectedAction();
+  const Hero = {
     title: "Protect Your Website",
     desc: "Analyze security/SEO meta tags & headers, detect duplicates, preview Open Graph, and audit CORS.",
-    imgPath: "/GreenTeam/meta_tag.png"
-}
+    imgPath: "/GreenTeam/meta_tag.png",
+  };
   async function analyze(e) {
     e?.preventDefault?.();
     if (!url) return;
     setLoading(true);
     setReport(null);
-    try {
-      const normalized = url.startsWith('http') ? url : `https://${url}`;
-      const res = await fetch(`${apiBase}/meta/meta-analyze`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ url: normalized }),
-      });
-      const data = await res.json();
-      setReport(data);
-    } catch (err) {
-      console.error(err);
-      setReport({ error: 'Failed to analyze' });
-    } finally {
-      setLoading(false);
-    }
+    await protectedAction(async (userToken) => {
+      try {
+        const normalized = url.startsWith("http") ? url : `https://${url}`;
+        const res = await fetch(`${apiBase}/meta/meta-analyze`, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${userToken}`,
+          },
+          body: JSON.stringify({ url: normalized }),
+        });
+        const data = await res.json();
+        setReport(data);
+      } catch (err) {
+        console.error(err);
+        setReport({ error: "Failed to analyze" });
+      } finally {
+        setLoading(false);
+      }
+    });
   }
 
   // ---------- Exports ----------
   function dlBlob(blob, name) {
     const u = URL.createObjectURL(blob);
-    const a = document.createElement('a');
+    const a = document.createElement("a");
     a.href = u;
     a.download = name;
     document.body.appendChild(a);
@@ -80,44 +87,74 @@ const Hero={
   }
   function downloadJSON() {
     if (!report) return;
-    dlBlob(new Blob([JSON.stringify(report, null, 2)], { type: 'application/json' }), `meta-report.json`);
+    dlBlob(
+      new Blob([JSON.stringify(report, null, 2)], { type: "application/json" }),
+      `meta-report.json`
+    );
   }
   function downloadTXT() {
     if (!report) return;
     const lines = [];
     lines.push(`Target: ${report.targetUrl}`);
-    lines.push(`Fetched: ${report.fetchedUrl || '-'}`);
+    lines.push(`Fetched: ${report.fetchedUrl || "-"}`);
     lines.push(`Timestamp: ${report.timestamp}`);
-    lines.push('');
+    lines.push("");
     lines.push(`SEO Score: ${report.scores?.seo}/10`);
     lines.push(`Security Score: ${report.scores?.security}/10`);
     lines.push(`Total Score: ${report.scores?.total}/10`);
-    lines.push('');
-    lines.push('Security Checks:');
+    lines.push("");
+    lines.push("Security Checks:");
     (report.security?.checks || []).forEach((c) =>
       lines.push(
-        ` - ${c.key}: ${c.exists ? 'FOUND' : 'MISSING'}${c.value ? ` → ${c.value}` : ''} (${c.severity}) ${c.note ? `| ${c.note}` : ''}`
+        ` - ${c.key}: ${c.exists ? "FOUND" : "MISSING"}${
+          c.value ? ` → ${c.value}` : ""
+        } (${c.severity}) ${c.note ? `| ${c.note}` : ""}`
       )
     );
-    lines.push('');
-    lines.push('SEO Checks:');
+    lines.push("");
+    lines.push("SEO Checks:");
     (report.seo?.checks || []).forEach((c) =>
-      lines.push(` - ${c.key}: ${c.status}${c.detail ? ` | ${c.detail}` : ''}`)
+      lines.push(` - ${c.key}: ${c.status}${c.detail ? ` | ${c.detail}` : ""}`)
     );
-    lines.push('');
-    lines.push('CORS:');
+    lines.push("");
+    lines.push("CORS:");
     if (report.cors?.error) {
       lines.push(` - Error: ${report.cors.error}`);
     } else {
-      lines.push(` - Allow-Origin: ${report.cors?.headers?.allow_origin || 'Not Present'}`);
-      lines.push(` - Allow-Credentials: ${report.cors?.headers?.allow_credentials || 'Not Present'}`);
-      lines.push(` - Allow-Methods: ${report.cors?.headers?.allow_methods || 'Not Present'}`);
-      lines.push(` - Allow-Headers: ${report.cors?.headers?.allow_headers || 'Not Present'}`);
-      lines.push(` - Expose-Headers: ${report.cors?.headers?.expose_headers || 'Not Present'}`);
-      lines.push(` - Verdict: ${report.cors?.verdict || '-'}`);
-      (report.cors?.recommendations || []).forEach((r) => lines.push(`   * ${r}`));
+      lines.push(
+        ` - Allow-Origin: ${
+          report.cors?.headers?.allow_origin || "Not Present"
+        }`
+      );
+      lines.push(
+        ` - Allow-Credentials: ${
+          report.cors?.headers?.allow_credentials || "Not Present"
+        }`
+      );
+      lines.push(
+        ` - Allow-Methods: ${
+          report.cors?.headers?.allow_methods || "Not Present"
+        }`
+      );
+      lines.push(
+        ` - Allow-Headers: ${
+          report.cors?.headers?.allow_headers || "Not Present"
+        }`
+      );
+      lines.push(
+        ` - Expose-Headers: ${
+          report.cors?.headers?.expose_headers || "Not Present"
+        }`
+      );
+      lines.push(` - Verdict: ${report.cors?.verdict || "-"}`);
+      (report.cors?.recommendations || []).forEach((r) =>
+        lines.push(`   * ${r}`)
+      );
     }
-    dlBlob(new Blob([lines.join('\n')], { type: 'text/plain' }), `meta-report.txt`);
+    dlBlob(
+      new Blob([lines.join("\n")], { type: "text/plain" }),
+      `meta-report.txt`
+    );
   }
   function downloadHTML() {
     if (!report) return;
@@ -130,9 +167,11 @@ table{border-collapse:collapse;width:100%;font-size:13px} td,th{border:1px solid
 .section{margin:18px 0}
 </style></head><body>
 <h1>Meta Tag & CORS Report</h1>
-<div class="muted">Target: ${escapeHtml(report.targetUrl)} | Fetched: ${escapeHtml(
-      report.fetchedUrl || ''
-    )} | ${escapeHtml(report.timestamp || '')}</div>
+<div class="muted">Target: ${escapeHtml(
+      report.targetUrl
+    )} | Fetched: ${escapeHtml(report.fetchedUrl || "")} | ${escapeHtml(
+      report.timestamp || ""
+    )}</div>
 
 <div class="section">
   <h3>Scores</h3>
@@ -148,10 +187,12 @@ table{border-collapse:collapse;width:100%;font-size:13px} td,th{border:1px solid
     .map(
       (c) =>
         `<tr><td>${escapeHtml(c.key)}</td><td>${escapeHtml(
-          c.exists ? (c.value || 'Present') : 'Missing'
-        )}</td><td>${escapeHtml(c.severity)}</td><td>${escapeHtml(c.note || '')}</td></tr>`
+          c.exists ? c.value || "Present" : "Missing"
+        )}</td><td>${escapeHtml(c.severity)}</td><td>${escapeHtml(
+          c.note || ""
+        )}</td></tr>`
     )
-    .join('')}
+    .join("")}
   </tbody></table>
 </div>
 
@@ -159,8 +200,13 @@ table{border-collapse:collapse;width:100%;font-size:13px} td,th{border:1px solid
   <h3>SEO Checks</h3>
   <table><thead><tr><th>Item</th><th>Status</th><th>Detail</th></tr></thead><tbody>
   ${(report.seo?.checks || [])
-    .map((c) => `<tr><td>${escapeHtml(c.key)}</td><td>${escapeHtml(c.status)}</td><td>${escapeHtml(c.detail || '')}</td></tr>`)
-    .join('')}
+    .map(
+      (c) =>
+        `<tr><td>${escapeHtml(c.key)}</td><td>${escapeHtml(
+          c.status
+        )}</td><td>${escapeHtml(c.detail || "")}</td></tr>`
+    )
+    .join("")}
   </tbody></table>
 </div>
 
@@ -170,24 +216,36 @@ table{border-collapse:collapse;width:100%;font-size:13px} td,th{border:1px solid
     report.cors?.error
       ? `<div class="badge">Error: ${escapeHtml(report.cors.error)}</div>`
       : `<table><thead><tr><th>Header</th><th>Value</th></tr></thead><tbody>
-    <tr><td>Access-Control-Allow-Origin</td><td>${escapeHtml(report.cors?.headers?.allow_origin || 'Not Present')}</td></tr>
-    <tr><td>Access-Control-Allow-Credentials</td><td>${escapeHtml(report.cors?.headers?.allow_credentials || 'Not Present')}</td></tr>
-    <tr><td>Access-Control-Allow-Methods</td><td>${escapeHtml(report.cors?.headers?.allow_methods || 'Not Present')}</td></tr>
-    <tr><td>Access-Control-Allow-Headers</td><td>${escapeHtml(report.cors?.headers?.allow_headers || 'Not Present')}</td></tr>
-    <tr><td>Access-Control-Expose-Headers</td><td>${escapeHtml(report.cors?.headers?.expose_headers || 'Not Present')}</td></tr>
+    <tr><td>Access-Control-Allow-Origin</td><td>${escapeHtml(
+      report.cors?.headers?.allow_origin || "Not Present"
+    )}</td></tr>
+    <tr><td>Access-Control-Allow-Credentials</td><td>${escapeHtml(
+      report.cors?.headers?.allow_credentials || "Not Present"
+    )}</td></tr>
+    <tr><td>Access-Control-Allow-Methods</td><td>${escapeHtml(
+      report.cors?.headers?.allow_methods || "Not Present"
+    )}</td></tr>
+    <tr><td>Access-Control-Allow-Headers</td><td>${escapeHtml(
+      report.cors?.headers?.allow_headers || "Not Present"
+    )}</td></tr>
+    <tr><td>Access-Control-Expose-Headers</td><td>${escapeHtml(
+      report.cors?.headers?.expose_headers || "Not Present"
+    )}</td></tr>
   </tbody></table>
-  <p><b>Verdict:</b> ${escapeHtml(report.cors?.verdict || '-')}</p>
-  <ul>${(report.cors?.recommendations || []).map((r) => `<li>${escapeHtml(r)}</li>`).join('')}</ul>`
+  <p><b>Verdict:</b> ${escapeHtml(report.cors?.verdict || "-")}</p>
+  <ul>${(report.cors?.recommendations || [])
+    .map((r) => `<li>${escapeHtml(r)}</li>`)
+    .join("")}</ul>`
   }
 </div>
 </body></html>`;
-    dlBlob(new Blob([html], { type: 'text/html' }), `meta-report.html`);
+    dlBlob(new Blob([html], { type: "text/html" }), `meta-report.html`);
   }
   async function downloadPDF() {
     if (!report) return;
-    const doc = new jsPDF({ unit: 'pt', format: 'a4' });
+    const doc = new jsPDF({ unit: "pt", format: "a4" });
     doc.setFontSize(16);
-    doc.text('Meta Tag & CORS Report', 40, 40);
+    doc.text("Meta Tag & CORS Report", 40, 40);
     doc.setFontSize(10);
     doc.text(`Target: ${report.targetUrl}`, 40, 58);
     if (report.fetchedUrl) doc.text(`Fetched: ${report.fetchedUrl}`, 40, 72);
@@ -201,63 +259,77 @@ table{border-collapse:collapse;width:100%;font-size:13px} td,th{border:1px solid
     // Security table
     autoTable(doc, {
       startY: 120,
-      head: [['Header/Meta', 'Status/Value', 'Severity', 'Note']],
+      head: [["Header/Meta", "Status/Value", "Severity", "Note"]],
       body: (report.security?.checks || []).map((c) => [
         c.key,
-        c.exists ? c.value || 'Present' : 'Missing',
-        c.severity || '',
-        c.note || '',
+        c.exists ? c.value || "Present" : "Missing",
+        c.severity || "",
+        c.note || "",
       ]),
-      styles: { fontSize: 8, cellWidth: 'wrap' },
+      styles: { fontSize: 8, cellWidth: "wrap" },
       columnStyles: { 1: { cellWidth: 180 }, 3: { cellWidth: 160 } },
     });
 
     // SEO table
     autoTable(doc, {
       startY: doc.lastAutoTable.finalY + 16,
-      head: [['Item', 'Status', 'Detail']],
-      body: (report.seo?.checks || []).map((c) => [c.key, c.status, c.detail || '']),
-      styles: { fontSize: 8, cellWidth: 'wrap' },
+      head: [["Item", "Status", "Detail"]],
+      body: (report.seo?.checks || []).map((c) => [
+        c.key,
+        c.status,
+        c.detail || "",
+      ]),
+      styles: { fontSize: 8, cellWidth: "wrap" },
       columnStyles: { 2: { cellWidth: 260 } },
     });
 
     // CORS section
     const corsStart = doc.lastAutoTable.finalY + 16;
     doc.setFontSize(12);
-    doc.text('CORS', 40, corsStart);
+    doc.text("CORS", 40, corsStart);
     doc.setFontSize(9);
     if (report.cors?.error) {
       doc.text(`Error: ${report.cors.error}`, 40, corsStart + 16);
     } else {
       autoTable(doc, {
         startY: corsStart + 10,
-        head: [['Header', 'Value']],
+        head: [["Header", "Value"]],
         body: [
-          ['Allow-Origin', report.cors?.headers?.allow_origin || 'Not Present'],
-          ['Allow-Credentials', report.cors?.headers?.allow_credentials || 'Not Present'],
-          ['Allow-Methods', report.cors?.headers?.allow_methods || 'Not Present'],
-          ['Allow-Headers', report.cors?.headers?.allow_headers || 'Not Present'],
-          ['Expose-Headers', report.cors?.headers?.expose_headers || 'Not Present'],
-          ['Verdict', report.cors?.verdict || '-'],
+          ["Allow-Origin", report.cors?.headers?.allow_origin || "Not Present"],
+          [
+            "Allow-Credentials",
+            report.cors?.headers?.allow_credentials || "Not Present",
+          ],
+          [
+            "Allow-Methods",
+            report.cors?.headers?.allow_methods || "Not Present",
+          ],
+          [
+            "Allow-Headers",
+            report.cors?.headers?.allow_headers || "Not Present",
+          ],
+          [
+            "Expose-Headers",
+            report.cors?.headers?.expose_headers || "Not Present",
+          ],
+          ["Verdict", report.cors?.verdict || "-"],
         ],
-        styles: { fontSize: 8, cellWidth: 'wrap' },
+        styles: { fontSize: 8, cellWidth: "wrap" },
         columnStyles: { 1: { cellWidth: 360 } },
       });
-      const recs = (report.cors?.recommendations || []).join('; ');
-      if (recs) doc.text(`Recommendations: ${recs}`, 40, doc.lastAutoTable.finalY + 14);
+      const recs = (report.cors?.recommendations || []).join("; ");
+      if (recs)
+        doc.text(`Recommendations: ${recs}`, 40, doc.lastAutoTable.finalY + 14);
     }
-    doc.save('meta-report.pdf');
+    doc.save("meta-report.pdf");
   }
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-black to-green-900 py-12 px-4">
       <div className="max-w-6xl mx-auto">
         {/* Header */}
-<GreenLayout 
-       heroData={Hero}  
-       ></GreenLayout>
+        <GreenLayout heroData={Hero}></GreenLayout>
         {/* Card */}
-      
 
         <div className="bg-black border border-white rounded-2xl shadow-2xl overflow-hidden">
           {/* Card header */}
@@ -266,7 +338,9 @@ table{border-collapse:collapse;width:100%;font-size:13px} td,th{border:1px solid
               <Shield className="h-8 w-8" />
               <h2 className="text-3xl font-bold">Meta Tag & CORS Analyzer</h2>
             </div>
-            <p className="text-green-100">Security meta, SEO best-practices, OG preview, and CORS verdict</p>
+            <p className="text-green-100">
+              Security meta, SEO best-practices, OG preview, and CORS verdict
+            </p>
           </div>
 
           {/* Form */}
@@ -283,23 +357,23 @@ table{border-collapse:collapse;width:100%;font-size:13px} td,th{border:1px solid
                 <SearchIcon className="absolute right-4 top-1/2 -translate-y-1/2 h-6 w-6 text-gray-400" />
               </div>
               <div className="justify-items-center">
-              <button
-                type="submit"
-                disabled={loading || !url}
-                className="w-75 bg-gradient-to-r from-green-800 to-emerald-700 text-white py-3 rounded-xl hover:from-green-700 hover:to-emerald-600 disabled:opacity-60 flex items-center justify-center gap-3 text-lg font-semibold"
-              >
-                {loading ? (
-                  <>
-                    <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white" />
-                    Analyzing…
-                  </>
-                ) : (
-                  <>
-                    <SearchIcon className="h-6 w-6" />
-                    Start Security Analysis
-                  </>
-                )}
-              </button>
+                <button
+                  type="submit"
+                  disabled={loading || !url}
+                  className="w-75 bg-gradient-to-r from-green-800 to-emerald-700 text-white py-3 rounded-xl hover:from-green-700 hover:to-emerald-600 disabled:opacity-60 flex items-center justify-center gap-3 text-lg font-semibold"
+                >
+                  {loading ? (
+                    <>
+                      <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white" />
+                      Analyzing…
+                    </>
+                  ) : (
+                    <>
+                      <SearchIcon className="h-6 w-6" />
+                      Start Security Analysis
+                    </>
+                  )}
+                </button>
               </div>
             </form>
 
@@ -310,8 +384,12 @@ table{border-collapse:collapse;width:100%;font-size:13px} td,th{border:1px solid
                   <div className="bg-green-100 rounded-full w-24 h-24 mx-auto mb-4 flex items-center justify-center">
                     <Shield className="h-12 w-12 text-green-600" />
                   </div>
-                  <h3 className="text-2xl font-semibold text-gray-700 mb-2">Scanning…</h3>
-                  <p className="text-gray-500">Fetching meta tags, headers & CORS policy</p>
+                  <h3 className="text-2xl font-semibold text-gray-700 mb-2">
+                    Scanning…
+                  </h3>
+                  <p className="text-gray-500">
+                    Fetching meta tags, headers & CORS policy
+                  </p>
                 </div>
               </div>
             )}
@@ -322,26 +400,42 @@ table{border-collapse:collapse;width:100%;font-size:13px} td,th{border:1px solid
                 <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
                   <div>
                     <div className="text-sm text-gray-500">
-                      Target: <span className="font-mono">{report.targetUrl}</span>
+                      Target:{" "}
+                      <span className="font-mono">{report.targetUrl}</span>
                     </div>
                     {report.fetchedUrl && (
                       <div className="text-sm text-gray-500">
-                        Final URL: <span className="font-mono">{report.fetchedUrl}</span>
+                        Final URL:{" "}
+                        <span className="font-mono">{report.fetchedUrl}</span>
                       </div>
                     )}
-                    <div className="text-sm text-gray-500">{report.timestamp}</div>
+                    <div className="text-sm text-gray-500">
+                      {report.timestamp}
+                    </div>
                   </div>
                   <div className="flex flex-wrap text-white gap-2">
-                    <button onClick={downloadPDF} className="px-3 py-2 rounded  bg-green-900 hover:bg-green-700 cursor-pointer flex items-center gap-2">
+                    <button
+                      onClick={downloadPDF}
+                      className="px-3 py-2 rounded  bg-green-900 hover:bg-green-700 cursor-pointer flex items-center gap-2"
+                    >
                       <FileText className="h-4 w-4" /> PDF
                     </button>
-                    <button onClick={downloadHTML} className="px-3 py-2 rounded bg-green-900 hover:bg-green-700 cursor-pointer flex items-center gap-2">
+                    <button
+                      onClick={downloadHTML}
+                      className="px-3 py-2 rounded bg-green-900 hover:bg-green-700 cursor-pointer flex items-center gap-2"
+                    >
                       <Download className="h-4 w-4" /> HTML
                     </button>
-                    <button onClick={downloadJSON} className="px-3 py-2 rounded bg-green-900 hover:bg-green-700 cursor-pointer flex items-center gap-2">
+                    <button
+                      onClick={downloadJSON}
+                      className="px-3 py-2 rounded bg-green-900 hover:bg-green-700 cursor-pointer flex items-center gap-2"
+                    >
                       <FileJson className="h-4 w-4" /> JSON
                     </button>
-                    <button onClick={downloadTXT} className="px-3 py-2 rounded bg-green-900 hover:bg-green-700 cursor-pointer flex items-center gap-2">
+                    <button
+                      onClick={downloadTXT}
+                      className="px-3 py-2 rounded bg-green-900 hover:bg-green-700 cursor-pointer flex items-center gap-2"
+                    >
                       <FileText className="h-4 w-4" /> TXT
                     </button>
                   </div>
@@ -349,32 +443,56 @@ table{border-collapse:collapse;width:100%;font-size:13px} td,th{border:1px solid
 
                 {/* Scores */}
                 <div className="grid gap-3 text-white sm:grid-cols-3">
-                  <ScoreCard label="SEO Score" value={`${report.scores?.seo}/10`} tone="info" />
-                  <ScoreCard label="Security Score" value={`${report.scores?.security}/10`} tone="info" />
-                  <ScoreCard label="Total Score" value={`${report.scores?.total}/10`} tone="info" />
+                  <ScoreCard
+                    label="SEO Score"
+                    value={`${report.scores?.seo}/10`}
+                    tone="info"
+                  />
+                  <ScoreCard
+                    label="Security Score"
+                    value={`${report.scores?.security}/10`}
+                    tone="info"
+                  />
+                  <ScoreCard
+                    label="Total Score"
+                    value={`${report.scores?.total}/10`}
+                    tone="info"
+                  />
                 </div>
 
                 {/* Security meta/header checks */}
                 <Section title="Security Meta Tag Checks">
                   <div className="grid gap-3">
                     {(report.security?.checks || []).map((c, i) => (
-                      <div key={i} className={`p-3 border rounded ${badge(toneFromSeverity(c))}`}>
+                      <div
+                        key={i}
+                        className={`p-3 border rounded ${badge(
+                          toneFromSeverity(c)
+                        )}`}
+                      >
                         <div className="flex items-center gap-2">
                           {c.exists ? (
                             <CheckCircle2 className="h-4 w-4" />
-                          ) : c.severity === 'HIGH' ? (
+                          ) : c.severity === "HIGH" ? (
                             <XCircle className="h-4 w-4" />
                           ) : (
                             <AlertTriangle className="h-4 w-4" />
                           )}
                           <div className="font-medium">{c.key}</div>
-                          <div className={`ml-auto text-xs px-2 py-0.5 rounded ${chip(toneFromSeverity(c))}`}>
+                          <div
+                            className={`ml-auto text-xs px-2 py-0.5 rounded ${chip(
+                              toneFromSeverity(c)
+                            )}`}
+                          >
                             {c.severity}
                           </div>
                         </div>
                         <div className="text-sm mt-1">
-                          <b>Status:</b> {c.exists ? 'Exists' : 'Missing'} {c.value ? `→ ${c.value}` : ''}
-                          {c.note ? <span className="ml-2 text-gray-700">{c.note}</span> : null}
+                          <b>Status:</b> {c.exists ? "Exists" : "Missing"}{" "}
+                          {c.value ? `→ ${c.value}` : ""}
+                          {c.note ? (
+                            <span className="ml-2 text-gray-700">{c.note}</span>
+                          ) : null}
                         </div>
                         {c.suggestion ? (
                           <div className="text-sm mt-1">
@@ -393,18 +511,19 @@ table{border-collapse:collapse;width:100%;font-size:13px} td,th{border:1px solid
                       <div
                         key={i}
                         className={`p-3 border rounded ${
-                          c.status?.toLowerCase().includes('missing') || c.status?.toLowerCase().includes('deprecated')
-                            ? badge('bad')
-                            : c.status?.toLowerCase().includes('warning')
-                            ? badge('warn')
-                            : badge('good')
+                          c.status?.toLowerCase().includes("missing") ||
+                          c.status?.toLowerCase().includes("deprecated")
+                            ? badge("bad")
+                            : c.status?.toLowerCase().includes("warning")
+                            ? badge("warn")
+                            : badge("good")
                         }`}
                       >
                         <div className="flex items-center gap-2">
-                          {c.status?.toLowerCase().includes('missing') ? (
+                          {c.status?.toLowerCase().includes("missing") ? (
                             <XCircle className="h-4 w-4" />
-                          ) : c.status?.toLowerCase().includes('deprecated') ||
-                            c.status?.toLowerCase().includes('warning') ? (
+                          ) : c.status?.toLowerCase().includes("deprecated") ||
+                            c.status?.toLowerCase().includes("warning") ? (
                             <AlertTriangle className="h-4 w-4" />
                           ) : (
                             <CheckCircle2 className="h-4 w-4" />
@@ -412,7 +531,8 @@ table{border-collapse:collapse;width:100%;font-size:13px} td,th{border:1px solid
                           <div className="font-medium">{c.key}</div>
                         </div>
                         <div className="text-sm mt-1">
-                          <b>Status:</b> {c.status} {c.detail ? ` — ${c.detail}` : ''}
+                          <b>Status:</b> {c.status}{" "}
+                          {c.detail ? ` — ${c.detail}` : ""}
                         </div>
                         {c.suggestion ? (
                           <div className="text-sm mt-1">
@@ -428,19 +548,26 @@ table{border-collapse:collapse;width:100%;font-size:13px} td,th{border:1px solid
                 <Section title="Duplicate / Conflicting Tags">
                   <div className="grid gap-2">
                     {(report.duplicates || []).map((d, i) => (
-                      <div key={i} className={`p-3 border rounded ${badge('warn')}`}>
+                      <div
+                        key={i}
+                        className={`p-3 border rounded ${badge("warn")}`}
+                      >
                         <div className="flex items-center gap-2">
                           <AlertTriangle className="h-4 w-4" />
                           <div className="font-medium">{d.issue}</div>
                         </div>
-                        {d.detail ? <div className="text-sm mt-1">{d.detail}</div> : null}
+                        {d.detail ? (
+                          <div className="text-sm mt-1">{d.detail}</div>
+                        ) : null}
                       </div>
                     ))}
                     {(!report.duplicates || report.duplicates.length === 0) && (
-                      <div className={`p-3 border rounded ${badge('good')}`}>
+                      <div className={`p-3 border rounded ${badge("good")}`}>
                         <div className="flex items-center gap-2">
                           <CheckCircle2 className="h-4 w-4" />
-                          <div className="font-medium">No duplicate/conflicting tags detected</div>
+                          <div className="font-medium">
+                            No duplicate/conflicting tags detected
+                          </div>
                         </div>
                       </div>
                     )}
@@ -451,9 +578,11 @@ table{border-collapse:collapse;width:100%;font-size:13px} td,th{border:1px solid
                 <Section title="Social Media Preview (Open Graph)">
                   <div className="border rounded p-3 bg-white">
                     <div className="border rounded p-4 bg-gray-50">
-                      <div className="font-semibold text-lg">{report.og?.title || '—'}</div>
+                      <div className="font-semibold text-lg">
+                        {report.og?.title || "—"}
+                      </div>
                       <div className="text-sm text-gray-700 mt-1 line-clamp-3">
-                        {report.og?.description || '—'}
+                        {report.og?.description || "—"}
                       </div>
                       <div className="mt-3">
                         {report.og?.image ? (
@@ -464,7 +593,9 @@ table{border-collapse:collapse;width:100%;font-size:13px} td,th{border:1px solid
                             className="max-h-48 rounded border object-contain"
                           />
                         ) : (
-                          <div className="text-xs text-gray-500">No og:image</div>
+                          <div className="text-xs text-gray-500">
+                            No og:image
+                          </div>
                         )}
                       </div>
                     </div>
@@ -477,7 +608,7 @@ table{border-collapse:collapse;width:100%;font-size:13px} td,th{border:1px solid
                 {/* CORS */}
                 <Section title="CORS Header Analysis">
                   {report.cors?.error ? (
-                    <div className={`p-3 border rounded ${badge('warn')}`}>
+                    <div className={`p-3 border rounded ${badge("warn")}`}>
                       <div className="flex items-center gap-2">
                         <AlertTriangle className="h-4 w-4" />
                         <div>Could not analyze CORS: {report.cors.error}</div>
@@ -489,14 +620,36 @@ table{border-collapse:collapse;width:100%;font-size:13px} td,th{border:1px solid
                         <table className="min-w-full text-sm bg-white border">
                           <tbody>
                             {[
-                              ['Access-Control-Allow-Origin', report.cors?.headers?.allow_origin || 'Not Present'],
-                              ['Access-Control-Allow-Credentials', report.cors?.headers?.allow_credentials || 'Not Present'],
-                              ['Access-Control-Allow-Methods', report.cors?.headers?.allow_methods || 'Not Present'],
-                              ['Access-Control-Allow-Headers', report.cors?.headers?.allow_headers || 'Not Present'],
-                              ['Access-Control-Expose-Headers', report.cors?.headers?.expose_headers || 'Not Present'],
+                              [
+                                "Access-Control-Allow-Origin",
+                                report.cors?.headers?.allow_origin ||
+                                  "Not Present",
+                              ],
+                              [
+                                "Access-Control-Allow-Credentials",
+                                report.cors?.headers?.allow_credentials ||
+                                  "Not Present",
+                              ],
+                              [
+                                "Access-Control-Allow-Methods",
+                                report.cors?.headers?.allow_methods ||
+                                  "Not Present",
+                              ],
+                              [
+                                "Access-Control-Allow-Headers",
+                                report.cors?.headers?.allow_headers ||
+                                  "Not Present",
+                              ],
+                              [
+                                "Access-Control-Expose-Headers",
+                                report.cors?.headers?.expose_headers ||
+                                  "Not Present",
+                              ],
                             ].map(([k, v]) => (
                               <tr key={k}>
-                                <td className="border px-3 py-2 font-medium bg-gray-50">{k}</td>
+                                <td className="border px-3 py-2 font-medium bg-gray-50">
+                                  {k}
+                                </td>
                                 <td className="border px-3 py-2">{v}</td>
                               </tr>
                             ))}
@@ -506,20 +659,28 @@ table{border-collapse:collapse;width:100%;font-size:13px} td,th{border:1px solid
 
                       <div
                         className={`mt-3 p-3 border rounded ${
-                          report.cors?.verdict?.toLowerCase().includes('vulnerable') ||
-                          report.cors?.verdict?.toLowerCase().includes('weak')
-                            ? badge('bad')
-                            : badge('good')
+                          report.cors?.verdict
+                            ?.toLowerCase()
+                            .includes("vulnerable") ||
+                          report.cors?.verdict?.toLowerCase().includes("weak")
+                            ? badge("bad")
+                            : badge("good")
                         }`}
                       >
                         <div className="flex items-center gap-2">
-                          {report.cors?.verdict?.toLowerCase().includes('vulnerable') ||
-                          report.cors?.verdict?.toLowerCase().includes('weak') ? (
+                          {report.cors?.verdict
+                            ?.toLowerCase()
+                            .includes("vulnerable") ||
+                          report.cors?.verdict
+                            ?.toLowerCase()
+                            .includes("weak") ? (
                             <XCircle className="h-4 w-4" />
                           ) : (
                             <CheckCircle2 className="h-4 w-4" />
                           )}
-                          <div className="font-semibold">Verdict: {report.cors?.verdict || '—'}</div>
+                          <div className="font-semibold">
+                            Verdict: {report.cors?.verdict || "—"}
+                          </div>
                         </div>
                         {report.cors?.recommendations?.length ? (
                           <ul className="list-disc ml-6 text-sm mt-1">
@@ -565,12 +726,18 @@ function Section({ title, children }) {
 }
 
 function toneFromSeverity(c) {
-  if (!c?.exists) return 'bad';
-  if (c.severity === 'HIGH') return 'bad';
-  if (c.severity === 'MEDIUM') return 'warn';
-  return 'good';
+  if (!c?.exists) return "bad";
+  if (c.severity === "HIGH") return "bad";
+  if (c.severity === "MEDIUM") return "warn";
+  return "good";
 }
 
-function escapeHtml(s = '') {
-  return String(s).replace(/[&<>"']/g, (m) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[m]));
+function escapeHtml(s = "") {
+  return String(s).replace(
+    /[&<>"']/g,
+    (m) =>
+      ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[
+        m
+      ])
+  );
 }

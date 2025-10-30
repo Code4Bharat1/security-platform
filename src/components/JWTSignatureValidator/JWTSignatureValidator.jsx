@@ -2,6 +2,7 @@
 import { useMemo, useState } from "react";
 import { jsPDF } from "jspdf";
 import autoTable from "jspdf-autotable";
+import useProtectedAction from "../UseProtectedAction/UseProtectedAction";
 
 const ALG_OPTIONS = [
   { value: "auto", label: "Auto (from token)" },
@@ -24,6 +25,8 @@ export default function JWTSignatureValidator() {
   const [error, setError] = useState(null);
   const [loading, setLoading] = useState(false);
 
+  const protectedAction = useProtectedAction();
+
   const isAsymmetric = useMemo(() => /^(RS|ES)/.test(algorithm), [algorithm]);
 
   const handleValidate = async () => {
@@ -39,39 +42,52 @@ export default function JWTSignatureValidator() {
     setError(null);
     setResult(null);
 
-    try {
-      const res = await fetch(
-        `${process.env.NEXT_PUBLIC_PROD_API_URL}/jwtsign/jwt-signature`,
-        {
+    // ✅ Protect the operation
+    await protectedAction(async (userToken) => {
+      try {
+        const apiUrl = process.env.NEXT_PUBLIC_PROD_API_URL;
+        if (!apiUrl) {
+          setError(
+            "API URL is not configured. Please set NEXT_PUBLIC_PROD_API_URL environment variable."
+          );
+          return;
+        }
+
+        const res = await fetch(`${apiUrl}/jwtsign/jwt-signature`, {
           method: "POST",
-          headers: { "Content-Type": "application/json" },
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${userToken}`, // ✅ Send token for auth
+          },
           body: JSON.stringify({
             token: t,
             secret: s,
             algorithm,
           }),
+        });
+
+        const data = await res.json();
+
+        if (res.ok) {
+          setResult(data);
+        } else {
+          setError(data.error || "Invalid JWT");
         }
-      );
-
-      const data = await res.json();
-
-      if (res.ok) {
-        setResult(data);
-      } else {
-        setError(data.error || "Invalid JWT");
+      } catch (err) {
+        console.error("Network error:", err);
+        setError(
+          "Network error: Unable to connect to server. Make sure the backend is reachable."
+        );
+      } finally {
+        setLoading(false);
       }
-    } catch (err) {
-      console.error("Network error:", err);
-      setError(
-        "Network error: Unable to connect to server. Make sure the backend is reachable."
-      );
-    } finally {
-      setLoading(false);
-    }
+    });
   };
 
   const safeName = (name) =>
-    String(name || "token").replace(/[^a-z0-9.-]/gi, "_").toLowerCase();
+    String(name || "token")
+      .replace(/[^a-z0-9.-]/gi, "_")
+      .toLowerCase();
 
   const handleDownloadPDF = () => {
     if (!result) return;
@@ -113,7 +129,10 @@ export default function JWTSignatureValidator() {
     autoTable(doc, {
       startY: y,
       head: [["Key", "Value"]],
-      body: Object.entries(result.header || {}).map(([k, v]) => [k, JSON.stringify(v)]),
+      body: Object.entries(result.header || {}).map(([k, v]) => [
+        k,
+        JSON.stringify(v),
+      ]),
       styles: { fontSize: 10 },
       margin: { left: M, right: M },
     });
@@ -122,7 +141,10 @@ export default function JWTSignatureValidator() {
     autoTable(doc, {
       startY: y,
       head: [["Key", "Value"]],
-      body: Object.entries(result.payload || {}).map(([k, v]) => [k, JSON.stringify(v)]),
+      body: Object.entries(result.payload || {}).map(([k, v]) => [
+        k,
+        JSON.stringify(v),
+      ]),
       styles: { fontSize: 10 },
       margin: { left: M, right: M },
     });
@@ -154,7 +176,9 @@ export default function JWTSignatureValidator() {
     Object.entries(result.payload || {}).forEach(([k, v]) =>
       lines.push(`${k}: ${JSON.stringify(v)}`)
     );
-    const blob = new Blob([lines.join("\n")], { type: "text/plain;charset=utf-8" });
+    const blob = new Blob([lines.join("\n")], {
+      type: "text/plain;charset=utf-8",
+    });
     const link = document.createElement("a");
     link.href = URL.createObjectURL(blob);
     link.download = `JWT_Report_${safeName(result.header?.typ || "JWT")}.txt`;
@@ -168,32 +192,33 @@ export default function JWTSignatureValidator() {
     <div className="min-h-screen bg-black py-8 px-4 text-white">
       <div className="max-w-4xl mx-auto">
         {/* Header */}
-<div className="flex items-center justify-start gap-4 mb-6 mt-15">
-  <img
-    src="/BlueTeam/jwt_signature.png"
-    alt="verify"
-    className="w-30 h-30 rounded-full border-4 border-blue-500"
-  />
-  <div className="text-left">
-    <h1 className="text-3xl font-bold">JWT Signature Validator</h1>
-    <p className="text-gray-300 text-sm">
-      Validate and decode your JSON Web Tokens securely
-    </p>
-  </div>
-</div>
-
-
-
+        <div className="flex items-center justify-start gap-4 mb-6 mt-15">
+          <img
+            src="/BlueTeam/jwt_signature.png"
+            alt="verify"
+            className="w-30 h-30 rounded-full border-4 border-blue-500"
+          />
+          <div className="text-left">
+            <h1 className="text-3xl font-bold">JWT Signature Validator</h1>
+            <p className="text-gray-300 text-sm">
+              Validate and decode your JSON Web Tokens securely
+            </p>
+          </div>
+        </div>
 
         {/* Card */}
         <div className="bg-[#1c1c1e] rounded-xl shadow-lg border border-blue-700 p-6 space-y-6">
           <div className="bg-blue-600 p-4 rounded-lg ">
-  <h1 className="text-2xl font-bold text-white">JWT Signature Validator</h1>
-</div>
+            <h1 className="text-2xl font-bold text-white">
+              JWT Signature Validator
+            </h1>
+          </div>
 
           {/* JWT Token */}
           <div>
-            <label className="block text-sm font-semibold text-blue-400 mb-2">JWT Token</label>
+            <label className="block text-sm font-semibold text-blue-400 mb-2">
+              JWT Token
+            </label>
             <textarea
               placeholder="Paste your JWT Token here ( e.g , gsdjbcdsmnvwhkvhjiesnjrve,vb)"
               value={token}
@@ -205,7 +230,9 @@ export default function JWTSignatureValidator() {
 
           {/* Algorithm + Secret */}
           <div className="space-y-2">
-            <label className="block text-sm font-semibold text-blue-400">Algorithm</label>
+            <label className="block text-sm font-semibold text-blue-400">
+              Algorithm
+            </label>
             <select
               value={algorithm}
               onChange={(e) => setAlgorithm(e.target.value)}
@@ -218,7 +245,8 @@ export default function JWTSignatureValidator() {
               ))}
             </select>
             <p className="text-xs text-gray-400">
-              For RS*/ES* choose the correct algorithm and provide a PEM public key.
+              For RS*/ES* choose the correct algorithm and provide a PEM public
+              key.
             </p>
           </div>
 
@@ -248,37 +276,35 @@ export default function JWTSignatureValidator() {
           {/* Buttons */}
           <div className="flex flex-wrap gap-3">
             <button
-  onClick={handleValidate}
-  disabled={loading || !token.trim() || !secret.trim()}
-  className="flex-1 bg-blue text-white py-3 px-6 rounded-lg hover:bg-blue-600 disabled:bg-blue-600 transition"
->
-  {loading ? "Validating..." : "Validate JWT Token"}
-</button>
-<button
-  onClick={handleDownloadPDF}
-  disabled={!result}
-  className={`px-4 py-3 rounded-lg border transition ${
-    result
-      ? "bg-blue-600 text-white border-blue-600 hover:bg-blue-700"
-      : "bg-blue-600 text-gray-100 border-blue-300 cursor-not-allowed"
-  }`}
->
-  Download PDF
-</button>
-
-           
+              onClick={handleValidate}
+              disabled={loading || !token.trim() || !secret.trim()}
+              className="flex-1 bg-blue text-white py-3 px-6 rounded-lg hover:bg-blue-600 disabled:bg-blue-600 transition"
+            >
+              {loading ? "Validating..." : "Validate JWT Token"}
+            </button>
             <button
-  onClick={handleDownloadTXT}
-  disabled={!result}
-  className={`px-4 py-3 rounded-lg border transition ${
-    result
-      ? "bg-blue-600 text-white border-blue-600 hover:bg-blue-700"
-      : "bg-blue-600 text-gray-100 border-blue-300 cursor-not-allowed"
-  }`}
->
-  Download TXT
-</button>
+              onClick={handleDownloadPDF}
+              disabled={!result}
+              className={`px-4 py-3 rounded-lg border transition ${
+                result
+                  ? "bg-blue-600 text-white border-blue-600 hover:bg-blue-700"
+                  : "bg-blue-600 text-gray-100 border-blue-300 cursor-not-allowed"
+              }`}
+            >
+              Download PDF
+            </button>
 
+            <button
+              onClick={handleDownloadTXT}
+              disabled={!result}
+              className={`px-4 py-3 rounded-lg border transition ${
+                result
+                  ? "bg-blue-600 text-white border-blue-600 hover:bg-blue-700"
+                  : "bg-blue-600 text-gray-100 border-blue-300 cursor-not-allowed"
+              }`}
+            >
+              Download TXT
+            </button>
           </div>
 
           {/* Error */}
@@ -291,18 +317,28 @@ export default function JWTSignatureValidator() {
           {/* Success */}
           {result && (
             <div className="bg-blue-600 border border-blue-600 rounded-lg p-6">
-              <h2 className="text-lg font-bold text-blue-400 mb-3">JWT Signature Valid</h2>
+              <h2 className="text-lg font-bold text-blue-400 mb-3">
+                JWT Signature Valid
+              </h2>
               <p className="text-gray-300 text-sm mb-4">
                 Your JWT token has been successfully validated and decoded
               </p>
               <div className="grid md:grid-cols-2 gap-6">
                 <div className="bg-[#111] rounded-lg p-4 border border-blue-700">
-                  <h3 className="text-sm font-bold text-blue-400 mb-2">Header</h3>
-                  <pre className="text-xs text-gray-300">{JSON.stringify(result.header, null, 2)}</pre>
+                  <h3 className="text-sm font-bold text-blue-400 mb-2">
+                    Header
+                  </h3>
+                  <pre className="text-xs text-gray-300">
+                    {JSON.stringify(result.header, null, 2)}
+                  </pre>
                 </div>
                 <div className="bg-[#111] rounded-lg p-4 border border-blue-700">
-                  <h3 className="text-sm font-bold text-blue-400 mb-2">Payload</h3>
-                  <pre className="text-xs text-gray-300">{JSON.stringify(result.payload, null, 2)}</pre>
+                  <h3 className="text-sm font-bold text-blue-400 mb-2">
+                    Payload
+                  </h3>
+                  <pre className="text-xs text-gray-300">
+                    {JSON.stringify(result.payload, null, 2)}
+                  </pre>
                 </div>
               </div>
             </div>
@@ -310,7 +346,8 @@ export default function JWTSignatureValidator() {
         </div>
 
         <div className="text-center mt-6 text-sm text-blue-400">
-          Secure <span className="font-semibold">JWT</span> validation powered by industry-standard algorithms
+          Secure <span className="font-semibold">JWT</span> validation powered
+          by industry-standard algorithms
         </div>
       </div>
     </div>

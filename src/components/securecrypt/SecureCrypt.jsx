@@ -5,6 +5,7 @@ import { Clipboard, ClipboardCheck, Download } from "lucide-react";
 import { jsPDF } from "jspdf";
 import autoTable from "jspdf-autotable";
 import GreenLayout from "../GreenTeam/layout";
+import useProtectedAction from "../UseProtectedAction/UseProtectedAction";
 
 export default function SecureCrypt() {
   const API = useMemo(
@@ -13,17 +14,18 @@ export default function SecureCrypt() {
   );
 
   const [mode, setMode] = useState("encrypt"); // "encrypt" | "decrypt"
-  const [text, setText] = useState("");            // plaintext (encrypt) OR package (decrypt)
+  const [text, setText] = useState(""); // plaintext (encrypt) OR package (decrypt)
   const [passphrase, setPassphrase] = useState("");
   const [keyB64, setKeyB64] = useState("");
   const [loading, setLoading] = useState(false);
 
-  const [resultText, setResultText] = useState("");   // ciphertext package (encrypt) OR plaintext (decrypt)
-  const [report, setReport] = useState(null);         // detailed meta
+  const [resultText, setResultText] = useState(""); // ciphertext package (encrypt) OR plaintext (decrypt)
+  const [report, setReport] = useState(null); // detailed meta
   const [generatedKeyB64, setGeneratedKeyB64] = useState("");
   const [note, setNote] = useState("");
   const [copied, setCopied] = useState(false);
 
+  const protectedAction = useProtectedAction();
   const encrypt = async () => {
     setLoading(true);
     setResultText("");
@@ -31,32 +33,37 @@ export default function SecureCrypt() {
     setGeneratedKeyB64("");
     setNote("");
 
-    try {
-      const body = { text: text.trim() };
-      if (passphrase.trim()) body.passphrase = passphrase;
-      if (keyB64.trim()) body.keyB64 = keyB64.trim();
+    await protectedAction(async (userToken) => {
+      try {
+        const body = { text: text.trim() };
+        if (passphrase.trim()) body.passphrase = passphrase;
+        if (keyB64.trim()) body.keyB64 = keyB64.trim();
 
-      const res = await fetch(`${API}/securecrypt/encrypt`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(body),
-      });
+        const res = await fetch(`${API}/securecrypt/encrypt`, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${userToken}`,
+          },
+          body: JSON.stringify(body),
+        });
 
-      const data = await res.json();
-      if (!res.ok) {
-        throw new Error(data?.error || "Encryption failed.");
+        const data = await res.json();
+        if (!res.ok) {
+          throw new Error(data?.error || "Encryption failed.");
+        }
+
+        // result is a package (Base64 JSON) + report
+        setResultText(data.package || "");
+        setReport(data.report || null);
+        if (data.generatedKeyB64) setGeneratedKeyB64(data.generatedKeyB64);
+        if (data.note) setNote(data.note);
+      } catch (e) {
+        setResultText(`❌ ${e.message || "Error contacting server."}`);
+      } finally {
+        setLoading(false);
       }
-
-      // result is a package (Base64 JSON) + report
-      setResultText(data.package || "");
-      setReport(data.report || null);
-      if (data.generatedKeyB64) setGeneratedKeyB64(data.generatedKeyB64);
-      if (data.note) setNote(data.note);
-    } catch (e) {
-      setResultText(`❌ ${e.message || "Error contacting server."}`);
-    } finally {
-      setLoading(false);
-    }
+    });
   };
 
   const decrypt = async () => {
@@ -65,30 +72,32 @@ export default function SecureCrypt() {
     setReport(null);
     setNote("");
 
-    try {
-      const body = { package: text.trim() };
-      if (passphrase.trim()) body.passphrase = passphrase.trim();
-      if (keyB64.trim()) body.keyB64 = keyB64.trim();
+    await protectedAction(async (userToken) => {
+      try {
+        const body = { package: text.trim() };
+        if (passphrase.trim()) body.passphrase = passphrase.trim();
+        if (keyB64.trim()) body.keyB64 = keyB64.trim();
 
-      const res = await fetch(`${API}/securecrypt/decrypt`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(body),
-      });
+        const res = await fetch(`${API}/securecrypt/decrypt`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(body),
+        });
 
-      const data = await res.json();
-      if (!res.ok) {
-        throw new Error(data?.error || "Decryption failed.");
+        const data = await res.json();
+        if (!res.ok) {
+          throw new Error(data?.error || "Decryption failed.");
+        }
+
+        setResultText(data.decrypted || "");
+        setReport(data.report || null);
+        setNote(data.integrity ? `Integrity: ${data.integrity}` : "");
+      } catch (e) {
+        setResultText(`❌ ${e.message || "Error contacting server."}`);
+      } finally {
+        setLoading(false);
       }
-
-      setResultText(data.decrypted || "");
-      setReport(data.report || null);
-      setNote(data.integrity ? `Integrity: ${data.integrity}` : "");
-    } catch (e) {
-      setResultText(`❌ ${e.message || "Error contacting server."}`);
-    } finally {
-      setLoading(false);
-    }
+    });
   };
 
   const handleSubmit = () => {
@@ -161,12 +170,11 @@ export default function SecureCrypt() {
 
   return (
     <div className="min-h-screen bg-black flex flex-col items-center px-3 pt-10 pb-24">
-
-    <GreenLayout 
+      <GreenLayout
         heroData={{
           imgPath: "/GreenTeam/dycrypt.png",
           title: "SecureCrypt",
-          desc: "AES‑256‑GCM encryption with passphrase/key, portable package, Copy/PDF/TXT export."
+          desc: "AES‑256‑GCM encryption with passphrase/key, portable package, Copy/PDF/TXT export.",
         }}
       />
       <div className="bg-black border border-white shadow-lg rounded-xl p-6 w-full max-w-2xl">
@@ -174,18 +182,30 @@ export default function SecureCrypt() {
         <div className="flex justify-center gap-3 mb-4">
           <button
             type="button"
-            onClick={() => { setMode("encrypt"); setResultText(""); setReport(null); }}
+            onClick={() => {
+              setMode("encrypt");
+              setResultText("");
+              setReport(null);
+            }}
             className={`px-4 py-2 rounded-md font-semibold ${
-              mode === "encrypt" ? "bg-green-700 text-white" : "bg-gray-200 text-gray-700"
+              mode === "encrypt"
+                ? "bg-green-700 text-white"
+                : "bg-gray-200 text-gray-700"
             }`}
           >
             Encrypt
           </button>
           <button
             type="button"
-            onClick={() => { setMode("decrypt"); setResultText(""); setReport(null); }}
+            onClick={() => {
+              setMode("decrypt");
+              setResultText("");
+              setReport(null);
+            }}
             className={`px-4 py-2 rounded-md font-semibold ${
-              mode === "decrypt" ? "bg-green-700 text-white" : "bg-gray-200 text-gray-700"
+              mode === "decrypt"
+                ? "bg-green-700 text-white"
+                : "bg-gray-200 text-gray-700"
             }`}
           >
             Decrypt
@@ -198,7 +218,11 @@ export default function SecureCrypt() {
         </label>
         <textarea
           rows={4}
-          placeholder={mode === "encrypt" ? "Enter text to encrypt…" : "Paste the package returned by Encrypt…"}
+          placeholder={
+            mode === "encrypt"
+              ? "Enter text to encrypt…"
+              : "Paste the package returned by Encrypt…"
+          }
           value={text}
           onChange={(e) => setText(e.target.value)}
           className="w-full px-4 py-3 mb-4 text-white border rounded-md focus:outline-none focus:ring-2 focus:ring-green-500"
@@ -207,7 +231,9 @@ export default function SecureCrypt() {
         {/* Passphrase / Key */}
         <div className="grid sm:grid-cols-2 gap-4 text-white mb-4">
           <div>
-            <label className="block text-white text-sm font-medium mb-1">Passphrase (optional)</label>
+            <label className="block text-white text-sm font-medium mb-1">
+              Passphrase (optional)
+            </label>
             <input
               type="password"
               value={passphrase}
@@ -220,7 +246,9 @@ export default function SecureCrypt() {
             </p>
           </div>
           <div>
-            <label className="block text-white text-sm font-medium mb-1">Base64 Key (optional)</label>
+            <label className="block text-white text-sm font-medium mb-1">
+              Base64 Key (optional)
+            </label>
             <input
               type="text"
               value={keyB64}
@@ -243,13 +271,25 @@ export default function SecureCrypt() {
             loading ? "opacity-50 cursor-not-allowed" : ""
           }`}
         >
-          {loading ? (mode === "encrypt" ? "Encrypting…" : "Decrypting…") : (mode === "encrypt" ? "Encrypt" : "Decrypt")}
+          {loading
+            ? mode === "encrypt"
+              ? "Encrypting…"
+              : "Decrypting…"
+            : mode === "encrypt"
+            ? "Encrypt"
+            : "Decrypt"}
         </button>
 
         {/* Results */}
         {resultText && (
           <div className="mt-6">
-            <div className={`rounded-lg p-4 ${resultIsError ? "bg-red-50 border border-red-200" : "bg-gray-50 border border-gray-200"}`}>
+            <div
+              className={`rounded-lg p-4 ${
+                resultIsError
+                  ? "bg-red-50 border border-red-200"
+                  : "bg-gray-50 border border-gray-200"
+              }`}
+            >
               <div className="flex items-center justify-between mb-2">
                 <p className="text-lg font-bold text-gray-800">
                   {mode === "encrypt" ? "Encrypted Package" : "Decrypted Text"}
@@ -259,7 +299,11 @@ export default function SecureCrypt() {
                     onClick={() => copyToClipboard(resultText)}
                     className="inline-flex items-center gap-2 px-3 py-2 rounded-md bg-gray-900 text-white hover:bg-black text-sm"
                   >
-                    {copied ? <ClipboardCheck size={16} /> : <Clipboard size={16} />}
+                    {copied ? (
+                      <ClipboardCheck size={16} />
+                    ) : (
+                      <Clipboard size={16} />
+                    )}
                     {copied ? "Copied" : "Copy"}
                   </button>
                 )}
@@ -271,7 +315,9 @@ export default function SecureCrypt() {
               {!resultIsError && (
                 <div className="flex flex-wrap gap-3 mt-4">
                   <button
-                    onClick={() => downloadTxt(`${mode}_output.txt`, resultText)}
+                    onClick={() =>
+                      downloadTxt(`${mode}_output.txt`, resultText)
+                    }
                     className="inline-flex items-center gap-2 px-3 py-2 rounded-md bg-gray-200 hover:bg-gray-300 text-sm"
                   >
                     <Download size={16} /> TXT
@@ -293,19 +339,48 @@ export default function SecureCrypt() {
               <div className="mt-4 text-sm text-gray-700">
                 <p className="font-semibold mb-1">Technical Report</p>
                 <div className="grid md:grid-cols-2 gap-x-6 gap-y-1">
-                  <p><span className="font-medium">Algorithm:</span> {report.algorithm}</p>
-                  <p><span className="font-medium">KDF:</span> {report.kdf}</p>
-                  {"iterations" in report && <p><span className="font-medium">Iterations:</span> {report.iterations}</p>}
-                  {"keyLengthBits" in report && <p><span className="font-medium">Key Length:</span> {report.keyLengthBits} bit</p>}
-                  <p className="break-all"><span className="font-medium">Salt:</span> {report.salt}</p>
-                  <p className="break-all"><span className="font-medium">IV:</span> {report.iv}</p>
-                  {"authTag" in report && <p className="break-all"><span className="font-medium">Auth Tag:</span> {report.authTag}</p>}
-                  <p className="break-all md:col-span-2"><span className="font-medium">Ciphertext:</span> {report.ciphertext}</p>
+                  <p>
+                    <span className="font-medium">Algorithm:</span>{" "}
+                    {report.algorithm}
+                  </p>
+                  <p>
+                    <span className="font-medium">KDF:</span> {report.kdf}
+                  </p>
+                  {"iterations" in report && (
+                    <p>
+                      <span className="font-medium">Iterations:</span>{" "}
+                      {report.iterations}
+                    </p>
+                  )}
+                  {"keyLengthBits" in report && (
+                    <p>
+                      <span className="font-medium">Key Length:</span>{" "}
+                      {report.keyLengthBits} bit
+                    </p>
+                  )}
+                  <p className="break-all">
+                    <span className="font-medium">Salt:</span> {report.salt}
+                  </p>
+                  <p className="break-all">
+                    <span className="font-medium">IV:</span> {report.iv}
+                  </p>
+                  {"authTag" in report && (
+                    <p className="break-all">
+                      <span className="font-medium">Auth Tag:</span>{" "}
+                      {report.authTag}
+                    </p>
+                  )}
+                  <p className="break-all md:col-span-2">
+                    <span className="font-medium">Ciphertext:</span>{" "}
+                    {report.ciphertext}
+                  </p>
                 </div>
 
                 {generatedKeyB64 && (
                   <div className="mt-3">
-                    <p className="font-medium text-gray-800">Generated Key (Base64):</p>
+                    <p className="font-medium text-gray-800">
+                      Generated Key (Base64):
+                    </p>
                     <div className="flex items-center gap-2">
                       <code className="text-xs break-all bg-gray-100 px-2 py-1 rounded">
                         {generatedKeyB64}
@@ -314,7 +389,11 @@ export default function SecureCrypt() {
                         onClick={() => copyToClipboard(generatedKeyB64)}
                         className="inline-flex items-center gap-2 px-2 py-1 rounded-md bg-gray-900 text-white hover:bg-black text-xs"
                       >
-                        {copied ? <ClipboardCheck size={14} /> : <Clipboard size={14} />}
+                        {copied ? (
+                          <ClipboardCheck size={14} />
+                        ) : (
+                          <Clipboard size={14} />
+                        )}
                         Copy
                       </button>
                     </div>

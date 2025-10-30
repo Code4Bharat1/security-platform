@@ -1,18 +1,46 @@
 "use client";
-
 import { useState } from "react";
 import {
-  Shield, CheckCircle, XCircle, AlertTriangle, Globe, Lock,
-  FileText, FileDown
+  Shield,
+  CheckCircle,
+  XCircle,
+  AlertTriangle,
+  Globe,
+  FileText,
+  FileDown,
+  ListChecks,
+  Info,
+  Rows,
 } from "lucide-react";
 import { jsPDF } from "jspdf";
 import autoTable from "jspdf-autotable";
+import useProtectedAction from "../UseProtectedAction/UseProtectedAction";
 
-function InfoRow({ label, value }) {
+function Badge({ ok, yesText = "Enabled", noText = "Disabled" }) {
+  return (
+    <span
+      className={`px-3 py-1 rounded-full text-sm font-semibold ${
+        ok ? "bg-green-100 text-green-800" : "bg-red-100 text-red-800"
+      }`}
+    >
+      {ok ? yesText : noText}
+    </span>
+  );
+}
+
+function Pill({ text }) {
+  return (
+    <span className="inline-flex items-center px-2.5 py-1 rounded-full border border-blue-500 text-white text-xs">
+      {text}
+    </span>
+  );
+}
+
+function KV({ k, v }) {
   return (
     <div className="flex items-center justify-between rounded-lg bg-black border border-blue-100 px-3 py-2">
-      <span className="text-gray-600">{label}</span>
-      <span className="font-medium text-gray-800">{value}</span>
+      <span className="text-gray-300">{k}</span>
+      <span className="font-medium text-white">{v}</span>
     </div>
   );
 }
@@ -22,122 +50,138 @@ export default function HttpsCheckerPage() {
   const [loading, setLoading] = useState(false);
   const [result, setResult] = useState(null);
   const [error, setError] = useState("");
+  const protectedAction = useProtectedAction();
 
   const handleCheck = async () => {
     if (!domain) {
       setError("Please enter a domain name");
       return;
     }
-
-    const domainRegex = /^[a-zA-Z0-9][a-zA-Z0-9-]{1,61}[a-zA-Z0-9]\.[a-zA-Z]{2,}$/;
-    const cleanDomain = domain.replace(/^https?:\/\//, '').replace(/\/$/, '');
-    
+    const domainRegex =
+      /^[a-zA-Z0-9][a-zA-Z0-9-]{1,61}[a-zA-Z0-9]\.[a-zA-Z]{2,}$/;
+    const cleanDomain = domain.replace(/^https?:\/\//, "").replace(/\/$/, "");
     if (!domainRegex.test(cleanDomain)) {
       setError("Please enter a valid domain name (e.g., example.com)");
       return;
     }
-
     setLoading(true);
     setError("");
     setResult(null);
 
-    try {
-      const apiUrl = process.env.NEXT_PUBLIC_PROD_API_URL;
-      if (!apiUrl) {
-        setError("API URL is not configured. Please set NEXT_PUBLIC_PROD_API_URL environment variable.");
-        return;
-      }
-
-      const res = await fetch(`${apiUrl}/http/https-enforcement`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ target: cleanDomain }),
-      });
-
-      const data = await res.json();
-      
-      if (!res.ok) {
-        if (res.status === 404) {
-          setError("Domain not found. Please check the domain name and try again.");
-        } else {
-          setError(`API error (${res.status}): ${data.error || res.statusText}`);
+    await protectedAction(async (token) => {
+      try {
+        const apiUrl = process.env.NEXT_PUBLIC_PROD_API_URL;
+        if (!apiUrl) {
+          setError(
+            "API URL is not configured. Please set NEXT_PUBLIC_PROD_API_URL environment variable."
+          );
+          return;
         }
-        return;
-      }
+        const res = await fetch(`${apiUrl}/http/https-enforcement`, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+          body: JSON.stringify({ target: cleanDomain }),
+        });
 
-      if (data.success) {
-        setResult(data);
-      } else {
-        if (data.error && (
-          data.error.toLowerCase().includes('not found') ||
-          data.error.toLowerCase().includes('does not exist') ||
-          data.error.toLowerCase().includes('invalid domain') ||
-          data.error.toLowerCase().includes('nxdomain')
-        )) {
-          setError("Domain not found. Please check the domain name and try again.");
-        } else {
-          setError(data.error || "Unknown error occurred");
+        const data = await res.json();
+        if (!res.ok) {
+          if (res.status === 404) {
+            setError(
+              "Domain not found. Please check the domain name and try again."
+            );
+          } else {
+            setError(
+              `API error (${res.status}): ${data.error || res.statusText}`
+            );
+          }
+          return;
         }
+        if (data.success) {
+          setResult(data);
+        } else {
+          if (
+            data.error &&
+            (data.error.toLowerCase().includes("not found") ||
+              data.error.toLowerCase().includes("does not exist") ||
+              data.error.toLowerCase().includes("invalid domain") ||
+              data.error.toLowerCase().includes("nxdomain"))
+          ) {
+            setError(
+              "Domain not found. Please check the domain name and try again."
+            );
+          } else {
+            setError(data.error || "Unknown error occurred");
+          }
+        }
+      } catch (err) {
+        console.error("Error during HTTPS check:", err);
+        if (err.name === "TypeError" && err.message.includes("fetch")) {
+          setError(
+            "Unable to connect to the API. Please check your internet connection."
+          );
+        } else {
+          setError(`Network error: ${err.message}`);
+        }
+      } finally {
+        setLoading(false);
       }
-    } catch (err) {
-      console.error("Error during HTTPS check:", err);
-      if (err.name === 'TypeError' && err.message.includes('fetch')) {
-        setError("Unable to connect to the API. Please check your internet connection.");
-      } else {
-        setError(`Network error: ${err.message}`);
-      }
-    } finally {
-      setLoading(false);
-    }
+    });
   };
 
   const handleKeyPress = (e) => {
-    if (e.key === 'Enter') handleCheck();
+    if (e.key === "Enter") handleCheck();
   };
 
   const renderRecommendations = () => {
     if (!result) return null;
     const recs = [];
-
     if (!result.httpRedirectsToHttps) {
       recs.push({
         icon: <XCircle className="w-5 h-5 text-red-500" />,
         text: "The site does NOT redirect HTTP traffic to HTTPS. This can expose users to insecure connections and man-in-the-middle attacks.",
-        type: "error"
       });
     }
-
     if (!result.hstsEnabled) {
       recs.push({
         icon: <AlertTriangle className="w-5 h-5 text-yellow-500" />,
         text: "The site does NOT have the Strict-Transport-Security (HSTS) header enabled. Without HSTS, browsers won't remember to always use HTTPS.",
-        type: "warning"
       });
     } else if (result.hstsMaxAge && result.hstsMaxAge < 15768000) {
       recs.push({
         icon: <AlertTriangle className="w-5 h-5 text-yellow-500" />,
         text: `The HSTS max-age is set to ${result.hstsMaxAge.toLocaleString()} seconds, which is below the recommended 6 months (15,768,000 seconds).`,
-        type: "warning"
       });
     }
-
+    // Missing headers suggestions
+    if (result.missingHeaders?.length) {
+      recs.push({
+        icon: <ListChecks className="w-5 h-5 text-white" />,
+        text: `Missing recommended security headers: ${result.missingHeaders.join(
+          ", "
+        )}.`,
+      });
+    }
     if (recs.length === 0) {
       recs.push({
-        icon: <CheckCircle className="w-5 h-5 text-white-500" />,
+        icon: <CheckCircle className="w-5 h-5 text-white" />,
         text: "HTTPS enforcement is excellent! The site has proper redirection and HSTS configuration.",
-        type: "success"
       });
     }
-
     return (
-      <div className="mt-6 p-5 bg-black from-green-50 to-emerald-50 border border-blue-600 rounded-xl">
+      <div className="mt-6 p-5 bg-black border border-blue-600 rounded-xl">
         <div className="flex items-center gap-2 mb-3">
           <Shield className="w-5 h-5 text-white" />
           <h3 className="font-semibold text-white">Security Recommendations</h3>
         </div>
         <div className="space-y-3">
           {recs.map((rec, i) => (
-            <div key={i} className="flex items-start gap-3 p-3 bg-black rounded-lg shadow-sm">
+            <div
+              key={i}
+              className="flex items-start gap-3 p-3 bg-black rounded-lg border border-blue-500"
+            >
               {rec.icon}
               <p className="text-sm text-white leading-relaxed">{rec.text}</p>
             </div>
@@ -148,16 +192,17 @@ export default function HttpsCheckerPage() {
   };
 
   // ---------- EXPORT HELPERS ----------
-
   const safeName = (name) =>
-    String(name || "site").replace(/[^a-z0-9.-]/gi, "_").toLowerCase();
+    String(name || "site")
+      .replace(/[^a-z0-9.-]/gi, "_")
+      .toLowerCase();
 
-  const buildSummaryRows = (r) => ([
+  const buildSummaryRows = (r) => [
     ["Target", r.target || "-"],
     ["HTTP → HTTPS Redirect", r.httpRedirectsToHttps ? "Enabled" : "Disabled"],
     ["HSTS Enabled", r.hstsEnabled ? "Yes" : "No"],
     ["HSTS max-age", r.hstsMaxAge != null ? String(r.hstsMaxAge) : "—"],
-  ]);
+  ];
 
   const buildAdditionalRows = (ai) => {
     if (!ai) return [];
@@ -170,7 +215,14 @@ export default function HttpsCheckerPage() {
       ["X-Powered-By", ai.xPoweredBy ?? "—"],
       ["CDN Provider", ai.cdnProvider ?? "—"],
       ["Cache-Control", ai.cacheControl ?? "—"],
-      ["CSP", ai.csp?.enabled ? (ai.csp.reportOnly ? "Report-Only" : "Enabled") : "Not set"],
+      [
+        "CSP",
+        ai.csp?.enabled
+          ? ai.csp.reportOnly
+            ? "Report-Only"
+            : "Enabled"
+          : "Not set",
+      ],
       ["HSTS includeSubDomains", String(ai.hsts?.includeSubDomains ?? false)],
       ["HSTS preload flag", String(ai.hsts?.preload ?? false)],
       ["HSTS preload-ready", String(ai.hsts?.preloadReady ?? false)],
@@ -181,11 +233,9 @@ export default function HttpsCheckerPage() {
 
   const handleDownloadPDF = () => {
     if (!result) return;
-
     const doc = new jsPDF({ unit: "pt", format: "a4" });
     const M = 40;
     let y = 56;
-
     const H = (txt) => {
       doc.setFont("helvetica", "bold");
       doc.setFontSize(14);
@@ -198,7 +248,6 @@ export default function HttpsCheckerPage() {
       doc.text(txt, M, y);
       y += 16;
     };
-
     // Title
     doc.setFont("helvetica", "bold");
     doc.setFontSize(18);
@@ -224,7 +273,10 @@ export default function HttpsCheckerPage() {
     autoTable(doc, {
       startY: y,
       head: [["Header"]],
-      body: (result.missingHeaders?.length ? result.missingHeaders : ["None"]).map(h => [h]),
+      body: (result.missingHeaders?.length
+        ? result.missingHeaders
+        : ["None"]
+      ).map((h) => [h]),
       styles: { fontSize: 10 },
       margin: { left: M, right: M },
     });
@@ -235,7 +287,10 @@ export default function HttpsCheckerPage() {
     autoTable(doc, {
       startY: y,
       head: [["Header"]],
-      body: (result.upcomingHeaders?.length ? result.upcomingHeaders : ["None"]).map(h => [h]),
+      body: (result.upcomingHeaders?.length
+        ? result.upcomingHeaders
+        : ["None"]
+      ).map((h) => [h]),
       styles: { fontSize: 10 },
       margin: { left: M, right: M },
     });
@@ -261,7 +316,9 @@ export default function HttpsCheckerPage() {
     autoTable(doc, {
       startY: y,
       head: [["Header", "Value"]],
-      body: (entries.length ? entries.slice(0, MAX_RAW) : [["—", "—"]]).map(([k, v]) => [k, String(v)]),
+      body: (entries.length ? entries.slice(0, MAX_RAW) : [["—", "—"]]).map(
+        ([k, v]) => [k, String(v)]
+      ),
       styles: { fontSize: 9 },
       margin: { left: M, right: M },
       columnStyles: { 0: { cellWidth: 180 }, 1: { cellWidth: 320 } },
@@ -269,19 +326,20 @@ export default function HttpsCheckerPage() {
     if (entries.length > MAX_RAW) {
       const lastY = doc.lastAutoTable.finalY + 14;
       doc.setFontSize(10);
-      doc.text(`…and ${entries.length - MAX_RAW} more headers truncated.`, M, lastY);
+      doc.text(
+        `…and ${entries.length - MAX_RAW} more headers truncated.`,
+        M,
+        lastY
+      );
     }
-
     doc.save(`HTTPS_Report_${safeName(result.target)}.pdf`);
   };
 
   const handleDownloadTXT = () => {
     if (!result) return;
-
     const lines = [];
     const ai = result.additionalInfo || {};
     const raw = result.rawHeaders || {};
-
     lines.push("HTTPS Security Report");
     lines.push("====================================");
     lines.push(`Generated: ${new Date().toLocaleString()}`);
@@ -291,29 +349,28 @@ export default function HttpsCheckerPage() {
     lines.push("------------------------------------");
     buildSummaryRows(result).forEach(([k, v]) => lines.push(`${k}: ${v}`));
     lines.push("");
-
     lines.push("Missing Headers");
     lines.push("------------------------------------");
-    if (result.missingHeaders?.length) result.missingHeaders.forEach(h => lines.push(h));
+    if (result.missingHeaders?.length)
+      result.missingHeaders.forEach((h) => lines.push(h));
     else lines.push("None");
     lines.push("");
-
     lines.push("Upcoming / Modern Hardening Headers");
     lines.push("------------------------------------");
-    if (result.upcomingHeaders?.length) result.upcomingHeaders.forEach(h => lines.push(h));
+    if (result.upcomingHeaders?.length)
+      result.upcomingHeaders.forEach((h) => lines.push(h));
     else lines.push("None");
     lines.push("");
-
     lines.push("Additional Information");
     lines.push("------------------------------------");
     buildAdditionalRows(ai).forEach(([k, v]) => lines.push(`${k}: ${v}`));
     lines.push("");
-
     lines.push("Raw Headers");
     lines.push("------------------------------------");
     Object.entries(raw).forEach(([k, v]) => lines.push(`${k}: ${String(v)}`));
-
-    const blob = new Blob([lines.join("\n")], { type: "text/plain;charset=utf-8" });
+    const blob = new Blob([lines.join("\n")], {
+      type: "text/plain;charset=utf-8",
+    });
     const link = document.createElement("a");
     link.href = URL.createObjectURL(blob);
     link.download = `HTTPS_Report_${safeName(result.target)}.txt`;
@@ -324,73 +381,118 @@ export default function HttpsCheckerPage() {
   };
 
   // ---------- UI ----------
+  const RawHeadersGrid = ({ headers }) => {
+    const entries = Object.entries(headers || {});
+    if (!entries.length) {
+      return (
+        <div className="p-4 bg-black rounded-xl border border-blue-500 text-white text-sm">
+          No raw headers found.
+        </div>
+      );
+    }
+    return (
+      <div className="grid md:grid-cols-2 gap-3">
+        {entries.map(([k, v]) => {
+          const val = String(v ?? "—");
+          const short = val.length > 80 ? val.slice(0, 80) + "…" : val;
+          return (
+            <div
+              key={k}
+              className="rounded-lg bg-black border border-blue-100 px-3 py-2"
+              title={`${k}: ${val}`}
+            >
+              <div className="text-gray-400 text-xs">{k}</div>
+              <div className="text-white text-sm break-words">{short}</div>
+            </div>
+          );
+        })}
+      </div>
+    );
+  };
+
+  const ListSection = ({ title, items }) => {
+    return (
+      <div className="p-5 bg-black rounded-xl border border-blue-500">
+        <div className="flex items-center gap-2 mb-3">
+          <Rows className="w-5 h-5 text-white" />
+          <h3 className="font-semibold text-white">{title}</h3>
+        </div>
+        {items?.length ? (
+          <div className="flex flex-wrap gap-2">
+            {items.map((h) => (
+              <Pill key={h} text={h} />
+            ))}
+          </div>
+        ) : (
+          <div className="text-sm text-gray-300">None</div>
+        )}
+      </div>
+    );
+  };
 
   return (
     <div className="min-h-screen bg-black p-4 ">
       <div className="max-w-4xl mx-auto pt-10">
         {/* Header */}
-        <div className="flex items-center justify-left gap-4 mb-8 mt-15JWT Token">
-  <img 
-    src="/BlueTeam/https.png" 
-    alt="verify" 
-    className="w-30 h-30 rounded-full border-4 border-blue-600"
-  />
-  <div className="text-left">
-    <h1 className="text-3xl font-bold text-white">
-      HTTPS Security Checker
-    </h1>
-    <p className="text-gray-200 text-lg">
-      Verify your website's HTTPS configuration and security headers
-    </p>
-  </div>
-</div>
-
+        <div className="flex items-center justify-left gap-4 mb-8">
+          <img
+            src="/BlueTeam/https.png"
+            alt="verify"
+            className="w-30 h-30 rounded-full border-4 border-blue-600"
+          />
+          <div className="text-left">
+            <h1 className="text-3xl font-bold text-white">
+              HTTPS Security Checker
+            </h1>
+            <p className="text-gray-200 text-lg">
+              Verify your website&apos;s HTTPS configuration and security
+              headers
+            </p>
+          </div>
+        </div>
 
         {/* Main Card */}
-        <div className="border border-white-600 px-10 py-15"  >
+        <div className="border border-white-600 px-10 py-10 rounded-xl">
           {/* Input Section */}
           <div className="space-y-4 mb-6 ">
             <div className="relative">
-              <Globe className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-white-500" />
+              <Globe className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-white" />
               <input
                 type="text"
                 placeholder="Enter domain (e.g., example.com)"
                 value={domain}
                 onChange={(e) => setDomain(e.target.value.trim())}
                 onKeyPress={handleKeyPress}
-                className="w-full pl-12 pr-4 py-3 border-2 border-blue-200 rounded-xl focus:border-blue-500 focus:ring-2 focus:ring-green-200 transition-all duration-200 text-white outline-none"
+                className="w-full pl-12 pr-4 py-3 border-2 border-blue-200 rounded-xl focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition-all duration-200 text-white bg-black outline-none"
               />
             </div>
-            
             <div className="flex justify-center">
-  <button
-  onClick={handleCheck}
-  disabled={loading || !domain}
-  className="bg-blue-600 hover:bg-blue-600 text-white font-semibold py-2 px-6 rounded-xl transition-all duration-200 transform hover:scale-[1.02] disabled:opacity-50 shadow-lg border border-blue-500"
->
-  {loading ? (
-    <div className="flex items-center justify-center gap-2">
-      <div className="w-5 h-5 border-2 border-blue-200 border-t-transparent rounded-full animate-spin"></div>
-      Analyzing Security...
-    </div>
-  ) : (
-    <div className="flex items-center justify-center gap-2">
-      <Shield className="w-5 h-5" />
-      Check HTTPS Security
-    </div>
-  )}
-</button>
-
-</div>
-
+              <button
+                onClick={handleCheck}
+                disabled={loading || !domain}
+                className="bg-blue-600 hover:bg-blue-600 text-white font-semibold py-2 px-6 rounded-xl transition-all duration-200 transform hover:scale-[1.02] disabled:opacity-50 shadow-lg border border-blue-500"
+              >
+                {loading ? (
+                  <div className="flex items-center justify-center gap-2">
+                    <div className="w-5 h-5 border-2 border-blue-200 border-t-transparent rounded-full animate-spin"></div>
+                    Analyzing Security...
+                  </div>
+                ) : (
+                  <div className="flex items-center justify-center gap-2">
+                    <Shield className="w-5 h-5" />
+                    Check HTTPS Security
+                  </div>
+                )}
+              </button>
+            </div>
           </div>
 
           {/* Error Display */}
           {error && (
-            <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-xl">
+            <div className="mb-6 p-4 bg-black border border-red-500 rounded-xl">
               <div className="flex items-center gap-2">
                 <XCircle className="w-5 h-5 text-red-500" />
-                <span className="text-red-700 font-medium">{error}</span>
+                <span className="text-red-400 font-medium">{error}</span>
               </div>
             </div>
           )}
@@ -404,14 +506,14 @@ export default function HttpsCheckerPage() {
                   <h2 className="text-xl font-semibold text-white mb-1">
                     Security Analysis for
                   </h2>
-                  <span className="text-2xl font-bold bg-balck text-white to-emerald-600 bg-clip-text text-transparent">
+                  <span className="text-2xl font-bold text-white">
                     {result.target}
                   </span>
                 </div>
                 <div className="flex gap-2">
                   <button
                     onClick={handleDownloadPDF}
-                    className="h-10 px-4 rounded-lg border border-blue-700 text-white hover:bg-black-50 transition"
+                    className="h-10 px-4 rounded-lg border border-blue-700 text-white hover:bg-black transition"
                     title="Download PDF"
                   >
                     <div className="inline-flex items-center gap-2">
@@ -420,7 +522,7 @@ export default function HttpsCheckerPage() {
                   </button>
                   <button
                     onClick={handleDownloadTXT}
-                    className="h-10 px-4 rounded-lg border border-blue-700 text-white hover:bg-green-50 transition"
+                    className="h-10 px-4 rounded-lg border border-blue-700 text-white hover:bg-black transition"
                     title="Download TXT"
                   >
                     <div className="inline-flex items-center gap-2">
@@ -430,29 +532,25 @@ export default function HttpsCheckerPage() {
                 </div>
               </div>
 
-              {/* Results Grid */}
+              {/* Summary Tiles */}
               <div className="grid gap-4">
                 {/* HTTP Redirect */}
-                <div className="flex items-center justify-between p-4 bg-black from-blue-50 to-blue-100 rounded-xl border border-blue-500">
+                <div className="flex items-center justify-between p-4 bg-black rounded-xl border border-blue-500">
                   <div className="flex items-center gap-3">
                     {result.httpRedirectsToHttps ? (
-                      <CheckCircle className="w-6 h-6 text-500" />
+                      <CheckCircle className="w-6 h-6 text-white" />
                     ) : (
                       <XCircle className="w-6 h-6 text-red-500" />
                     )}
-                    <span className="font-medium text-white">HTTP → HTTPS Redirect</span>
+                    <span className="font-medium text-white">
+                      HTTP → HTTPS Redirect
+                    </span>
                   </div>
-                  <span className={`px-3 py-1 rounded-full text-sm font-semibold ${
-                    result.httpRedirectsToHttps 
-                      ? "bg-green-100 text-white-800" 
-                      : "bg-red-100 text-red-800"
-                  }`}>
-                    {result.httpRedirectsToHttps ? "Enabled" : "Disabled"}
-                  </span>
+                  <Badge ok={result.httpRedirectsToHttps} />
                 </div>
 
                 {/* HSTS */}
-                <div className="flex items-center justify-between p-4 bg-black from-blue-50 to-blue-100 rounded-xl border border-blue-500">
+                <div className="flex items-center justify-between p-4 bg-black rounded-xl border border-blue-500">
                   <div className="flex items-center gap-3">
                     {result.hstsEnabled ? (
                       <CheckCircle className="w-6 h-6 text-white" />
@@ -461,13 +559,43 @@ export default function HttpsCheckerPage() {
                     )}
                     <span className="font-medium text-white">HSTS Enabled</span>
                   </div>
-                  <span className={`px-3 py-1 rounded-full text-sm font-semibold ${
-                    result.hstsEnabled 
-                      ? "bg-green-100 text-green-800" 
-                      : "bg-red-100 text-red-800"
-                  }`}>
-                    {result.hstsEnabled ? "Yes" : "No"}
-                  </span>
+                  <Badge ok={result.hstsEnabled} yesText="Yes" noText="No" />
+                </div>
+              </div>
+
+              {/* New Sections */}
+              <ListSection
+                title="Missing Headers"
+                items={result.missingHeaders}
+              />
+
+              <div className="p-5 bg-black rounded-xl border border-blue-500">
+                <div className="flex items-center gap-2 mb-3">
+                  <Rows className="w-5 h-5 text-white" />
+                  <h3 className="font-semibold text-white">Raw Headers</h3>
+                </div>
+                <RawHeadersGrid headers={result.rawHeaders} />
+              </div>
+
+              <ListSection
+                title="Upcoming / Modern Hardening Headers"
+                items={result.upcomingHeaders}
+              />
+
+              <div className="p-5 bg-black rounded-xl border border-blue-500">
+                <div className="flex items-center gap-2 mb-3">
+                  <Info className="w-5 h-5 text-white" />
+                  <h3 className="font-semibold text-white">
+                    Additional Information
+                  </h3>
+                </div>
+                <div className="grid md:grid-cols-2 gap-3">
+                  {(result.additionalInfo
+                    ? buildAdditionalRows(result.additionalInfo)
+                    : []
+                  ).map(([k, v]) => (
+                    <KV key={k} k={k} v={v} />
+                  ))}
                 </div>
               </div>
 

@@ -1,7 +1,8 @@
-'use client';
-import { useMemo, useState } from 'react';
-import { jsPDF } from 'jspdf';
-import autoTable from 'jspdf-autotable';
+"use client";
+import { useMemo, useState } from "react";
+import { jsPDF } from "jspdf";
+import autoTable from "jspdf-autotable";
+import useProtectedAction from "../UseProtectedAction/UseProtectedAction";
 
 const PRESET_PAYLOADS = [
   `<script>alert(1)</script>`,
@@ -16,49 +17,62 @@ const PRESET_PAYLOADS = [
 ];
 
 export default function XssTester() {
-  const [url, setUrl] = useState('');
-  const [param, setParam] = useState('');
-  const [customPayload, setCustomPayload] = useState(`<script>alert('XSS')</script>`);
+  const [url, setUrl] = useState("");
+  const [param, setParam] = useState("");
+  const [customPayload, setCustomPayload] = useState(
+    `<script>alert('XSS')</script>`
+  );
   const [usePresetList, setUsePresetList] = useState(true);
-  const [payloads, setPayloads] = useState(PRESET_PAYLOADS.join('\n'));
+  const [payloads, setPayloads] = useState(PRESET_PAYLOADS.join("\n"));
   const [loading, setLoading] = useState(false);
   const [result, setResult] = useState(null); // { runs, waf, rateLimit, summary, ... }
 
-  const apiBase = (process.env.NEXT_PUBLIC_PROD_API_URL || '').replace(/\/+$/, '');
+  const protectedAction = useProtectedAction();
+
+  const apiBase = (process.env.NEXT_PUBLIC_PROD_API_URL || "").replace(
+    /\/+$/,
+    ""
+  );
 
   const parsedPayloads = useMemo(() => {
     if (!usePresetList) return [customPayload];
     return payloads
-      .split('\n')
+      .split("\n")
       .map((s) => s.trim())
       .filter(Boolean);
   }, [usePresetList, customPayload, payloads]);
 
   const handleTest = async (e) => {
-    e.preventDefault();
-    setLoading(true);
+    e?.preventDefault?.();
     setResult(null);
+    setLoading(true);
 
-    try {
-      const res = await fetch(`${apiBase}/xssTester/xssTester-scan`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          url,
-          param,
-          payloads: parsedPayloads,
-          domScan: true,          // headless DOM checks
-          takeScreenshots: true,  // capture PoC if triggered
-          autoBypass: true,       // try common bypass variants automatically
-        }),
-      });
-      const data = await res.json();
-      setResult(data);
-    } catch (err) {
-      setResult({ error: String(err) });
-    } finally {
-      setLoading(false);
-    }
+    await protectedAction(async (token) => {
+      try {
+        const res = await fetch(`${apiBase}/xssTester/xssTester-scan`, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+          body: JSON.stringify({
+            url,
+            param,
+            payloads: parsedPayloads,
+            domScan: true, // headless DOM checks
+            takeScreenshots: true, // capture PoC if triggered
+            autoBypass: true, // try common bypass variants automatically
+          }),
+        });
+
+        const data = await res.json();
+        setResult(data);
+      } catch (err) {
+        setResult({ error: String(err) });
+      }
+    });
+
+    setLoading(false);
   };
 
   const makePdf = () => {
@@ -67,7 +81,7 @@ export default function XssTester() {
 
     // Title
     doc.setFontSize(16);
-    doc.text('XSS Scan Report', 14, 16);
+    doc.text("XSS Scan Report", 14, 16);
     doc.setFontSize(10);
     doc.text(`Target: ${url}`, 14, 24);
     doc.text(`Parameter: ${param}`, 14, 29);
@@ -79,28 +93,42 @@ export default function XssTester() {
       );
     }
     if (result.waf)
-      doc.text(`WAF: ${result.waf.detected ? `Yes (${result.waf.vendor || 'unknown'})` : 'No'}`, 14, 39);
+      doc.text(
+        `WAF: ${
+          result.waf.detected ? `Yes (${result.waf.vendor || "unknown"})` : "No"
+        }`,
+        14,
+        39
+      );
     if (result.rateLimit)
-      doc.text(`Rate Limiting: ${result.rateLimit.detected ? `Yes (${result.rateLimit.reason})` : 'No'}`, 14, 44);
+      doc.text(
+        `Rate Limiting: ${
+          result.rateLimit.detected ? `Yes (${result.rateLimit.reason})` : "No"
+        }`,
+        14,
+        44
+      );
 
     // Table of runs
     const rows = (result.runs || []).map((r, idx) => [
       idx + 1,
       r.payload,
-      r.context || '—',
-      r.reflected ? 'Yes' : 'No',
-      r.domExecuted ? 'Yes' : 'No',
-      r.risk || '—',
-      r.status || '—',
+      r.context || "—",
+      r.reflected ? "Yes" : "No",
+      r.domExecuted ? "Yes" : "No",
+      r.risk || "—",
+      r.status || "—",
     ]);
 
     autoTable(doc, {
       startY: 50,
-      head: [['#', 'Payload', 'Context', 'Reflected', 'DOM Exec', 'Risk', 'HTTP']],
+      head: [
+        ["#", "Payload", "Context", "Reflected", "DOM Exec", "Risk", "HTTP"],
+      ],
       body: rows,
-      styles: { fontSize: 7, cellWidth: 'wrap' },
+      styles: { fontSize: 7, cellWidth: "wrap" },
       columnStyles: { 1: { cellWidth: 80 } },
-      didDrawPage: () => {} // keeps types happy in some bundlers
+      didDrawPage: () => {}, // keeps types happy in some bundlers
     });
 
     // Evidence: add up to 3 screenshots
@@ -117,24 +145,33 @@ export default function XssTester() {
       doc.text(`PoC Screenshot ${i + 1}`, 14, y);
       y += 4;
       try {
-        doc.addImage(`data:image/png;base64,${img.base64}`, 'PNG', 14, y, 180, 0);
+        doc.addImage(
+          `data:image/png;base64,${img.base64}`,
+          "PNG",
+          14,
+          y,
+          180,
+          0
+        );
         y += 90;
       } catch {
-        doc.text('(screenshot could not be embedded)', 14, y);
+        doc.text("(screenshot could not be embedded)", 14, y);
         y += 10;
       }
     }
 
-    doc.save('xss-report.pdf');
+    doc.save("xss-report.pdf");
   };
 
   const downloadJson = () => {
     if (!result) return;
-    const blob = new Blob([JSON.stringify(result, null, 2)], { type: 'application/json' });
+    const blob = new Blob([JSON.stringify(result, null, 2)], {
+      type: "application/json",
+    });
     const urlObj = URL.createObjectURL(blob);
-    const a = document.createElement('a');
+    const a = document.createElement("a");
     a.href = urlObj;
-    a.download = 'xss-report.json';
+    a.download = "xss-report.json";
     a.click();
     URL.revokeObjectURL(urlObj);
   };
@@ -144,26 +181,31 @@ export default function XssTester() {
       <div className="max-w-4xl mx-auto p-6 space-y-6">
         {/* Header with Logo */}
         <div className="flex items-center gap-4 mb-8 mt-15">
-  <div className="w-30 h-30 sm:w-24 md:w-30 sm:h-24 md:h-30 bg-white rounded-full flex items-center justify-center border-4 border-red-600 overflow-hidden flex-shrink-0">
-    <img
-      src="/Redteam/xss.png" // <-- replace with your image path
-      alt="Logo"
-      className="w-full h-full object-cover"
-    />
-</div>
+          <div className="w-30 h-30 sm:w-24 md:w-30 sm:h-24 md:h-30 bg-white rounded-full flex items-center justify-center border-4 border-red-600 overflow-hidden flex-shrink-0">
+            <img
+              src="/Redteam/xss.png" // <-- replace with your image path
+              alt="Logo"
+              className="w-full h-full object-cover"
+            />
+          </div>
 
-  <div>
-    <h1 className="text-3xl font-bold text-white">Advanced XSS Scanner</h1>
-    <p className="text-gray-400 text-sm">Identify Cross-Site Scripting (XSS) risks</p>
-  </div>
-</div>
-
+          <div>
+            <h1 className="text-3xl font-bold text-white">
+              Advanced XSS Scanner
+            </h1>
+            <p className="text-gray-400 text-sm">
+              Identify Cross-Site Scripting (XSS) risks
+            </p>
+          </div>
+        </div>
 
         <div className="space-y-6">
           {/* URL Input */}
           <div className="bg-blue-900/20 rounded-lg p-6 border border-white">
-  <label className="block text-sm font-medium mb-2 text-gray-200"></label>
-            <label className="block text-white font-medium mb-2">URL to Test</label>
+            <label className="block text-sm font-medium mb-2 text-gray-200"></label>
+            <label className="block text-white font-medium mb-2">
+              URL to Test
+            </label>
             <input
               type="url"
               placeholder="Target URL (e.g., https://site.com/search)"
@@ -176,7 +218,9 @@ export default function XssTester() {
 
           {/* Parameter Input */}
           <div>
-            <label className="block text-white font-medium mb-2">Parameter Name</label>
+            <label className="block text-white font-medium mb-2">
+              Parameter Name
+            </label>
             <input
               type="text"
               placeholder="Parameter name (e.g., q)"
@@ -226,12 +270,12 @@ export default function XssTester() {
               onClick={handleTest}
               disabled={loading}
               className={`px-6 py-3 text-white rounded-lg font-medium transition-all ${
-                loading 
-                  ? 'bg-red-400 cursor-not-allowed' 
-                  : 'bg-red-600 hover:bg-red-700 hover:shadow-lg'
+                loading
+                  ? "bg-red-400 cursor-not-allowed"
+                  : "bg-red-600 hover:bg-red-700 hover:shadow-lg"
               }`}
             >
-              {loading ? 'Scanning…' : 'Run Scan'}
+              {loading ? "Scanning…" : "Run Scan"}
             </button>
 
             {result && !result.error && (
@@ -262,10 +306,22 @@ export default function XssTester() {
             {!result.error ? (
               <>
                 <div className="text-sm text-gray-300 space-y-1 mb-6">
-                  <div>WAF: {result.waf?.detected ? `Yes (${result.waf?.vendor || 'unknown'})` : 'No'}</div>
-                  <div>Rate Limiting: {result.rateLimit?.detected ? `Yes (${result.rateLimit?.reason})` : 'No'}</div>
                   <div>
-                    Totals — Tests: {result.summary?.total} | Exec: {result.summary?.executed} | High: {result.summary?.high} | Med: {result.summary?.medium} | Low: {result.summary?.low}
+                    WAF:{" "}
+                    {result.waf?.detected
+                      ? `Yes (${result.waf?.vendor || "unknown"})`
+                      : "No"}
+                  </div>
+                  <div>
+                    Rate Limiting:{" "}
+                    {result.rateLimit?.detected
+                      ? `Yes (${result.rateLimit?.reason})`
+                      : "No"}
+                  </div>
+                  <div>
+                    Totals — Tests: {result.summary?.total} | Exec:{" "}
+                    {result.summary?.executed} | High: {result.summary?.high} |
+                    Med: {result.summary?.medium} | Low: {result.summary?.low}
                   </div>
                 </div>
 
@@ -273,25 +329,54 @@ export default function XssTester() {
                   <table className="min-w-full text-sm">
                     <thead>
                       <tr className="text-left border-b border-white-700">
-                        <th className="py-3 pr-3 text-gray-300 font-medium">#</th>
-                        <th className="py-3 pr-3 text-gray-300 font-medium">Payload</th>
-                        <th className="py-3 pr-3 text-gray-300 font-medium">Context</th>
-                        <th className="py-3 pr-3 text-gray-300 font-medium">Reflected</th>
-                        <th className="py-3 pr-3 text-gray-300 font-medium">DOM Exec</th>
-                        <th className="py-3 pr-3 text-gray-300 font-medium">Risk</th>
-                        <th className="py-3 pr-3 text-gray-300 font-medium">HTTP</th>
+                        <th className="py-3 pr-3 text-gray-300 font-medium">
+                          #
+                        </th>
+                        <th className="py-3 pr-3 text-gray-300 font-medium">
+                          Payload
+                        </th>
+                        <th className="py-3 pr-3 text-gray-300 font-medium">
+                          Context
+                        </th>
+                        <th className="py-3 pr-3 text-gray-300 font-medium">
+                          Reflected
+                        </th>
+                        <th className="py-3 pr-3 text-gray-300 font-medium">
+                          DOM Exec
+                        </th>
+                        <th className="py-3 pr-3 text-gray-300 font-medium">
+                          Risk
+                        </th>
+                        <th className="py-3 pr-3 text-gray-300 font-medium">
+                          HTTP
+                        </th>
                       </tr>
                     </thead>
                     <tbody>
                       {(result.runs || []).map((r, i) => (
-                        <tr key={i} className="border-b border-white-800 align-top hover:bg-gray-800 transition-colors">
+                        <tr
+                          key={i}
+                          className="border-b border-white-800 align-top hover:bg-gray-800 transition-colors"
+                        >
                           <td className="py-3 pr-3 text-gray-300">{i + 1}</td>
-                          <td className="py-3 pr-3 font-mono break-all text-gray-100">{r.payload}</td>
-                          <td className="py-3 pr-3 text-gray-300">{r.context || '—'}</td>
-                          <td className="py-3 pr-3 text-gray-300">{r.reflected ? 'Yes' : 'No'}</td>
-                          <td className="py-3 pr-3 text-gray-300">{r.domExecuted ? 'Yes' : 'No'}</td>
-                          <td className="py-3 pr-3 text-gray-300">{r.risk || '—'}</td>
-                          <td className="py-3 pr-3 text-gray-300">{r.status || '—'}</td>
+                          <td className="py-3 pr-3 font-mono break-all text-gray-100">
+                            {r.payload}
+                          </td>
+                          <td className="py-3 pr-3 text-gray-300">
+                            {r.context || "—"}
+                          </td>
+                          <td className="py-3 pr-3 text-gray-300">
+                            {r.reflected ? "Yes" : "No"}
+                          </td>
+                          <td className="py-3 pr-3 text-gray-300">
+                            {r.domExecuted ? "Yes" : "No"}
+                          </td>
+                          <td className="py-3 pr-3 text-gray-300">
+                            {r.risk || "—"}
+                          </td>
+                          <td className="py-3 pr-3 text-gray-300">
+                            {r.status || "—"}
+                          </td>
                         </tr>
                       ))}
                     </tbody>
@@ -301,7 +386,9 @@ export default function XssTester() {
                 {/* Reflection highlight (first hit) */}
                 {(result.runs || []).some((r) => r.reflection?.highlighted) && (
                   <div className="mt-6">
-                    <h3 className="font-semibold text-white mb-3">Reflected Payload Highlight</h3>
+                    <h3 className="font-semibold text-white mb-3">
+                      Reflected Payload Highlight
+                    </h3>
                     {(result.runs || [])
                       .filter((r) => r.reflection?.highlighted)
                       .slice(0, 1)

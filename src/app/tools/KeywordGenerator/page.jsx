@@ -4,6 +4,7 @@ import { useMemo, useState } from "react";
 import { jsPDF } from "jspdf";
 import autoTable from "jspdf-autotable";
 import GreenLayout from "@/components/GreenTeam/layout";
+import useProtectedAction from "@/components/UseProtectedAction/UseProtectedAction";
 
 const API_BASE =
   process.env.NEXT_PUBLIC_PROD_API_URL ||
@@ -21,6 +22,8 @@ export default function KeywordIntelligencePage() {
   const [highPriority, setHighPriority] = useState([]);
   const [longTail, setLongTail] = useState([]);
   const [overlap, setOverlap] = useState([]);
+
+  const protectedAction = useProtectedAction();
 
   const dateStr = useMemo(
     () =>
@@ -42,9 +45,12 @@ export default function KeywordIntelligencePage() {
 
   function classifyIntent(k) {
     const s = k.toLowerCase();
-    if (/(buy|price|agency|hire|company|services?|solutions?)/.test(s)) return "Commercial";
-    if (/(best|vs|comparison|deal|quote|pricing)/.test(s)) return "Transactional";
-    if (/(how|what|why|guide|tutorial|benefits|tips)/.test(s)) return "Informational";
+    if (/(buy|price|agency|hire|company|services?|solutions?)/.test(s))
+      return "Commercial";
+    if (/(best|vs|comparison|deal|quote|pricing)/.test(s))
+      return "Transactional";
+    if (/(how|what|why|guide|tutorial|benefits|tips)/.test(s))
+      return "Informational";
     return "Navigational";
   }
 
@@ -73,7 +79,9 @@ export default function KeywordIntelligencePage() {
         intent: classifyIntent(k) || "",
       }));
 
-    const overlapCandidates = keywords.filter((k) => /(services?|solutions?)/i.test(k));
+    const overlapCandidates = keywords.filter((k) =>
+      /(services?|solutions?)/i.test(k)
+    );
     const ov = overlapCandidates.slice(0, 6).map((k) => ({
       keyword: k,
       yours: "",
@@ -86,74 +94,82 @@ export default function KeywordIntelligencePage() {
   }
 
   async function analyze() {
-  setError(null);
+    setError(null);
 
-  // 1) Client-side URL validation + normalization
-  let normalized = url;
-  try {
-    // add https:// if user typed a bare domain
-    if (!/^https?:\/\//i.test(normalized)) normalized = `https://${normalized}`;
-    const u = new URL(normalized);
-    if (!/^https?:$/.test(u.protocol)) throw new Error("bad");
-  } catch {
-    setError("Invalid URL. Please enter a full http(s) link.");
-    return;
-  }
-
-  setLoading(true);
-  try {
-    const r = await fetch(`${API_BASE}${ENDPOINT}`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ url: normalized }), // send normalized
-    });
-
-    if (!r.ok) {
-      // Try to read backend's message
-      let msg = "";
-      try {
-        const data = await r.json();
-        msg = data?.message || "";
-      } catch {}
-      // Friendly mapping
-      const friendly =
-        r.status === 400 || r.status === 404
-          ? "Invalid URL. The page was not found or is unreachable."
-          : msg && /invalid url|unreachable|not found/i.test(msg)
-          ? "Invalid URL. The page was not found or is unreachable."
-          : "please enter a valid URL.";
-      setError(friendly);
+    // 1) Client-side URL validation + normalization
+    let normalized = url;
+    try {
+      // add https:// if user typed a bare domain
+      if (!/^https?:\/\//i.test(normalized))
+        normalized = `https://${normalized}`;
+      const u = new URL(normalized);
+      if (!/^https?:$/.test(u.protocol)) throw new Error("bad");
+    } catch {
+      setError("Invalid URL. Please enter a full http(s) link.");
       return;
     }
 
-    const data = await r.json();
+    setLoading(true);
+    await protectedAction(async (userToken) => {
+      try {
+        const r = await fetch(`${API_BASE}${ENDPOINT}`, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${userToken}`,
+          },
+          body: JSON.stringify({ url: normalized }), // send normalized
+        });
 
-    // keep raw
-    const kws = Array.isArray(data.keywords) ? data.keywords : [];
-    setRaw(kws);
+        if (!r.ok) {
+          // Try to read backend's message
+          let msg = "";
+          try {
+            const data = await r.json();
+            msg = data?.message || "";
+          } catch {}
+          // Friendly mapping
+          const friendly =
+            r.status === 400 || r.status === 404
+              ? "Invalid URL. The page was not found or is unreachable."
+              : msg && /invalid url|unreachable|not found/i.test(msg)
+              ? "Invalid URL. The page was not found or is unreachable."
+              : "please enter a valid URL.";
+          setError(friendly);
+          return;
+        }
 
-    // use backend tables if present
-    if (Array.isArray(data.highPriority) && data.highPriority.length) {
-      setHighPriority(data.highPriority);
-    } else {
-      seedTables(kws);
-    }
-    if (Array.isArray(data.longTail)) setLongTail(data.longTail);
-    if (Array.isArray(data.overlap)) setOverlap(data.overlap);
-  } catch (e) {
-    // Network/DNS/blocked etc → show Invalid URL
-    const msg = String(e?.message || "");
-    if (/ENOTFOUND|EAI_AGAIN|ECONNREFUSED|ETIMEDOUT|Failed to fetch|NetworkError|TypeError: Failed to fetch/i.test(msg)) {
-      setError("Invalid URL. The site is unreachable.");
-    } else {
-      setError("Sorry, something went wrong.");
-    }
-  } finally {
-    setLoading(false);
+        const data = await r.json();
+
+        // keep raw
+        const kws = Array.isArray(data.keywords) ? data.keywords : [];
+        setRaw(kws);
+
+        // use backend tables if present
+        if (Array.isArray(data.highPriority) && data.highPriority.length) {
+          setHighPriority(data.highPriority);
+        } else {
+          seedTables(kws);
+        }
+        if (Array.isArray(data.longTail)) setLongTail(data.longTail);
+        if (Array.isArray(data.overlap)) setOverlap(data.overlap);
+      } catch (e) {
+        // Network/DNS/blocked etc → show Invalid URL
+        const msg = String(e?.message || "");
+        if (
+          /ENOTFOUND|EAI_AGAIN|ECONNREFUSED|ETIMEDOUT|Failed to fetch|NetworkError|TypeError: Failed to fetch/i.test(
+            msg
+          )
+        ) {
+          setError("Invalid URL. The site is unreachable.");
+        } else {
+          setError("Sorry, something went wrong.");
+        }
+      } finally {
+        setLoading(false);
+      }
+    });
   }
-}
-
-
 
   function onChangeCell(rows, setRows, i, key, value) {
     const next = rows.slice();
@@ -175,21 +191,27 @@ export default function KeywordIntelligencePage() {
     lines.push("High-Priority Keywords:");
     highPriority.forEach((r, i) =>
       lines.push(
-        `${i + 1}. ${r.keyword}  | Vol:${r.volume || "-"}  CPC:${r.cpc || "-"}  Diff:${r.difficulty || "-"}  Intent:${r.intent || "-"}`
+        `${i + 1}. ${r.keyword}  | Vol:${r.volume || "-"}  CPC:${
+          r.cpc || "-"
+        }  Diff:${r.difficulty || "-"}  Intent:${r.intent || "-"}`
       )
     );
     lines.push("");
     lines.push("Long-Tail Opportunities:");
     longTail.forEach((r, i) =>
       lines.push(
-        `${i + 1}. ${r.keyword}  | Vol:${r.volume || "-"}  Diff:${r.difficulty || "-"}  CTR:(fill)`
+        `${i + 1}. ${r.keyword}  | Vol:${r.volume || "-"}  Diff:${
+          r.difficulty || "-"
+        }  CTR:(fill)`
       )
     );
     lines.push("");
     lines.push("Competitor Overlap:");
     overlap.forEach((r, i) =>
       lines.push(
-        `${i + 1}. ${r.keyword}  | Rank on your site: ${r.yours || "-"} | Rank on competitor: ${r.competitor || "-"}`
+        `${i + 1}. ${r.keyword}  | Rank on your site: ${
+          r.yours || "-"
+        } | Rank on competitor: ${r.competitor || "-"}`
       )
     );
     lines.push("");
@@ -201,7 +223,9 @@ export default function KeywordIntelligencePage() {
       "4) Build backlinks to long-tail opportunity pages."
     );
 
-    const blob = new Blob([lines.join("\n")], { type: "text/plain;charset=utf-8" });
+    const blob = new Blob([lines.join("\n")], {
+      type: "text/plain;charset=utf-8",
+    });
     const a = document.createElement("a");
     a.href = URL.createObjectURL(blob);
     a.download = "keyword-intel-report.txt";
@@ -219,11 +243,24 @@ export default function KeywordIntelligencePage() {
     doc.text(`Keyword Intelligence Report — ${dateStr}`, marginX, 68);
     if (websiteHost) doc.text(`Website: ${websiteHost}`, marginX, 84);
     doc.text(`Total Keywords Extracted: ${raw.length}`, marginX, 100);
-    doc.text(`Filtered SEO Keywords: ${highPriority.length + longTail.length}`, marginX, 116);
+    doc.text(
+      `Filtered SEO Keywords: ${highPriority.length + longTail.length}`,
+      marginX,
+      116
+    );
 
     autoTable(doc, {
       startY: 140,
-      head: [["Keyword", "Search Volume", "CPC (USD)", "Difficulty (%)", "Trend (6 mo)", "Intent"]],
+      head: [
+        [
+          "Keyword",
+          "Search Volume",
+          "CPC (USD)",
+          "Difficulty (%)",
+          "Trend (6 mo)",
+          "Intent",
+        ],
+      ],
       body: highPriority.map((r) => [
         r.keyword,
         r.volume || "—",
@@ -241,7 +278,12 @@ export default function KeywordIntelligencePage() {
     autoTable(doc, {
       startY: doc.lastAutoTable.finalY + 22,
       head: [["Keyword", "Search Volume", "Difficulty (%)", "CTR Potential"]],
-      body: longTail.map((r) => [r.keyword, r.volume || "—", r.difficulty || "—", "—"]),
+      body: longTail.map((r) => [
+        r.keyword,
+        r.volume || "—",
+        r.difficulty || "—",
+        "—",
+      ]),
       styles: { fontSize: 9 },
       headStyles: { fontStyle: "bold" },
       margin: { left: marginX, right: marginX },
@@ -251,7 +293,11 @@ export default function KeywordIntelligencePage() {
     autoTable(doc, {
       startY: doc.lastAutoTable.finalY + 22,
       head: [["Keyword", "Rank on Your Site", "Rank on Competitor"]],
-      body: overlap.map((r) => [r.keyword, r.yours || "—", r.competitor || "—"]),
+      body: overlap.map((r) => [
+        r.keyword,
+        r.yours || "—",
+        r.competitor || "—",
+      ]),
       styles: { fontSize: 9 },
       headStyles: { fontStyle: "bold" },
       margin: { left: marginX, right: marginX },
@@ -288,12 +334,16 @@ export default function KeywordIntelligencePage() {
         }}
       />
       <div className="max-w-5xl mx-auto p-6 space-y-6">
-      <div className="text-sm text-slate-400">📊 Keyword Generation {dateStr}</div>
+        <div className="text-sm text-slate-400">
+          📊 Keyword Generation {dateStr}
+        </div>
 
         <section className="rounded-2xl border border-white bg-[#0f1523] p-5 shadow-[0_0_0_1px_rgba(0,0,0,0.3)]">
           <div className="flex flex-col md:flex-row gap-3 md:items-end">
             <div className="flex-1">
-              <label className="block text-sm font-medium mb-1 text-slate-300">Website URL</label>
+              <label className="block text-sm font-medium mb-1 text-slate-300">
+                Website URL
+              </label>
               <input
                 value={url}
                 onChange={(e) => setUrl(e.target.value)}
@@ -340,21 +390,32 @@ export default function KeywordIntelligencePage() {
           {hasData && (
             <div className="mt-6 space-y-10">
               <div className="text-sm text-slate-400">
-                Website: <span className="font-medium text-slate-200">{websiteHost || "—"}</span> • Total Keywords:{" "}
-                <span className="font-medium text-slate-200">{raw.length}</span> • Filtered SEO Keywords:{" "}
-                <span className="font-medium text-slate-200">{highPriority.length + longTail.length}</span>
+                Website:{" "}
+                <span className="font-medium text-slate-200">
+                  {websiteHost || "—"}
+                </span>{" "}
+                • Total Keywords:{" "}
+                <span className="font-medium text-slate-200">{raw.length}</span>{" "}
+                • Filtered SEO Keywords:{" "}
+                <span className="font-medium text-slate-200">
+                  {highPriority.length + longTail.length}
+                </span>
               </div>
 
               <TableHP
                 rows={highPriority}
                 editable={editable}
-                onChange={(i, key, val) => onChangeCell(highPriority, setHighPriority, i, key, val)}
+                onChange={(i, key, val) =>
+                  onChangeCell(highPriority, setHighPriority, i, key, val)
+                }
               />
 
               <TableLT
                 rows={longTail}
                 editable={editable}
-                onChange={(i, key, val) => onChangeCell(longTail, setLongTail, i, key, val)}
+                onChange={(i, key, val) =>
+                  onChangeCell(longTail, setLongTail, i, key, val)
+                }
               />
 
               <TableOverlap
@@ -362,16 +423,24 @@ export default function KeywordIntelligencePage() {
                 editable={editable}
                 onChange={(i, key, val) => {
                   const next = overlap.slice();
-                  next[i] = { ...next[i], [key]: val === "" ? "" : Number(val) };
+                  next[i] = {
+                    ...next[i],
+                    [key]: val === "" ? "" : Number(val),
+                  };
                   setOverlap(next);
                 }}
               />
 
               <div>
-                <h2 className="text-lg font-semibold mb-2">✍️ Suggested Actions</h2>
+                <h2 className="text-lg font-semibold mb-2">
+                  ✍️ Suggested Actions
+                </h2>
                 <ol className="list-decimal pl-5 text-sm space-y-1 text-slate-300">
                   <li>Remove low-value keywords (menus, UI labels, noise).</li>
-                  <li>Create content around high-volume, lower-difficulty keywords.</li>
+                  <li>
+                    Create content around high-volume, lower-difficulty
+                    keywords.
+                  </li>
                   <li>Optimize title/meta for top commercial-intent terms.</li>
                   <li>Build backlinks targeting long-tail opportunities.</li>
                 </ol>
@@ -419,39 +488,71 @@ function TableHP({ rows, editable, onChange }) {
                 <td className="font-medium">{r.keyword}</td>
                 <td>
                   {editable ? (
-                    <input type="number" className={inputCls} value={r.volume}
-                      onChange={(e) => onChange(i, "volume", e.target.value)} />
-                  ) : r.volume || "—"}
+                    <input
+                      type="number"
+                      className={inputCls}
+                      value={r.volume}
+                      onChange={(e) => onChange(i, "volume", e.target.value)}
+                    />
+                  ) : (
+                    r.volume || "—"
+                  )}
                 </td>
                 <td>
                   {editable ? (
-                    <input type="number" step="0.01" className={inputSmCls} value={r.cpc}
-                      onChange={(e) => onChange(i, "cpc", e.target.value)} />
-                  ) : r.cpc || "—"}
+                    <input
+                      type="number"
+                      step="0.01"
+                      className={inputSmCls}
+                      value={r.cpc}
+                      onChange={(e) => onChange(i, "cpc", e.target.value)}
+                    />
+                  ) : (
+                    r.cpc || "—"
+                  )}
                 </td>
                 <td>
                   {editable ? (
-                    <input type="number" className={inputSmCls} value={r.difficulty}
-                      onChange={(e) => onChange(i, "difficulty", e.target.value)} />
-                  ) : r.difficulty || "—"}
+                    <input
+                      type="number"
+                      className={inputSmCls}
+                      value={r.difficulty}
+                      onChange={(e) =>
+                        onChange(i, "difficulty", e.target.value)
+                      }
+                    />
+                  ) : (
+                    r.difficulty || "—"
+                  )}
                 </td>
                 <td>
                   {editable ? (
-                    <input className={inputCls} placeholder="↗, ↘, ↔" value={r.trend6m || ""}
-                      onChange={(e) => onChange(i, "trend6m", e.target.value)} />
-                  ) : r.trend6m || "—"}
+                    <input
+                      className={inputCls}
+                      placeholder="↗, ↘, ↔"
+                      value={r.trend6m || ""}
+                      onChange={(e) => onChange(i, "trend6m", e.target.value)}
+                    />
+                  ) : (
+                    r.trend6m || "—"
+                  )}
                 </td>
                 <td>
                   {editable ? (
-                    <select className={selectCls} value={r.intent || ""}
-                      onChange={(e) => onChange(i, "intent", e.target.value)}>
+                    <select
+                      className={selectCls}
+                      value={r.intent || ""}
+                      onChange={(e) => onChange(i, "intent", e.target.value)}
+                    >
                       <option value="">—</option>
                       <option>Commercial</option>
                       <option>Transactional</option>
                       <option>Informational</option>
                       <option>Navigational</option>
                     </select>
-                  ) : r.intent || "—"}
+                  ) : (
+                    r.intent || "—"
+                  )}
                 </td>
               </tr>
             ))}
@@ -465,7 +566,9 @@ function TableHP({ rows, editable, onChange }) {
 function TableLT({ rows, editable, onChange }) {
   return (
     <div>
-      <h2 className="text-lg font-semibold mb-3">💡 Long-Tail Keyword Opportunities</h2>
+      <h2 className="text-lg font-semibold mb-3">
+        💡 Long-Tail Keyword Opportunities
+      </h2>
       <div className="overflow-x-auto">
         <table className="w-full text-sm rounded-xl overflow-hidden border border-slate-800">
           <thead className={theadCls}>
@@ -482,15 +585,29 @@ function TableLT({ rows, editable, onChange }) {
                 <td className="font-medium">{r.keyword}</td>
                 <td>
                   {editable ? (
-                    <input type="number" className={inputCls} value={r.volume}
-                      onChange={(e) => onChange(i, "volume", e.target.value)} />
-                  ) : r.volume || "—"}
+                    <input
+                      type="number"
+                      className={inputCls}
+                      value={r.volume}
+                      onChange={(e) => onChange(i, "volume", e.target.value)}
+                    />
+                  ) : (
+                    r.volume || "—"
+                  )}
                 </td>
                 <td>
                   {editable ? (
-                    <input type="number" className={inputSmCls} value={r.difficulty}
-                      onChange={(e) => onChange(i, "difficulty", e.target.value)} />
-                  ) : r.difficulty || "—"}
+                    <input
+                      type="number"
+                      className={inputSmCls}
+                      value={r.difficulty}
+                      onChange={(e) =>
+                        onChange(i, "difficulty", e.target.value)
+                      }
+                    />
+                  ) : (
+                    r.difficulty || "—"
+                  )}
                 </td>
                 <td className="text-slate-400">—</td>
               </tr>
@@ -521,15 +638,29 @@ function TableOverlap({ rows, editable, onChange }) {
                 <td className="font-medium">{r.keyword}</td>
                 <td>
                   {editable ? (
-                    <input type="number" className={inputCls} value={r.yours}
-                      onChange={(e) => onChange(i, "yours", e.target.value)} />
-                  ) : r.yours || "—"}
+                    <input
+                      type="number"
+                      className={inputCls}
+                      value={r.yours}
+                      onChange={(e) => onChange(i, "yours", e.target.value)}
+                    />
+                  ) : (
+                    r.yours || "—"
+                  )}
                 </td>
                 <td>
                   {editable ? (
-                    <input type="number" className={inputCls} value={r.competitor}
-                      onChange={(e) => onChange(i, "competitor", e.target.value)} />
-                  ) : r.competitor || "—"}
+                    <input
+                      type="number"
+                      className={inputCls}
+                      value={r.competitor}
+                      onChange={(e) =>
+                        onChange(i, "competitor", e.target.value)
+                      }
+                    />
+                  ) : (
+                    r.competitor || "—"
+                  )}
                 </td>
               </tr>
             ))}

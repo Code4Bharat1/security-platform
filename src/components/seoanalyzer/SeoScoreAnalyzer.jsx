@@ -2,12 +2,14 @@
 
 import React, { useState } from "react";
 import GreenLayout from "../GreenTeam/layout";
+import useProtectedAction from "../UseProtectedAction/UseProtectedAction";
 
 export default function SeoScoreAnalyzer() {
   const [url, setUrl] = useState("");
   const [result, setResult] = useState(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+  const protectedAction = useProtectedAction();
 
   const analyzeSEO = async () => {
     if (!url) {
@@ -17,29 +19,34 @@ export default function SeoScoreAnalyzer() {
     setLoading(true);
     setError("");
     setResult(null);
+    protectedAction(async (userToken) => {
+      try {
+        const res = await fetch(
+          `${process.env.NEXT_PUBLIC_PROD_API_URL}/seo/analyze`,
+          {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              Authorization: `Bearer ${userToken}`,
+            },
+            body: JSON.stringify({ url }),
+          }
+        );
 
-    try {
-      const res = await fetch(`${process.env.NEXT_PUBLIC_PROD_API_URL}/seo/analyze`, {
-  method: "POST",
-  headers: { "Content-Type": "application/json" },
-  body: JSON.stringify({ url }),
-});
+        const data = await res.json();
 
-
-
-      const data = await res.json();
-
-      if (res.ok) {
-        setResult(data);
-      } else {
-        setError(data.message || "Something went wrong!");
+        if (res.ok) {
+          setResult(data);
+        } else {
+          setError(data.message || "Something went wrong!");
+        }
+      } catch (err) {
+        console.log(err);
+        setError("🚨 Failed to connect with backend!");
+      } finally {
+        setLoading(false);
       }
-    } catch (err) {
-      console.log (err)
-      setError("🚨 Failed to connect with backend!");
-    } finally {
-      setLoading(false);
-    }
+    });
   };
 
   return (
@@ -51,7 +58,6 @@ export default function SeoScoreAnalyzer() {
         }}
       />
       <div className="w-full max-w-3xl bg-black border border-white text-white rounded-2xl shadow-xl p-8 border border-gray-700">
-
         {/* Input Section */}
         <div className="flex gap-3 mb-6">
           <input
@@ -61,7 +67,6 @@ export default function SeoScoreAnalyzer() {
             placeholder="Enter website URL (e.g. https://example.com)"
             className="flex-1 border border-gray-600 bg-gray-700 text-white p-3 rounded-lg focus:ring-2 focus:ring-green-500"
           />
-
         </div>
         <div className="flex justify-center mb-6 space-x-4">
           <button
@@ -71,7 +76,7 @@ export default function SeoScoreAnalyzer() {
           >
             {loading ? "Analyzing..." : "Analyze"}
           </button>
-          </div>
+        </div>
         {/* Error Message */}
         {error && (
           <p className="text-red-400 font-medium mb-4 bg-red-900/40 p-3 rounded-lg">
@@ -129,9 +134,7 @@ export default function SeoScoreAnalyzer() {
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div className="bg-gray-700 p-5 rounded-xl shadow-md">
                 <h3 className="text-lg font-semibold mb-2">📌 Title</h3>
-                <p className="text-gray-300">
-                  {result.title || "N/A"}
-                </p>
+                <p className="text-gray-300">{result.title || "N/A"}</p>
               </div>
               <div className="bg-gray-700 p-5 rounded-xl shadow-md">
                 <h3 className="text-lg font-semibold mb-2">

@@ -12,8 +12,9 @@ import {
   Zap,
   Download,
   Beaker,
-  Network
+  Network,
 } from "lucide-react";
+import useProtectedAction from "../UseProtectedAction/UseProtectedAction";
 
 // --------- small helpers ----------
 const apiBase = (process.env.NEXT_PUBLIC_PROD_API_URL || "").replace(/\/$/, "");
@@ -48,12 +49,15 @@ export default function RegexDetector() {
 const regex = new RegExp(userInput); // ⚠️ Unescaped input`
   );
   const [results, setResults] = useState([]); // [{line, pattern, risk}]
-  const [fixes, setFixes] = useState([]);     // [fixed lines...]
+  const [fixes, setFixes] = useState([]); // [fixed lines...]
   const [loading, setLoading] = useState(false);
   const [activeTab, setActiveTab] = useState("results");
   const [toasts, setToasts] = useState([]);
   const [vizInput, setVizInput] = useState("a.*(test)?[abc]{2,3}");
-  const [vizEscaped, setVizEscaped] = useState(escapeForRegex("a.*(test)?[abc]{2,3}"));
+  const [vizEscaped, setVizEscaped] = useState(
+    escapeForRegex("a.*(test)?[abc]{2,3}")
+  );
+  const protectedAction = useProtectedAction();
 
   // ---------- toast ----------
   const addToast = (message, type = "info") => {
@@ -98,36 +102,58 @@ const regex = new RegExp(userInput); // ⚠️ Unescaped input`
     setActiveTab("results");
     setResults([]);
     setFixes([]);
-    try {
-      const res = await fetch(ENDPOINT, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ code }),
-      });
-      if (!res.ok) {
-        const e = await res.json().catch(() => ({}));
-        throw new Error(e.error || `Server error: ${res.status} ${res.statusText}`);
-      }
-      const data = await res.json();
-      const issues = data.issues || [];
-      const fixSuggestions = data.fixes || [];
-      setResults(issues);
-      setFixes(fixSuggestions);
+    await protectedAction(async (userToken) => {
+      try {
+        const res = await fetch(ENDPOINT, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${userToken}`,
+          },
+          body: JSON.stringify({ code }),
+        });
+        if (!res.ok) {
+          const e = await res.json().catch(() => ({}));
+          throw new Error(
+            e.error || `Server error: ${res.status} ${res.statusText}`
+          );
+        }
+        const data = await res.json();
+        const issues = data.issues || [];
+        const fixSuggestions = data.fixes || [];
+        setResults(issues);
+        setFixes(fixSuggestions);
 
-      if (!issues.length) {
-        addToast("✅ Great! No regex injection vulnerabilities found", "success");
-      } else {
-        const high = issues.filter((i) => getSeverity(i.risk) === "high").length;
-        const med = issues.filter((i) => getSeverity(i.risk) === "medium").length;
-        if (high) addToast(`⚠️ Found ${issues.length} issues incl. ${high} high-risk`, "error");
-        else if (med) addToast(`⚠️ Found ${issues.length} issues incl. ${med} medium-risk`, "warning");
-        else addToast(`Found ${issues.length} low-risk issues`, "warning");
+        if (!issues.length) {
+          addToast(
+            "✅ Great! No regex injection vulnerabilities found",
+            "success"
+          );
+        } else {
+          const high = issues.filter(
+            (i) => getSeverity(i.risk) === "high"
+          ).length;
+          const med = issues.filter(
+            (i) => getSeverity(i.risk) === "medium"
+          ).length;
+          if (high)
+            addToast(
+              `⚠️ Found ${issues.length} issues incl. ${high} high-risk`,
+              "error"
+            );
+          else if (med)
+            addToast(
+              `⚠️ Found ${issues.length} issues incl. ${med} medium-risk`,
+              "warning"
+            );
+          else addToast(`Found ${issues.length} low-risk issues`, "warning");
+        }
+      } catch (e) {
+        addToast(`Scan failed: ${e.message}`, "error");
+      } finally {
+        setLoading(false);
       }
-    } catch (e) {
-      addToast(`Scan failed: ${e.message}`, "error");
-    } finally {
-      setLoading(false);
-    }
+    });
   };
 
   // ---------- file upload ----------
@@ -135,7 +161,10 @@ const regex = new RegExp(userInput); // ⚠️ Unescaped input`
     const f = e.target.files?.[0];
     if (!f) return;
     if (!/\.(js|jsx|ts|tsx|txt)$/i.test(f.name)) {
-      addToast("Please upload a valid code file (.js, .jsx, .ts, .tsx, .txt)", "error");
+      addToast(
+        "Please upload a valid code file (.js, .jsx, .ts, .tsx, .txt)",
+        "error"
+      );
       return;
     }
     const r = new FileReader();
@@ -169,12 +198,18 @@ const regex = new RegExp(userInput); // ⚠️ Unescaped input`
 
   function renderHighlighted(line) {
     const ranges = computeHighlights(line);
-    if (!ranges.length) return <span className="text-gray-400">{line || " "}</span>;
+    if (!ranges.length)
+      return <span className="text-gray-400">{line || " "}</span>;
     const parts = [];
     let cursor = 0;
     ranges.sort((a, b) => a.start - b.start);
     for (const r of ranges) {
-      if (r.start > cursor) parts.push(<span key={cursor + "a"} className="text-gray-400">{line.slice(cursor, r.start)}</span>);
+      if (r.start > cursor)
+        parts.push(
+          <span key={cursor + "a"} className="text-gray-400">
+            {line.slice(cursor, r.start)}
+          </span>
+        );
       parts.push(
         <span
           key={r.start + "b"}
@@ -186,8 +221,18 @@ const regex = new RegExp(userInput); // ⚠️ Unescaped input`
       );
       cursor = r.end;
     }
-    if (cursor < line.length) parts.push(<span key={cursor + "c"} className="text-gray-400">{line.slice(cursor)}</span>);
-    if (!line) parts.push(<span key="sp" className="text-gray-400">&nbsp;</span>);
+    if (cursor < line.length)
+      parts.push(
+        <span key={cursor + "c"} className="text-gray-400">
+          {line.slice(cursor)}
+        </span>
+      );
+    if (!line)
+      parts.push(
+        <span key="sp" className="text-gray-400">
+          &nbsp;
+        </span>
+      );
     return parts;
   }
 
@@ -279,65 +324,68 @@ const regex = new RegExp(userInput); // ⚠️ Unescaped input`
 
       <div className="container mx-auto px-6 py-8 max-w-4xl">
         {/* Header */}
-<div className="text-center mb-8 mt-15">
-  {/* Row with image + text */}
-  <div className="flex items-center justify-left gap-4 mb-6">
-    {/* Logo circle */}
-    <div className="w-30 h-30 sm:w-24 sm:h-24 md:w-30 md:h-30 rounded-full overflow-hidden border-2 border-blue-400 flex-shrink-0">
-  <img 
-    src="/BlueTeam/regex.png"  // <-- apna image path daalna
-    alt="Logo"
-    className="w-full h-full object-cover"
-  />
-</div>
+        <div className="text-center mb-8 mt-15">
+          {/* Row with image + text */}
+          <div className="flex items-center justify-left gap-4 mb-6">
+            {/* Logo circle */}
+            <div className="w-30 h-30 sm:w-24 sm:h-24 md:w-30 md:h-30 rounded-full overflow-hidden border-2 border-blue-400 flex-shrink-0">
+              <img
+                src="/BlueTeam/regex.png" // <-- apna image path daalna
+                alt="Logo"
+                className="w-full h-full object-cover"
+              />
+            </div>
 
-    {/* Text */}
-    <div className="text-left">
-      <h1 className="text-3xl font-bold text-white mb-2">
-        Regex Injection Detector
-      </h1>
-      <p className="text-gray-400 text-base">
-        Identify and prevent regex injection vulnerabilities<br />in your JavaScript code
-      </p>
-    </div>
-  </div>
+            {/* Text */}
+            <div className="text-left">
+              <h1 className="text-3xl font-bold text-white mb-2">
+                Regex Injection Detector
+              </h1>
+              <p className="text-gray-400 text-base">
+                Identify and prevent regex injection vulnerabilities
+                <br />
+                in your JavaScript code
+              </p>
+            </div>
+          </div>
 
-  {/* Buttons - jaha the wahi rakhe */}
-  <div className="mt-4 flex items-center justify-left gap-3">
-    <button className="px-4 py-2 rounded-lg bg-blue-600 text-white hover:bg-blue-700">
-      Download PDF (ALL)
-    </button>
-    <button className="px-4 py-2 rounded-lg bg-blue-600 text-white hover:bg-blue-700">
-      Download TXT (ALL)
-    </button>
-  </div>
-</div>
+          {/* Buttons - jaha the wahi rakhe */}
+          <div className="mt-4 flex items-center justify-left gap-3">
+            <button className="px-4 py-2 rounded-lg bg-blue-600 text-white hover:bg-blue-700">
+              Download PDF (ALL)
+            </button>
+            <button className="px-4 py-2 rounded-lg bg-blue-600 text-white hover:bg-blue-700">
+              Download TXT (ALL)
+            </button>
+          </div>
+        </div>
 
         {/* Main Card - single rounded container like image */}
         <div className="bg-gray-900 rounded-3xl border border-blue-700 p-6 mb-6">
           {/* File Upload - exactly like image */}
           <div className="mb-6 text-left">
             <div className="flex items-center gap-4">
-  <label className="inline-flex items-center gap-2 cursor-pointer bg-blue-700 text-white px-6 py-3 rounded-full hover:bg-gray-600 transition-colors text-sm font-medium">
-    Choose File
-    <input
-      type="file"
-      accept=".js,.jsx,.ts,.tsx,.txt"
-      className="hidden"
-      onChange={handleFileUpload}
-    />
-  </label>
+              <label className="inline-flex items-center gap-2 cursor-pointer bg-blue-700 text-white px-6 py-3 rounded-full hover:bg-gray-600 transition-colors text-sm font-medium">
+                Choose File
+                <input
+                  type="file"
+                  accept=".js,.jsx,.ts,.tsx,.txt"
+                  className="hidden"
+                  onChange={handleFileUpload}
+                />
+              </label>
 
-  <p className="text-sm text-blue-400">
-    Supported formats: JS, JSX, TS, TSX, TXT
-  </p>
-</div>
-
+              <p className="text-sm text-blue-400">
+                Supported formats: JS, JSX, TS, TSX, TXT
+              </p>
+            </div>
           </div>
 
           {/* Code to Analyze - exactly like image */}
           <div className="mb-6">
-            <h3 className="text-white font-medium mb-3 text-left">Code to Analyze</h3>
+            <h3 className="text-white font-medium mb-3 text-left">
+              Code to Analyze
+            </h3>
             <textarea
               rows={8}
               className="w-full p-4 rounded-xl bg-gray-800 border border-blue-600 text-gray-300 font-mono text-sm focus:outline-none focus:border-blue-500 transition-colors resize-none"
@@ -349,17 +397,18 @@ const regex = new RegExp(userInput); // ⚠️ Unescaped input`
 
           {/* Dangerous Parts - exactly like image */}
           <div className="mb-6">
-            <h3 className="text-blue-400 font-medium mb-3 text-left">Dangerous Parts (preview)</h3>
+            <h3 className="text-blue-400 font-medium mb-3 text-left">
+              Dangerous Parts (preview)
+            </h3>
             <div className="bg-black rounded-xl border border-blue-700 max-h-32 overflow-auto font-mono text-sm">
               {codeLines.map((ln, i) => (
-                <div
-                  key={i}
-                  className="flex px-3 py-1"
-                >
+                <div key={i} className="flex px-3 py-1">
                   <div className="text-gray-500 w-8 text-right pr-3 select-none text-xs">
                     {i + 1}
                   </div>
-                  <div className="flex-1 whitespace-pre text-xs">{renderHighlighted(ln)}</div>
+                  <div className="flex-1 whitespace-pre text-xs">
+                    {renderHighlighted(ln)}
+                  </div>
                 </div>
               ))}
             </div>
@@ -477,7 +526,9 @@ const regex = new RegExp(userInput); // ⚠️ Unescaped input`
                               <p className="font-semibold text-white mb-1 text-sm">
                                 Risk:
                               </p>
-                              <p className="text-gray-300 text-sm">{issue.risk}</p>
+                              <p className="text-gray-300 text-sm">
+                                {issue.risk}
+                              </p>
                             </div>
 
                             {issue.risk.includes("Unescaped") && (
@@ -490,7 +541,8 @@ const regex = new RegExp(userInput); // ⚠️ Unescaped input`
                                   <code>RegExp</code>:
                                 </p>
                                 <code className="bg-black text-green-400 px-2 py-1 rounded text-xs block overflow-x-auto border border-blue-700">
-                                  input.replace(/[.*+?^${"{}"}()|[\\]\\\\]/g, '\\\\$&')
+                                  input.replace(/[.*+?^${"{}"}()|[\\]\\\\]/g,
+                                  '\\\\$&')
                                 </code>
                               </div>
                             )}
@@ -503,7 +555,9 @@ const regex = new RegExp(userInput); // ⚠️ Unescaped input`
                   <div className="text-center py-12 text-gray-400">
                     <Shield className="w-12 h-12 mx-auto mb-3 text-gray-600" />
                     <p className="text-lg text-blue-400 mb-2">
-                      {loading ? "Analyzing code..." : "No issues found or scan not performed yet"}
+                      {loading
+                        ? "Analyzing code..."
+                        : "No issues found or scan not performed yet"}
                     </p>
                     <p className="text-sm">
                       Upload your code and click "Scan Code" to begin analysis
@@ -532,7 +586,9 @@ const regex = new RegExp(userInput); // ⚠️ Unescaped input`
                   <div className="text-center py-12 text-gray-400">
                     <Zap className="w-12 h-12 mx-auto mb-3 text-gray-600" />
                     <p className="text-lg">
-                      {loading ? "Generating fixes..." : "No auto-fixes available"}
+                      {loading
+                        ? "Generating fixes..."
+                        : "No auto-fixes available"}
                     </p>
                     <p className="text-sm">
                       Fixes will appear here after scanning code with issues
@@ -546,7 +602,9 @@ const regex = new RegExp(userInput); // ⚠️ Unescaped input`
             {activeTab === "visualizer" && (
               <div className="grid md:grid-cols-2 gap-6">
                 <div className="rounded-lg border border-blue-600 p-4 bg-gray-800">
-                  <h3 className="font-semibold mb-2 text-white">Try a sample user input</h3>
+                  <h3 className="font-semibold mb-2 text-white">
+                    Try a sample user input
+                  </h3>
                   <input
                     className="w-full border border-blue-600 bg-gray-700 text-gray-300 rounded-lg px-3 py-2 mb-3 focus:outline-none focus:border-blue-500 text-sm"
                     value={vizInput}
@@ -557,17 +615,22 @@ const regex = new RegExp(userInput); // ⚠️ Unescaped input`
                     }}
                     placeholder="Type user input to be escaped…"
                   />
-                  <div className="text-sm text-gray-400 mb-1">Escaped for RegExp:</div>
+                  <div className="text-sm text-gray-400 mb-1">
+                    Escaped for RegExp:
+                  </div>
                   <div className="font-mono text-sm bg-gray-700 border border-blue-600 rounded p-2 overflow-auto text-gray-300">
                     {vizEscaped}
                   </div>
                   <p className="text-xs text-gray-500 mt-2">
-                    This is what your code should pass to <code>new RegExp()</code>.
+                    This is what your code should pass to{" "}
+                    <code>new RegExp()</code>.
                   </p>
                 </div>
 
                 <div className="rounded-lg border border-blue-600 p-4 bg-gray-800">
-                  <h3 className="font-semibold mb-3 text-white">Regex Structure (escaped)</h3>
+                  <h3 className="font-semibold mb-3 text-white">
+                    Regex Structure (escaped)
+                  </h3>
                   <div className="flex flex-wrap gap-2">
                     {vizTokens.map((t, i) => (
                       <span
@@ -588,7 +651,9 @@ const regex = new RegExp(userInput); // ⚠️ Unescaped input`
                     ))}
                   </div>
                   {!vizTokens.length && (
-                    <div className="text-sm text-gray-500">Nothing to visualize</div>
+                    <div className="text-sm text-gray-500">
+                      Nothing to visualize
+                    </div>
                   )}
                 </div>
               </div>
@@ -601,7 +666,7 @@ const regex = new RegExp(userInput); // ⚠️ Unescaped input`
                   Unit Test Generator (Jest)
                 </h2>
                 <div className="rounded-lg bg-black border border-blue-700 p-4">
-                  <pre className="text-green-400 text-sm whitespace-pre-wrap overflow-x-auto leading-relaxed">{`function escapeForRegex(s){return s.replace(/[.*+?^${'{}'}()|[\\]\\\\]/g,'\\\\$&');}
+                  <pre className="text-green-400 text-sm whitespace-pre-wrap overflow-x-auto leading-relaxed">{`function escapeForRegex(s){return s.replace(/[.*+?^${"{}"}()|[\\]\\\\]/g,'\\\\$&');}
 
 describe('user input → RegExp safety', () => {
   const raw = ${JSON.stringify(vizInput)};
@@ -630,7 +695,8 @@ describe('user input → RegExp safety', () => {
 });`}</pre>
                 </div>
                 <p className="text-sm text-gray-400 mt-2">
-                  Copy this into a <code>.test.js</code> file to validate escaping behavior.
+                  Copy this into a <code>.test.js</code> file to validate
+                  escaping behavior.
                 </p>
               </div>
             )}

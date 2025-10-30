@@ -3,10 +3,13 @@
 import { useCallback, useMemo, useState } from "react";
 import { jsPDF } from "jspdf";
 import autoTable from "jspdf-autotable";
+import useProtectedAction from "../UseProtectedAction/UseProtectedAction";
 
 const apiBase = (process.env.NEXT_PUBLIC_PROD_API_URL || "").replace(/\/$/, "");
 const useApiPrefix = !/\/api$/i.test(apiBase);
-const ENDPOINT = `${apiBase}${useApiPrefix ? "/api" : ""}/code/code-obfuscation`;
+const ENDPOINT = `${apiBase}${
+  useApiPrefix ? "/api" : ""
+}/code/code-obfuscation`;
 
 const SEV_COLORS = {
   Low: "bg-emerald-500",
@@ -22,7 +25,10 @@ const HEAT_COLORS = {
 };
 
 function safeName(s) {
-  return String(s || "file").toLowerCase().replace(/[^a-z0-9._-]/gi, "_").slice(0, 60);
+  return String(s || "file")
+    .toLowerCase()
+    .replace(/[^a-z0-9._-]/gi, "_")
+    .slice(0, 60);
 }
 
 export default function CodeObfuscationChecker() {
@@ -31,6 +37,7 @@ export default function CodeObfuscationChecker() {
   const [result, setResult] = useState(null); // {results: [...]}
   const [loading, setLoading] = useState(false);
   const [err, setErr] = useState("");
+  const protectedAction = useProtectedAction();
 
   const addFiles = async (fileList) => {
     const arr = Array.from(fileList || []);
@@ -39,7 +46,8 @@ export default function CodeObfuscationChecker() {
         (f) =>
           new Promise((res, rej) => {
             const r = new FileReader();
-            r.onload = () => res({ name: f.name, content: String(r.result || "") });
+            r.onload = () =>
+              res({ name: f.name, content: String(r.result || "") });
             r.onerror = rej;
             r.readAsText(f);
           })
@@ -63,25 +71,32 @@ export default function CodeObfuscationChecker() {
       return;
     }
     setLoading(true);
-    try {
-      const body =
-        payload.length === 1 && !files.length
-          ? { code: payload[0].content } // keep compatibility with single-code API
-          : { files: payload };
 
-      const res = await fetch(ENDPOINT, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(body),
-      });
-      const data = await res.json().catch(() => ({}));
-      if (!res.ok || data?.error) throw new Error(data?.error || `HTTP ${res.status}`);
-      setResult(data);
-    } catch (e) {
-      setErr(e.message || "Failed to analyze code");
-    } finally {
-      setLoading(false);
-    }
+    await protectedAction(async (userToken) => {
+      try {
+        const body =
+          payload.length === 1 && !files.length
+            ? { code: payload[0].content } // keep compatibility with single-code API
+            : { files: payload };
+
+        const res = await fetch(ENDPOINT, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${userToken}`,
+          },
+          body: JSON.stringify(body),
+        });
+        const data = await res.json().catch(() => ({}));
+        if (!res.ok || data?.error)
+          throw new Error(data?.error || `HTTP ${res.status}`);
+        setResult(data);
+      } catch (e) {
+        setErr(e.message || "Failed to analyze code");
+      } finally {
+        setLoading(false);
+      }
+    });
   };
 
   const clearAll = () => {
@@ -94,12 +109,12 @@ export default function CodeObfuscationChecker() {
   const exportTxtAll = () => {
     if (!result?.results?.length) return;
     const sections = result.results.map((r) => {
-      const topLines = r.highlights
-        ?.filter((h) => h.level !== "none")
-        .map(
-          (h) =>
-            `  - Line ${h.line}: [${h.level}] ${h.reasons.join("; ")}`
-        ) || [];
+      const topLines =
+        r.highlights
+          ?.filter((h) => h.level !== "none")
+          .map(
+            (h) => `  - Line ${h.line}: [${h.level}] ${h.reasons.join("; ")}`
+          ) || [];
       const metrics = Object.entries(r.metrics || {})
         .map(([k, v]) => `  ${k}: ${v}`)
         .join("\n");
@@ -134,7 +149,9 @@ export default function CodeObfuscationChecker() {
       ].join("\n");
     });
 
-    const blob = new Blob([sections.join("\n")], { type: "text/plain;charset=utf-8" });
+    const blob = new Blob([sections.join("\n")], {
+      type: "text/plain;charset=utf-8",
+    });
     const a = document.createElement("a");
     a.href = URL.createObjectURL(blob);
     a.download = `obfuscation_report_${Date.now()}.txt`;
@@ -147,17 +164,22 @@ export default function CodeObfuscationChecker() {
     const doc = new jsPDF({ unit: "pt", format: "a4" });
     const M = 40;
     const newPage = () => {
-      doc.addPage(); y = 56;
+      doc.addPage();
+      y = 56;
       doc.setFont("helvetica", "normal");
     };
     let y = 56;
 
     result.results.forEach((r, idx) => {
       if (idx !== 0) newPage();
-      doc.setFont("helvetica", "bold"); doc.setFontSize(16);
-      doc.text(`Obfuscation Report — ${r.name}`, M, y); y += 24;
-      doc.setFont("helvetica", "normal"); doc.setFontSize(12);
-      doc.text(`Score: ${r.score}/100  Severity: ${r.severity}`, M, y); y += 18;
+      doc.setFont("helvetica", "bold");
+      doc.setFontSize(16);
+      doc.text(`Obfuscation Report — ${r.name}`, M, y);
+      y += 24;
+      doc.setFont("helvetica", "normal");
+      doc.setFontSize(12);
+      doc.text(`Score: ${r.score}/100  Severity: ${r.severity}`, M, y);
+      y += 18;
 
       autoTable(doc, {
         startY: y,
@@ -183,15 +205,21 @@ export default function CodeObfuscationChecker() {
       y = doc.lastAutoTable.finalY + 16;
 
       const prev = [];
-      (r.deobfuscationPreview?.base64Decoded || []).slice(0, 10).forEach((d) =>
-        prev.push([`L${d.line}`, "base64", `${d.original} -> ${d.decoded}`])
-      );
-      (r.deobfuscationPreview?.unicodeDecoded || []).slice(0, 10).forEach((d) =>
-        prev.push([`L${d.line}`, "unicode", `${d.original} -> ${d.decoded}`])
-      );
-      (r.deobfuscationPreview?.collapsedStrings || []).slice(0, 10).forEach((d) =>
-        prev.push([`L${d.line}`, "concat", `${d.original} -> ${d.collapsed}`])
-      );
+      (r.deobfuscationPreview?.base64Decoded || [])
+        .slice(0, 10)
+        .forEach((d) =>
+          prev.push([`L${d.line}`, "base64", `${d.original} -> ${d.decoded}`])
+        );
+      (r.deobfuscationPreview?.unicodeDecoded || [])
+        .slice(0, 10)
+        .forEach((d) =>
+          prev.push([`L${d.line}`, "unicode", `${d.original} -> ${d.decoded}`])
+        );
+      (r.deobfuscationPreview?.collapsedStrings || [])
+        .slice(0, 10)
+        .forEach((d) =>
+          prev.push([`L${d.line}`, "concat", `${d.original} -> ${d.collapsed}`])
+        );
       autoTable(doc, {
         startY: y,
         head: [["Line", "Type", "Preview"]],
@@ -211,22 +239,27 @@ export default function CodeObfuscationChecker() {
         {/* Header */}
         <div className="flex items-center gap-4 mb-8 mt-15">
           <img
-          src="/BlueTeam/Obfuscation Detector.png"
-          alt="Obfuscation Icon"
-          className="w-30 h-30 rounded-full border-4 border-blue-500 object-cover"
+            src="/BlueTeam/Obfuscation Detector.png"
+            alt="Obfuscation Icon"
+            className="w-30 h-30 rounded-full border-4 border-blue-500 object-cover"
           />
 
           <div>
-            <h1 className="text-3xl font-bold text-white">Code Obfuscation Checker</h1>
+            <h1 className="text-3xl font-bold text-white">
+              Code Obfuscation Checker
+            </h1>
             <p className="text-gray-400 mt-1">
-              Paste code, or upload multiple files to scan. Heatmap highlights suspicious lines.
+              Paste code, or upload multiple files to scan. Heatmap highlights
+              suspicious lines.
             </p>
           </div>
         </div>
 
         {/* Code Input Section */}
         <div className="bg-gray-800/50 rounded-2xl p-6 mb-6 border border-blue-600">
-          <h2 className="text-blue-400 text-lg font-semibold mb-4">Paste Your Code</h2>
+          <h2 className="text-blue-400 text-lg font-semibold mb-4">
+            Paste Your Code
+          </h2>
           <textarea
             className="w-full h-48 p-4 bg-gray-700/50 border border-blue-600 rounded-lg resize-none focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent font-mono text-white placeholder-gray-400"
             placeholder="gsvdahcdswdmjsnxzcvb mjanhbvcxb mjkvcbcmjvnv ncgbmn"
@@ -249,7 +282,7 @@ export default function CodeObfuscationChecker() {
               Clear
             </button>
           </div>
-          
+
           <div className="mb-4">
             <label className="block">
               <input
@@ -261,12 +294,14 @@ export default function CodeObfuscationChecker() {
               />
             </label>
           </div>
-          
+
           <div className="text-sm text-gray-400">
             {files.length > 0 ? (
               <ul className="space-y-1">
                 {files.map((f, i) => (
-                  <li key={i} className="truncate">• {f.name}</li>
+                  <li key={i} className="truncate">
+                    • {f.name}
+                  </li>
                 ))}
               </ul>
             ) : (
@@ -281,8 +316,8 @@ export default function CodeObfuscationChecker() {
             onClick={analyze}
             disabled={loading}
             className={`px-8 py-3 rounded-full font-semibold transition-colors ${
-              loading 
-                ? "bg-gray-600 text-gray-400 cursor-not-allowed" 
+              loading
+                ? "bg-gray-600 text-gray-400 cursor-not-allowed"
                 : "bg-blue-600 hover:bg-blue-700 text-white"
             }`}
           >
@@ -296,7 +331,7 @@ export default function CodeObfuscationChecker() {
           >
             Download PDF (ALL)
           </button>
-          
+
           <button
             onClick={exportTxtAll}
             disabled={!result?.results?.length}
@@ -353,7 +388,9 @@ function FileResult({
       "",
       "Highlights (by line):",
       ...(highlights.length
-        ? highlights.map((h) => `  L${h.line} [${h.level}] ${h.reasons.join("; ")}`)
+        ? highlights.map(
+            (h) => `  L${h.line} [${h.level}] ${h.reasons.join("; ")}`
+          )
         : ["  (none)"]),
       "",
       "Deobfuscation Preview:",
@@ -425,7 +462,11 @@ function FileResult({
           <h2 className="text-xl font-semibold text-white">{name}</h2>
           <div className="text-sm text-gray-400 mt-1">
             Score: <span className="font-semibold text-white">{score}</span>/100
-            <span className={`ml-3 inline-block align-middle text-white px-3 py-1 rounded-full text-sm ${SEV_COLORS[severity] || SEV_COLORS.Unknown}`}>
+            <span
+              className={`ml-3 inline-block align-middle text-white px-3 py-1 rounded-full text-sm ${
+                SEV_COLORS[severity] || SEV_COLORS.Unknown
+              }`}
+            >
               {severity}
             </span>
           </div>
@@ -464,7 +505,9 @@ function FileResult({
           {issues?.length ? (
             <ul className="list-disc list-inside text-sm space-y-1">
               {issues.map((i, idx) => (
-                <li key={idx} className="text-gray-300">{i}</li>
+                <li key={idx} className="text-gray-300">
+                  {i}
+                </li>
               ))}
             </ul>
           ) : (
@@ -483,8 +526,13 @@ function FileResult({
               const h = lineMap.get(n);
               const cls = HEAT_COLORS[h?.level || "none"];
               return (
-                <div key={i} className={`grid grid-cols-[64px_1fr] px-3 py-2 ${cls} border-b border-blue-700/50 last:border-b-0`}>
-                  <div className="text-right pr-3 text-gray-500 select-none">{n}</div>
+                <div
+                  key={i}
+                  className={`grid grid-cols-[64px_1fr] px-3 py-2 ${cls} border-b border-blue-700/50 last:border-b-0`}
+                >
+                  <div className="text-right pr-3 text-gray-500 select-none">
+                    {n}
+                  </div>
                   <div className="whitespace-pre overflow-x-auto">
                     <span className="break-all text-gray-300">{ln || " "}</span>
                     {h?.reasons?.length ? (
@@ -505,11 +553,25 @@ function FileResult({
         deobfuscationPreview?.unicodeDecoded?.length ||
         deobfuscationPreview?.collapsedStrings?.length) && (
         <div className="bg-gray-700/50 rounded-lg border border-blue-600 p-4">
-          <h3 className="font-semibold mb-3 text-white">De-obfuscation Preview</h3>
+          <h3 className="font-semibold mb-3 text-white">
+            De-obfuscation Preview
+          </h3>
           <div className="grid md:grid-cols-3 gap-4 text-sm">
-            <PreviewList title="Base64" items={deobfuscationPreview.base64Decoded} kFrom="decoded" />
-            <PreviewList title="Unicode" items={deobfuscationPreview.unicodeDecoded} kFrom="decoded" />
-            <PreviewList title="Concats" items={deobfuscationPreview.collapsedStrings} kFrom="collapsed" />
+            <PreviewList
+              title="Base64"
+              items={deobfuscationPreview.base64Decoded}
+              kFrom="decoded"
+            />
+            <PreviewList
+              title="Unicode"
+              items={deobfuscationPreview.unicodeDecoded}
+              kFrom="decoded"
+            />
+            <PreviewList
+              title="Concats"
+              items={deobfuscationPreview.collapsedStrings}
+              kFrom="collapsed"
+            />
           </div>
         </div>
       )}
@@ -532,7 +594,8 @@ function PreviewList({ title, items = [], kFrom }) {
       <ul className="text-sm space-y-1">
         {items.slice(0, 8).map((d, i) => (
           <li key={i} className="truncate text-gray-300">
-            L{d.line}: <span className="font-mono text-blue-400">{d[kFrom]}</span>
+            L{d.line}:{" "}
+            <span className="font-mono text-blue-400">{d[kFrom]}</span>
           </li>
         ))}
       </ul>

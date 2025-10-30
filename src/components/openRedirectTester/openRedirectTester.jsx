@@ -10,6 +10,7 @@ import {
 } from "lucide-react";
 import { jsPDF } from "jspdf";
 import autoTable from "jspdf-autotable";
+import useProtectedAction from "../UseProtectedAction/UseProtectedAction";
 
 const DEFAULT_PARAMS = [
   "redirect",
@@ -35,9 +36,7 @@ const SEV_BADGE = {
 };
 
 export default function DarkThemeOpenRedirectTester() {
-  const [inputUrl, setInputUrl] = useState(
-    ""
-  );
+  const [inputUrl, setInputUrl] = useState("");
   const [manualParam, setManualParam] = useState("redirect");
   const [autoScan, setAutoScan] = useState(true);
   const [customParams, setCustomParams] = useState(DEFAULT_PARAMS.join(","));
@@ -45,6 +44,8 @@ export default function DarkThemeOpenRedirectTester() {
   const [error, setError] = useState("");
   const [report, setReport] = useState(null);
   const reportRef = useRef(null);
+
+  const protectedAction = useProtectedAction();
 
   const paramsToTest = useMemo(() => {
     if (!autoScan) return [manualParam.trim()].filter(Boolean);
@@ -59,33 +60,44 @@ export default function DarkThemeOpenRedirectTester() {
     e?.preventDefault?.();
     setError("");
     setReport(null);
+
     if (!inputUrl) {
       setError("Please enter a URL.");
       return;
     }
+
     setLoading(true);
-    try {
-      const res = await fetch(
-        `${process.env.NEXT_PUBLIC_PROD_API_URL}/openRedirectTester/openRedirect-tester-advanced`,
-        {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            url: inputUrl.trim(),
-            mode: autoScan ? "auto" : "manual",
-            paramName: manualParam.trim() || "redirect",
-            params: paramsToTest,
-          }),
-        }
-      );
-      const data = await res.json();
-      if (!res.ok) throw new Error(data?.error || "Failed to test URL");
-      setReport(data);
-    } catch (err) {
-      setError(err.message || "Unexpected error");
-    } finally {
-      setLoading(false);
-    }
+
+    await protectedAction(async (token) => {
+      try {
+        const res = await fetch(
+          `${process.env.NEXT_PUBLIC_PROD_API_URL}/openRedirectTester/openRedirect-tester-advanced`,
+          {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              Authorization: `Bearer ${token}`, // ✅ securely add token
+            },
+            body: JSON.stringify({
+              url: inputUrl.trim(),
+              mode: autoScan ? "auto" : "manual",
+              paramName: manualParam.trim() || "redirect",
+              params: paramsToTest,
+            }),
+          }
+        );
+
+        const data = await res.json();
+
+        if (!res.ok) throw new Error(data?.error || "Failed to test URL");
+
+        setReport(data);
+      } catch (err) {
+        setError(err.message || "Unexpected error");
+      } finally {
+        setLoading(false);
+      }
+    });
   }
 
   function badgeClass(sev) {
@@ -163,29 +175,26 @@ export default function DarkThemeOpenRedirectTester() {
   return (
     <div className="min-h-screen bg-black text-white">
       <div className="max-w-3xl mx-auto p-6">
-       {/* Header */}
-<div className="flex items-center gap-4 mb-8 mt-15">
-  {/* Replace logo div with image */}
-  <div className="w-20 h-20 sm:w-30 sm:h-30 md:w-30 md:h-30 rounded-full border-4 border-red-500 flex items-center justify-center overflow-hidden flex-shrink-0">
-  <img
-    src="/Redteam/open-redirect.png"   // <-- yaha apni image ka path daalna
-    alt="Logo"
-    className="w-full h-full object-cover rounded-full"
-  />
-</div>
+        {/* Header */}
+        <div className="flex items-center gap-4 mb-8 mt-15">
+          {/* Replace logo div with image */}
+          <div className="w-20 h-20 sm:w-30 sm:h-30 md:w-30 md:h-30 rounded-full border-4 border-red-500 flex items-center justify-center overflow-hidden flex-shrink-0">
+            <img
+              src="/Redteam/open-redirect.png" // <-- yaha apni image ka path daalna
+              alt="Logo"
+              className="w-full h-full object-cover rounded-full"
+            />
+          </div>
 
-
-
-  <div>
-    <h1 className="text-3xl font-bold text-white mb-1">
-      Open Redirect Tester
-    </h1>
-    <p className="text-gray-400 text-sm">
-      Auto-scan params, multi-payloads, redirect chain & PDF export.
-    </p>
-  </div>
-</div>
-
+          <div>
+            <h1 className="text-3xl font-bold text-white mb-1">
+              Open Redirect Tester
+            </h1>
+            <p className="text-gray-400 text-sm">
+              Auto-scan params, multi-payloads, redirect chain & PDF export.
+            </p>
+          </div>
+        </div>
 
         {/* Form */}
         <form
@@ -369,7 +378,9 @@ export default function DarkThemeOpenRedirectTester() {
                       <span className="text-gray-400">Final Domain:</span>{" "}
                       <span className="font-medium">{t.finalDomain}</span>
                       <span className="mx-2">•</span>
-                      <span className="text-gray-400">Changed eTLD+1:</span>{" "}
+                      <span className="text-gray-400">
+                        Changed eTLD+1:
+                      </span>{" "}
                       <span className="font-medium">
                         {t.changedETLD ? "Yes" : "No"}
                       </span>

@@ -25,9 +25,7 @@ const Footer = () => {
 
   const Section = ({ title, links }) => (
     <div className="w-full md:w-auto mb-6 md:mb-0 md:px-4 font-inter">
-      <h3 className="w-full text-left text-lg font-bold text-white">
-        {title}
-      </h3>
+      <h3 className="w-full text-left text-lg font-bold text-white">{title}</h3>
       <ul className="mt-2 space-y-2">
         {links.map((link, index) => (
           <li key={index}>
@@ -60,25 +58,26 @@ const Footer = () => {
     </div>
   );
 
-
-
   return (
     <footer className="relative z-0 bg-[#9d7af0]/30 backdrop-blur-xl border border-white/20 shadow-lg transition-all duration-300 transform text-white pt-10 px-4 md:px-0 font-inter">
       <div className="max-w-7xl mx-auto grid md:grid-cols-4 gap-8 px-2 md:px-3">
         {/* Left Section */}
         <div className="md:col-span-1">
           {/* className="w-full h-32 bg-black/10 mb-4" */}
-           <div className="">
-            <img src="/logo1.png" alt="Logo" className="w-50 h-50 object-contain" />
-</div>
-
+          <div className="">
+            <img
+              src="/logo1.png"
+              alt="Logo"
+              className="w-50 h-50 object-contain"
+            />
+          </div>
 
           <p className="text-sm sm:text-base text-white/90 text-center md:text-left">
             Our security platform provides advanced tools for red teaming, blue
             teaming, forensic analysis, and cloud security. Built for enterprise
             environments, it delivers real-time threat detection, proactive risk
-            management, and centralized control—ensuring robust and comprehensive
-            protection of your critical digital assets.
+            management, and centralized control—ensuring robust and
+            comprehensive protection of your critical digital assets.
           </p>
 
           {/* Social Icons */}
@@ -118,13 +117,24 @@ const Footer = () => {
         <Section
           title="Services"
           links={[
-            { label: "Vulnerability Assessment", href: "/services/vulnerability-assessment" },
-            { label: "Penetration Testing", href: "/services/penetration-testing" },
-            { label: "Security Operation Center", href: "/services/security-operations-center" },
+            {
+              label: "Vulnerability Assessment",
+              href: "/services/vulnerability-assessment",
+            },
+            {
+              label: "Penetration Testing",
+              href: "/services/penetration-testing",
+            },
+            {
+              label: "Security Operation Center",
+              href: "/services/security-operations-center",
+            },
             { label: "Cloud Security", href: "/services/cloud-security" },
             { label: "Network Security", href: "/services/network-security" },
-            { label: "Cybersecurity Consultancy", href: "/services/cybersecurity-consultancy" },
-
+            {
+              label: "Cybersecurity Consultancy",
+              href: "/services/cybersecurity-consultancy",
+            },
           ]}
         />
 
@@ -134,15 +144,21 @@ const Footer = () => {
           links={[
             { label: "WAF Scanner", href: "/tools/firewallDashboard" },
             { label: "Vulnerability Scanner", href: "/tools/vuln-scanner" },
-            { label: "Database Security Checker", href: "/tools/DbSecurityChecker" },
+            {
+              label: "Database Security Checker",
+              href: "/tools/DbSecurityChecker",
+            },
             { label: "Link Detector", href: "/tools/check-link" },
-            { label: "IP Address Info Finder", href: "/tools/ip-address-info-finder" },
+            {
+              label: "IP Address Info Finder",
+              href: "/tools/ip-address-info-finder",
+            },
             { label: "Source Code Analyzer", href: "/tools/Source-Code" },
           ]}
         />
 
         {/* Quick */}
-               <Section
+        <Section
           title="Quick"
           links={[
             { label: "Blog", id: "blogs" },
@@ -151,23 +167,27 @@ const Footer = () => {
             { label: "Schedule Meeting", href: "/tools/schedulemeeting" },
             { label: "Why Choose Us", id: "why-us" },
             { label: "Certificate", id: "certificates" },
-             { label: "Connect", href: "/connect" },          
-            {label: "Feedback", href: "/tools/feedback"},            
-            ]}
+            { label: "Connect", href: "/connect" },
+            { label: "Feedback", href: "/tools/feedback" },
+          ]}
         />
       </div>
 
       {/* Footer Bottom */}
       <div className="flex flex-col md:flex-row justify-center items-center mt-10 text-center text-sm text-[#9d7af0] border-t border-white/20 py-3 gap-1 md:gap-4">
-        <div>©2025<span className="hidden md:inline">&nbsp;|&nbsp;</span></div>
         <div>
-          Developed By&nbsp;<span className="font-bold text-black">Code4Bharat</span>
+          ©{new Date().getFullYear()}
+          <span className="hidden md:inline">&nbsp;|&nbsp;</span>
+        </div>
+        <div>
+          Developed By&nbsp;
+          <span className="font-bold text-black">Code4Bharat</span>
           <span className="hidden md:inline">&nbsp;|&nbsp;</span>
         </div>
         <div>All Rights Reserved.</div>
       </div>
     </footer>
   );
-}
+};
 
 export default Footer;

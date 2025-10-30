@@ -1,6 +1,7 @@
 "use client";
 import { useEffect, useRef, useState } from "react";
 import GreenLayout from "../GreenTeam/layout";
+import useProtectedAction from "../UseProtectedAction/UseProtectedAction";
 
 const CameraCapture = ({ onCapture }) => {
   const videoRef = useRef(null);
@@ -8,12 +9,14 @@ const CameraCapture = ({ onCapture }) => {
 
   const [ready, setReady] = useState(false);
 
-
+  const protectedAction = useProtectedAction();
 
   useEffect(() => {
     const setupCamera = async () => {
       try {
-        const stream = await navigator.mediaDevices.getUserMedia({ video: true });
+        const stream = await navigator.mediaDevices.getUserMedia({
+          video: true,
+        });
         videoRef.current.srcObject = stream;
         await videoRef.current.play();
         setReady(true);
@@ -64,10 +67,10 @@ const FakeQRCodeDetectorAndQRGenerator = () => {
   const [generateResult, setGenerateResult] = useState("");
   const [loading, setLoading] = useState(false);
   const [qrText, setQrText] = useState("");
+  const protectedAction = useProtectedAction();
 
   // Called when user uploads file or captures from camera
   const handleImage = (file) => {
-    
     setImageSrc({
       file,
       url: URL.createObjectURL(file),
@@ -105,32 +108,37 @@ const FakeQRCodeDetectorAndQRGenerator = () => {
     }
     setLoading(true);
     setScanResult("");
+    await protectedAction(async (userToken) => {
+      try {
+        const formData = new FormData();
+        formData.append("qrImage", imageSrc.file, "qr-image.jpg");
 
-    try {
-      const formData = new FormData();
-      formData.append("qrImage", imageSrc.file, "qr-image.jpg");
+        const response = await fetch(
+          `${process.env.NEXT_PUBLIC_PROD_API_URL}/qr/scan`,
+          {
+            // replace with your backend URL
+            method: "POST",
+            body: formData,
+          }
+        );
 
-      const response = await fetch(`${process.env.NEXT_PUBLIC_PROD_API_URL}/qr/scan`, { // replace with your backend URL
-        method: "POST",
-        body: formData,
-      });
+        const data = await response.json();
+        console.log(data);
+        setScanResult(`${data.message}\n\n${data.data}`);
 
-      const data = await response.json();
-      console.log(data)
-      setScanResult(`${data.message}\n\n${data.data}`);
-
-      // if (data.status === "fake") {
-      //   setScanResult(`⚠️ Fake QR Detected: ${data.message}`);
-      // } else if (data.status === "safe") {
-      //   setScanResult(`✅ Safe QR Code: ${data.message}`);
-      // } else {
-      //   setScanResult(`❌ Scan failed: ${data.message || "Unknown error"}`);
-      // }
-    } catch (err) {
-      setScanResult("❌ Failed to connect to server.");
-    } finally {
-      setLoading(false);
-    }
+        // if (data.status === "fake") {
+        //   setScanResult(`⚠️ Fake QR Detected: ${data.message}`);
+        // } else if (data.status === "safe") {
+        //   setScanResult(`✅ Safe QR Code: ${data.message}`);
+        // } else {
+        //   setScanResult(`❌ Scan failed: ${data.message || "Unknown error"}`);
+        // }
+      } catch (err) {
+        setScanResult("❌ Failed to connect to server.");
+      } finally {
+        setLoading(false);
+      }
+    });
   };
   const handleGenerate = async () => {
     if (!qrText || qrText.trim() === "") {
@@ -141,48 +149,50 @@ const FakeQRCodeDetectorAndQRGenerator = () => {
     setLoading(true);
     setScanResult("");
     setImageSrc(null); // clear previous image if needed
+    await protectedAction(async (userToken) => {
+      try {
+        const response = await fetch(
+          `${process.env.NEXT_PUBLIC_PROD_API_URL}/qr/generate`,
+          {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({ text: qrText }),
+          }
+        );
 
-    try {
-      const response = await fetch(`${process.env.NEXT_PUBLIC_PROD_API_URL}/qr/generate`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ text: qrText }),
-      });
+        if (!response.ok) {
+          throw new Error(`Server error: ${response.statusText}`);
+        }
 
-      if (!response.ok) {
-        throw new Error(`Server error: ${response.statusText}`);
+        const data = await response.json();
+
+        if (data.status === "success") {
+          const qrImageSrc = data.data.replaceAll("\r\n", "\n");
+          console.log(qrImageSrc);
+          setImageSrc(qrImageSrc);
+          setScanResult(data.message || "QR code generated successfully.");
+        } else {
+          setGenerateResult(data.message || "Failed to generate QR code.");
+        }
+      } catch (err) {
+        setGenerateResult("❌ Failed to connect to server.");
+      } finally {
+        setLoading(false);
       }
-
-      const data = await response.json();
-
-      if (data.status === "success") {
-        const qrImageSrc = data.data.replaceAll("\r\n", "\n");
-        console.log(qrImageSrc)
-        setImageSrc(qrImageSrc);
-        setScanResult(data.message || "QR code generated successfully.");
-      } else {
-        setGenerateResult(data.message || "Failed to generate QR code.");
-      }
-    } catch (err) {
-      setGenerateResult("❌ Failed to connect to server.");
-    } finally {
-      setLoading(false);
-    }
+    });
   };
-
 
   return (
     <div className="min-h-screen bg-black flex flex-col items-center justify-center p-4">
- 
-        <GreenLayout
-          heroData={{
-            title: "Fake QR Detector & QR Generator",
-            imgPath: "/GreenTeam/QR.png",
-          }}
-        />
-        <div className="bg-black border border-white shadow-xl rounded-lg max-w-2xl w-full p-6">
+      <GreenLayout
+        heroData={{
+          title: "Fake QR Detector & QR Generator",
+          imgPath: "/GreenTeam/QR.png",
+        }}
+      />
+      <div className="bg-black border border-white shadow-xl rounded-lg max-w-2xl w-full p-6">
         <div className="flex justify-center mb-6 space-x-4">
           <button
             onClick={() => {
@@ -190,8 +200,11 @@ const FakeQRCodeDetectorAndQRGenerator = () => {
               setImageSrc(null);
               setScanResult("");
             }}
-            className={`px-4 py-2 rounded ${tab === "scanner" ? "bg-green-600 text-white" : "bg-gray-200 text-black"
-              }`}
+            className={`px-4 py-2 rounded ${
+              tab === "scanner"
+                ? "bg-green-600 text-white"
+                : "bg-gray-200 text-black"
+            }`}
           >
             Unsafe QR Detector
           </button>
@@ -201,8 +214,11 @@ const FakeQRCodeDetectorAndQRGenerator = () => {
               setImageSrc(null);
               setScanResult("");
             }}
-            className={`px-4 py-2 rounded ${tab === "generator" ? "bg-green-600 text-white" : "bg-gray-200 text-black"
-              }`}
+            className={`px-4 py-2 rounded ${
+              tab === "generator"
+                ? "bg-green-600 text-white"
+                : "bg-gray-200 text-black"
+            }`}
           >
             QR Generator
           </button>
@@ -248,7 +264,9 @@ const FakeQRCodeDetectorAndQRGenerator = () => {
               </button>
             </div>
 
-            {inputMethod === "camera" && <CameraCapture onCapture={handleImage} />}
+            {inputMethod === "camera" && (
+              <CameraCapture onCapture={handleImage} />
+            )}
 
             {imageSrc && (
               <img
@@ -294,7 +312,14 @@ const FakeQRCodeDetectorAndQRGenerator = () => {
                 {loading ? "Generating..." : "Generate"}
               </button>
               {imageSrc && (
-                <pre style={{ fontFamily: 'Fira Code, Courier New, monospace', lineHeight:1.1, letterSpacing: '-0.08ch'}} className="text-xl">
+                <pre
+                  style={{
+                    fontFamily: "Fira Code, Courier New, monospace",
+                    lineHeight: 1.1,
+                    letterSpacing: "-0.08ch",
+                  }}
+                  className="text-xl"
+                >
                   {imageSrc}
                 </pre>
               )}

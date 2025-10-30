@@ -1,9 +1,12 @@
 "use client";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import useProtectedAction from "@/components/UseProtectedAction/UseProtectedAction";
 
 export default function SourceCodeAnalyzer() {
   const router = useRouter();
+  const protectedAction = useProtectedAction();
+
   const [code, setCode] = useState("");
   const [file, setFile] = useState(null);
   const [result, setResult] = useState(null);
@@ -23,80 +26,51 @@ export default function SourceCodeAnalyzer() {
     setResult(null);
     setLoading(true);
 
-    try {
-      // 1️⃣ Token check
-      const token = localStorage.getItem("token");
-      console.log("Token:", token);
-      if (!token) {
-        router.push("/gain-access");
-        return;
-      }
+    await protectedAction(async (token) => {
+      try {
+        // 1️⃣ Prepare code
+        let finalCode = code.trim();
+        if (!file && finalCode === "") {
+          alert("Please paste code or upload a file.");
+          setLoading(false);
+          return;
+        }
+        if (file) finalCode = await readFileAsText(file);
 
-      // 2️⃣ Prepare code
-      let finalCode = code.trim();
-      if (!file && finalCode === "") {
-        alert("Please paste code or upload a file.");
+        // 2️⃣ Run code analysis API
+        const res = await fetch(
+          `${process.env.NEXT_PUBLIC_PROD_API_URL}/analyze/analyzeCode`,
+          {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              Authorization: `Bearer ${token}`,
+            },
+            body: JSON.stringify({ code: finalCode }),
+          }
+        );
+
+        if (!res.ok) {
+          const errorData = await res.json().catch(() => ({}));
+          throw new Error(errorData.error || `API error: ${res.statusText}`);
+        }
+
+        const data = await res.json();
+        console.log("Scan API response:", data);
+        setResult(data);
+      } catch (err) {
+        console.error("Error:", err);
+        alert(err.message || "An error occurred while analyzing the code.");
+        setResult({
+          results: ["❌ An error occurred while analyzing the code."],
+          passed: 0,
+          failed: 1,
+          riskBand: "Error",
+        });
+      } finally {
         setLoading(false);
-        return;
       }
-      if (file) finalCode = await readFileAsText(file);
-
-      // 3️⃣ Inspect token
-      const inspectRes = await fetch(
-        `${process.env.NEXT_PUBLIC_PROD_API_URL}/auth/inspect-token`,
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${token}`,
-          },
-          body: JSON.stringify({ token }),
-        }
-      );
-      const inspectData = await inspectRes.json();
-      console.log("Inspect response:", inspectData);
-      if (!inspectRes.ok || inspectData.meta?.isExpired) {
-        alert("Your session expired. Please login again.");
-        router.push("/gain-access");
-        return;
-      }
-
-      // 4️⃣ Run code analysis API
-      const res = await fetch(
-        `${process.env.NEXT_PUBLIC_PROD_API_URL}/analyze/analyzeCode`,
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${token}`,
-          },
-          body: JSON.stringify({ code: finalCode }),
-        }
-      );
-      if (!res.ok) throw new Error(`API error: ${res.statusText}`);
-      const data = await res.json();
-      console.log("Scan API response:", data);
-      setResult(data);
-
-      // 5️⃣ Deduct 1 credit
-      await fetch(`${process.env.NEXT_PUBLIC_PROD_API_URL}/auth/recharge-credits`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
-        body: JSON.stringify({ amount: -1 }),
-      });
-    } catch (err) {
-      console.error("Error:", err);
-      setResult({
-        results: ["❌ An error occurred while analyzing the code."],
-        passed: 0,
-        failed: 0,
-      });
-    } finally {
-      setLoading(false);
-    }
+    });
   };
 
   return (
@@ -165,12 +139,47 @@ export default function SourceCodeAnalyzer() {
         {/* Result */}
         {result && (
           <div className="mt-6 bg-gray-900 border border-gray-700 p-4 rounded-md">
-            <h3 className="font-bold text-base mb-2 text-white">Scan Result:</h3>
+            <h3 className="font-bold text-base mb-2 text-white">
+              Scan Result:
+            </h3>
+
+            {/* Language & Risk Info */}
+            {result.language && (
+              <p className="text-gray-400 text-sm mb-1">
+                Language: <span className="text-white">{result.language}</span>
+              </p>
+            )}
+            {result.riskBand && (
+              <p className="text-gray-400 text-sm mb-1">
+                Risk Level:{" "}
+                <span
+                  className={`font-semibold ${
+                    result.riskBand === "Critical"
+                      ? "text-red-600"
+                      : result.riskBand === "High"
+                      ? "text-orange-500"
+                      : result.riskBand === "Medium"
+                      ? "text-yellow-500"
+                      : result.riskBand === "Low"
+                      ? "text-blue-400"
+                      : "text-green-500"
+                  }`}
+                >
+                  {result.riskBand}
+                </span>
+                {result.riskScore !== undefined &&
+                  ` (Score: ${result.riskScore}/100)`}
+              </p>
+            )}
+
             <p className="text-gray-400 text-sm mb-2">
               ✅ Passed: {result.passed} | ❌ Failed: {result.failed}
             </p>
-            {result.results?.length === 0 ? (
-              <p className="text-green-500 text-sm">✅ No vulnerabilities found!</p>
+
+            {result.results?.length === 0 || result.failed === 0 ? (
+              <p className="text-green-500 text-sm">
+                ✅ No vulnerabilities found!
+              </p>
             ) : (
               <ul className="list-disc pl-5 text-red-400 space-y-1 text-sm">
                 {result.results?.map((issue, index) => (

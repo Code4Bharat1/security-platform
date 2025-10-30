@@ -3,41 +3,48 @@ import { useState, useCallback } from "react";
 import { LocateFixed } from "lucide-react";
 import axios from "axios";
 import GreenLayout from "../GreenTeam/layout";
+import useProtectedAction from "../UseProtectedAction/UseProtectedAction";
 
 export default function IPInfoFinder() {
   const [ip, setIp] = useState("");
   const [loading, setLoading] = useState(false);
   const [info, setInfo] = useState(null);
   const [error, setError] = useState("");
+  const protectedAction = useProtectedAction();
 
-  const handleSubmit = useCallback(async (e) => {
-    e.preventDefault();
-    setLoading(true);
-    setError(null);
-    setInfo(null);
-
-    try {
-      const res = await axios.post(
-        `${process.env.NEXT_PUBLIC_PROD_API_URL}/ipinfo/`,
-        { ip }
-      );
-      setInfo(res.data);
-    } catch (err) {
-      setError(err.response?.data?.error || "Failed to fetch IP info");
-    } finally {
-      setLoading(false);
-    }
-  }, [ip]);
+  const handleSubmit = useCallback(
+    async (e) => {
+      e.preventDefault();
+      setLoading(true);
+      setError(null);
+      setInfo(null);
+      await protectedAction(async (userToken) => {
+        try {
+          const res = await axios.post(
+            `${process.env.NEXT_PUBLIC_PROD_API_URL}/ipinfo/`,
+            { ip },
+            { headers: { Authorization: `Bearer ${userToken}` } }
+          );
+          setInfo(res.data);
+        } catch (err) {
+          setError(err.response?.data?.error || "Failed to fetch IP info");
+        } finally {
+          setLoading(false);
+        }
+      });
+    },
+    [ip]
+  );
 
   return (
     <div className="min-h-screen bg-black flex flex-col items-center pt-20 px-4">
-    <GreenLayout
+      <GreenLayout
         heroData={{
           imgPath: "/GreenTeam/ip.png",
           title: "IP Address Info Finder",
           desc: "Fetches location, network, and threat intel of an IP address.",
         }}
-      />  
+      />
       <div className="bg-black border border-white shadow-lg rounded-xl p-6 w-full max-w-2xl">
         <form onSubmit={handleSubmit} className="mb-6">
           <input
@@ -48,17 +55,17 @@ export default function IPInfoFinder() {
             className="w-full px-4 py-3 mb-4 border border-white text-white rounded-md focus:outline-none focus:ring-2 focus:ring-green-600"
           />
           <div className="flex justify-center items-center">
-          <button
-            type="submit"
-            disabled={loading || !ip.trim()}
-            className={`w-45 py-3 rounded-md text-white font-semibold ${
-              loading
-                ? "bg-green-400 cursor-not-allowed"
-                : "bg-green-700 hover:bg-green-800"
-            }`}
-          >
-            {loading ? "Fetching..." : "Get IP Info"}
-          </button>
+            <button
+              type="submit"
+              disabled={loading || !ip.trim()}
+              className={`w-45 py-3 rounded-md text-white font-semibold ${
+                loading
+                  ? "bg-green-400 cursor-not-allowed"
+                  : "bg-green-700 hover:bg-green-800"
+              }`}
+            >
+              {loading ? "Fetching..." : "Get IP Info"}
+            </button>
           </div>
         </form>
 

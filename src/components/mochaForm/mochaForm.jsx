@@ -15,6 +15,7 @@ import {
   TrendingDown,
   Minus,
 } from "lucide-react";
+import useProtectedAction from "../UseProtectedAction/UseProtectedAction";
 
 export default function MochaForm() {
   const [endpoint, setEndpoint] = useState("");
@@ -46,6 +47,8 @@ export default function MochaForm() {
     }
   };
 
+  const protectedAction = useProtectedAction();
+
   const handleSubmit = async () => {
     if (!validateEndpoint(endpoint)) {
       const msg =
@@ -59,79 +62,90 @@ export default function MochaForm() {
     setLoading(true);
     setTestResults(null);
 
-    try {
-      let headerObj = {};
-      if (headers.trim()) {
-        try {
-          headerObj = JSON.parse(headers);
-        } catch {
-          const msg = "Invalid JSON format for headers";
-          setError(msg);
+    await protectedAction(async (token) => {
+      try {
+        let headerObj = {};
+        if (headers.trim()) {
+          try {
+            headerObj = JSON.parse(headers);
+          } catch {
+            const msg = "Invalid JSON format for headers";
+            setError(msg);
+            showToastMessage(msg, "error");
+            setLoading(false);
+            return;
+          }
+        }
+
+        let bodyObj = null;
+        if (body.trim() && method !== "GET") {
+          try {
+            bodyObj = JSON.parse(body);
+          } catch {
+            const msg = "Invalid JSON format for request body";
+            setError(msg);
+            showToastMessage(msg, "error");
+            setLoading(false);
+            return;
+          }
+        }
+
+        const res = await fetch(
+          `${process.env.NEXT_PUBLIC_PROD_API_URL}/mocha/mocha-test`,
+          {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              Authorization: `Bearer ${token}`, // ✅ added from protectedAction
+            },
+            body: JSON.stringify({
+              endpoint,
+              method,
+              headers: headerObj,
+              body: bodyObj,
+              testDescription,
+              timeoutMs,
+              wantPrevious: true,
+            }),
+          }
+        );
+
+        if (!res.ok) {
+          const errText = await res.text().catch(() => "");
+          const msg = `API test failed with HTTP ${res.status}. ${
+            errText || ""
+          }`.trim();
           showToastMessage(msg, "error");
+          if (res.status >= 500) alert(msg);
+          setError(msg);
           setLoading(false);
           return;
         }
-      }
 
-      let bodyObj = null;
-      if (body.trim() && method !== "GET") {
-        try {
-          bodyObj = JSON.parse(body);
-        } catch {
-          const msg = "Invalid JSON format for request body";
-          setError(msg);
+        const result = await res.json();
+        setTestResults(result);
+
+        if (
+          result &&
+          typeof result.statusCode === "number" &&
+          result.statusCode >= 500
+        ) {
+          const msg = `API responded with ${result.statusCode}`;
           showToastMessage(msg, "error");
-          setLoading(false);
-          return;
+          alert(msg);
+        } else {
+          showToastMessage("🎉 Test completed successfully!", "success");
         }
-      }
 
-      const res = await fetch(
-        `${process.env.NEXT_PUBLIC_PROD_API_URL}/mocha/mocha-test`,
-        {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            endpoint,
-            method,
-            headers: headerObj,
-            body: bodyObj,
-            testDescription,
-            timeoutMs,
-            wantPrevious: true,
-          }),
-        }
-      );
-
-      if (!res.ok) {
-        const errText = await res.text().catch(() => "");
-        const msg = `API test failed with HTTP ${res.status}. ${errText || ""}`.trim();
-        showToastMessage(msg, "error");
-        if (res.status >= 500) alert(msg);
-        setError(msg);
         setLoading(false);
-        return;
-      }
-
-      const result = await res.json();
-      setTestResults(result);
-
-      if (result && typeof result.statusCode === "number" && result.statusCode >= 500) {
-        const msg = `API responded with ${result.statusCode}`;
+      } catch (e) {
+        const msg = `Network error: ${e?.message || "Unknown error"}`;
+        setError(msg);
         showToastMessage(msg, "error");
         alert(msg);
-      } else {
-        showToastMessage("🎉 Test completed successfully!", "success");
+        setLoading(false);
       }
-
-      setLoading(false);
-    } catch (e) {
-      const msg = `Network error: ${e?.message || "Unknown error"}`;
-      setError(msg);
-      showToastMessage(msg, "error");
-      alert(msg);
-      setLoading(false);
-    }
+    });
   };
 
   const quickFillExample = () => {
@@ -140,7 +154,10 @@ export default function MochaForm() {
     setHeaders("");
     setBody("");
     setTestDescription("Get a single post from JSONPlaceholder API");
-    showToastMessage("✨ Example data filled! Click 'Run Test' to try it.", "info");
+    showToastMessage(
+      "✨ Example data filled! Click 'Run Test' to try it.",
+      "info"
+    );
   };
 
   const getHeadersPlaceholder = () => {
@@ -170,8 +187,7 @@ export default function MochaForm() {
         ) : (
           <TrendingUp className="w-3 h-3" />
         )}
-        {improved ? "Faster" : "Slower"} (
-        {deltaMs > 0 ? "+" : ""}
+        {improved ? "Faster" : "Slower"} ({deltaMs > 0 ? "+" : ""}
         {deltaMs} ms, {deltaPct > 0 ? "+" : ""}
         {deltaPct}
         %)
@@ -201,37 +217,36 @@ export default function MochaForm() {
         </div>
       )}
 
-   {/* Header */}
-<div className="pt-8 pb-6 px-4 sm:px-6 lg:px-8 bg-black mt-15">
-  <div className="max-w-5xl flex items-center gap-4 lg:ml-70">
-    {/* Logo always left */}
-    <img
-      src="/RedTeam/mocha-logo.png"
-      alt="Mocha Logo"
-      className="w-30 h-30 object-contain flex-shrink-0"
-    />
+      {/* Header */}
+      <div className="pt-8 pb-6 px-4 sm:px-6 lg:px-8 bg-black mt-15">
+        <div className="max-w-5xl flex items-center gap-4 lg:ml-70">
+          {/* Logo always left */}
+          <img
+            src="/RedTeam/mocha-logo.png"
+            alt="Mocha Logo"
+            className="w-30 h-30 object-contain flex-shrink-0"
+          />
 
-    {/* Text always right */}
-    <div className="text-left">
-      <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold text-white">
-        Mocha API Testing
-      </h1>
+          {/* Text always right */}
+          <div className="text-left">
+            <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold text-white">
+              Mocha API Testing
+            </h1>
 
-      {/* Subtext */}
-      <p className="text-gray-400 max-w-2xl mt-2 text-sm sm:text-base">
-        Test your API endpoints with ease. Enter your API details below <br />
-        and get instant feedback on performance and reliability.
-      </p>
+            {/* Subtext */}
+            <p className="text-gray-400 max-w-2xl mt-2 text-sm sm:text-base">
+              Test your API endpoints with ease. Enter your API details below{" "}
+              <br />
+              and get instant feedback on performance and reliability.
+            </p>
 
-      {/* Connection Info */}
-      <div className="mt-4 text-gray-400 text-sm">
-        <p>Connected to: localhost:5000</p>
+            {/* Connection Info */}
+            <div className="mt-4 text-gray-400 text-sm">
+              <p>Connected to: localhost:5000</p>
+            </div>
+          </div>
+        </div>
       </div>
-    </div>
-  </div>
-</div>
-
-
 
       {/* Main */}
       <div className="max-w-4xl mx-auto px-4 pb-12">
@@ -424,9 +439,7 @@ export default function MochaForm() {
                 {/* Results Header */}
                 <div
                   className={`px-6 py-4 ${
-                    testResults.passed
-                      ? "bg-green-700"
-                      : "bg-red-700"
+                    testResults.passed ? "bg-green-700" : "bg-red-700"
                   }`}
                 >
                   <div className="flex items-center justify-between">
@@ -530,13 +543,18 @@ export default function MochaForm() {
                       <p className="text-sm text-gray-400">Response Time</p>
                     </div>
                     <div className="bg-gray-800 rounded p-4 border border-white-600 text-center">
-                      <p className="text-2xl font-bold text-blue-400">{method}</p>
+                      <p className="text-2xl font-bold text-blue-400">
+                        {method}
+                      </p>
                       <p className="text-sm text-gray-400">Method Used</p>
                     </div>
                     <div className="bg-gray-800 rounded p-4 border border-white-600 text-center">
                       <p className="text-2xl font-bold text-purple-400">
                         {Array.isArray(testResults.assertions)
-                          ? `${testResults.assertions.filter((a) => a.passed).length}/${testResults.assertions.length}`
+                          ? `${
+                              testResults.assertions.filter((a) => a.passed)
+                                .length
+                            }/${testResults.assertions.length}`
                           : "N/A"}
                       </p>
                       <p className="text-sm text-gray-400">Tests Passed</p>
@@ -575,7 +593,9 @@ export default function MochaForm() {
                       {typeof testResults.degraded === "boolean" && (
                         <p
                           className={`mt-3 text-sm ${
-                            testResults.degraded ? "text-red-400" : "text-green-400"
+                            testResults.degraded
+                              ? "text-red-400"
+                              : "text-green-400"
                           }`}
                         >
                           {testResults.degraded
@@ -609,7 +629,9 @@ export default function MochaForm() {
               </ul>
             </div>
             <div>
-              <p className="font-medium mb-3 text-white">📋 What This Tool Tests:</p>
+              <p className="font-medium mb-3 text-white">
+                📋 What This Tool Tests:
+              </p>
               <ul className="text-sm text-red-400 space-y-1">
                 <li>• HTTP status code validation</li>
                 <li>• Response format checking</li>

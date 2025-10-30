@@ -34,48 +34,47 @@ export default function SubdomainScanner() {
   };
 
   const handleSubmit = async () => {
-    await protectedAction(async(token) => {    
-  setLoading(true);
-  setError("");
-  setResults([]);
-  setStats(null);
+    await protectedAction(async (token) => {
+      setLoading(true);
+      setError("");
+      setResults([]);
+      setStats(null);
 
-  const cleanDomain = domain.trim().toLowerCase();
-  if (!cleanDomain) {
-    setError("Please enter a domain.");
-    setLoading(false);
-    return;
-  }
+      const cleanDomain = domain.trim().toLowerCase();
+      if (!cleanDomain) {
+        setError("Please enter a domain.");
+        setLoading(false);
+        return;
+      }
 
-  try {
-    const response = await axios.post(
-      `${API_URL}/subdomain/subdomains-scan`,
-      { domain: cleanDomain },
-      {headers: {Authorization: `Bearer${token}`}}
-    );
+      try {
+        const response = await axios.post(
+          `${API_URL}/subdomain/subdomains-scan`,
+          { domain: cleanDomain },
+          { headers: { Authorization: `Bearer${token}` } }
+        );
 
-    const data = response.data;
+        const data = response.data;
 
-    setResults(data.results || []);
-    setStats({
-      total: data.total,
-      startedAt: data.startedAt,
-      finishedAt: data.finishedAt,
-      durationMs: data.durationMs,
+        setResults(data.results || []);
+        setStats({
+          total: data.total,
+          startedAt: data.startedAt,
+          finishedAt: data.finishedAt,
+          durationMs: data.durationMs,
+        });
+      } catch (err) {
+        console.error("Error fetching subdomains:", err);
+        setError(
+          err.response?.data?.error ||
+            err.response?.data?.message ||
+            "Failed to fetch subdomains from server."
+        );
+      } finally {
+        setLoading(false);
+      }
     });
-  } catch (err) {
-    console.error("Error fetching subdomains:", err);
-    setError(
-      err.response?.data?.error ||
-        err.response?.data?.message ||
-        "Failed to fetch subdomains from server."
-    );
-  } finally {
-    setLoading(false);
-  }
-  });
-};
-
+  };
 
   const downloadPDF = () => {
     alert("PDF download functionality would be implemented here");
@@ -90,27 +89,26 @@ export default function SubdomainScanner() {
       <div className="max-w-4xl mx-auto p-8">
         {/* Header */}
         {/* Header */}
-<div className="flex items-center justify-between mb-8 gap-4 sm:gap-6 mt-15">
-  {/* Logo (Left) */}
-  <div className="w-30 h-30 sm:w-30 sm:h-30 rounded-full border-4 border-red-500 overflow-hidden flex items-center justify-center bg-gray-800">
-    <img
-      src="/RedTeam/subdomain.png"
-      alt="Logo"
-      className="w-full h-full object-cover"
-    />
-  </div>
+        <div className="flex items-center justify-between mb-8 gap-4 sm:gap-6 mt-15">
+          {/* Logo (Left) */}
+          <div className="w-30 h-30 sm:w-30 sm:h-30 rounded-full border-4 border-red-500 overflow-hidden flex items-center justify-center bg-gray-800">
+            <img
+              src="/RedTeam/subdomain.png"
+              alt="Logo"
+              className="w-full h-full object-cover"
+            />
+          </div>
 
-  {/* Title + Description (Right) */}
-  <div className="flex-1 text-left">
-    <h1 className="text-2xl sm:text-3xl font-bold text-white">
-      Subdomain Scanner
-    </h1>
-    <p className="text-gray-400 text-base sm:text-lg mt-1">
-      Scan websites for analyzing subdomains and their security posture.
-    </p>
-  </div>
-</div>
-
+          {/* Title + Description (Right) */}
+          <div className="flex-1 text-left">
+            <h1 className="text-2xl sm:text-3xl font-bold text-white">
+              Subdomain Scanner
+            </h1>
+            <p className="text-gray-400 text-base sm:text-lg mt-1">
+              Scan websites for analyzing subdomains and their security posture.
+            </p>
+          </div>
+        </div>
 
         {/* Main Form */}
         <div className="bg-gray-900 border border-white-700 rounded-lg p-6">

@@ -15,6 +15,7 @@ import {
   FileDown,
   Copy,
 } from "lucide-react";
+import useProtectedAction from "../UseProtectedAction/UseProtectedAction";
 
 /* ============================== Helpers ============================== */
 
@@ -53,7 +54,8 @@ const isValidUrl = (urlString) => {
   try {
     const u = new URL(urlString);
     const proto = u.protocol === "http:" || u.protocol === "https:";
-    const hostOk = u.hostname && u.hostname.includes(".") && u.hostname.length > 1;
+    const hostOk =
+      u.hostname && u.hostname.includes(".") && u.hostname.length > 1;
     const notLocal =
       !u.hostname.includes("localhost") && !u.hostname.includes("127.0.0.1");
     return proto && hostOk && notLocal;
@@ -67,7 +69,8 @@ const normalizeUrl = (v) => (/^https?:\/\//i.test(v) ? v : `https://${v}`);
 const buildErrorText = (data) => {
   if (!data) return "Scan failed.";
   if (data.error) return data.error;
-  if (data.reason === "INVALID_LINK") return data.message || "Invalid link or page not found.";
+  if (data.reason === "INVALID_LINK")
+    return data.message || "Invalid link or page not found.";
   if (data.reason === "UPSTREAM_HTTP_ERROR") {
     return `Site responded ${data.upstreamStatus || ""}`.trim();
   }
@@ -82,6 +85,7 @@ export default function ClickjackingTester() {
   const [loading, setLoading] = useState(false);
   const [tab, setTab] = useState("results"); // results | vulns | recs
   const reportRef = useRef(null);
+  const protectedAction = useProtectedAction();
 
   const handleTest = async () => {
     const raw = url.trim();
@@ -93,34 +97,41 @@ export default function ClickjackingTester() {
     setLoading(true);
     setResult(null);
 
-    try {
-      const { data, status } = await api.post(
-        "/clickjacking/jacking",
-        { url: normalized },
-        { validateStatus: () => true }
-      );
+    await protectedAction(async (token) => {
+      try {
+        const { data, status } = await api.post(
+          "/clickjacking/jacking",
+          { url: normalized },
+          {
+            headers: { Authorization: `Bearer ${token}` },
+            validateStatus: () => true,
+          }
+        );
 
-      if (status >= 400) {
-        setResult({ error: buildErrorText(data) });
-        return;
+        if (status >= 400) {
+          setResult({ error: buildErrorText(data) });
+          return;
+        }
+
+        if (data?.ok === false) {
+          setResult({
+            error: buildErrorText(data),
+            reason: data.reason,
+            upstreamStatus: data.upstreamStatus,
+          });
+          return;
+        }
+
+        setResult(data);
+        setTab("results");
+      } catch (err) {
+        let m = "Request failed. Please try again.";
+        if (err.code === "ECONNABORTED") m = "Request timed out.";
+        setResult({ error: m });
+      } finally {
+        setLoading(false);
       }
-      if (data?.ok === false) {
-        setResult({
-          error: buildErrorText(data),
-          reason: data.reason,
-          upstreamStatus: data.upstreamStatus,
-        });
-        return;
-      }
-      setResult(data);
-      setTab("results");
-    } catch (err) {
-      let m = "Request failed. Please try again.";
-      if (err.code === "ECONNABORTED") m = "Request timed out.";
-      setResult({ error: m });
-    } finally {
-      setLoading(false);
-    }
+    });
   };
 
   const onCopy = async (text) => {
@@ -161,7 +172,11 @@ export default function ClickjackingTester() {
     doc.setFontSize(12);
     doc.text("Overall Severity:", 40, 110);
     const sevColor =
-      severity === "High" ? [200, 0, 0] : severity === "Medium" ? [180, 120, 0] : [0, 120, 80];
+      severity === "High"
+        ? [200, 0, 0]
+        : severity === "Medium"
+        ? [180, 120, 0]
+        : [0, 120, 80];
     doc.setTextColor(...sevColor);
     doc.text(severity || "—", 160, 110);
     doc.setTextColor(0, 0, 0);
@@ -190,7 +205,9 @@ export default function ClickjackingTester() {
     const pmY = (doc.lastAutoTable?.finalY || 130) + 20;
     doc.setFontSize(12);
     doc.text("Protection Mechanisms Detected:", 40, pmY);
-    const lines = (Array.isArray(result?.protectedBy) ? result.protectedBy : ["None"]).join("\n");
+    const lines = (
+      Array.isArray(result?.protectedBy) ? result.protectedBy : ["None"]
+    ).join("\n");
     doc.setFontSize(10);
     doc.text(lines || "None", 40, pmY + 18);
 
@@ -199,7 +216,9 @@ export default function ClickjackingTester() {
     doc.setFontSize(12);
     doc.text("Recommendations:", 40, recStart);
 
-    const recs = Array.isArray(result?.recommendations) ? result.recommendations : [];
+    const recs = Array.isArray(result?.recommendations)
+      ? result.recommendations
+      : [];
     let y = recStart + 18;
     if (recs.length === 0) {
       doc.setFontSize(10);
@@ -280,34 +299,36 @@ def frame_headers(get_response):
   return (
     <div className="min-h-screen bg-black via-emerald-50 to-teal-50 p-6">
       <div className="max-w-4xl mx-auto" ref={reportRef}>
-       {/* Header */}
-<div className="flex items-center gap-4 mb-8 mt-15">
-  {/* Logo */}
-  <div className="w-30 h-30 rounded-full overflow-hidden">
-    <img
-      src="/Redteam/lickjacking.png" // <-- apni image ka path dijiye
-      alt="Logo"
-      className="w-full h-full object-cover"
-    />
-  </div>
+        {/* Header */}
+        <div className="flex items-center gap-4 mb-8 mt-15">
+          {/* Logo */}
+          <div className="w-30 h-30 rounded-full overflow-hidden">
+            <img
+              src="/Redteam/lickjacking.png" // <-- apni image ka path dijiye
+              alt="Logo"
+              className="w-full h-full object-cover"
+            />
+          </div>
 
-  {/* Title + Description */}
-  <div className="flex flex-col">
-    <h1 className="text-2xl font-bold text-white mb-1">
-      Clickjacking Security Tester
-    </h1>
-    <p className="text-gray-400 text-lg max-w-2xl mt-1">
-      Test websites for clickjacking by checking frame-busting protections
-      (X-Frame-Options and CSP <code>frame-ancestors</code>).
-    </p>
-  </div>
-</div>
-
+          {/* Title + Description */}
+          <div className="flex flex-col">
+            <h1 className="text-2xl font-bold text-white mb-1">
+              Clickjacking Security Tester
+            </h1>
+            <p className="text-gray-400 text-lg max-w-2xl mt-1">
+              Test websites for clickjacking by checking frame-busting
+              protections (X-Frame-Options and CSP <code>frame-ancestors</code>
+              ).
+            </p>
+          </div>
+        </div>
 
         {/* Input */}
         <div className="bg-black rounded-2xl shadow-xl p-8 mb-8 border border-green-100">
           <div className="mb-6">
-            <label className="block text-xl text-center font-semibold text-white mb-3">Target URL</label>
+            <label className="block text-xl text-center font-semibold text-white mb-3">
+              Target URL
+            </label>
             <div className="relative">
               <input
                 type="text"
@@ -322,24 +343,23 @@ def frame_headers(get_response):
           </div>
 
           <div className="flex items-center gap-3">
-           <button
-  onClick={handleTest}
-  disabled={loading || !url.trim()}
-  className="flex-1 bg-black border-2 border-red-500 text-white px-8 py-4 rounded-xl hover:bg-red-600 disabled:bg-red-600 disabled:border-red-500 disabled:cursor-not-allowed transition-all duration-200 font-semibold text-lg flex items-center justify-center gap-3 shadow-lg"
->
-  {loading ? (
-    <>
-      <div className="w-6 h-6 border-2 border-white border-t-transparent rounded-full animate-spin" />
-      Testing Security...
-    </>
-  ) : (
-    <>
-      <Shield className="w-6 h-6" />
-      Test for Clickjacking
-    </>
-  )}
-</button>
-
+            <button
+              onClick={handleTest}
+              disabled={loading || !url.trim()}
+              className="flex-1 bg-black border-2 border-red-500 text-white px-8 py-4 rounded-xl hover:bg-red-600 disabled:bg-red-600 disabled:border-red-500 disabled:cursor-not-allowed transition-all duration-200 font-semibold text-lg flex items-center justify-center gap-3 shadow-lg"
+            >
+              {loading ? (
+                <>
+                  <div className="w-6 h-6 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                  Testing Security...
+                </>
+              ) : (
+                <>
+                  <Shield className="w-6 h-6" />
+                  Test for Clickjacking
+                </>
+              )}
+            </button>
 
             {result && result.ok !== false && !result.error && (
               <button
@@ -356,15 +376,19 @@ def frame_headers(get_response):
         {/* Results / Errors */}
         {result && (
           <div className="bg-black rounded-2xl shadow-xl border border-green-100 overflow-hidden">
-            {(result.ok === false) || result.error ? (
+            {result.ok === false || result.error ? (
               <div className="p-8">
                 <div className="flex items-center gap-4 mb-4">
                   <div className="w-12 h-12 bg-red-100 rounded-full flex items-center justify-center">
                     <XCircle className="w-6 h-6 text-red-600" />
                   </div>
                   <div>
-                    <h3 className="text-xl font-bold text-gray-800">Test Failed</h3>
-                    <p className="text-gray-600">Unable to complete the security test</p>
+                    <h3 className="text-xl font-bold text-gray-800">
+                      Test Failed
+                    </h3>
+                    <p className="text-gray-600">
+                      Unable to complete the security test
+                    </p>
                   </div>
                 </div>
                 <div className="bg-red-50 border-l-4 border-red-500 p-4 rounded-r-lg">
@@ -448,7 +472,9 @@ def frame_headers(get_response):
                                 : "bg-rose-50 text-rose-700 border-rose-200"
                             }`}
                           >
-                            {result.isProtected ? "Protection Found" : "No Protection"}
+                            {result.isProtected
+                              ? "Protection Found"
+                              : "No Protection"}
                           </span>
                           {!result.isProtected && (
                             <span className="text-sm text-gray-700">
@@ -461,21 +487,28 @@ def frame_headers(get_response):
                       {/* Security Headers */}
                       <div className="rounded-xl border border-gray-200">
                         <div className="px-6 py-4 border-b bg-black-50 rounded-t-xl">
-                          <h4 className="font-semibold text-gray-800">Security Headers</h4>
+                          <h4 className="font-semibold text-gray-800">
+                            Security Headers
+                          </h4>
                         </div>
                         <div className="p-6 grid grid-cols-1 md:grid-cols-2 gap-4">
                           <div className="flex items-center justify-between border rounded-lg p-4">
                             <div>
-                              <div className="font-medium text-gray-800">X-Frame-Options</div>
+                              <div className="font-medium text-gray-800">
+                                X-Frame-Options
+                              </div>
                               <div className="text-sm text-gray-600">
-                                {headersInfo.xfoPresent ? headersInfo.xfoValue : "Missing"}
+                                {headersInfo.xfoPresent
+                                  ? headersInfo.xfoValue
+                                  : "Missing"}
                               </div>
                             </div>
                             <SeverityBadge
                               level={
                                 headersInfo.xfoPresent
-                                  ? headersInfo.xfoValue?.includes("SAMEORIGIN") ||
-                                    headersInfo.xfoValue?.includes("DENY")
+                                  ? headersInfo.xfoValue?.includes(
+                                      "SAMEORIGIN"
+                                    ) || headersInfo.xfoValue?.includes("DENY")
                                     ? "Safe"
                                     : "Medium"
                                   : "High"
@@ -485,12 +518,18 @@ def frame_headers(get_response):
 
                           <div className="flex items-center justify-between border rounded-lg p-4">
                             <div>
-                              <div className="font-medium text-gray-800">CSP frame-ancestors</div>
+                              <div className="font-medium text-gray-800">
+                                CSP frame-ancestors
+                              </div>
                               <div className="text-sm text-gray-600">
-                                {headersInfo.cspFaPresent ? "Present" : "Missing"}
+                                {headersInfo.cspFaPresent
+                                  ? "Present"
+                                  : "Missing"}
                               </div>
                             </div>
-                            <SeverityBadge level={headersInfo.cspFaPresent ? "Safe" : "High"} />
+                            <SeverityBadge
+                              level={headersInfo.cspFaPresent ? "Safe" : "High"}
+                            />
                           </div>
                         </div>
                       </div>
@@ -501,13 +540,17 @@ def frame_headers(get_response):
                     <div className="rounded-xl p-6 border-2 bg-red-50 border-red-200">
                       <div className="flex items-center gap-3 mb-2">
                         <AlertTriangle className="w-6 h-6 text-red-600" />
-                        <h4 className="text-lg font-bold text-red-800">No Clickjacking Protection</h4>
+                        <h4 className="text-lg font-bold text-red-800">
+                          No Clickjacking Protection
+                        </h4>
                       </div>
                       <p className="text-red-700">
-                        No <code>X-Frame-Options</code> or CSP <code>frame-ancestors</code> directive found.
+                        No <code>X-Frame-Options</code> or CSP{" "}
+                        <code>frame-ancestors</code> directive found.
                       </p>
                       <p className="text-red-700 mt-2">
-                        Impact: Website can be embedded in iframes on any domain.
+                        Impact: Website can be embedded in iframes on any
+                        domain.
                       </p>
                     </div>
                   )}
@@ -515,36 +558,44 @@ def frame_headers(get_response):
                   {tab === "recs" && (
                     <div className="space-y-6">
                       {/* Smart recommendations from API if present */}
-                      {Array.isArray(result.recommendations) && result.recommendations.length > 0 && (
-                        <div className="space-y-4">
-                          {result.recommendations.map((rec) => (
-                            <div key={rec.id} className="rounded-xl border p-4">
-                              <div className="flex items-start justify-between gap-4">
-                                <div>
-                                  <div className="font-semibold text-gray-900">{rec.title}</div>
-                                  <p className="text-sm text-gray-600 mt-1">{rec.explain}</p>
-                                  {rec.snippet && (
-                                    <div className="mt-3">
-                                      <div className="flex items-center justify-between mb-1">
-                                        <span className="text-xs font-semibold text-gray-500">
-                                          Header snippet
-                                        </span>
-                                        <button
-                                          onClick={() => onCopy(rec.snippet)}
-                                          className="text-gray-600 hover:text-gray-900 text-xs inline-flex items-center gap-1"
-                                        >
-                                          <Copy className="w-3.5 h-3.5" />
-                                          Copy
-                                        </button>
-                                      </div>
-                                      <pre className="text-sm bg-black-900 text-green-200 rounded-lg p-3 overflow-x-auto">
-{rec.snippet}
-                                      </pre>
+                      {Array.isArray(result.recommendations) &&
+                        result.recommendations.length > 0 && (
+                          <div className="space-y-4">
+                            {result.recommendations.map((rec) => (
+                              <div
+                                key={rec.id}
+                                className="rounded-xl border p-4"
+                              >
+                                <div className="flex items-start justify-between gap-4">
+                                  <div>
+                                    <div className="font-semibold text-gray-900">
+                                      {rec.title}
                                     </div>
-                                  )}
-                                </div>
-                                <span
-                                  className={`h-7 px-3 inline-flex items-center rounded-full text-xs font-semibold border
+                                    <p className="text-sm text-gray-600 mt-1">
+                                      {rec.explain}
+                                    </p>
+                                    {rec.snippet && (
+                                      <div className="mt-3">
+                                        <div className="flex items-center justify-between mb-1">
+                                          <span className="text-xs font-semibold text-gray-500">
+                                            Header snippet
+                                          </span>
+                                          <button
+                                            onClick={() => onCopy(rec.snippet)}
+                                            className="text-gray-600 hover:text-gray-900 text-xs inline-flex items-center gap-1"
+                                          >
+                                            <Copy className="w-3.5 h-3.5" />
+                                            Copy
+                                          </button>
+                                        </div>
+                                        <pre className="text-sm bg-black-900 text-green-200 rounded-lg p-3 overflow-x-auto">
+                                          {rec.snippet}
+                                        </pre>
+                                      </div>
+                                    )}
+                                  </div>
+                                  <span
+                                    className={`h-7 px-3 inline-flex items-center rounded-full text-xs font-semibold border
                                   ${
                                     rec.priority === "high"
                                       ? "bg-red-50 text-red-700 border-red-200"
@@ -552,26 +603,34 @@ def frame_headers(get_response):
                                       ? "bg-amber-50 text-amber-700 border-amber-200"
                                       : "bg-slate-50 text-slate-700 border-slate-200"
                                   }`}
-                                >
-                                  {rec.priority || "info"}
-                                </span>
+                                  >
+                                    {rec.priority || "info"}
+                                  </span>
+                                </div>
                               </div>
-                            </div>
-                          ))}
-                        </div>
-                      )}
+                            ))}
+                          </div>
+                        )}
 
                       {/* Fixed guidance */}
                       <div className="rounded-xl border p-4">
                         <div className="flex items-start justify-between gap-4">
                           <div>
-                            <div className="font-semibold text-gray-900">Implement Basic Protection</div>
-                            <p className="text-sm text-gray-600 mt-1">Add X-Frame-Options header</p>
+                            <div className="font-semibold text-gray-900">
+                              Implement Basic Protection
+                            </div>
+                            <p className="text-sm text-gray-600 mt-1">
+                              Add X-Frame-Options header
+                            </p>
                             <div className="mt-3">
                               <div className="flex items-center justify-between mb-1">
-                                <span className="text-xs font-semibold text-gray-500">Copy value</span>
+                                <span className="text-xs font-semibold text-gray-500">
+                                  Copy value
+                                </span>
                                 <button
-                                  onClick={() => onCopy("X-Frame-Options: SAMEORIGIN")}
+                                  onClick={() =>
+                                    onCopy("X-Frame-Options: SAMEORIGIN")
+                                  }
                                   className="text-gray-600 hover:text-gray-900 text-xs inline-flex items-center gap-1"
                                 >
                                   <Copy className="w-3.5 h-3.5" />
@@ -579,7 +638,7 @@ def frame_headers(get_response):
                                 </button>
                               </div>
                               <pre className="text-sm bg-black-900 text-green-200 rounded-lg p-3 overflow-x-auto">
-X-Frame-Options: SAMEORIGIN
+                                X-Frame-Options: SAMEORIGIN
                               </pre>
                             </div>
                           </div>
@@ -592,15 +651,24 @@ X-Frame-Options: SAMEORIGIN
                       <div className="rounded-xl border p-4">
                         <div className="flex items-start justify-between gap-4">
                           <div>
-                            <div className="font-semibold text-gray-900">Implement CSP Protection</div>
+                            <div className="font-semibold text-gray-900">
+                              Implement CSP Protection
+                            </div>
                             <p className="text-sm text-gray-600 mt-1">
-                              Add Content-Security-Policy <code>frame-ancestors</code> directive
+                              Add Content-Security-Policy{" "}
+                              <code>frame-ancestors</code> directive
                             </p>
                             <div className="mt-3">
                               <div className="flex items-center justify-between mb-1">
-                                <span className="text-xs font-semibold text-gray-500">Copy value</span>
+                                <span className="text-xs font-semibold text-gray-500">
+                                  Copy value
+                                </span>
                                 <button
-                                  onClick={() => onCopy("Content-Security-Policy: frame-ancestors 'self'")}
+                                  onClick={() =>
+                                    onCopy(
+                                      "Content-Security-Policy: frame-ancestors 'self'"
+                                    )
+                                  }
                                   className="text-gray-600 hover:text-gray-900 text-xs inline-flex items-center gap-1"
                                 >
                                   <Copy className="w-3.5 h-3.5" />
@@ -608,7 +676,7 @@ X-Frame-Options: SAMEORIGIN
                                 </button>
                               </div>
                               <pre className="text-sm bg-black-900 text-green-200 rounded-lg p-3 overflow-x-auto">
-Content-Security-Policy: frame-ancestors 'self'
+                                Content-Security-Policy: frame-ancestors 'self'
                               </pre>
                             </div>
                           </div>
@@ -627,7 +695,9 @@ Content-Security-Policy: frame-ancestors 'self'
                                 key={k}
                                 onClick={() => setServerTab(k)}
                                 className={`px-3 py-1.5 rounded-md text-sm font-medium ${
-                                  serverTab === k ? "bg-black shadow" : "text-gray-600 hover:text-gray-900"
+                                  serverTab === k
+                                    ? "bg-black shadow"
+                                    : "text-gray-600 hover:text-gray-900"
                                 }`}
                               >
                                 {k}
@@ -637,7 +707,9 @@ Content-Security-Policy: frame-ancestors 'self'
                         </div>
                         <div className="p-4">
                           <div className="flex items-center justify-between mb-2">
-                            <div className="text-sm text-gray-600">Add to your configuration:</div>
+                            <div className="text-sm text-gray-600">
+                              Add to your configuration:
+                            </div>
                             <button
                               onClick={() => onCopy(serverSnippets[serverTab])}
                               className="text-gray-600 hover:text-gray-900 text-xs inline-flex items-center gap-1"
@@ -647,7 +719,7 @@ Content-Security-Policy: frame-ancestors 'self'
                             </button>
                           </div>
                           <pre className="text-sm bg-black-900 text-green-200 rounded-lg p-3 overflow-x-auto">
-{serverSnippets[serverTab]}
+                            {serverSnippets[serverTab]}
                           </pre>
                         </div>
                       </div>

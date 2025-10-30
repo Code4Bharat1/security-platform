@@ -2,12 +2,14 @@
 import { useState } from "react";
 import axios from "axios";
 import GreenLayout from "../GreenTeam/layout";
+import useProtectedAction from "../UseProtectedAction/UseProtectedAction";
 
 export default function WebsiteOptimizationTool() {
   const [url, setUrl] = useState("");
   const [info, setInfo] = useState("");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
+  const protection = useProtectedAction();
 
   const handleScan = async () => {
     const trimmedUrl = url.trim();
@@ -18,24 +20,37 @@ export default function WebsiteOptimizationTool() {
       return;
     }
 
-    try {
-      setLoading(true);
-      setError("");
-      setInfo("");
+    await protection(async (userToken) => {
+      try {
+        setLoading(true);
+        setError("");
+        setInfo("");
 
-      console.log("📡 Sending URL to backend:", trimmedUrl);
+        console.log("📡 Sending URL to backend:", trimmedUrl);
+        console.log("🔑 Using auth token:", userToken ? "Present" : "Missing");
 
-      const response = await axios.post(`${process.env.NEXT_PUBLIC_PROD_API_URL}/website-optimization`, {
-        url: trimmedUrl,
-      });
+        const response = await axios.post(
+          `${process.env.NEXT_PUBLIC_PROD_API_URL}/website-optimization`,
+          {
+            url: trimmedUrl,
+          },
+          {
+            headers: {
+              Authorization: `Bearer ${userToken}`, // ✅ ADD THIS
+            },
+          }
+        );
 
-      setInfo(response.data.message);
-    } catch (err) {
-      console.error("❌ Error during scan:", err);
-      setError(err.response?.data?.error || "Something went wrong. Please try again.");
-    } finally {
-      setLoading(false);
-    }
+        setInfo(response.data.message);
+      } catch (err) {
+        console.error("❌ Error during scan:", err);
+        setError(
+          err.response?.data?.error || "Something went wrong. Please try again."
+        );
+      } finally {
+        setLoading(false);
+      }
+    });
   };
 
   return (
@@ -46,13 +61,13 @@ export default function WebsiteOptimizationTool() {
           title: "Website Optimization Tool",
           desc: "Analyze and optimize your website for better performance and SEO.",
         }}
-      />  
+      />
       <div className="w-full max-w-xl mx-auto p-6 shadow-lg rounded-lg bg-black border border-white">
-
         <input
           type="text"
           value={url}
-          onChange={(e) => setUrl(e.target.value.trim())}         placeholder="Enter website URL (e.g. https://example.com)"
+          onChange={(e) => setUrl(e.target.value.trim())}
+          placeholder="Enter website URL (e.g. https://example.com)"
           className="w-full p-3 text-white border border-white rounded mb-4 focus:outline-none focus:ring-2 focus:ring-green-400"
         />
         <button

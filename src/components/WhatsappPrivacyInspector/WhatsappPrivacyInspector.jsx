@@ -1,16 +1,18 @@
-'use client';
+"use client";
 
-import { useState, useEffect } from 'react';
-import { ToastContainer, toast } from 'react-toastify';
-import 'react-toastify/dist/ReactToastify.css';
-import GreenLayout from '../GreenTeam/layout';
+import { useState, useEffect } from "react";
+import { ToastContainer, toast } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
+import GreenLayout from "../GreenTeam/layout";
+import useProtectedAction from "../UseProtectedAction/UseProtectedAction";
 
 export default function WhatsappPrivacyChecker() {
   const [images, setImages] = useState([]);
   const [score, setScore] = useState(null);
   const [messages, setMessages] = useState([]);
   const [settings, setSettings] = useState({});
-  const [isLoading, setIsLoading] = useState(false); 
+  const [isLoading, setIsLoading] = useState(false);
+  const protectedAction = useProtectedAction();
 
   const MAX_IMAGES = 5;
   const MIN_IMAGES = 2;
@@ -49,36 +51,41 @@ export default function WhatsappPrivacyChecker() {
 
     const formData = new FormData();
     images.forEach((img) => {
-      formData.append('images', img.file);
+      formData.append("images", img.file);
     });
 
     setIsLoading(true); // start loading
 
-    try {
-      const res = await fetch(
-        `${process.env.NEXT_PUBLIC_PROD_API_URL}/whatsapp-privacy-inspector/inspect`,
-        {
-          method: 'POST',
-          body: formData,
+    await protectedAction(async (userToken) => {
+      try {
+        const res = await fetch(
+          `${process.env.NEXT_PUBLIC_PROD_API_URL}/whatsapp-privacy-inspector/inspect`,
+          {
+            method: "POST",
+            headers: {
+              Authorization: `Bearer ${userToken}`, // ✅ ADD THIS
+            },
+            body: formData,
+          }
+        );
+
+        if (!res.ok) {
+          throw new Error("Failed to analyze images");
         }
-      );
 
-      if (!res.ok) {
-        throw new Error('Failed to analyze images');
+        const data = await res.json();
+
+        setScore(data.score);
+        setMessages(data.messages);
+        setSettings(data.settings);
+
+        toast.success("Images analyzed successfully!");
+      } catch (error) {
+        toast.error(error.message || "Something went wrong!");
+      } finally {
+        setIsLoading(false); // stop loading
       }
-
-      const data = await res.json();
-
-      setScore(data.score);
-      setMessages(data.messages);
-      setSettings(data.settings);
-
-      toast.success('Images analyzed successfully!');
-    } catch (error) {
-      toast.error(error.message || 'Something went wrong!');
-    } finally {
-      setIsLoading(false); // stop loading
-    }
+    });
   };
 
   useEffect(() => {
@@ -96,7 +103,7 @@ export default function WhatsappPrivacyChecker() {
 
   return (
     <div className="min-h-screen bg-black flex flex-col items-center px-4">
-      <GreenLayout  
+      <GreenLayout
         heroData={{
           title: "WhatsApp Privacy Inspector",
           imgPath: "/GreenTeam/wp.png",
@@ -117,9 +124,13 @@ export default function WhatsappPrivacyChecker() {
           className="hidden"
           id="imageInput"
         />
-        <label htmlFor="imageInput" className="block text-center border border-dashed rounded-lg border-green-500 px-5 py-3 text-white cursor-pointer">
-          Drag & drop images here, or{' '}
-          <span className="text-blue-500 underline cursor-pointer">browse</span> (2–5 images)
+        <label
+          htmlFor="imageInput"
+          className="block text-center border border-dashed rounded-lg border-green-500 px-5 py-3 text-white cursor-pointer"
+        >
+          Drag & drop images here, or{" "}
+          <span className="text-blue-500 underline cursor-pointer">browse</span>{" "}
+          (2–5 images)
         </label>
 
         <div className="mt-4 grid grid-cols-2 sm:grid-cols-3 gap-4">
@@ -142,20 +153,19 @@ export default function WhatsappPrivacyChecker() {
           ))}
         </div>
         <div className="justify-center text-center mt-2">
-              <button
-                 onClick={handleAnalyze}
-                 disabled={isLoading}
-                 className={`mt-6 px-6 py-2 rounded transition font-medium ${
-                   isLoading
-                     ? 'bg-gray-400 cursor-not-allowed text-white'
-                     : 'bg-green-600 hover:bg-green-700 text-white'
-                 }`}
-               >
-                 {isLoading ? 'Analyzing...' : 'Analyze'}
-               </button>
+          <button
+            onClick={handleAnalyze}
+            disabled={isLoading}
+            className={`mt-6 px-6 py-2 rounded transition font-medium ${
+              isLoading
+                ? "bg-gray-400 cursor-not-allowed text-white"
+                : "bg-green-600 hover:bg-green-700 text-white"
+            }`}
+          >
+            {isLoading ? "Analyzing..." : "Analyze"}
+          </button>
         </div>
-</div>
-
+      </div>
 
       {score !== null && (
         <div className="mt-8 w-full max-w-xl bg-white p-6 rounded shadow">

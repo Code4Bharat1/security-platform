@@ -2,6 +2,7 @@
 import { useState } from "react";
 import { ExternalLink, Search, ShieldAlert } from "lucide-react";
 import GreenLayout from "../GreenTeam/layout";
+import useProtectedAction from "../UseProtectedAction/UseProtectedAction";
 
 const statusChip = (status) => {
   const base = "px-2 py-0.5 rounded text-xs font-semibold";
@@ -25,30 +26,38 @@ export default function OsintTool() {
   const [loading, setLoading] = useState(false);
   const [results, setResults] = useState(null); // { success, details, foundOn, ... }
   const [error, setError] = useState("");
+  const protectedAction = useProtectedAction();
 
   const handleCheck = async () => {
     if (!queryValue.trim()) return;
     setLoading(true);
     setResults(null);
     setError("");
-
-    try {
-      const res = await fetch(`${process.env.NEXT_PUBLIC_PROD_API_URL}/osint/check`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ [queryType]: queryValue }),
-      });
-      const data = await res.json();
-      if (!res.ok || !data.success) {
-        setError(data.message || "Scan failed");
-      } else {
-        setResults(data);
+    await protectedAction(async (userToken) => {
+      try {
+        const res = await fetch(
+          `${process.env.NEXT_PUBLIC_PROD_API_URL}/osint/check`,
+          {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              Authorization: `Bearer ${userToken}`,
+            },
+            body: JSON.stringify({ [queryType]: queryValue }),
+          }
+        );
+        const data = await res.json();
+        if (!res.ok || !data.success) {
+          setError(data.message || "Scan failed");
+        } else {
+          setResults(data);
+        }
+      } catch (e) {
+        setError(e.message || "Network error");
+      } finally {
+        setLoading(false);
       }
-    } catch (e) {
-      setError(e.message || "Network error");
-    } finally {
-      setLoading(false);
-    }
+    });
   };
 
   return (
@@ -107,7 +116,9 @@ export default function OsintTool() {
               <span className="font-semibold">Query:</span>{" "}
               <span className="text-gray-200">{results.queryType}</span>{" "}
               <span className="text-gray-400">→</span>{" "}
-              <span className="text-gray-100 break-all">{results.queryValue}</span>
+              <span className="text-gray-100 break-all">
+                {results.queryValue}
+              </span>
             </div>
 
             <div className="space-y-2">
@@ -117,7 +128,9 @@ export default function OsintTool() {
                   className="flex items-center justify-between gap-3 bg-gray-900 border border-gray-700 rounded-lg px-4 py-3"
                 >
                   <div className="min-w-0">
-                    <div className="font-medium text-gray-100">{row.platform}</div>
+                    <div className="font-medium text-gray-100">
+                      {row.platform}
+                    </div>
                     {row.url ? (
                       <a
                         href={row.url}
@@ -131,8 +144,16 @@ export default function OsintTool() {
                     ) : (
                       <div className="text-xs text-gray-400">No public URL</div>
                     )}
-                    {row.note && <div className="text-xs text-yellow-300 mt-1">{row.note}</div>}
-                    {row.error && <div className="text-xs text-orange-300 mt-1">Error: {row.error}</div>}
+                    {row.note && (
+                      <div className="text-xs text-yellow-300 mt-1">
+                        {row.note}
+                      </div>
+                    )}
+                    {row.error && (
+                      <div className="text-xs text-orange-300 mt-1">
+                        Error: {row.error}
+                      </div>
+                    )}
                   </div>
                   <div className={statusChip(row.status)}>{row.status}</div>
                 </div>
@@ -140,8 +161,12 @@ export default function OsintTool() {
             </div>
 
             <div className="mt-4 text-xs text-gray-500">
-              Tip: Some platforms gate profiles behind auth or anti-bot measures; such checks may appear as
-              <span className="mx-1 px-1 py-0.5 rounded bg-gray-700/60">unknown</span>.
+              Tip: Some platforms gate profiles behind auth or anti-bot
+              measures; such checks may appear as
+              <span className="mx-1 px-1 py-0.5 rounded bg-gray-700/60">
+                unknown
+              </span>
+              .
             </div>
           </div>
         )}

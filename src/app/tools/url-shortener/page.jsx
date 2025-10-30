@@ -2,6 +2,7 @@
 import { useState } from "react";
 import { Link2 } from "lucide-react";
 import GreenLayout from "@/components/GreenTeam/layout";
+import useProtectedAction from "@/components/UseProtectedAction/UseProtectedAction";
 
 export default function UrlShortener() {
   const [originalUrl, setOriginalUrl] = useState("");
@@ -9,33 +10,41 @@ export default function UrlShortener() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
+  const protectedAction = useProtectedAction();
+
   const handleShorten = async () => {
     if (!originalUrl.trim()) return;
     setLoading(true);
     setError("");
     setShortUrl("");
-    const url = `${process.env.NEXT_PUBLIC_PROD_API_URL.replace("/api", "")}/shorten`
+    const url = `${process.env.NEXT_PUBLIC_PROD_API_URL.replace(
+      "/api",
+      ""
+    )}/shorten`;
+    await protectedAction(async (userToken) => {
+      try {
+        console.log(url);
+        const res = await fetch(`${url}`, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${userToken}`,
+          },
+          body: JSON.stringify({ originalUrl }),
+        });
 
-    try {
-      console.log(url)
-      const res = await fetch(`${url}`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ originalUrl }),
-      });
-
-      const data = await res.json();
-      if (res.ok) {
-        // ✅ Show short URL with professional prefix
-        const professionalUrl = `${url.replace("/shorten", "")}/${data.code}`;
-        setShortUrl(professionalUrl);
-      } else {
-        setError(data.message || "Failed to shorten URL.");
+        const data = await res.json();
+        if (res.ok) {
+          // ✅ Show short URL with professional prefix
+          const professionalUrl = `${url.replace("/shorten", "")}/${data.code}`;
+          setShortUrl(professionalUrl);
+        } else {
+          setError(data.message || "Failed to shorten URL.");
+        }
+      } catch (err) {
+        setError("❌ Failed to shorten URL.");
       }
-    } catch (err) {
-      setError("❌ Failed to shorten URL.");
-    }
-
+    });
     setLoading(false);
   };
 
@@ -62,7 +71,9 @@ export default function UrlShortener() {
           onClick={handleShorten}
           disabled={loading || !originalUrl}
           className={`w-50 py-3 rounded-xl text-white font-semibold transition ${
-            loading ? "bg-green-400 cursor-not-allowed" : "bg-green-600 hover:bg-green-700"
+            loading
+              ? "bg-green-400 cursor-not-allowed"
+              : "bg-green-600 hover:bg-green-700"
           }`}
         >
           {loading ? "Shortening..." : "Generate Short URL"}
@@ -82,7 +93,9 @@ export default function UrlShortener() {
           </div>
         )}
 
-        {error && <div className="mt-6 text-red-600 font-semibold">{error}</div>}
+        {error && (
+          <div className="mt-6 text-red-600 font-semibold">{error}</div>
+        )}
       </div>
     </div>
   );

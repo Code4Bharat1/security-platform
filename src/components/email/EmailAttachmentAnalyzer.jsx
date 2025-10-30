@@ -2,12 +2,14 @@
 import { useState } from "react";
 import { MailSearch } from "lucide-react";
 import GreenLayout from "../GreenTeam/layout";
+import useProtectedAction from "../UseProtectedAction/UseProtectedAction";
 
 export default function EmailAttachmentAnalyzer() {
   const [file, setFile] = useState(null);
   const [loading, setLoading] = useState(false);
   const [result, setResult] = useState(null);
 
+  const protectedAction = useProtectedAction();
   const handleFileChange = (e) => {
     setFile(e.target.files[0]);
     setResult(null);
@@ -20,26 +22,30 @@ export default function EmailAttachmentAnalyzer() {
 
     const formData = new FormData();
     formData.append("file", file);
+    await protectedAction(async (userToken) => {
+      try {
+        const res = await fetch(
+          `${process.env.NEXT_PUBLIC_PROD_API_URL}/email-attachment`,
+          {
+            method: "POST",
+            body: formData,
+            headers: { Authorization: `Bearer ${userToken}` },
+          }
+        );
 
-    try {
-      const res = await fetch(`${process.env.NEXT_PUBLIC_PROD_API_URL}/email-attachment`, {
-        method: "POST",
-        body: formData,
-      });
+        const data = await res.json();
+        setResult(data.message || "✅ File analyzed successfully.");
+      } catch (error) {
+        setResult("❌ Failed to analyze file.");
+      }
 
-      const data = await res.json();
-      setResult(data.message || "✅ File analyzed successfully.");
-    } catch (error) {
-      setResult("❌ Failed to analyze file.");
-    }
-
-    setLoading(false);
+      setLoading(false);
+    });
   };
 
   return (
     <div className="min-h-screen bg-black flex flex-col items-center pt-20 px-4">
-    
-      <GreenLayout  
+      <GreenLayout
         heroData={{
           imgPath: "/GreenTeam/email.png",
           title: "Email Attachment Analyzer",
