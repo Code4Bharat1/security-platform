@@ -13,42 +13,48 @@ function useProtectedAction() {
     console.log("🪪 Stored Token:", token ? "✅ Present" : "❌ Missing");
 
     if (!token) {
-      console.warn(
-        "⚠️ No token found, saving redirect path and going to login..."
-      );
+      console.warn("⚠️ No token found, redirecting to login...");
       localStorage.setItem("redirectAfterLogin", currentPath);
       router.push("/gain-access");
       return;
     }
 
     try {
-      console.log("🔍 Inspecting token...");
-      const inspectRes = await fetch(
-        `${process.env.NEXT_PUBLIC_PROD_API_URL}/auth/inspect-token`,
+      // ✅ UPDATED: Use new verify-token endpoint
+      console.log("🔍 Verifying token with backend...");
+
+      const verifyRes = await fetch(
+        `${process.env.NEXT_PUBLIC_PROD_API_URL}/auth/verify-token`,
         {
-          method: "POST",
+          method: "GET",
           headers: {
             "Content-Type": "application/json",
             Authorization: `Bearer ${token}`,
           },
-          body: JSON.stringify({ token }),
         }
       );
 
-      const inspectData = await inspectRes.json();
-      console.log("🧾 Inspect response:", inspectData);
+      console.log("🧾 Token verification status:", verifyRes.status);
 
-      if (!inspectRes.ok || inspectData.meta?.isExpired) {
-        console.warn("⏰ Token expired. Redirecting to login...");
+      if (!verifyRes.ok) {
+        console.warn("⏰ Token invalid or expired. Redirecting to login...");
+        localStorage.removeItem("token");
+        localStorage.removeItem("user");
         localStorage.setItem("redirectAfterLogin", currentPath);
         router.push("/gain-access");
         return;
       }
 
-      console.log("✅ Token valid. Executing callback...");
+      const verifyData = await verifyRes.json();
+      console.log("✅ Token valid. User:", verifyData.user);
+
+      // ✅ Execute the protected callback
+      console.log("🚀 Executing protected action...");
       await callback(token);
     } catch (err) {
-      console.error("💥 Token inspection failed:", err);
+      console.error("💥 Token verification failed:", err);
+      localStorage.removeItem("token");
+      localStorage.removeItem("user");
       localStorage.setItem("redirectAfterLogin", currentPath);
       router.push("/gain-access");
     }

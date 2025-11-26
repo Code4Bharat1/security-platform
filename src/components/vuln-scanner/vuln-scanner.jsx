@@ -21,6 +21,10 @@ import {
   Database,
   ExternalLink,
   Network,
+  ShieldAlert,
+  ServerCog,
+  Lock,
+  Menu,
 } from "lucide-react";
 import { jsPDF } from "jspdf";
 import autoTable from "jspdf-autotable";
@@ -133,6 +137,8 @@ export default function Vulnscanner() {
         }
 
         setScanData(result);
+        console.log("Scan Data.....................", scanData);
+
         setActiveTab("overview");
         await fetchHistory(domain, token);
       } catch (err) {
@@ -206,12 +212,138 @@ export default function Vulnscanner() {
     return typeLabels[type] || type.replace(/_/g, " ");
   };
 
+  // ==================== VULNERABILITY DETAILS HELPER FUNCTION ====================
+  const getDetailedVulnerabilityInfo = (type, severity) => {
+    const vulnerabilityDatabase = {
+      // SSL/TLS Vulnerabilities
+      ssl_error: {
+        description: `SSL/TLS certificate validation has failed for this domain. This indicates that the certificate cannot be trusted by web browsers and client applications. Common causes include expired certificates, self-signed certificates, hostname mismatches, broken certificate chains, or certificates issued by untrusted Certificate Authorities. Users accessing this website will receive browser security warnings that may cause them to abandon the site entirely.`,
+        impact: `Without a valid SSL/TLS certificate, all communication between users and the server is vulnerable to man-in-the-middle (MITM) attacks where attackers can intercept, read, and modify sensitive data including passwords, credit card numbers, session tokens, and personal information. Browser warnings will damage user trust and significantly reduce conversion rates.`,
+        remediation: `Immediately obtain and install a valid SSL/TLS certificate from a trusted Certificate Authority such as Let's Encrypt (free), DigiCert, Sectigo, or GlobalSign. Ensure the certificate covers all required hostnames including www subdomain. Configure automatic certificate renewal at least 30 days before expiration using tools like Certbot.`,
+      },
+      ssl_selfsigned: {
+        description: `The SSL/TLS certificate installed on this server is self-signed rather than issued by a trusted Certificate Authority. Self-signed certificates are created and signed by the website operator themselves without third-party validation. While these certificates do provide encryption, they cannot be verified by web browsers as legitimate, resulting in severe security warnings.`,
+        impact: `Users will see prominent browser security warnings stating "Your connection is not private" or similar messages, causing most visitors to leave the site immediately. Self-signed certificates provide no assurance of the server's identity, making phishing attacks trivial to execute. Organizations using self-signed certificates appear unprofessional and untrustworthy.`,
+        remediation: `Replace the self-signed certificate with a certificate from a trusted Certificate Authority. Let's Encrypt provides free SSL/TLS certificates with automated renewal capabilities. For commercial deployments, consider purchasing certificates from established CAs like DigiCert or Sectigo.`,
+      },
+      ssl_hostname_mismatch: {
+        description: `The SSL/TLS certificate hostname does not match the domain name being accessed. This occurs when a certificate issued for one domain is used on a different domain, or when accessing a domain that is not included in the certificate's Subject Alternative Names (SAN). Browsers strictly enforce hostname matching and will display security warnings.`,
+        impact: `Users receive browser warnings indicating a potential security threat, severely damaging trust and causing site abandonment. Hostname mismatches may indicate a man-in-the-middle attack or configuration error. Organizations appear incompetent when serving mismatched certificates. Automated systems and APIs will refuse connections.`,
+        remediation: `Obtain a new SSL/TLS certificate that explicitly includes all domain names and subdomains that users will access. Use Subject Alternative Names (SAN) or wildcard certificates (*.yourdomain.com) to cover multiple subdomains with a single certificate.`,
+      },
+      ssl_untrusted: {
+        description: `The SSL/TLS certificate chain cannot be validated because it is not signed by a Certificate Authority trusted by web browsers and operating systems. This may occur with certificates from unknown or deprecated CAs, improperly configured certificate chains missing intermediate certificates, or intentionally untrusted self-signed certificates.`,
+        impact: `All major web browsers will display full-page security warnings blocking access to the site by default. Users must take multiple manual steps to bypass warnings, and most will simply abandon the site. Enterprise and government networks often block access to sites with untrusted certificates at the firewall level.`,
+        remediation: `Install certificates only from Certificate Authorities included in the major browser trust stores (Mozilla NSS, Microsoft Root Store, Apple Root Store). Let's Encrypt provides free certificates trusted by all major browsers and operating systems.`,
+      },
+      ssl_expiring_soon: {
+        description: `The SSL/TLS certificate is approaching its expiration date, typically within 30 days. Certificates have defined validity periods for security reasons, and browsers will reject expired certificates completely. Once a certificate expires, the website becomes inaccessible to all users who see full-page security errors.`,
+        impact: `As the certificate approaches expiration, monitoring systems and browser developer tools will display warnings. Once expired, all users will be blocked from accessing the site with no option to proceed, causing complete service outage for HTTPS traffic. Revenue loss occurs immediately for e-commerce sites.`,
+        remediation: `Renew the certificate immediately before expiration date. Most Certificate Authorities allow renewal 30-90 days before expiration without affecting the remaining validity period. Implement automated certificate renewal using tools like Certbot.`,
+      },
+      ssl_expired: {
+        description: `The SSL/TLS certificate has passed its expiration date and is no longer valid. Expired certificates are completely rejected by all web browsers, email clients, and API consumers, resulting in full service outage for encrypted connections. Certificate expiration is one of the most serious and easily preventable SSL/TLS issues.`,
+        impact: `The website is completely inaccessible to all users via HTTPS. Browsers display full-page errors with no option to proceed. All encrypted API endpoints become unusable. Email delivery fails if SMTP/IMAP services use the expired certificate. Revenue stops immediately for e-commerce sites.`,
+        remediation: `Immediately obtain and install a new valid certificate. Let's Encrypt can issue certificates in minutes for emergency situations. Install the new certificate and restart web server services. Test thoroughly across all domains and subdomains.`,
+      },
+      ssl_chain_expiring: {
+        description: `One or more intermediate or root certificates in the SSL/TLS certificate chain are approaching their expiration dates. While the primary certificate may still be valid, an expired certificate anywhere in the chain breaks trust validation. Certificate chains establish trust from the end-entity certificate through intermediate CAs.`,
+        impact: `When chain certificates expire, users experience the same security warnings and access blocking as if the primary certificate expired. Many organizations focus only on primary certificate expiration and miss chain certificate issues until they cause outages.`,
+        remediation: `Contact your Certificate Authority to obtain updated intermediate certificates. Most CAs proactively re-issue intermediate certificates before expiration. Install the complete updated certificate chain on all affected servers.`,
+      },
+      tls_deprecated_protocol: {
+        description: `The server supports deprecated TLS protocol versions (TLS 1.0 or TLS 1.1) that have known security vulnerabilities and are no longer considered secure. Major browsers have completely removed support for these outdated protocols. Continuing to support deprecated TLS versions exposes connections to downgrade attacks.`,
+        impact: `Applications supporting deprecated TLS versions are vulnerable to attacks like BEAST, CRIME, and POODLE that can decrypt encrypted traffic. Compliance frameworks including PCI-DSS explicitly prohibit TLS 1.0/1.1 after specific deadlines. Security scanning tools will flag this as a high-severity finding.`,
+        remediation: `Disable TLS 1.0 and TLS 1.1 completely in web server and application server configuration. Enable only TLS 1.2 and TLS 1.3 which are currently considered secure. For Apache, configure SSLProtocol directive. For Nginx, set ssl_protocols to "TLSv1.2 TLSv1.3" only.`,
+      },
+      tls_version_weak: {
+        description: `The server does not support TLS 1.2 or TLS 1.3, offering only older insecure protocol versions. Modern security standards require TLS 1.2 as the minimum acceptable version, with TLS 1.3 preferred. Lack of modern TLS support indicates outdated server software.`,
+        impact: `The server is vulnerable to all known TLS cryptographic attacks. Modern web browsers will refuse to connect, making the application completely inaccessible to most users. Organizations fail compliance requirements for PCI-DSS, HIPAA, SOC 2, and ISO 27001.`,
+        remediation: `Upgrade web server software to current versions supporting TLS 1.2 and TLS 1.3. Apache requires version 2.4.38+, Nginx requires 1.13.0+. Update OpenSSL libraries to version 1.1.1 or newer for TLS 1.3 support.`,
+      },
+      tls_weak_cipher: {
+        description: `The server supports weak or broken cipher suites that use deprecated cryptographic algorithms such as DES, 3DES, RC4, MD5, NULL, or EXPORT-grade ciphers. These cipher suites have known vulnerabilities that allow attackers to decrypt encrypted traffic or perform man-in-the-middle attacks.`,
+        impact: `Encrypted connections can be broken by attackers with moderate resources using known cryptographic attacks. RC4 has been proven vulnerable to practical attacks. DES and 3DES have insufficient key lengths. EXPORT ciphers were intentionally weakened and are now easily breakable.`,
+        remediation: `Configure the server to support only strong modern cipher suites. Remove all ciphers using DES, 3DES, RC4, MD5, NULL, or EXPORT. Enable only AES-GCM, ChaCha20-Poly1305, and AES-CBC with SHA-256 or better.`,
+      },
+      tls_cbc_cipher: {
+        description: `The server supports Cipher Block Chaining (CBC) mode ciphers which are vulnerable to padding oracle attacks like Lucky13 and POODLE. While CBC ciphers can be used safely with proper implementations, they are more risky than modern AEAD ciphers.`,
+        impact: `CBC mode ciphers are vulnerable to timing-based side-channel attacks that can potentially decrypt portions of encrypted traffic. Modern AEAD ciphers provide both confidentiality and authenticity in a single operation, eliminating entire classes of attacks.`,
+        remediation: `Prioritize AEAD cipher suites (those ending in GCM or POLY1305) in server configuration. Configure cipher suite order to place AEAD ciphers first, followed by CBC ciphers only if compatibility with very old clients requires them.`,
+      },
+      tls_no_pfs: {
+        description: `The server does not support Perfect Forward Secrecy (PFS) using cipher suites with Ephemeral Diffie-Hellman (EDH) or Elliptic Curve Diffie-Hellman Ephemeral (ECDHE) key exchange. Without PFS, if the server's private key is ever compromised, attackers can decrypt all past encrypted communications.`,
+        impact: `If the server's private key is stolen or leaked at any point in the future, all historical encrypted traffic can be retroactively decrypted. This is catastrophic for long-term confidentiality of communications. Adversaries may record encrypted traffic now and decrypt it later.`,
+        remediation: `Configure the server to use only cipher suites that support Perfect Forward Secrecy. This includes all cipher suites with ECDHE or DHE in the name. Disable all RSA key exchange cipher suites.`,
+      },
+      header: {
+        description: `Critical security headers are missing from HTTP responses. Security headers provide defense-in-depth protection against common web application attacks. Missing headers include Strict-Transport-Security (HSTS), Content-Security-Policy (CSP), X-Frame-Options, X-Content-Type-Options, and X-XSS-Protection.`,
+        impact: `Without HSTS, users are vulnerable to SSL-stripping attacks that downgrade HTTPS connections to HTTP, exposing all traffic to interception. Missing X-Frame-Options allows clickjacking attacks. Lack of Content-Security-Policy enables XSS attacks. Organizations face increased risk of account compromise and data theft.`,
+        remediation: `Implement all critical security headers in web server or application configuration. Add Strict-Transport-Security: max-age=31536000; includeSubDomains; preload. Implement Content-Security-Policy starting with default-src 'self'. Set X-Frame-Options: DENY or SAMEORIGIN.`,
+      },
+      information_disclosure: {
+        description: `The server discloses sensitive version information, technology stack details, or internal system information through HTTP headers, error messages, or server banners. This information leakage provides attackers with reconnaissance data that significantly aids in identifying exploitable vulnerabilities.`,
+        impact: `Disclosed version information allows attackers to quickly search vulnerability databases for known exploits affecting the specific software versions. Technology stack details help attackers understand the application architecture. Debug information may reveal sensitive system details.`,
+        remediation: `Remove or obfuscate Server header in web server configuration. For Apache: set ServerTokens Prod and ServerSignature Off. For Nginx: add 'server_tokens off;' to nginx.conf. Implement custom error pages with generic messages.`,
+      },
+      csp: {
+        description: `Content Security Policy (CSP) is either missing entirely or contains weak directives that fail to provide meaningful protection against injection attacks. CSP is a critical security header that controls which resources browsers are allowed to load, providing powerful defense against XSS and clickjacking.`,
+        impact: `Without effective CSP, applications remain highly vulnerable to cross-site scripting attacks where attackers inject malicious JavaScript to steal session cookies. Weak CSP using 'unsafe-inline' or 'unsafe-eval' provides false sense of security while allowing common XSS vectors.`,
+        remediation: `Implement strict Content-Security-Policy header starting with restrictive baseline. Begin with: default-src 'none'; script-src 'self'; style-src 'self'; img-src 'self'. Eliminate 'unsafe-inline' by moving all inline scripts to external files.`,
+      },
+      clickjacking: {
+        description: `The application is vulnerable to clickjacking (UI redress) attacks because it lacks proper frame protection headers. Clickjacking tricks users into clicking on invisible or disguised interface elements by embedding the application in a transparent iframe overlaid on a malicious page.`,
+        impact: `Attackers can create malicious websites that frame your application with deceptive overlays, tricking users into clicking hidden buttons or links. Users may unknowingly change passwords, authorize payments, grant permissions, or delete accounts.`,
+        remediation: `Implement X-Frame-Options header set to DENY or SAMEORIGIN. For Apache: Header always set X-Frame-Options "DENY". For Nginx: add_header X-Frame-Options "SAMEORIGIN" always;. Additionally implement CSP with frame-ancestors directive.`,
+      },
+      cookie: {
+        description: `Session cookies or authentication cookies are configured without critical security flags including Secure, HttpOnly, and SameSite attributes. Insecure cookie configuration exposes applications to session hijacking, XSS theft, and CSRF attacks.`,
+        impact: `Cookies without the Secure flag can be transmitted over unencrypted HTTP connections where they can be intercepted by network attackers. Missing HttpOnly allows malicious JavaScript to steal session cookies. Lack of SameSite attribute enables CSRF attacks.`,
+        remediation: `Configure all session and authentication cookies with Secure, HttpOnly, and SameSite flags. Set-Cookie example: SessionID=value; Secure; HttpOnly; SameSite=Strict; Path=/. Enforce HTTPS application-wide.`,
+      },
+      cookie_secure_mismatch: {
+        description: `Cookies are being transmitted over HTTPS connections but are not configured with the Secure flag. While the current transmission is encrypted, the lack of Secure flag means browsers will also send these cookies over HTTP if users somehow access the site via HTTP.`,
+        impact: `If an attacker tricks a user into accessing the site over HTTP, the browser will transmit the cookie in cleartext. Network attackers can steal the session cookie and hijack the user's session. This is particularly dangerous on public Wi-Fi networks.`,
+        remediation: `Add the Secure flag to all cookies transmitted over HTTPS. Implement HTTP Strict Transport Security (HSTS) header to prevent browsers from making any HTTP requests to your domain. Configure automatic HTTP to HTTPS redirects.`,
+      },
+      session_issue: {
+        description: `Session management implementation has security weaknesses including weak session token generation, insecure cookie configuration, lack of session expiration, failure to regenerate session IDs after authentication, or insecure session data storage.`,
+        impact: `Weak session tokens can be guessed or brute-forced by attackers. Predictable session IDs enable attackers to hijack sessions. Missing session expiration allows stolen tokens to remain valid indefinitely. Failure to regenerate IDs after login enables session fixation attacks.`,
+        remediation: `Generate session IDs using cryptographically secure random number generators (CSPRNG) with at least 128 bits of entropy. Configure session cookies with Secure, HttpOnly, and SameSite=Strict flags. Implement absolute timeout (12-24 hours) and idle timeout (30 minutes).`,
+      },
+      open_port: {
+        description: `Network ports that are not necessary for normal operations are accessible from the internet. Each open port represents a potential attack surface exposing services, daemons, or management interfaces. Common unnecessarily exposed ports include databases (MySQL 3306, PostgreSQL 5432, MongoDB 27017).`,
+        impact: `Exposed database ports allow direct connection attempts including brute force attacks and exploitation. Remote administration ports (SSH 22, RDP 3389) face constant automated attacks. Management interfaces without proper authentication enable complete system compromise.`,
+        remediation: `Implement firewall rules to close all unnecessary ports and restrict access to essential services only from trusted IP addresses or private networks. Move database servers to private network segments. Require VPN or bastion host access for all administrative connections.`,
+      },
+      firewall_detected: {
+        description: `A Web Application Firewall (WAF) was detected protecting this application. Common WAFs include Cloudflare, AWS WAF, Akamai, Imperva, F5, ModSecurity, Sucuri, and Barracuda. While WAFs provide valuable defense-in-depth protection, they should not be considered a complete security solution.`,
+        impact: `The presence of a WAF provides important protection against common attacks including SQL injection, XSS, and known exploits by filtering malicious requests. However, WAFs can be bypassed through obfuscation techniques or novel attack vectors. Over-reliance on WAF creates false sense of security.`,
+        remediation: `Continue using WAF for defense-in-depth but prioritize fixing vulnerabilities in application code. Regularly update WAF rules and signatures to protect against new threats. Configure WAF in blocking mode for production. Implement secure coding practices regardless of WAF presence.`,
+      },
+      no_firewall: {
+        description: `No Web Application Firewall (WAF) was detected protecting this application. The application relies entirely on its own security controls without the additional protection layer that WAFs provide. While properly secure applications don't strictly require WAFs, they provide valuable protection.`,
+        impact: `Applications without WAF protection face higher exposure to automated attack tools, vulnerability scanners, and bot traffic. All attack traffic reaches the application directly without WAF filtering. Common attacks like SQL injection and XSS can be attempted without WAF blocking.`,
+        remediation: `Implement a Web Application Firewall such as Cloudflare WAF, AWS WAF, Azure Front Door WAF, Imperva, Akamai, or ModSecurity. Choose appropriate for your application architecture. Start with OWASP Core Rule Set which provides protection against common attack patterns.`,
+      },
+      default: {
+        description: `A security vulnerability has been identified in the application. This issue requires investigation and remediation to improve the security posture and reduce risk of exploitation by malicious actors.`,
+        impact: `This vulnerability may adversely impact application security, compromise user data confidentiality, undermine system integrity, or affect service availability. Successful exploitation could result in unauthorized access, data exposure, system compromise, or business disruption.`,
+        remediation: `Conduct comprehensive security review of the affected component to understand root causes and proper remediation approaches. Implement appropriate technical security controls including input validation, output encoding, and access controls. Test remediation in development and staging environments.`,
+      },
+    };
+
+    const key = type?.toLowerCase().replace(/[\s-]/g, "_") || "default";
+    const result = vulnerabilityDatabase[key] || vulnerabilityDatabase.default;
+
+    return result;
+  };
+
   const generatePDF = () => {
     if (!scanData) return;
 
     // ==================== GET USER EMAIL FROM LOCALSTORAGE ====================
-    let userEmail = ""; // Default fallback
-
+    let userEmail = "";
     try {
       const userData = localStorage.getItem("user");
       if (userData) {
@@ -237,12 +369,9 @@ export default function Vulnscanner() {
       } catch (error) {
         console.error("Failed to load logo:", error);
       }
-
       doc.setFontSize(12);
       doc.setFont(undefined, "bold");
       doc.setTextColor(153, 0, 153);
-      doc.text("SECURITY", 24, 12);
-      doc.text("PLATFORM", 24, 17);
     };
 
     // Helper: Check if new page needed
@@ -258,67 +387,24 @@ export default function Vulnscanner() {
 
     // Helper: Purple arrow section header
     const addPurpleHeader = (title) => {
-      doc.setFontSize(16);
+      doc.setFontSize(18);
       doc.setFont(undefined, "bold");
       doc.setTextColor(153, 0, 153);
       doc.text(`> ${title}`, 20, yPos);
-      yPos += 10;
+      yPos += 12;
     };
 
     // ==================== PAGE 1: COVER PAGE ====================
-    doc.setFillColor(28, 15, 60);
-    doc.rect(0, 0, 210, 297, "F");
-
-    doc.setFillColor(153, 0, 153);
-    for (let i = 0; i < 20; i++) {
-      for (let j = 0; j < 30; j++) {
-        const x = 5 + i * 10;
-        const y = 5 + j * 10;
-        doc.circle(x, y, 0.5, "F");
-      }
-    }
-
     try {
-      doc.addImage(logoPath, "PNG", 80, 30, 50, 50);
+      doc.addImage("/pdf_banner.jpg", "JPEG", 0, 0, 210, 297);
     } catch (error) {
-      console.error("Failed to load logo");
+      console.error("Failed to load banner image:", error);
     }
 
-    doc.setTextColor(255, 255, 255);
-    doc.setFontSize(36);
-    doc.setFont(undefined, "bold");
-    doc.text("SECURITY", 105, 100, { align: "center" });
-    doc.text("PLATFORM", 105, 115, { align: "center" });
-
-    doc.setFontSize(12);
+    doc.setFontSize(18);
     doc.setFont(undefined, "normal");
-    doc.text("Security-Platform.code4bharat.com", 105, 130, {
-      align: "center",
-    });
-
-    doc.setFontSize(24);
-    doc.setFont(undefined, "bold");
-    doc.setTextColor(236, 72, 153);
-    doc.text("Vulnerability Assessment", 105, 160, { align: "center" });
-
-    doc.setFontSize(14);
     doc.setTextColor(255, 255, 255);
-    doc.text("Automated Full Scan + Manual Pentest", 105, 170, {
-      align: "center",
-    });
-
-    doc.setFontSize(24);
-    doc.setFont(undefined, "bold");
-    doc.setTextColor(236, 72, 153);
-    doc.text("Reprot Of", 105, 195, { align: "center" });
-
-    doc.setFontSize(14);
-    doc.setTextColor(255, 255, 255);
-    doc.text(scanData.domain || "example.com", 105, 205, { align: "center" });
-
-    doc.setFontSize(20);
-    doc.setFont(undefined, "bold");
-    doc.text("Report Date", 105, 235, { align: "center" });
+    doc.text(scanData.domain || "", 105, 208, { align: "center" });
 
     const reportDate = scanData.timestamp
       ? new Date(scanData.timestamp).toLocaleDateString("en-US", {
@@ -334,51 +420,45 @@ export default function Vulnscanner() {
 
     doc.setFontSize(16);
     doc.setFont(undefined, "normal");
+    doc.setTextColor(255, 255, 255);
     doc.text(reportDate, 105, 245, { align: "center" });
 
     // ==================== PAGE 2: ASSESSMENT PERFORMED ====================
     doc.addPage();
     addSimpleHeader();
-    yPos = 30;
+    yPos = 35;
 
     addPurpleHeader("Assessment Performed :");
 
-    // ✅ ONLY DYNAMIC USER EMAIL (removed static names)
     doc.setFontSize(10);
     doc.setFont(undefined, "normal");
     doc.setTextColor(0, 0, 0);
     doc.text(`> ${userEmail}`, 20, yPos);
-    yPos += 15;
+    yPos += 20;
 
     addPurpleHeader("About Security platform :");
 
-    doc.setFontSize(10);
+    doc.setFontSize(12);
     doc.setFont(undefined, "normal");
     doc.setTextColor(0, 0, 0);
 
-    const aboutText = `Our Security Platform is a cutting-edge cybersecurity solution designed to protect individuals and organizations from digital threats.
-
-It combines multiple security tools into a single, easy-to-use platform, providing comprehensive protection for web applications, networks, and sensitive data.
-
-With an intuitive interface and advanced features, it empowers users to proactively manage their cybersecurity, detect vulnerabilities, and maintain compliance with industry standards.`;
+    const aboutText = `Our Security Platform is a cutting-edge cybersecurity solution designed to protect individuals and organizations from digital threats.\n\nIt combines multiple security tools into a single, easy-to-use platform, providing comprehensive protection for web applications, networks, and sensitive data.\n\nWith an intuitive interface and advanced features, it empowers users to proactively manage their cybersecurity, detect vulnerabilities, and maintain compliance with industry standards.`;
 
     const splitAbout = doc.splitTextToSize(aboutText, 170);
     doc.text(splitAbout, 20, yPos);
-    yPos += splitAbout.length * 5 + 10;
+    yPos += splitAbout.length * 5.5 + 15;
 
     doc.setFontSize(12);
     doc.setFont(undefined, "bold");
+    doc.setTextColor(0, 0, 0);
     doc.text("Vulnerability Assessment & Penetration Testing (VAPT)", 20, yPos);
-    yPos += 8;
+    yPos += 12;
 
-    doc.setFontSize(10);
+    doc.setFontSize(12);
     doc.setFont(undefined, "normal");
+    doc.setTextColor(0, 0, 0);
 
-    const vaptText = `The platform offers full-fledged Vulnerability Assessment and Penetration Testing (VAPT) services to identify and fix security weaknesses before they can be exploited.
-
-Our VAPT approach includes manual and automated testing of web applications, networks, and systems, providing detailed reports on vulnerabilities categorized by severity.
-
-By leveraging industry-standard methodologies and real-world attack simulations, users gain actionable insights to strengthen their security posture, mitigate risks, and ensure a safe digital environment.`;
+    const vaptText = `The platform offers full-fledged Vulnerability Assessment and Penetration Testing (VAPT) services to identify and fix security weaknesses before they can be exploited.\n\nOur VAPT approach includes manual and automated testing of web applications, networks, and systems, providing detailed reports on vulnerabilities categorized by severity.\n\nBy leveraging industry-standard methodologies and real-world attack simulations, users gain actionable insights to strengthen their security posture, mitigate risks, and ensure a safe digital environment.`;
 
     const splitVapt = doc.splitTextToSize(vaptText, 170);
     doc.text(splitVapt, 20, yPos);
@@ -386,7 +466,7 @@ By leveraging industry-standard methodologies and real-world attack simulations,
     // ==================== PAGE 3: DOCUMENT CONTROL ====================
     doc.addPage();
     addSimpleHeader();
-    yPos = 30;
+    yPos = 35;
 
     addPurpleHeader("Document Control");
 
@@ -409,7 +489,7 @@ By leveraging industry-standard methodologies and real-world attack simulations,
       },
     });
 
-    yPos = doc.lastAutoTable.finalY + 15;
+    yPos = doc.lastAutoTable.finalY + 20;
 
     autoTable(doc, {
       startY: yPos,
@@ -441,7 +521,7 @@ By leveraging industry-standard methodologies and real-world attack simulations,
       },
     });
 
-    yPos = doc.lastAutoTable.finalY + 15;
+    yPos = doc.lastAutoTable.finalY + 20;
 
     addPurpleHeader("Overview :");
 
@@ -449,27 +529,15 @@ By leveraging industry-standard methodologies and real-world attack simulations,
     doc.setFont(undefined, "bold");
     doc.setTextColor(153, 0, 153);
     doc.text("Executive Summary", 20, yPos);
-    yPos += 8;
+    yPos += 12;
 
-    doc.setFontSize(10);
+    doc.setFontSize(11);
     doc.setFont(undefined, "normal");
     doc.setTextColor(0, 0, 0);
 
     const execText = `Security Platform was engaged by ${
       scanData.domain
-    } Website to perform a security assessment of 1 target during the period 1st oct 2025 to 2nd oct 2025. A manual penetration test was performed on 1 target.
-
-The testing was conducted from a remote attacker's perspective with the following goals:
-
-To identify security loopholes, business logic errors, and evaluate the effectiveness of existing security controls in the application that pose a risk to systems, infrastructure, or data.
-
-Recommend technical security best practices to improve the security posture of the target applications audited.
-
-Explain the potential impact of the identified vulnerabilities, including data exposure, potential financial losses, or reputational damage that could occur if exploited by malicious actors.
-
-Provide clear and actionable recommendations for addressing the identified vulnerabilities.
-
-A total of ${
+    } Website to perform a security assessment of 1 target during the period 1st oct 2025 to 2nd oct 2025. A manual penetration test was performed on 1 target.\n\nThe testing was conducted from a remote attacker's perspective with the following goals:\n\nTo identify security loopholes, business logic errors, and evaluate the effectiveness of existing security controls in the application that pose a risk to systems, infrastructure, or data.\n\nRecommend technical security best practices to improve the security posture of the target applications audited.\n\nExplain the potential impact of the identified vulnerabilities, including data exposure, potential financial losses, or reputational damage that could occur if exploited by malicious actors.\n\nProvide clear and actionable recommendations for addressing the identified vulnerabilities.\n\nA total of ${
       scanData.vulnerabilityCount || 29
     } vulnerabilities/recommendations were reported. Out of a score of 10, the highest risk score assigned to a vulnerability was 9.2, the lowest was 2.5, and the average score was 5.9. The Demo Client verified fixes for all 15 vulnerabilities and confirmed they were resolved at the time of the rescan.`;
 
@@ -479,7 +547,7 @@ A total of ${
     // ==================== PAGE 4: TABLE OF CONTENTS ====================
     doc.addPage();
     addSimpleHeader();
-    yPos = 30;
+    yPos = 35;
 
     addPurpleHeader("TABLE OF CONTENTS");
 
@@ -493,13 +561,14 @@ A total of ${
       { title: "Assessment Details", page: 7 },
       { title: "Vulnerabilities Summary", page: 8 },
       { title: "Details of Vulnerabilities Found", page: 9 },
-      { title: "OWASP Top 10", page: -1 },
+      { title: "OWASP Top 10", page: 10 },
     ];
 
-    doc.setFontSize(10);
+    doc.setFontSize(12);
     doc.setTextColor(0, 0, 0);
 
     tocItems.forEach((item) => {
+      checkPage(10);
       doc.setFont(undefined, "normal");
       doc.text(item.title, 20, yPos);
 
@@ -511,13 +580,13 @@ A total of ${
       doc.text(item.page > 0 ? String(item.page) : "", 180, yPos, {
         align: "right",
       });
-      yPos += 8;
+      yPos += 10;
     });
 
     // ==================== PAGE 5: SCOPE & RISK LEVELS ====================
     doc.addPage();
     addSimpleHeader();
-    yPos = 30;
+    yPos = 35;
 
     addPurpleHeader("SCOPE OF THE ASSESSMENT");
 
@@ -538,14 +607,14 @@ A total of ${
       styles: { fontSize: 9 },
     });
 
-    yPos = doc.lastAutoTable.finalY + 15;
+    yPos = doc.lastAutoTable.finalY + 20;
     checkPage();
 
     doc.setFontSize(12);
     doc.setFont(undefined, "bold");
     doc.setTextColor(0, 0, 0);
     doc.text("Risk Level Description:", 20, yPos);
-    yPos += 8;
+    yPos += 12;
 
     autoTable(doc, {
       startY: yPos,
@@ -573,7 +642,7 @@ A total of ${
         ],
       ],
       theme: "grid",
-      headStyles: { fillColor: [0, 51, 102], fontSize: 10 },
+      headStyles: { fillColor: [0, 51, 102], fontSize: 12 },
       styles: { fontSize: 8 },
       columnStyles: {
         0: { cellWidth: 35, fontStyle: "bold" },
@@ -584,7 +653,7 @@ A total of ${
     // ==================== PAGE 6: TOOLS USED ====================
     doc.addPage();
     addSimpleHeader();
-    yPos = 30;
+    yPos = 35;
 
     addPurpleHeader("TOOLS USED DURING ASSESSMENT");
 
@@ -592,7 +661,7 @@ A total of ${
     doc.setFont(undefined, "bold");
     doc.setTextColor(0, 0, 0);
     doc.text("We Used These Tools During Security Scan:", 20, yPos);
-    yPos += 15;
+    yPos += 18;
 
     const tools = [
       {
@@ -630,26 +699,26 @@ A total of ${
     ];
 
     tools.forEach((tool, idx) => {
-      checkPage(25);
+      checkPage(28);
 
       doc.setFontSize(11);
       doc.setFont(undefined, "bold");
       doc.setTextColor(0, 0, 0);
       doc.text(`${idx + 1}. ${tool.name}`, 20, yPos);
-      yPos += 6;
+      yPos += 8;
 
-      doc.setFontSize(9);
+      doc.setFontSize(11);
       doc.setFont(undefined, "normal");
       const descLines = doc.splitTextToSize(tool.desc, 170);
       doc.text(descLines, 20, yPos);
 
-      yPos += descLines.length * 4 + 10;
+      yPos += descLines.length * 4.5 + 12;
     });
 
     // ==================== PAGE 7: ASSESSMENT METHODOLOGY ====================
     doc.addPage();
     addSimpleHeader();
-    yPos = 30;
+    yPos = 35;
 
     addPurpleHeader("ASSESSMENT DETAILS");
 
@@ -657,27 +726,25 @@ A total of ${
     doc.setFont(undefined, "bold");
     doc.setTextColor(0, 0, 0);
     doc.text("Assessment Methodology", 20, yPos);
-    yPos += 8;
+    yPos += 12;
 
-    doc.setFontSize(10);
+    doc.setFontSize(11);
     doc.setFont(undefined, "normal");
+    doc.setTextColor(0, 0, 0);
 
-    const methodText = `An in-depth automated vulnerability scan was conducted using industry-standard tools, consisting of comprehensive tests across multiple security domains including SSL/TLS configuration, HTTP headers, service detection, web application structure, and network analysis.
-
-The assessment follows industry standards such as OWASP Web Security Testing Guide (WSTG), OWASP Top 10, OWASP Application Security Verification Standard (ASVS), and NIST 800-115.
-
-Using the same techniques as sophisticated real-world attackers, the applications have been tested thoroughly for security misconfigurations, vulnerable components, and application-specific vulnerabilities.`;
+    const methodText = `An in-depth automated vulnerability scan was conducted using industry-standard tools, consisting of comprehensive tests across multiple security domains including SSL/TLS configuration, HTTP headers, service detection, web application structure, and network analysis.\n\nThe assessment follows industry standards such as OWASP Web Security Testing Guide (WSTG), OWASP Top 10, OWASP Application Security Verification Standard (ASVS), and NIST 800-115.\n\nUsing the same techniques as sophisticated real-world attackers, the applications have been tested thoroughly for security misconfigurations, vulnerable components, and application-specific vulnerabilities.`;
 
     const splitMethod = doc.splitTextToSize(methodText, 170);
     doc.text(splitMethod, 20, yPos);
-    yPos += splitMethod.length * 5 + 10;
+    yPos += splitMethod.length * 5 + 15;
 
     checkPage();
 
     doc.setFontSize(12);
     doc.setFont(undefined, "bold");
+    doc.setTextColor(0, 0, 0);
     doc.text("Assessment Duration and Date:", 20, yPos);
-    yPos += 8;
+    yPos += 12;
 
     autoTable(doc, {
       startY: yPos,
@@ -691,7 +758,7 @@ Using the same techniques as sophisticated real-world attackers, the application
     // ==================== PAGE 8: VULNERABILITIES SUMMARY ====================
     doc.addPage();
     addSimpleHeader();
-    yPos = 30;
+    yPos = 35;
 
     addPurpleHeader("VULNERABILITIES SUMMARY");
 
@@ -699,7 +766,7 @@ Using the same techniques as sophisticated real-world attackers, the application
     doc.setFont(undefined, "bold");
     doc.setTextColor(0, 0, 0);
     doc.text("Vulnerability Distribution:", 20, yPos);
-    yPos += 8;
+    yPos += 12;
 
     const vulnBreakdown = scanData.vulnerabilityBreakdown || {};
     const breakdownData = [
@@ -759,13 +826,14 @@ Using the same techniques as sophisticated real-world attackers, the application
       },
     });
 
-    yPos = doc.lastAutoTable.finalY + 12;
+    yPos = doc.lastAutoTable.finalY + 15;
     checkPage();
 
     doc.setFontSize(12);
     doc.setFont(undefined, "bold");
+    doc.setTextColor(0, 0, 0);
     doc.text("Result (Vulnerable / Not Vulnerable):", 20, yPos);
-    yPos += 8;
+    yPos += 12;
 
     if (scanData.vulnerabilities?.length > 0) {
       const vulnListData = scanData.vulnerabilities.map((v, idx) => [
@@ -791,11 +859,11 @@ Using the same techniques as sophisticated real-world attackers, the application
       });
     }
 
-    // ==================== DETAILED VULNERABILITY PAGES ====================
+    // ==================== DETAILED VULNERABILITY PAGES - USING HELPER ====================
     if (scanData.vulnerabilities?.length > 0) {
       doc.addPage();
       addSimpleHeader();
-      yPos = 30;
+      yPos = 35;
 
       addPurpleHeader("DETAILS OF VULNERABILITIES FOUND");
 
@@ -805,7 +873,7 @@ Using the same techniques as sophisticated real-world attackers, the application
         );
 
         vulns.forEach((vuln) => {
-          checkPage(60);
+          checkPage(70);
 
           doc.setFillColor(220, 220, 220);
           doc.rect(15, yPos - 5, 180, 10, "F");
@@ -814,7 +882,7 @@ Using the same techniques as sophisticated real-world attackers, the application
           doc.setFont(undefined, "bold");
           doc.setTextColor(0, 0, 0);
           doc.text(
-            `Vulnerabilities name: ${getVulnerabilityTypeLabel(vuln.type)}`,
+            `Vulnerability name: ${getVulnerabilityTypeLabel(vuln.type)}`,
             20,
             yPos
           );
@@ -832,7 +900,7 @@ Using the same techniques as sophisticated real-world attackers, the application
           doc.setFontSize(9);
           doc.text(severity.toUpperCase(), 181, yPos, { align: "center" });
 
-          yPos += 10;
+          yPos += 15;
           doc.setTextColor(0, 0, 0);
 
           autoTable(doc, {
@@ -856,52 +924,62 @@ Using the same techniques as sophisticated real-world attackers, the application
             },
           });
 
-          yPos = doc.lastAutoTable.finalY + 5;
+          yPos = doc.lastAutoTable.finalY + 8;
 
+          // ✅ GET HELPER DATA - ALWAYS USE FOR PDF (ignore backend)
+          const vulnDetails = getDetailedVulnerabilityInfo(
+            vuln.type,
+            vuln.severity
+          );
+
+          // ✅ Impact Section - FORCE USE HELPER
           doc.setFontSize(10);
           doc.setFont(undefined, "bold");
+          doc.setTextColor(0, 0, 0);
           doc.text("Impact:", 20, yPos);
-          yPos += 5;
+          yPos += 7;
 
           doc.setFont(undefined, "normal");
-          const impactLines = doc.splitTextToSize(
-            vuln.details || "No detailed impact assessment available.",
-            170
-          );
+          const impactText = vulnDetails.impact; // ✅ ALWAYS USE HELPER
+          const impactLines = doc.splitTextToSize(impactText, 170);
           doc.text(impactLines, 20, yPos);
-          yPos += impactLines.length * 5 + 5;
+          yPos += impactLines.length * 5.5 + 10;
 
-          checkPage(30);
+          checkPage(35);
 
+          // ✅ Description Section - FORCE USE HELPER
           doc.setFont(undefined, "bold");
+          doc.setTextColor(0, 0, 0);
           doc.text("Description:", 20, yPos);
-          yPos += 5;
+          yPos += 7;
 
           doc.setFont(undefined, "normal");
-          const descLines = doc.splitTextToSize(vuln.description || "N/A", 170);
+          const descText = vulnDetails.description; // ✅ ALWAYS USE HELPER
+          const descLines = doc.splitTextToSize(descText, 170);
           doc.text(descLines, 20, yPos);
-          yPos += descLines.length * 5 + 5;
+          yPos += descLines.length * 5.5 + 10;
 
-          checkPage(30);
+          checkPage(35);
 
+          // ✅ Remediation Section - FORCE USE HELPER
           doc.setFont(undefined, "bold");
+          doc.setTextColor(0, 0, 0);
           doc.text("Remediation:", 20, yPos);
-          yPos += 5;
+          yPos += 7;
 
           doc.setFont(undefined, "normal");
-          const recLines = doc.splitTextToSize(
-            vuln.recommendation || "No remediation available.",
-            170
-          );
+          const remText = vulnDetails.remediation; // ✅ ALWAYS USE HELPER
+          const recLines = doc.splitTextToSize(remText, 170);
           doc.text(recLines, 20, yPos);
-          yPos += recLines.length * 5 + 10;
+          yPos += recLines.length * 5.5 + 12;
 
           doc.setFont(undefined, "bold");
+          doc.setTextColor(0, 0, 0);
           doc.text("Closer remark:", 20, yPos);
           doc.setFont(undefined, "normal");
           doc.text("Not Fixed", 60, yPos);
 
-          yPos += 15;
+          yPos += 20;
         });
       });
     }
@@ -909,36 +987,33 @@ Using the same techniques as sophisticated real-world attackers, the application
     // ==================== OWASP TOP 10 ====================
     doc.addPage();
     addSimpleHeader();
-    yPos = 30;
+    yPos = 35;
 
-    addPurpleHeader("OWASP TOP 10 (2021)");
+    addPurpleHeader("OWASP TOP 10 (2025)");
 
     doc.setFontSize(12);
     doc.setFont(undefined, "bold");
     doc.setTextColor(0, 0, 0);
     doc.text("OWASP Top 10 Application Security Risks:", 20, yPos);
-    yPos += 10;
+    yPos += 15;
 
     const owaspTop10 = [
-      "A01 - Broken Access Control",
-      "A02 - Cryptographic Failures",
-      "A03 - Injection",
-      "A04 - Insecure Design",
-      "A05 - Security Misconfiguration",
-      "A06 - Vulnerable and Outdated Components",
-      "A07 - Identification and Authentication Failures",
-      "A08 - Software and Data Integrity Failures",
-      "A09 - Security Logging and Monitoring Failures",
-      "A10 - Server-Side Request Forgery (SSRF)",
+      ["A01", "Broken Access Control"],
+      ["A02", "Cryptographic Failures"],
+      ["A03", "Injection"],
+      ["A04", "Insecure Design"],
+      ["A05", "Security Misconfiguration"],
+      ["A06", "Vulnerable and Outdated Components"],
+      ["A07", "Identification and Authentication Failures"],
+      ["A08", "Software and Data Integrity Failures"],
+      ["A09", "Security Logging and Monitoring Failures"],
+      ["A10", "Server-Side Request Forgery (SSRF)"],
     ];
 
     autoTable(doc, {
       startY: yPos,
-      head: [["Sr No", "OWASP TOP 10 2021 Application Security Risks"]],
-      body: owaspTop10.map((item, idx) => [
-        `A${idx + 1}`,
-        item.replace(`A0${idx + 1} - `, "").replace(`A${idx + 1} - `, ""),
-      ]),
+      head: [["Sr No", "OWASP TOP 10 2025 Application Security Risks"]],
+      body: owaspTop10,
       theme: "grid",
       headStyles: { fillColor: [0, 51, 102], fontSize: 10 },
       styles: { fontSize: 9 },
@@ -1261,11 +1336,14 @@ Using the same techniques as sophisticated real-world attackers, the application
                     ["headers", "HTTP Headers"],
                     ["raw", "Raw Headers"],
                     ["cookies", "Cookies"],
+                    ["sessions", "Sessions"],
                     ["csp", "CSP"],
                     ["webapp", "Web App"],
                     ["benchmark", "Benchmark"],
                     ["service", "Service"],
                     ["dns", "DNS"],
+                    ["firewall", "Firewall"],
+                    ["portscan", "Port Scan"],
                     ["history", "History"],
                   ].map(([key, label]) => (
                     <button
@@ -2733,65 +2811,309 @@ Using the same techniques as sophisticated real-world attackers, the application
                 )} */}
 
                 {/* Cookies */}
+
+                {/* Cookies Tab - Only Cookie Security Analysis */}
                 {activeTab === "cookies" && (
-                  <div>
-                    {(() => {
-                      const cookies = getCookieArray(scanData?.headers);
-                      return cookies.length ? (
-                        <div className="overflow-x-auto">
-                          <table className="min-w-full bg-black border border-white text-white">
-                            <thead>
-                              <tr className="bg-black">
-                                <th className="px-4 py-2 border-b border-white text-left text-xs font-medium text-gray-400 uppercase tracking-wider">
-                                  Cookie
-                                </th>
-                                <th className="px-4 py-2 border-b border-white text-left text-xs font-medium text-gray-400 uppercase tracking-wider">
-                                  Flags
-                                </th>
-                                <th className="px-4 py-2 border-b border-white text-left text-xs font-medium text-gray-400 uppercase tracking-wider">
-                                  Issues
-                                </th>
-                              </tr>
-                            </thead>
-                            <tbody className="divide-y divide-white">
-                              {cookies.map((c, i) => (
-                                <tr key={i} className="hover:bg-gray-900">
-                                  <td className="px-4 py-3 whitespace-nowrap text-sm font-medium text-white">
-                                    {c.name || "(unnamed)"}
-                                  </td>
-                                  <td className="px-4 py-3 text-sm text-gray-300">
-                                    {Array.isArray(c.flags) && c.flags.length
-                                      ? c.flags.join(", ")
-                                      : "—"}
-                                  </td>
-                                  <td className="px-4 py-3 text-sm">
-                                    {Array.isArray(c.issues) &&
-                                    c.issues.length ? (
-                                      <ul className="list-disc list-inside text-red-400">
-                                        {c.issues.map((x, idx) => (
-                                          <li key={idx}>{x}</li>
+                  <div className="space-y-4">
+                    {scanData.headers?.cookieFindings?.length > 0 ? (
+                      <div className="bg-black rounded-xl border border-white overflow-hidden">
+                        <div className="p-4 bg-gray-900 border-b border-white">
+                          <div className="flex items-center gap-3">
+                            <Cookie className="w-6 h-6 text-orange-400" />
+                            <h3 className="text-lg font-semibold text-white">
+                              Cookie Security Analysis
+                            </h3>
+                          </div>
+                        </div>
+                        <div className="p-4 space-y-3">
+                          {scanData.headers.cookieFindings.map(
+                            (cookie, idx) => (
+                              <div
+                                key={idx}
+                                className={`border rounded-lg p-4 ${
+                                  cookie.issues.length > 0
+                                    ? "bg-orange-500/10 border-orange-500/30"
+                                    : "bg-green-500/10 border-green-500/30"
+                                }`}
+                              >
+                                <div className="flex items-start gap-3">
+                                  {cookie.issues.length > 0 ? (
+                                    <AlertTriangle className="w-5 h-5 text-orange-400 flex-shrink-0 mt-0.5" />
+                                  ) : (
+                                    <CheckCircle className="w-5 h-5 text-green-400 flex-shrink-0 mt-0.5" />
+                                  )}
+                                  <div className="flex-1">
+                                    <h4
+                                      className={`font-semibold mb-2 ${
+                                        cookie.issues.length > 0
+                                          ? "text-orange-400"
+                                          : "text-green-400"
+                                      }`}
+                                    >
+                                      Cookie: {cookie.name}
+                                    </h4>
+                                    {cookie.issues.length > 0 && (
+                                      <div className="bg-black/30 p-3 rounded border border-gray-700 space-y-2">
+                                        {cookie.issues.map((issue, i) => (
+                                          <div
+                                            key={i}
+                                            className="text-xs text-gray-300"
+                                          >
+                                            • {issue}
+                                          </div>
                                         ))}
-                                      </ul>
-                                    ) : (
-                                      <span className="text-green-400">
-                                        None
-                                      </span>
+                                      </div>
                                     )}
-                                  </td>
-                                </tr>
-                              ))}
-                            </tbody>
-                          </table>
+                                    {cookie.issues.length === 0 && (
+                                      <p className="text-xs text-gray-300">
+                                        All security flags configured properly
+                                      </p>
+                                    )}
+                                  </div>
+                                </div>
+                              </div>
+                            )
+                          )}
                         </div>
-                      ) : (
-                        <div className="text-center py-8">
-                          <Cookie className="w-16 h-16 text-gray-400 mx-auto mb-4" />
-                          <p className="text-gray-400 font-medium">
-                            No cookies set.
-                          </p>
+                      </div>
+                    ) : (
+                      <div className="text-center py-8">
+                        <Cookie className="w-16 h-16 text-gray-400 mx-auto mb-4" />
+                        <p className="text-gray-400">
+                          No cookies detected in the scan
+                        </p>
+                      </div>
+                    )}
+                  </div>
+                )}
+
+                {/* Sessions Tab - Session Management Analysis */}
+                {activeTab === "sessions" && (
+                  <div className="space-y-4">
+                    {scanData.sessionManagement ? (
+                      <div className="bg-black rounded-xl border border-white overflow-hidden">
+                        <div className="p-4 bg-gray-900 border-b border-white">
+                          <div className="flex items-center gap-3">
+                            <Lock className="w-6 h-6 text-purple-400" />
+                            <h3 className="text-lg font-semibold text-white">
+                              Session Management Analysis
+                            </h3>
+                          </div>
                         </div>
-                      );
-                    })()}
+                        <div className="p-4 space-y-4">
+                          {/* Session Status */}
+                          <div
+                            className={`border rounded-lg p-4 ${
+                              scanData.sessionManagement.sessionCreated
+                                ? "bg-blue-500/10 border-blue-500/30"
+                                : "bg-gray-500/10 border-gray-500/30"
+                            }`}
+                          >
+                            <div className="flex items-center gap-3 mb-3">
+                              {scanData.sessionManagement.sessionCreated ? (
+                                <CheckCircle className="w-5 h-5 text-blue-400" />
+                              ) : (
+                                <Info className="w-5 h-5 text-gray-400" />
+                              )}
+                              <h4
+                                className={`font-semibold ${
+                                  scanData.sessionManagement.sessionCreated
+                                    ? "text-blue-400"
+                                    : "text-gray-400"
+                                }`}
+                              >
+                                {scanData.sessionManagement.sessionCreated
+                                  ? "Session Cookies Detected"
+                                  : "No Session Cookies Found"}
+                              </h4>
+                            </div>
+
+                            {scanData.sessionManagement.sessionCreated && (
+                              <div className="bg-black/30 p-3 rounded border border-gray-700">
+                                <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-center">
+                                  <div>
+                                    <div className="text-2xl font-bold text-white">
+                                      {
+                                        scanData.sessionManagement
+                                          .sessionDetails.totalSessionCookies
+                                      }
+                                    </div>
+                                    <div className="text-xs text-gray-400 mt-1">
+                                      Total Sessions
+                                    </div>
+                                  </div>
+                                  <div>
+                                    <div className="text-2xl font-bold text-green-400">
+                                      {
+                                        scanData.sessionManagement
+                                          .sessionDetails.secureCount
+                                      }
+                                    </div>
+                                    <div className="text-xs text-gray-400 mt-1">
+                                      Secure
+                                    </div>
+                                  </div>
+                                  <div>
+                                    <div className="text-2xl font-bold text-blue-400">
+                                      {
+                                        scanData.sessionManagement
+                                          .sessionDetails.httpOnlyCount
+                                      }
+                                    </div>
+                                    <div className="text-xs text-gray-400 mt-1">
+                                      HttpOnly
+                                    </div>
+                                  </div>
+                                  <div>
+                                    <div className="text-2xl font-bold text-purple-400">
+                                      {
+                                        scanData.sessionManagement
+                                          .sessionDetails.sameSiteCount
+                                      }
+                                    </div>
+                                    <div className="text-xs text-gray-400 mt-1">
+                                      SameSite
+                                    </div>
+                                  </div>
+                                </div>
+                              </div>
+                            )}
+                          </div>
+
+                          {/* Session Cookies List */}
+                          {scanData.sessionManagement.sessionCookies?.length >
+                            0 && (
+                            <div className="space-y-3">
+                              <h4 className="text-sm font-semibold text-white">
+                                Session Cookies:
+                              </h4>
+                              {scanData.sessionManagement.sessionCookies.map(
+                                (cookie, idx) => (
+                                  <div
+                                    key={idx}
+                                    className="bg-gray-900 border border-gray-700 rounded-lg p-4"
+                                  >
+                                    <div className="flex items-start justify-between mb-2">
+                                      <h5 className="text-white font-semibold">
+                                        {cookie.name}
+                                      </h5>
+                                      <div className="flex gap-2">
+                                        {cookie.attributes.secure && (
+                                          <span className="px-2 py-1 bg-green-500/20 text-green-400 text-xs rounded border border-green-500/30">
+                                            Secure
+                                          </span>
+                                        )}
+                                        {cookie.attributes.httponly && (
+                                          <span className="px-2 py-1 bg-blue-500/20 text-blue-400 text-xs rounded border border-blue-500/30">
+                                            HttpOnly
+                                          </span>
+                                        )}
+                                        {cookie.attributes.samesite && (
+                                          <span className="px-2 py-1 bg-purple-500/20 text-purple-400 text-xs rounded border border-purple-500/30">
+                                            SameSite
+                                          </span>
+                                        )}
+                                      </div>
+                                    </div>
+                                    <p className="text-xs text-gray-400 font-mono break-all">
+                                      Value: {cookie.value.substring(0, 50)}...
+                                    </p>
+                                  </div>
+                                )
+                              )}
+                            </div>
+                          )}
+
+                          {/* Session Security Issues */}
+                          {scanData.sessionManagement.securityIssues?.length >
+                            0 && (
+                            <div className="space-y-3">
+                              <h4 className="text-sm font-semibold text-red-400 flex items-center gap-2">
+                                <AlertTriangle className="w-4 h-4" />
+                                Session Security Issues (
+                                {
+                                  scanData.sessionManagement.securityIssues
+                                    .length
+                                }
+                                )
+                              </h4>
+                              {scanData.sessionManagement.securityIssues.map(
+                                (issue, idx) => (
+                                  <div
+                                    key={idx}
+                                    className="bg-red-500/10 border border-red-500/30 rounded-lg p-4"
+                                  >
+                                    <div className="flex items-start gap-3">
+                                      <XCircle className="w-5 h-5 text-red-400 flex-shrink-0 mt-0.5" />
+                                      <div className="flex-1">
+                                        <h5 className="text-red-400 font-semibold mb-1">
+                                          {issue.issue}
+                                        </h5>
+                                        <p className="text-sm text-gray-300 mb-2">
+                                          Cookie:{" "}
+                                          <span className="font-mono">
+                                            {issue.cookie}
+                                          </span>
+                                        </p>
+                                        <p className="text-xs text-gray-400 mb-2">
+                                          {issue.description}
+                                        </p>
+                                        <div className="bg-black/30 p-2 rounded border border-red-500/20 mt-2">
+                                          <p className="text-xs text-white">
+                                            <strong>Fix:</strong>{" "}
+                                            {issue.recommendation}
+                                          </p>
+                                        </div>
+                                      </div>
+                                    </div>
+                                  </div>
+                                )
+                              )}
+                            </div>
+                          )}
+
+                          {/* No Session Cookies Info */}
+                          {!scanData.sessionManagement.sessionCreated && (
+                            <div className="bg-blue-500/10 border border-blue-500/30 rounded-lg p-4">
+                              <div className="flex items-start gap-3">
+                                <Info className="w-5 h-5 text-blue-400 flex-shrink-0 mt-0.5" />
+                                <div>
+                                  <h5 className="text-blue-400 font-semibold mb-2">
+                                    No Session Cookies Detected
+                                  </h5>
+                                  <p className="text-xs text-gray-300 mb-2">
+                                    The scanner did not detect any
+                                    session-related cookies during the initial
+                                    request.
+                                  </p>
+                                  <ul className="text-xs text-gray-400 space-y-1">
+                                    <li>
+                                      • Session cookies may be set after
+                                      authentication
+                                    </li>
+                                    <li>
+                                      • The application might use token-based
+                                      authentication (JWT)
+                                    </li>
+                                    <li>
+                                      • Sessions might be managed server-side
+                                      without cookies
+                                    </li>
+                                  </ul>
+                                </div>
+                              </div>
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                    ) : (
+                      <div className="text-center py-8">
+                        <Lock className="w-16 h-16 text-gray-400 mx-auto mb-4" />
+                        <p className="text-gray-400">
+                          No session management data available
+                        </p>
+                      </div>
+                    )}
                   </div>
                 )}
 
@@ -4442,7 +4764,111 @@ Using the same techniques as sophisticated real-world attackers, the application
                         </div>
                       </div>
                     )}
-
+                    {/* 3. Directory/File Enumeration (Gobuster) */}
+                    {scanData.directoryEnumeration?.tested && (
+                      <div className="bg-black rounded-xl border border-white overflow-hidden">
+                        <div className="p-4 bg-gray-900 border-b border-white flex items-center gap-3">
+                          <Menu className="w-6 h-6 text-orange-400 flex-shrink-0" />
+                          <h3 className="text-lg font-semibold text-white">
+                            Directory & File Enumeration
+                          </h3>
+                          <span className="ml-auto text-sm text-gray-400">
+                            {scanData.directoryEnumeration.totalTested} paths
+                            tested
+                          </span>
+                        </div>
+                        {scanData.directoryEnumeration.foundPaths &&
+                        scanData.directoryEnumeration.foundPaths.length > 0 ? (
+                          <div className="p-4 space-y-3">
+                            <h4 className="text-green-400 font-semibold mb-2 flex items-center gap-2">
+                              <CheckCircle className="w-4 h-4 text-green-400" />
+                              {
+                                scanData.directoryEnumeration.foundPaths.length
+                              }{" "}
+                              Exposed Paths/Files
+                            </h4>
+                            <div className="overflow-x-auto">
+                              <table className="min-w-full text-white divide-y divide-gray-700">
+                                <thead className="bg-gray-900">
+                                  <tr>
+                                    <th className="px-4 py-2 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">
+                                      Path
+                                    </th>
+                                    <th className="px-4 py-2 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">
+                                      Status
+                                    </th>
+                                    <th className="px-4 py-2 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">
+                                      Type
+                                    </th>
+                                    <th className="px-4 py-2 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">
+                                      URL
+                                    </th>
+                                  </tr>
+                                </thead>
+                                <tbody className="divide-y divide-gray-800">
+                                  {scanData.directoryEnumeration.foundPaths.map(
+                                    (item, idx) => (
+                                      <tr
+                                        key={idx}
+                                        className="hover:bg-gray-800"
+                                      >
+                                        <td className="px-4 py-2 font-mono text-sm text-blue-400">
+                                          {item.path}
+                                        </td>
+                                        <td className="px-4 py-2 text-xs">
+                                          {item.statusCode} {item.statusText}
+                                        </td>
+                                        <td className="px-4 py-2 text-xs">
+                                          {item.contentType || "unknown"}
+                                        </td>
+                                        <td className="px-4 py-2">
+                                          <a
+                                            href={item.url}
+                                            target="_blank"
+                                            rel="noopener noreferrer"
+                                            className="text-orange-400 hover:underline break-all"
+                                          >
+                                            {item.url}
+                                          </a>
+                                        </td>
+                                      </tr>
+                                    )
+                                  )}
+                                </tbody>
+                              </table>
+                            </div>
+                            <p className="text-xs text-gray-400 mt-2">
+                              <span className="font-bold">
+                                {scanData.directoryEnumeration.scanDuration}
+                              </span>{" "}
+                              ms scan time.
+                              {scanData.directoryEnumeration.errors?.length >
+                                0 && (
+                                <span className="text-red-400 ml-2">
+                                  {scanData.directoryEnumeration.errors.length}{" "}
+                                  errors encountered
+                                </span>
+                              )}
+                            </p>
+                          </div>
+                        ) : (
+                          <div className="p-6 flex items-center gap-3">
+                            <CheckCircle className="w-6 h-6 text-green-400" />
+                            <div>
+                              <h4 className="text-green-400 font-semibold mb-1">
+                                No Exposed Directories or Files Found
+                              </h4>
+                              <p className="text-xs text-gray-400">
+                                Tested{" "}
+                                {scanData.directoryEnumeration.totalTested}{" "}
+                                common paths. No sensitive files or directories
+                                found. Good security posture.
+                              </p>
+                            </div>
+                          </div>
+                        )}
+                      </div>
+                    )}
                     {/* 🍪 4. Cookie Security Analysis */}
                     {scanData.headers?.cookieFindings?.length > 0 && (
                       <div className="bg-black rounded-xl border border-white overflow-hidden">
@@ -5005,6 +5431,559 @@ Using the same techniques as sophisticated real-world attackers, the application
                           </div>
                         </div>
                       )}
+                  </div>
+                )}
+                {/* Firewall/WAF Detection Tab */}
+                {activeTab === "firewall" && (
+                  <div className="space-y-4">
+                    {scanData.firewall ? (
+                      <div className="bg-black rounded-xl border border-white overflow-hidden">
+                        <div className="p-4 bg-gray-900 border-b border-white">
+                          <div className="flex items-center gap-3">
+                            <ShieldAlert className="w-6 h-6 text-blue-400" />
+                            <h3 className="text-lg font-semibold text-white">
+                              Firewall/WAF Detection
+                            </h3>
+                          </div>
+                        </div>
+                        <div className="p-4 space-y-4">
+                          {/* Detection Status */}
+                          <div
+                            className={`border rounded-lg p-4 ${
+                              scanData.firewall.detected
+                                ? "bg-green-500/10 border-green-500/30"
+                                : "bg-red-500/10 border-red-500/30"
+                            }`}
+                          >
+                            <div className="flex items-center gap-3 mb-3">
+                              {scanData.firewall.detected ? (
+                                <CheckCircle className="w-6 h-6 text-green-400" />
+                              ) : (
+                                <XCircle className="w-6 h-6 text-red-400" />
+                              )}
+                              <div className="flex-1">
+                                <h4
+                                  className={`text-lg font-semibold ${
+                                    scanData.firewall.detected
+                                      ? "text-green-400"
+                                      : "text-red-400"
+                                  }`}
+                                >
+                                  {scanData.firewall.detected
+                                    ? `Firewall/WAF Detected: ${
+                                        scanData.firewall.wafType || "Unknown"
+                                      }`
+                                    : "No Firewall/WAF Detected"}
+                                </h4>
+                                {scanData.firewall.detected && (
+                                  <p className="text-sm text-gray-400 mt-1">
+                                    Confidence:{" "}
+                                    <span
+                                      className={`font-semibold ${
+                                        scanData.firewall.confidence === "high"
+                                          ? "text-green-400"
+                                          : scanData.firewall.confidence ===
+                                            "medium"
+                                          ? "text-yellow-400"
+                                          : "text-gray-400"
+                                      }`}
+                                    >
+                                      {scanData.firewall.confidence.toUpperCase()}
+                                    </span>
+                                  </p>
+                                )}
+                              </div>
+                            </div>
+
+                            {scanData.firewall.detected ? (
+                              <div className="bg-black/30 p-3 rounded border border-gray-700">
+                                <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-center">
+                                  <div>
+                                    <div className="text-2xl font-bold text-white">
+                                      {scanData.firewall.wafType || "Unknown"}
+                                    </div>
+                                    <div className="text-xs text-gray-400 mt-1">
+                                      WAF Type
+                                    </div>
+                                  </div>
+                                  <div>
+                                    <div className="text-2xl font-bold text-green-400">
+                                      {scanData.firewall.fingerprints?.length ||
+                                        0}
+                                    </div>
+                                    <div className="text-xs text-gray-400 mt-1">
+                                      Fingerprints
+                                    </div>
+                                  </div>
+                                  <div>
+                                    <div className="text-2xl font-bold text-blue-400">
+                                      {scanData.firewall.testResults?.length ||
+                                        0}
+                                    </div>
+                                    <div className="text-xs text-gray-400 mt-1">
+                                      Tests Run
+                                    </div>
+                                  </div>
+                                </div>
+                              </div>
+                            ) : (
+                              <div className="bg-yellow-500/10 border border-yellow-500/30 rounded-lg p-3 mt-3">
+                                <p className="text-sm text-yellow-400">
+                                  ⚠️ <strong>Warning:</strong> No Web
+                                  Application Firewall detected. Consider
+                                  implementing a WAF (Cloudflare, AWS WAF,
+                                  ModSecurity) to protect against common
+                                  attacks.
+                                </p>
+                              </div>
+                            )}
+                          </div>
+
+                          {/* Fingerprints */}
+                          {scanData.firewall.fingerprints?.length > 0 && (
+                            <div className="bg-gray-900 border border-gray-700 rounded-lg p-4">
+                              <h4 className="text-sm font-semibold text-white mb-3 flex items-center gap-2">
+                                <Code className="w-4 h-4" />
+                                Detection Fingerprints
+                              </h4>
+                              <div className="space-y-2">
+                                {scanData.firewall.fingerprints.map(
+                                  (fp, idx) => (
+                                    <div
+                                      key={idx}
+                                      className="bg-black/50 p-3 rounded border border-gray-700"
+                                    >
+                                      <div className="flex items-center justify-between mb-2">
+                                        <span className="text-xs font-mono text-blue-400">
+                                          {fp.header || fp.type}
+                                        </span>
+                                        <span className="px-2 py-1 bg-green-500/20 text-green-400 text-xs rounded border border-green-500/30">
+                                          {fp.waf}
+                                        </span>
+                                      </div>
+                                      <p className="text-xs text-gray-300 font-mono break-all">
+                                        {fp.value || fp.pattern}
+                                      </p>
+                                    </div>
+                                  )
+                                )}
+                              </div>
+                            </div>
+                          )}
+
+                          {/* Test Results */}
+                          {scanData.firewall.testResults?.length > 0 && (
+                            <div className="bg-gray-900 border border-gray-700 rounded-lg p-4">
+                              <h4 className="text-sm font-semibold text-white mb-3 flex items-center gap-2">
+                                <AlertTriangle className="w-4 h-4" />
+                                Security Test Results
+                              </h4>
+                              <div className="space-y-3">
+                                {scanData.firewall.testResults.map(
+                                  (test, idx) => (
+                                    <div
+                                      key={idx}
+                                      className={`border rounded-lg p-3 ${
+                                        test.blocked
+                                          ? "bg-green-500/10 border-green-500/30"
+                                          : "bg-red-500/10 border-red-500/30"
+                                      }`}
+                                    >
+                                      <div className="flex items-start gap-3">
+                                        {test.blocked ? (
+                                          <Shield className="w-5 h-5 text-green-400 flex-shrink-0 mt-0.5" />
+                                        ) : (
+                                          <XCircle className="w-5 h-5 text-red-400 flex-shrink-0 mt-0.5" />
+                                        )}
+                                        <div className="flex-1">
+                                          <div className="flex items-center justify-between mb-2">
+                                            <h5
+                                              className={`font-semibold ${
+                                                test.blocked
+                                                  ? "text-green-400"
+                                                  : "text-red-400"
+                                              }`}
+                                            >
+                                              {test.type}
+                                            </h5>
+                                            <span
+                                              className={`px-2 py-1 text-xs rounded ${
+                                                test.blocked
+                                                  ? "bg-green-500/20 text-green-400 border border-green-500/30"
+                                                  : "bg-red-500/20 text-red-400 border border-red-500/30"
+                                              }`}
+                                            >
+                                              {test.blocked
+                                                ? "BLOCKED ✓"
+                                                : "NOT BLOCKED ✗"}
+                                            </span>
+                                          </div>
+                                          <p className="text-xs text-gray-400 mb-1">
+                                            Status Code:{" "}
+                                            <span className="font-mono">
+                                              {test.statusCode}
+                                            </span>
+                                          </p>
+                                          <div className="bg-black/30 p-2 rounded border border-gray-700">
+                                            <p className="text-xs text-gray-300 font-mono break-all">
+                                              {test.payload}
+                                            </p>
+                                          </div>
+                                        </div>
+                                      </div>
+                                    </div>
+                                  )
+                                )}
+                              </div>
+                            </div>
+                          )}
+
+                          {/* Additional Details */}
+                          {scanData.firewall.details?.length > 0 && (
+                            <div className="bg-blue-500/10 border border-blue-500/30 rounded-lg p-4">
+                              <h4 className="text-sm font-semibold text-blue-400 mb-2">
+                                Additional Information:
+                              </h4>
+                              <ul className="space-y-1">
+                                {scanData.firewall.details.map(
+                                  (detail, idx) => (
+                                    <li
+                                      key={idx}
+                                      className="text-xs text-gray-300"
+                                    >
+                                      • {detail}
+                                    </li>
+                                  )
+                                )}
+                              </ul>
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                    ) : (
+                      <div className="text-center py-8">
+                        <ShieldAlert className="w-16 h-16 text-gray-400 mx-auto mb-4" />
+                        <p className="text-gray-400">
+                          No firewall detection data available
+                        </p>
+                      </div>
+                    )}
+                  </div>
+                )}
+
+                {/* Port Scanner Tab */}
+                {activeTab === "portscan" && (
+                  <div className="space-y-4">
+                    {scanData.portScan ? (
+                      <div className="bg-black rounded-xl border border-white overflow-hidden">
+                        <div className="p-4 bg-gray-900 border-b border-white">
+                          <div className="flex items-center gap-3">
+                            <ServerCog className="w-6 h-6 text-cyan-400" />
+                            <h3 className="text-lg font-semibold text-white">
+                              Port Scan Results
+                            </h3>
+                          </div>
+                        </div>
+                        <div className="p-4 space-y-4">
+                          {/* Scan Summary */}
+                          <div className="bg-gray-900 border border-gray-700 rounded-lg p-4">
+                            <div className="grid grid-cols-2 md:grid-cols-5 gap-4 text-center">
+                              <div>
+                                <div
+                                  className={`text-2xl font-bold ${
+                                    scanData.portScan.hostStatus === "up"
+                                      ? "text-green-400"
+                                      : "text-red-400"
+                                  }`}
+                                >
+                                  {scanData.portScan.hostStatus?.toUpperCase() ||
+                                    "UNKNOWN"}
+                                </div>
+                                <div className="text-xs text-gray-400 mt-1">
+                                  Host Status
+                                </div>
+                              </div>
+                              <div>
+                                <div className="text-2xl font-bold text-white">
+                                  {scanData.portScan.totalScanned || 0}
+                                </div>
+                                <div className="text-xs text-gray-400 mt-1">
+                                  Ports Scanned
+                                </div>
+                              </div>
+                              <div>
+                                <div className="text-2xl font-bold text-green-400">
+                                  {scanData.portScan.openPorts?.length || 0}
+                                </div>
+                                <div className="text-xs text-gray-400 mt-1">
+                                  Open
+                                </div>
+                              </div>
+                              <div>
+                                <div className="text-2xl font-bold text-red-400">
+                                  {scanData.portScan.closedPorts?.length || 0}
+                                </div>
+                                <div className="text-xs text-gray-400 mt-1">
+                                  Closed
+                                </div>
+                              </div>
+                              <div>
+                                <div className="text-2xl font-bold text-yellow-400">
+                                  {scanData.portScan.filteredPorts?.length || 0}
+                                </div>
+                                <div className="text-xs text-gray-400 mt-1">
+                                  Filtered
+                                </div>
+                              </div>
+                            </div>
+                            {scanData.portScan.scanDuration && (
+                              <div className="text-center mt-3 pt-3 border-t border-gray-700">
+                                <p className="text-xs text-gray-400">
+                                  Scan Type:{" "}
+                                  <span className="text-white font-semibold">
+                                    {scanData.portScan.scanType ||
+                                      "TCP Connect"}
+                                  </span>{" "}
+                                  | Duration:{" "}
+                                  <span className="text-white font-semibold">
+                                    {scanData.portScan.scanDuration}ms
+                                  </span>
+                                </p>
+                              </div>
+                            )}
+                          </div>
+
+                          {/* Open Ports */}
+                          {scanData.portScan.openPorts?.length > 0 && (
+                            <div className="bg-gray-900 border border-gray-700 rounded-lg p-4">
+                              <h4 className="text-sm font-semibold text-green-400 mb-3 flex items-center gap-2">
+                                <CheckCircle className="w-4 h-4" />
+                                Open Ports ({scanData.portScan.openPorts.length}
+                                )
+                              </h4>
+                              <div className="space-y-3">
+                                {scanData.portScan.openPorts.map(
+                                  (port, idx) => (
+                                    <div
+                                      key={idx}
+                                      className="bg-black/50 border border-green-500/30 rounded-lg p-4"
+                                    >
+                                      <div className="flex items-start justify-between mb-3">
+                                        <div className="flex items-center gap-3">
+                                          <div className="bg-green-500/20 px-3 py-2 rounded border border-green-500/30">
+                                            <span className="text-xl font-bold text-green-400">
+                                              {port.port}
+                                            </span>
+                                          </div>
+                                          <div>
+                                            <h5 className="text-white font-semibold">
+                                              {port.service || "Unknown"}
+                                            </h5>
+                                            <p className="text-xs text-gray-400">
+                                              {port.protocol?.toUpperCase() ||
+                                                "TCP"}{" "}
+                                              •{" "}
+                                              {port.state?.toUpperCase() ||
+                                                "OPEN"}
+                                            </p>
+                                          </div>
+                                        </div>
+                                        <div className="flex flex-col items-end gap-2">
+                                          <span
+                                            className={`px-2 py-1 text-xs rounded border ${
+                                              port.risk === "critical"
+                                                ? "bg-red-500/20 text-red-400 border-red-500/30"
+                                                : port.risk === "high"
+                                                ? "bg-orange-500/20 text-orange-400 border-orange-500/30"
+                                                : port.risk === "medium"
+                                                ? "bg-yellow-500/20 text-yellow-400 border-yellow-500/30"
+                                                : "bg-green-500/20 text-green-400 border-green-500/30"
+                                            }`}
+                                          >
+                                            {port.risk?.toUpperCase() || "LOW"}{" "}
+                                            RISK
+                                          </span>
+                                          {port.responseTime && (
+                                            <span className="text-xs text-gray-400 font-mono">
+                                              {port.responseTime}
+                                            </span>
+                                          )}
+                                        </div>
+                                      </div>
+
+                                      {/* Version & Banner */}
+                                      {(port.version || port.banner) && (
+                                        <div className="bg-black/50 p-3 rounded border border-gray-700 mb-3">
+                                          {port.version && (
+                                            <p className="text-xs text-gray-300 mb-1">
+                                              <span className="text-gray-400">
+                                                Version:
+                                              </span>{" "}
+                                              <span className="font-mono text-cyan-400">
+                                                {port.version}
+                                              </span>
+                                            </p>
+                                          )}
+                                          {port.banner && (
+                                            <p className="text-xs text-gray-300">
+                                              <span className="text-gray-400">
+                                                Banner:
+                                              </span>{" "}
+                                              <span className="font-mono text-white break-all">
+                                                {port.banner}
+                                              </span>
+                                            </p>
+                                          )}
+                                        </div>
+                                      )}
+
+                                      {/* Details & Impact */}
+                                      <div className="space-y-2">
+                                        {port.details && (
+                                          <p className="text-xs text-gray-300">
+                                            <strong className="text-white">
+                                              Details:
+                                            </strong>{" "}
+                                            {port.details}
+                                          </p>
+                                        )}
+                                        {port.impact && (
+                                          <div className="bg-blue-500/10 border border-blue-500/30 rounded p-2">
+                                            <p className="text-xs text-blue-300">
+                                              <strong>Impact:</strong>{" "}
+                                              {port.impact}
+                                            </p>
+                                          </div>
+                                        )}
+                                      </div>
+                                    </div>
+                                  )
+                                )}
+                              </div>
+                            </div>
+                          )}
+
+                          {/* Filtered Ports */}
+                          {scanData.portScan.filteredPorts?.length > 0 && (
+                            <div className="bg-gray-900 border border-gray-700 rounded-lg p-4">
+                              <h4 className="text-sm font-semibold text-yellow-400 mb-3 flex items-center gap-2">
+                                <Shield className="w-4 h-4" />
+                                Filtered Ports (
+                                {scanData.portScan.filteredPorts.length})
+                              </h4>
+                              <div className="bg-yellow-500/10 border border-yellow-500/30 rounded-lg p-3 mb-3">
+                                <p className="text-xs text-yellow-300">
+                                  These ports are filtered by a firewall and did
+                                  not respond to connection attempts.
+                                </p>
+                              </div>
+                              <div className="flex flex-wrap gap-2">
+                                {scanData.portScan.filteredPorts.map(
+                                  (port, idx) => (
+                                    <div
+                                      key={idx}
+                                      className="px-3 py-2 bg-yellow-500/10 border border-yellow-500/30 rounded text-xs"
+                                    >
+                                      <span className="text-yellow-400 font-semibold">
+                                        {typeof port === "object"
+                                          ? port.port
+                                          : port}
+                                      </span>
+                                      {typeof port === "object" &&
+                                        port.service && (
+                                          <span className="text-gray-400 ml-1">
+                                            /{port.service}
+                                          </span>
+                                        )}
+                                    </div>
+                                  )
+                                )}
+                              </div>
+                            </div>
+                          )}
+
+                          {/* Closed Ports */}
+                          {scanData.portScan.closedPorts?.length > 0 && (
+                            <div className="bg-gray-900 border border-gray-700 rounded-lg p-4">
+                              <h4 className="text-sm font-semibold text-red-400 mb-3 flex items-center gap-2">
+                                <XCircle className="w-4 h-4" />
+                                Closed Ports (
+                                {scanData.portScan.closedPorts.length})
+                              </h4>
+                              <div className="flex flex-wrap gap-2">
+                                {scanData.portScan.closedPorts.map(
+                                  (port, idx) => (
+                                    <div
+                                      key={idx}
+                                      className="px-3 py-2 bg-red-500/10 border border-red-500/30 rounded text-xs"
+                                    >
+                                      <span className="text-red-400 font-semibold">
+                                        {typeof port === "object"
+                                          ? port.port
+                                          : port}
+                                      </span>
+                                    </div>
+                                  )
+                                )}
+                              </div>
+                            </div>
+                          )}
+
+                          {/* Security Impact */}
+                          {scanData.portScan.securityImpact?.length > 0 && (
+                            <div className="bg-gray-900 border border-gray-700 rounded-lg p-4">
+                              <h4 className="text-sm font-semibold text-white mb-3 flex items-center gap-2">
+                                <AlertTriangle className="w-4 h-4" />
+                                Security Impact & Recommendations
+                              </h4>
+                              <div className="space-y-2">
+                                {scanData.portScan.securityImpact.map(
+                                  (impact, idx) => (
+                                    <div
+                                      key={idx}
+                                      className="bg-black/50 border border-gray-700 rounded p-3"
+                                    >
+                                      <div className="flex items-start gap-2">
+                                        <span
+                                          className={`px-2 py-1 text-xs rounded flex-shrink-0 ${
+                                            impact.severity === "critical"
+                                              ? "bg-red-500/20 text-red-400"
+                                              : impact.severity === "high"
+                                              ? "bg-orange-500/20 text-orange-400"
+                                              : impact.severity === "medium"
+                                              ? "bg-yellow-500/20 text-yellow-400"
+                                              : "bg-green-500/20 text-green-400"
+                                          }`}
+                                        >
+                                          {impact.severity?.toUpperCase()}
+                                        </span>
+                                        <div className="flex-1">
+                                          <p className="text-xs text-white mb-1">
+                                            {impact.finding}
+                                          </p>
+                                          {impact.recommendation && (
+                                            <p className="text-xs text-gray-400">
+                                              💡 {impact.recommendation}
+                                            </p>
+                                          )}
+                                        </div>
+                                      </div>
+                                    </div>
+                                  )
+                                )}
+                              </div>
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                    ) : (
+                      <div className="text-center py-8">
+                        <ServerCog className="w-16 h-16 text-gray-400 mx-auto mb-4" />
+                        <p className="text-gray-400">
+                          No port scan data available
+                        </p>
+                      </div>
+                    )}
                   </div>
                 )}
 
