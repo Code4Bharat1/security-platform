@@ -74,21 +74,21 @@ export default function SourceCodeAnalyzer() {
   };
 
   return (
-    <div className="bg-black min-h-screen text-white flex flex-col items-center justify-center p-6">
+    <div className="tool-detail-page flex min-h-screen flex-col items-center justify-center p-6">
       {/* Header */}
-      <div className="flex flex-col items-start gap-6 mb-10 text-left w-full max-w-3xl">
+      <div className="mb-10 flex w-full max-w-3xl flex-col items-start gap-6 text-left">
         <div className="flex items-center gap-6">
           <img
             src="/RedTeam/code.png"
             alt="Logo"
-            className="w-30 h-30 rounded-full border-4 border-red-600 object-cover"
+            className="h-30 w-30 rounded-full border-4 border-[color:var(--gold)] object-cover"
           />
           <div>
             <h1 className="text-4xl sm:text-5xl font-bold">
-              <span className="text-white">Source Code</span>{" "}
-              <span className="text-red-600">Analyzer</span>
+                <span className="text-[color:var(--text-heading)]">Source Code</span>{" "}
+                <span className="text-[color:var(--gold)]">Analyzer</span>
             </h1>
-            <p className="text-gray-300 text-lg mt-2">
+            <p className="mt-2 text-lg text-[color:var(--text-muted)]">
               Scan your code for XSS & SQL Injection vulnerabilities.
             </p>
           </div>
@@ -96,13 +96,13 @@ export default function SourceCodeAnalyzer() {
       </div>
 
       {/* Main Analyzer Box */}
-      <div className="bg-black border border-white rounded-2xl p-6 w-full max-w-3xl">
+      <div className="w-full max-w-3xl rounded-2xl border border-[color:var(--border)] bg-[color:var(--surface-card)] p-6 shadow-[var(--shadow-elevated)]">
         {/* Paste Code */}
-        <label className="block font-semibold mb-3 text-white text-base sm:text-lg md:text-xl">
+        <label className="mb-3 block text-base font-semibold text-[color:var(--text-heading)] sm:text-lg md:text-xl">
           Paste Code:
         </label>
         <textarea
-          className="w-full h-40 p-3 border border-white bg-black text-red-500 rounded-md mb-4 resize-none placeholder-red-500 text-base sm:text-lg md:text-xl"
+          className="mb-4 h-40 w-full resize-none rounded-md border border-[color:var(--border)] bg-[color:var(--surface-subtle)] p-3 text-base text-[color:var(--text-heading)] placeholder:text-[color:var(--text-muted)] sm:text-lg md:text-xl"
           placeholder="Paste your HTML, JS, PHP code here..."
           value={code}
           onChange={(e) => setCode(e.target.value)}
@@ -110,19 +110,19 @@ export default function SourceCodeAnalyzer() {
 
         {/* File Upload */}
         <div className="mb-4 flex items-center space-x-4">
-          <label className="font-semibold text-white text-base sm:text-lg md:text-xl whitespace-nowrap">
+          <label className="whitespace-nowrap text-base font-semibold text-[color:var(--text-heading)] sm:text-lg md:text-xl">
             Upload File:
           </label>
           <input
             type="file"
             accept=".js,.html,.php,.txt"
             onChange={(e) => setFile(e.target.files[0])}
-            className="block text-xs text-gray-300 file:mr-4 file:py-1 file:px-3
-              file:rounded file:border-0 file:text-xs file:font-semibold
-              file:bg-red-600 file:text-white hover:file:bg-red-700
+            className="block text-xs text-[color:var(--text-muted)] file:mr-4 file:rounded file:border-0
+              file:bg-[color:var(--gold)] file:px-3 file:py-1 file:text-xs
+              file:font-semibold file:text-[color:var(--text-inverse)] hover:file:bg-[color:var(--gold-strong)]
               file:cursor-pointer"
           />
-          {file && <span className="text-gray-300 text-xs">{file.name}</span>}
+          {file && <span className="text-xs text-[color:var(--text-muted)]">{file.name}</span>}
         </div>
 
         {/* Submit Button */}
@@ -130,7 +130,7 @@ export default function SourceCodeAnalyzer() {
           <button
             onClick={handleSubmit}
             disabled={loading}
-            className="bg-red-600 text-white font-bold px-5 py-2 rounded-md hover:bg-red-700 transition text-sm"
+            className="rounded-md border border-[color:var(--gold)] bg-[color:var(--gold)] px-5 py-2 text-sm font-bold text-[color:var(--text-inverse)] transition hover:bg-[color:var(--gold-strong)]"
           >
             {loading ? "Scanning..." : "Check Your Code"}
           </button>
@@ -138,8 +138,8 @@ export default function SourceCodeAnalyzer() {
 
         {/* Result */}
         {result && (
-          <div className="mt-6 bg-gray-900 border border-gray-700 p-4 rounded-md">
-            <h3 className="font-bold text-base mb-2 text-white">
+          <div className="mt-6 rounded-md border border-[color:var(--border)] bg-[color:var(--surface-subtle)] p-4">
+            <h3 className="mb-2 text-base font-bold text-[color:var(--text-heading)]">
               Scan Result:
             </h3>
 

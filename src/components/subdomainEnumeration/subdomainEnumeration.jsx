@@ -85,11 +85,11 @@ export default function SubdomainScanner() {
   };
 
   return (
-    <div className="min-h-screen bg-black text-white">
-      <div className="max-w-4xl mx-auto p-8">
+    <div className="tool-detail-page min-h-screen bg-black text-white">
+      <div className="tool-detail-shell max-w-4xl mx-auto p-8">
         {/* Header */}
         {/* Header */}
-        <div className="flex items-center justify-between mb-8 gap-4 sm:gap-6 mt-15">
+        <div className="tool-detail-hero flex items-center justify-between mb-8 gap-4 sm:gap-6">
           {/* Logo (Left) */}
           <div className="w-30 h-30 sm:w-30 sm:h-30 rounded-full border-4 border-red-500 overflow-hidden flex items-center justify-center bg-gray-800">
             <img

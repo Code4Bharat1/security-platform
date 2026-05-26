@@ -54,7 +54,7 @@ export default function WebsiteOptimizationTool() {
   };
 
   return (
-    <div className="min-h-screen bg-black flex flex-col items-center px-3 pt-10 pb-24">
+    <div className="tool-detail-page flex min-h-screen flex-col items-center px-3 pt-10 pb-24">
       <GreenLayout
         heroData={{
           imgPath: "/GreenTeam/optimization.png",
@@ -62,25 +62,25 @@ export default function WebsiteOptimizationTool() {
           desc: "Analyze and optimize your website for better performance and SEO.",
         }}
       />
-      <div className="w-full max-w-xl mx-auto p-6 shadow-lg rounded-lg bg-black border border-white">
+      <div className="mx-auto w-full max-w-xl rounded-2xl border border-[color:var(--border)] bg-[color:var(--surface-card)] p-6 shadow-[var(--shadow-elevated)]">
         <input
           type="text"
           value={url}
           onChange={(e) => setUrl(e.target.value.trim())}
           placeholder="Enter website URL (e.g. https://example.com)"
-          className="w-full p-3 text-white border border-white rounded mb-4 focus:outline-none focus:ring-2 focus:ring-green-400"
+          className="mb-4 w-full rounded-lg border border-[color:var(--border)] bg-[color:var(--surface-subtle)] p-3 text-[color:var(--text-body)] placeholder:text-[color:var(--text-muted)] focus:outline-none"
         />
         <button
           onClick={handleScan}
           disabled={loading}
-          className="w-full py-3 bg-green-600 text-white font-semibold rounded hover:bg-green-700 transition duration-300 disabled:opacity-50"
+          className="w-full rounded-lg border border-[color:var(--gold)] bg-[color:var(--gold)] py-3 font-semibold text-[color:var(--text-inverse)] transition duration-300 hover:bg-[color:var(--gold-strong)] disabled:opacity-50"
         >
           {loading ? "Analyzing..." : "Analyze"}
         </button>
 
-        {error && <p className="mt-4 text-red-500 text-center">{error}</p>}
+        {error && <p className="mt-4 text-center text-[color:var(--danger)]">{error}</p>}
         {info && (
-          <pre className="mt-4 p-4 bg-gray-100 border border-gray-300 rounded text-sm whitespace-pre-wrap">
+          <pre className="mt-4 whitespace-pre-wrap rounded-xl border border-[color:var(--border)] bg-[color:var(--surface-subtle)] p-4 text-sm text-[color:var(--text-heading)]">
             {info}
           </pre>
         )}

@@ -1120,13 +1120,17 @@ export default function Vulnscanner() {
 
   // Small stat card - responsive
   const StatCard = ({ title, value, hint, icon }) => (
-    <div className="bg-black p-4 sm:p-6 rounded-xl border border-white">
+    <div className="tool-stat-card">
       <div className="flex items-center gap-3 mb-2">
         <div className="flex-shrink-0">{icon}</div>
-        <h3 className="text-base sm:text-lg font-medium text-white">{title}</h3>
+        <h3 className="font-mono text-sm sm:text-base uppercase tracking-[0.18em] text-white/72">
+          {title}
+        </h3>
       </div>
-      <p className="text-2xl sm:text-3xl font-bold mb-1 text-white">{value}</p>
-      {hint && <p className="text-xs sm:text-sm text-gray-400">{hint}</p>}
+      <p className="mono-heading text-2xl sm:text-3xl font-semibold mb-1 text-white">
+        {value}
+      </p>
+      {hint && <p className="text-xs sm:text-sm text-[var(--muted)]">{hint}</p>}
     </div>
   );
 
@@ -1154,37 +1158,50 @@ export default function Vulnscanner() {
   }, []); // run once on mount
 
   return (
-    <div className="min-h-screen bg-black text-white p-4 sm:p-6 md:p-8 mt-15">
-      <div className="max-w-5xl mx-auto">
+    <div className="vuln-scan-page min-h-screen bg-[#050505] text-white px-4 pb-16 pt-10 sm:px-6 md:px-8 md:pt-14">
+      <div className="mx-auto max-w-6xl">
         {/* Header */}
-        <div className="flex items-center gap-4 mb-6">
-          <div className="w-30 h-30 bg-gray-800 rounded-full border-2 border-red-500 flex items-center justify-center overflow-hidden">
+        <div className="grid gap-8 border-b border-white/6 pb-10 lg:grid-cols-[auto_1fr] lg:items-center">
+          <div className="relative flex h-28 w-28 items-center justify-center rounded-full border border-[var(--gold)]/40 bg-[radial-gradient(circle_at_center,rgba(212,166,74,0.14),rgba(10,10,11,0.92)_70%)] shadow-[0_0_50px_rgba(212,166,74,0.12)] sm:h-36 sm:w-36">
+            <div className="absolute inset-3 rounded-full border border-[var(--gold)]/18" />
             <img
               src="/RedTeam/vuln_scanner.png"
               alt="Security Scanner"
-              className="w-30 h-30 object-contain"
+              className="relative z-10 h-24 w-24 object-contain sm:h-28 sm:w-28"
             />
           </div>
 
-          <div className="flex-1">
-            <h1 className="text-xl sm:text-3xl font-bold">
-              Vulnerability <span className="text-red-500">Scanner</span>
+          <div className="flex-1 space-y-4">
+            <p className="eyebrow">Red Team Module</p>
+            <h1 className="mono-heading text-4xl font-semibold leading-[0.95] text-white sm:text-5xl lg:text-6xl">
+              Vulnerability <span className="text-[var(--gold)]">Scanner</span>
             </h1>
-            <p className="text-gray-400 text-sm sm:text-base mt-1">
-              Our advanced security scanner identifies vulnerabilities before
-              attackers can exploit them.
+            <p className="max-w-3xl text-base leading-8 text-[var(--muted)] sm:text-lg">
+              Our advanced security scanner identifies vulnerabilities before attackers
+              can exploit them. Launch the existing assessment workflow with the new
+              command-center UI, richer visibility, and premium reporting treatment.
             </p>
+            <div className="flex flex-wrap gap-3 font-mono text-[0.68rem] uppercase tracking-[0.22em] text-white/34">
+              <span className="border border-white/8 bg-white/[0.03] px-3 py-2">Live scan engine</span>
+              <span className="border border-white/8 bg-white/[0.03] px-3 py-2">Authenticated workflow</span>
+              <span className="border border-white/8 bg-white/[0.03] px-3 py-2">PDF reporting</span>
+            </div>
           </div>
         </div>
 
-        <div className="bg-black border border-white rounded-2xl overflow-hidden">
-          <div className="p-4 sm:p-8 border-b border-white">
-            <h2 className="text-lg sm:text-2xl font-bold text-center mb-4">
+        <div className="tool-command-panel mt-10 overflow-hidden">
+          <div className="border-b border-white/8 px-4 py-6 sm:px-8 sm:py-8">
+            <h2 className="mono-heading text-2xl font-semibold text-center mb-3 text-white sm:text-4xl">
               Website Vulnerability Scanner
             </h2>
+            <p className="mx-auto max-w-2xl text-center text-sm leading-7 text-[var(--muted)] sm:text-base">
+              Scan a public target, review vulnerability posture, inspect headers and
+              TLS configuration, and export the final report without changing the
+              existing backend workflow.
+            </p>
 
-            <form onSubmit={handleSubmit} className="space-y-3">
-              <div className="flex flex-col sm:flex-row gap-3">
+            <form onSubmit={handleSubmit} className="mt-6 space-y-4">
+              <div className="flex flex-col gap-3 sm:flex-row">
                 <input
                   type="url"
                   id="websiteUrl"
@@ -1193,13 +1210,13 @@ export default function Vulnscanner() {
                   onChange={(e) => setUrl(e.target.value)}
                   placeholder="https://example.com"
                   required
-                  className="flex-1 bg-transparent border border-white rounded-lg px-3 py-2 text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-red-500"
+                  className="tool-scan-input flex-1"
                   autoComplete="off"
                   spellCheck={false}
                 />
                 <button
                   type="submit"
-                  className="w-full sm:w-auto bg-red-500 hover:bg-red-600 disabled:bg-red-500/50 text-white py-2 px-4 rounded-lg font-semibold flex items-center justify-center gap-2 transition-all duration-300 border border-white"
+                  className="gold-button w-full justify-center sm:w-auto disabled:cursor-not-allowed disabled:opacity-60"
                   disabled={loading}
                 >
                   {loading ? (
@@ -1207,23 +1224,30 @@ export default function Vulnscanner() {
                   ) : (
                     <SearchIcon className="h-4 w-4" />
                   )}
-                  <span className="text-sm">
+                  <span className="text-sm font-mono uppercase tracking-[0.16em]">
                     {loading ? "Scanning..." : "Scan"}
                   </span>
                 </button>
               </div>
 
               {error && (
-                <p className="text-red-400 text-sm mt-1 break-words">{error}</p>
+                <p className="rounded-sm border border-red-500/25 bg-red-500/10 px-4 py-3 text-sm text-red-300 break-words">
+                  {error}
+                </p>
               )}
             </form>
           </div>
 
           {/* Loading indicator */}
           {loading && (
-            <div className="text-center py-8">
-              <div className="animate-spin rounded-full h-10 w-10 border-t-2 border-red-500 border-opacity-50 mx-auto"></div>
-              <p className="mt-3 text-gray-400 text-sm">
+            <div className="px-4 py-12 text-center sm:px-8">
+              <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-full border border-[var(--gold)]/25 bg-[var(--gold)]/8 shadow-[0_0_40px_rgba(212,166,74,0.12)]">
+                <Loader2 className="h-6 w-6 animate-spin text-[var(--gold)]" />
+              </div>
+              <p className="mt-4 font-mono text-xs uppercase tracking-[0.28em] text-white/38">
+                Scan in progress
+              </p>
+              <p className="mt-2 text-sm text-[var(--muted)]">
                 Scanning website for vulnerabilities...
               </p>
             </div>
@@ -1231,15 +1255,16 @@ export default function Vulnscanner() {
 
           {/* Results */}
           {scanData && !loading && (
-            <div className="p-4 sm:p-8 space-y-6">
+            <div className="tool-results-shell space-y-6 px-4 py-6 sm:px-8 sm:py-8">
               {/* Summary Header */}
-              <div className="p-4 bg-black rounded-xl border border-white">
+              <div className="tool-results-summary">
                 <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
                   <div>
-                    <h2 className="text-lg sm:text-xl font-bold text-white">
+                    <p className="eyebrow mb-2">Scan Results</p>
+                    <h2 className="mono-heading text-2xl font-semibold text-white sm:text-3xl">
                       Scan Results: {scanData.domain}
                     </h2>
-                    <p className="text-xs sm:text-sm text-gray-400">
+                    <p className="mt-2 text-xs sm:text-sm text-[var(--muted)]">
                       Scanned on{" "}
                       {scanData.timestamp
                         ? new Date(scanData.timestamp).toLocaleString()
@@ -1249,17 +1274,17 @@ export default function Vulnscanner() {
 
                   <div className="flex flex-col sm:flex-row items-start sm:items-center gap-2 sm:gap-4">
                     {scanData.headers?._benchmark?.grade && (
-                      <div>
-                        <span className="font-bold text-white mr-2">
+                      <div className="font-mono text-xs uppercase tracking-[0.22em] text-white/70">
+                        <span className="mr-2 text-white/36">
                           Grade:
                         </span>
-                        <span className="text-blue-400 font-bold">
+                        <span className="text-[var(--gold)] font-semibold">
                           {scanData.headers._benchmark.grade}
                         </span>
                       </div>
                     )}
-                    <div>
-                      <span className="font-bold text-white mr-2">
+                    <div className="font-mono text-xs uppercase tracking-[0.22em] text-white/70">
+                      <span className="mr-2 text-white/36">
                         Risk Level:
                       </span>
                       <span
@@ -1328,7 +1353,7 @@ export default function Vulnscanner() {
 
               {/* Tabs */}
               <div>
-                <nav className="flex flex-wrap gap-2 border-b border-white pb-2">
+                <nav className="tool-tab-nav flex flex-wrap gap-2 pb-2">
                   {[
                     ["overview", "Overview"],
                     ["vulnerabilities", "Vulnerabilities"],
@@ -1349,10 +1374,10 @@ export default function Vulnscanner() {
                     <button
                       key={key}
                       onClick={() => setActiveTab(key)}
-                      className={`py-1 px-3 text-xs sm:text-sm font-medium rounded-t-md border-b-2 ${
+                      className={`tool-tab-button ${
                         activeTab === key
-                          ? "border-red-500 text-red-400"
-                          : "border-transparent text-gray-400 hover:text-white hover:border-gray-500"
+                          ? "tool-tab-button-active"
+                          : "tool-tab-button-idle"
                       }`}
                     >
                       {label}
@@ -5989,10 +6014,10 @@ export default function Vulnscanner() {
 
                 {/* Download PDF Button */}
                 {scanData && (
-                  <div className="flex justify-center sm:justify-end mt-6 pt-4 border-t border-white">
+                  <div className="flex justify-center sm:justify-end mt-6 pt-6 border-t border-white/8">
                     <button
                       onClick={generatePDF}
-                      className="bg-red-600 hover:bg-red-500 text-white py-2 px-6 rounded border border-white flex items-center gap-2 transition-colors"
+                      className="gold-button"
                     >
                       <FileText className="h-4 w-4" />
                       <span className="text-sm">Download PDF Report</span>

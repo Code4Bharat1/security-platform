@@ -2,6 +2,6 @@ import BlueTool from "@/components/Tool/BlueTool";
 
 export default function Page() {
   return (
-      <BlueTool/>
+      <div className="tool-route-premium"><BlueTool/></div>
   )
 }

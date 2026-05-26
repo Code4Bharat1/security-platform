@@ -93,20 +93,20 @@ export default function JoinNetwork() {
 
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-black p-4">
-      <div className="relative bg-[#1e293b] text-white rounded-2xl shadow-lg p-8 w-full max-w-md">
+    <div className="flex min-h-screen items-center justify-center bg-[var(--background)] p-4 text-[color:var(--text-body)]">
+      <div className="relative w-full max-w-md rounded-2xl border border-[color:var(--border)] bg-[color:var(--surface-card)] p-8 text-[color:var(--text-body)] shadow-[var(--shadow-elevated)]">
         
         {/* Close Button */}
         <button
           onClick={() => router.push('/gain-access')}
-          className="absolute top-3 right-3 text-gray-400 hover:text-white"
+          className="absolute top-3 right-3 text-[color:var(--text-muted)] hover:text-[color:var(--text-heading)]"
           aria-label="Close"
         >
           <X size={24} />
         </button>
 
-        <h2 className="text-4xl font-extrabold mb-2 text-gray-200 text-center">Create an Account</h2>
-        <p className="text-sm text-gray-100 mb-6 text-center">
+        <h2 className="mb-2 text-center text-4xl font-extrabold text-[color:var(--text-heading)]">Create an Account</h2>
+        <p className="mb-6 text-center text-sm text-[color:var(--text-muted)]">
           Please enter your details to create an account
         </p>
 
@@ -115,103 +115,103 @@ export default function JoinNetwork() {
           {/* First & Last Name */}
           <div className="flex gap-3 mb-4">
             <div className="w-1/2">
-              <label className="block text-gray-100 text-sm font-medium mb-1">First Name</label>
+              <label className="mb-1 block text-sm font-medium text-[color:var(--text-body)]">First Name</label>
               <input
                 type="text"
                 name="fname"
                 placeholder="First Name"
                 value={formData.fname}
                 onChange={handleChange}
-                className={`w-full px-4 py-2 border ${
-                  errors.fname ? 'border-red-500' : 'border-gray-300'
-                } rounded-lg bg-gray-100 focus:outline-none focus:ring-2 focus:ring-[#9d7af0] text-black`}
+                className={`w-full rounded-lg border px-4 py-2 ${
+                  errors.fname ? 'border-[color:var(--danger)]' : 'border-[color:var(--border)]'
+                } bg-[color:var(--surface-subtle)] text-[color:var(--text-body)] placeholder:text-[color:var(--text-muted)] focus:outline-none focus:ring-2 focus:ring-[color:var(--ring)]`}
                 autoComplete="given-name"
               />
-              {errors.fname && <p className="text-red-500 text-sm mt-1">{errors.fname}</p>}
+              {errors.fname && <p className="mt-1 text-sm text-[color:var(--danger)]">{errors.fname}</p>}
             </div>
             <div className="w-1/2">
-              <label className="block text-gray-100 text-sm font-medium mb-1">Last Name</label>
+              <label className="mb-1 block text-sm font-medium text-[color:var(--text-body)]">Last Name</label>
               <input
                 type="text"
                 name="lname"
                 placeholder="Last Name"
                 value={formData.lname}
                 onChange={handleChange}
-                className={`w-full px-4 py-2 border ${
-                  errors.lname ? 'border-red-500' : 'border-gray-300'
-                } rounded-lg bg-gray-100 focus:outline-none focus:ring-2 focus:ring-[#9d7af0] text-black`}
+                className={`w-full rounded-lg border px-4 py-2 ${
+                  errors.lname ? 'border-[color:var(--danger)]' : 'border-[color:var(--border)]'
+                } bg-[color:var(--surface-subtle)] text-[color:var(--text-body)] placeholder:text-[color:var(--text-muted)] focus:outline-none focus:ring-2 focus:ring-[color:var(--ring)]`}
                 autoComplete="family-name"
               />
-              {errors.lname && <p className="text-red-500 text-sm mt-1">{errors.lname}</p>}
+              {errors.lname && <p className="mt-1 text-sm text-[color:var(--danger)]">{errors.lname}</p>}
             </div>
           </div>
 
           {/* Email */}
           <div className="mb-4">
-            <label className="block text-gray-100 text-sm font-medium mb-1">Email</label>
+            <label className="mb-1 block text-sm font-medium text-[color:var(--text-body)]">Email</label>
             <input
               type="email"
               name="email"
               placeholder="Enter your email"
               value={formData.email}
               onChange={handleChange}
-              className={`w-full px-4 py-2 border ${
-                errors.email ? 'border-red-500' : 'border-gray-300'
-              } rounded-lg bg-gray-100 focus:outline-none focus:ring-2 focus:ring-[#9d7af0] text-black`}
+              className={`w-full rounded-lg border px-4 py-2 ${
+                errors.email ? 'border-[color:var(--danger)]' : 'border-[color:var(--border)]'
+              } bg-[color:var(--surface-subtle)] text-[color:var(--text-body)] placeholder:text-[color:var(--text-muted)] focus:outline-none focus:ring-2 focus:ring-[color:var(--ring)]`}
               autoComplete="email"
             />
-            {errors.email && <p className="text-red-500 text-sm mt-1">{errors.email}</p>}
+            {errors.email && <p className="mt-1 text-sm text-[color:var(--danger)]">{errors.email}</p>}
           </div>
 
           {/* Password */}
           <div className="mb-4 relative">
-            <label className="block text-white text-sm font-medium mb-1">Password</label>
+            <label className="mb-1 block text-sm font-medium text-[color:var(--text-body)]">Password</label>
             <input
               type={showPassword ? 'text' : 'password'}
               name="password"
               placeholder="Enter your password"
               value={formData.password}
               onChange={handleChange}
-              className={`w-full px-4 py-2 border ${
-                errors.password ? 'border-red-500' : 'border-gray-300'
-              } rounded-lg bg-gray-100 focus:outline-none focus:ring-2 focus:ring-[#9d7af0] text-black`}
+              className={`w-full rounded-lg border px-4 py-2 ${
+                errors.password ? 'border-[color:var(--danger)]' : 'border-[color:var(--border)]'
+              } bg-[color:var(--surface-subtle)] text-[color:var(--text-body)] placeholder:text-[color:var(--text-muted)] focus:outline-none focus:ring-2 focus:ring-[color:var(--ring)]`}
               autoComplete="new-password"
             />
             <button
               type="button"
               onClick={() => setShowPassword((prev) => !prev)}
-              className="absolute right-3 top-10 text-gray-600"
+              className="absolute right-3 top-10 text-[color:var(--text-muted)] hover:text-[color:var(--gold)]"
               aria-label="Toggle password visibility"
             >
               {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
             </button>
-            {errors.password && <p className="text-red-500 text-sm mt-1">{errors.password}</p>}
+            {errors.password && <p className="mt-1 text-sm text-[color:var(--danger)]">{errors.password}</p>}
           </div>
 
           {/* Confirm Password */}
           <div className="mb-4 relative">
-            <label className="block text-white text-sm font-medium mb-1">Confirm Password</label>
+            <label className="mb-1 block text-sm font-medium text-[color:var(--text-body)]">Confirm Password</label>
             <input
               type={showConfirmPassword ? 'text' : 'password'}
               name="confirmPassword"
               placeholder="Confirm your password"
               value={formData.confirmPassword}
               onChange={handleChange}
-              className={`w-full px-4 py-2 border ${
-                errors.confirmPassword ? 'border-red-500' : 'border-gray-300'
-              } rounded-lg bg-gray-100 focus:outline-none focus:ring-2 focus:ring-[#9d7af0] text-black`}
+              className={`w-full rounded-lg border px-4 py-2 ${
+                errors.confirmPassword ? 'border-[color:var(--danger)]' : 'border-[color:var(--border)]'
+              } bg-[color:var(--surface-subtle)] text-[color:var(--text-body)] placeholder:text-[color:var(--text-muted)] focus:outline-none focus:ring-2 focus:ring-[color:var(--ring)]`}
               autoComplete="new-password"
             />
             <button
               type="button"
               onClick={() => setShowConfirmPassword((prev) => !prev)}
-              className="absolute right-3 top-10 text-gray-600"
+              className="absolute right-3 top-10 text-[color:var(--text-muted)] hover:text-[color:var(--gold)]"
               aria-label="Toggle password visibility"
             >
               {showConfirmPassword ? <EyeOff size={20} /> : <Eye size={20} />}
             </button>
             {errors.confirmPassword && (
-              <p className="text-red-500 text-sm mt-1">{errors.confirmPassword}</p>
+              <p className="mt-1 text-sm text-[color:var(--danger)]">{errors.confirmPassword}</p>
             )}
           </div>
 
@@ -220,29 +220,29 @@ export default function JoinNetwork() {
             <input
               type="checkbox"
               id="terms"
-              className="mr-2 h-4 w-4 rounded border-gray-300 text-[#9d7af0] focus:ring-[#9d7af0]"
+              className="mr-2 h-4 w-4 rounded border-[color:var(--border)] text-[color:var(--gold)] focus:ring-[color:var(--ring)]"
               checked={accepted}
               onChange={() => setAccepted(!accepted)}
             />
-            <label htmlFor="terms" className="text-sm text-gray-100">
+            <label htmlFor="terms" className="text-sm text-[color:var(--text-body)]">
               I accept the{' '}
-              <a href="#" className="text-[#9d7af0] font-medium hover:underline">
+              <a href="#" className="font-medium text-[color:var(--gold)] hover:text-[color:var(--gold-strong)] hover:underline">
                 Terms of Use
               </a>{' '}
               &{' '}
-              <a href="#" className="text-[#9d7af0] font-medium hover:underline">
+              <a href="#" className="font-medium text-[color:var(--gold)] hover:text-[color:var(--gold-strong)] hover:underline">
                 Privacy Policy
               </a>
               .
             </label>
           </div>
-          {errors.accepted && <p className="text-red-500 text-sm mt-1">{errors.accepted}</p>}
+          {errors.accepted && <p className="mt-1 text-sm text-[color:var(--danger)]">{errors.accepted}</p>}
 
           {/* Submit Button */}
           <button
             type="submit"
             disabled={loading}
-            className={`w-full text-center text-white mt-6 bg-[#9d7af0] py-3 rounded-lg hover:bg-[#a67fea] transition font-semibold ${
+            className={`mt-6 w-full rounded-lg border border-[color:var(--gold)] bg-[color:var(--gold)] py-3 text-center font-semibold text-[color:var(--text-inverse)] hover:bg-[color:var(--gold-strong)] ${
               loading ? 'opacity-50 cursor-not-allowed' : ''
             }`}
           >
@@ -254,16 +254,16 @@ export default function JoinNetwork() {
         {message && (
           <p
             className={`mt-4 text-center font-medium ${
-              message.includes('success') ? 'text-green-500' : 'text-red-500'
+              message.includes('success') ? 'text-[color:var(--success)]' : 'text-[color:var(--danger)]'
             }`}
           >
             {message}
           </p>
         )}
 
-        <p className="text-center text-sm text-gray-100 mt-6">
+        <p className="mt-6 text-center text-sm text-[color:var(--text-muted)]">
           Already have an account?{' '}
-          <Link href="/gain-access" className="text-[#9d7af0] font-medium hover:underline">
+          <Link href="/gain-access" className="font-medium text-[color:var(--gold)] hover:text-[color:var(--gold-strong)] hover:underline">
             Gain Access here.
           </Link>
         </p>

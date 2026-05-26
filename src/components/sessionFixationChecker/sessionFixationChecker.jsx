@@ -238,7 +238,7 @@ export default function SessionFixationChecker() {
   };
 
   return (
-    <div className="min-h-screen bg-black text-white">
+    <div className="tool-detail-page min-h-screen bg-black text-white">
       {/* toasts */}
       <div className="fixed top-4 right-4 z-50 space-y-2">
         {toasts.map((t) => (
@@ -272,9 +272,9 @@ export default function SessionFixationChecker() {
         ))}
       </div>
 
-      <div className="container mx-auto px-4 py-8 max-w-4xl">
+      <div className="tool-detail-shell container mx-auto px-4 py-8 max-w-4xl">
         {/* Header */}
-        <div className="flex items-center gap-4 mb-8 mt-15">
+        <div className="tool-detail-hero flex items-center gap-4 mb-8">
           <div className="w-30 h-30 sm:w-30 md:w-30 sm:h-30 md:h-30 rounded-full overflow-hidden border-2 border-red-500 flex-shrink-0">
             <img
               src="/Redteam/session fixation.png" // <-- yahan apni image ka path dijiye

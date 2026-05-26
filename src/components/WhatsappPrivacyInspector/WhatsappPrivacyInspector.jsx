@@ -102,7 +102,7 @@ export default function WhatsappPrivacyChecker() {
   };
 
   return (
-    <div className="min-h-screen bg-black flex flex-col items-center px-4">
+    <div className="tool-detail-page flex min-h-screen flex-col items-center px-4">
       <GreenLayout
         heroData={{
           title: "WhatsApp Privacy Inspector",
@@ -111,7 +111,7 @@ export default function WhatsappPrivacyChecker() {
         }}
       />
       <div
-        className="w-full max-w-xl border-2 border-dashed border-gray-300 rounded-lg p-6 bg-gray-500 transition cursor-pointer"
+        className="w-full max-w-xl cursor-pointer rounded-2xl border border-dashed border-[color:var(--border)] bg-[color:var(--surface-card)] p-6 shadow-[var(--shadow-elevated)] transition"
         onDrop={handleDrop}
         onDragOver={(e) => e.preventDefault()}
       >
@@ -126,10 +126,10 @@ export default function WhatsappPrivacyChecker() {
         />
         <label
           htmlFor="imageInput"
-          className="block text-center border border-dashed rounded-lg border-green-500 px-5 py-3 text-white cursor-pointer"
+          className="block cursor-pointer rounded-xl border border-dashed border-[color:var(--gold)] px-5 py-3 text-center text-[color:var(--text-body)]"
         >
           Drag & drop images here, or{" "}
-          <span className="text-blue-500 underline cursor-pointer">browse</span>{" "}
+          <span className="cursor-pointer text-[color:var(--gold)] underline">browse</span>{" "}
           (2–5 images)
         </label>
 
@@ -143,7 +143,7 @@ export default function WhatsappPrivacyChecker() {
               />
               <button
                 onClick={() => removeImage(idx)}
-                className="absolute top-1 right-1 bg-red-600 text-white rounded-full w-6 h-6 flex items-center justify-center text-xs hover:bg-red-700 transition"
+                className="absolute right-1 top-1 flex h-6 w-6 items-center justify-center rounded-full bg-[color:var(--danger)] text-xs text-[color:var(--text-inverse)] transition hover:opacity-90"
                 title="Remove image"
                 type="button"
               >
@@ -158,8 +158,8 @@ export default function WhatsappPrivacyChecker() {
             disabled={isLoading}
             className={`mt-6 px-6 py-2 rounded transition font-medium ${
               isLoading
-                ? "bg-gray-400 cursor-not-allowed text-white"
-                : "bg-green-600 hover:bg-green-700 text-white"
+                ? "cursor-not-allowed bg-[color:var(--gold)] text-[color:var(--text-inverse)] opacity-70"
+                : "bg-[color:var(--gold)] text-[color:var(--text-inverse)] hover:bg-[color:var(--gold-strong)]"
             }`}
           >
             {isLoading ? "Analyzing..." : "Analyze"}
@@ -168,12 +168,12 @@ export default function WhatsappPrivacyChecker() {
       </div>
 
       {score !== null && (
-        <div className="mt-8 w-full max-w-xl bg-white p-6 rounded shadow">
-          <h2 className="text-2xl font-semibold mb-4">Analysis Results</h2>
-          <p className="mb-2 font-semibold">Privacy Score: {score}</p>
+        <div className="mt-8 w-full max-w-xl rounded-2xl border border-[color:var(--border)] bg-[color:var(--surface-card)] p-6 shadow-[var(--shadow-elevated)]">
+          <h2 className="mb-4 text-2xl font-semibold text-[color:var(--text-heading)]">Analysis Results</h2>
+          <p className="mb-2 font-semibold text-[color:var(--text-heading)]">Privacy Score: {score}</p>
 
           <div className="mb-4">
-            <h3 className="font-semibold mb-1">Messages:</h3>
+            <h3 className="mb-1 font-semibold text-[color:var(--text-heading)]">Messages:</h3>
             <ul className="list-disc list-inside max-h-48 overflow-auto">
               {messages.length === 0 ? (
                 <li>No messages</li>
@@ -184,8 +184,8 @@ export default function WhatsappPrivacyChecker() {
           </div>
 
           <div>
-            <h3 className="font-semibold mb-1">Settings:</h3>
-            <pre className="max-h-48 overflow-auto bg-gray-100 p-2 rounded text-sm">
+            <h3 className="mb-1 font-semibold text-[color:var(--text-heading)]">Settings:</h3>
+            <pre className="max-h-48 overflow-auto rounded bg-[color:var(--surface-subtle)] p-2 text-sm text-[color:var(--text-heading)]">
               {JSON.stringify(settings, null, 2)}
             </pre>
           </div>

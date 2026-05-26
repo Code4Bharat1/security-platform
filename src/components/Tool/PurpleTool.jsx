@@ -1,16 +1,7 @@
 'use client';
 
 import ToolLayout from "./Layout";
+import { purpleTools } from "./catalog";
 export default function PurpleTool() {
-    const toolList = [// Non-Tech
-        {
-            name: "Cyber Fraud Identifier",
-            image: "/cyber.png",
-            description: "Flags potential online fraud by previous records",
-            slug: "cyber-fraud-identifier",
-            buttonLabel: "Identify Fraudster",
-            type: "forensic"
-        },
-    ]
-    return (<ToolLayout team="purple" toolList={toolList}></ToolLayout>)
+    return (<ToolLayout team="purple" toolList={purpleTools}></ToolLayout>)
 }

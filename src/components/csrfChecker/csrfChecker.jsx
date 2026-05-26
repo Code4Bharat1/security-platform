@@ -116,7 +116,7 @@ export default function CSRFChecker() {
   };
 
   return (
-    <div className="min-h-screen bg-black">
+    <div className="tool-detail-page min-h-screen bg-black">
       {/* Toasts */}
       <div className="fixed top-4 right-4 z-50 space-y-2">
         {toasts.map((toast) => (
@@ -140,10 +140,10 @@ export default function CSRFChecker() {
         ))}
       </div>
 
-      <div className="container mx-auto px-4 py-8 max-w-4xl">
+      <div className="tool-detail-shell container mx-auto px-4 py-8 max-w-4xl">
         {/* Header */}
         <div className="text-left mb-8">
-          <div className="flex items-center justify-start gap-4 mb-6 mt-15">
+          <div className="tool-detail-hero flex items-center justify-start gap-4 mb-6">
             <img
               src="/RedTeam/csrf.png"
               alt="CSRF Checker"

@@ -2,6 +2,6 @@ import GreenTool from "@/components/Tool/GreenTool";
 
 export default function Page() {
   return (
-      <GreenTool/>
+      <div className="tool-route-premium"><GreenTool/></div>
   )
 }

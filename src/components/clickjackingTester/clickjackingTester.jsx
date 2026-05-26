@@ -297,10 +297,10 @@ def frame_headers(get_response):
   /* ============================== Render ============================== */
 
   return (
-    <div className="min-h-screen bg-black via-emerald-50 to-teal-50 p-6">
-      <div className="max-w-4xl mx-auto" ref={reportRef}>
+    <div className="tool-detail-page min-h-screen bg-black via-emerald-50 to-teal-50 p-6 text-white">
+      <div className="tool-detail-shell max-w-4xl mx-auto" ref={reportRef}>
         {/* Header */}
-        <div className="flex items-center gap-4 mb-8 mt-15">
+        <div className="tool-detail-hero flex items-center gap-4 mb-8">
           {/* Logo */}
           <div className="w-30 h-30 rounded-full overflow-hidden">
             <img

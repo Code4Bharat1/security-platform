@@ -101,9 +101,10 @@ export default function DirectoryBruteForcer() {
   };
 
   return (
-    <div className="p-6 max-w-5xl mx-auto bg-black text-white min-h-screen mt-15">
+    <div className="tool-detail-page">
+      <div className="tool-detail-shell p-6 max-w-5xl mx-auto bg-black text-white min-h-screen">
     {/* Header */}
-<div className="flex flex-row items-center gap-4 mb-6">
+<div className="tool-detail-hero flex flex-row items-center gap-4 mb-6">
   {/* Image always left */}
   <div className="w-30 h-30 rounded-full border-4 border-red-600 flex items-center justify-center overflow-hidden flex-shrink-0 bg-white/5">
     <img
@@ -227,6 +228,7 @@ export default function DirectoryBruteForcer() {
       ) : (
         <div className="mt-6 text-gray-400">No results yet. Start a scan to see results here.</div>
       )}
+      </div>
     </div>
   );
 }

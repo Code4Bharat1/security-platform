@@ -1,321 +1,208 @@
 "use client";
 
 import Link from "next/link";
-import { useRef, useEffect, useState } from "react";
-import { motion } from "framer-motion";
-import Image from "next/image";
+import { ArrowRight, Cloud, Crosshair, Network, Shield, TowerControl, WalletCards } from "lucide-react";
 
-const MotionImage = motion(Image);
+import EngagementCta from "@/components/marketing/EngagementCta";
+import SectionIntro from "@/components/marketing/SectionIntro";
+
+const serviceRows = [
+  {
+    id: "S.01",
+    title: "Vulnerability Assessment",
+    description:
+      "Structured discovery and prioritization of weaknesses across infrastructure, applications, cloud, and endpoints.",
+    href: "/services/vulnerability-assessment",
+    icon: Shield,
+    capabilities: [
+      "Authenticated & unauthenticated scans",
+      "CVSS-scored findings",
+      "Remediation playbooks",
+    ],
+    idealFor:
+      "Pre-audit posture baselining, M&A diligence, quarterly hygiene cycles.",
+    deliverables:
+      "Executive summary · Technical findings register · Remediation tracker.",
+    metrics: [
+      ["96%", "Median critical remediation in 14 days"],
+      ["3.2x", "More findings vs. last vendor"],
+    ],
+  },
+  {
+    id: "S.02",
+    title: "Penetration Testing",
+    description:
+      "Manual offensive engagements by OSCP / OSCE-certified consultants — web, mobile, network, API, and cloud.",
+    href: "/services/penetration-testing",
+    icon: Crosshair,
+    capabilities: [
+      "Senior consultant-led",
+      "Detailed PoCs with impact",
+      "Re-test included",
+    ],
+    idealFor:
+      "Regulatory testing, pre-launch sign-off, and material control validation.",
+    deliverables:
+      "PoC walkthroughs · Risk-rated report · Auditor letter on request.",
+    metrics: [
+      ["48h", "To first critical finding (median)"],
+      ["100%", "Engagements include free re-test"],
+    ],
+  },
+  {
+    id: "S.03",
+    title: "Security Operations Center",
+    description:
+      "24x7 managed detection and response from a tier-3 SOC with proactive threat hunting.",
+    href: "/services/security-operations-center",
+    icon: TowerControl,
+    capabilities: ["MTTA under 15 minutes", "SIEM + SOAR included", "Quarterly executive reviews"],
+    idealFor:
+      "Lean security teams, regulated firms, and post-incident resilience uplift.",
+    deliverables:
+      "Live SOC dashboard · Monthly hunt report · Incident retrospectives.",
+    metrics: [
+      ["4m 11s", "Median MTTR"],
+      ["99.98%", "Platform uptime SLA"],
+    ],
+  },
+  {
+    id: "S.04",
+    title: "Cloud Security",
+    description:
+      "Posture management, workload protection, and zero-trust architecture for AWS, Azure, and GCP.",
+    href: "/services/cloud-security",
+    icon: Cloud,
+    capabilities: ["CSPM & CWPP", "IAM least-privilege review", "Kubernetes hardening"],
+    idealFor:
+      "Multi-cloud estates, fast-growth SaaS, and regulated data residency.",
+    deliverables:
+      "Posture scorecard · IaC guardrails · Kubernetes benchmark report.",
+    metrics: [
+      ["62%", "Average reduction in IAM blast radius"],
+      ["CIS L1+L2", "Automated continuous checks"],
+    ],
+  },
+  {
+    id: "S.05",
+    title: "Network & Zero-Trust",
+    description:
+      "Architecture, segmentation, and policy design — NGFW, IDS/IPS, and zero-trust access rollouts.",
+    href: "/services/network-security",
+    icon: Network,
+    capabilities: ["Network segmentation", "Zero-trust rollout", "EDR integration"],
+    idealFor:
+      "Hybrid datacenter + cloud, OT/IT convergence, and migration programs.",
+    deliverables:
+      "Target architecture · Migration runbook · Cutover playbook.",
+    metrics: [
+      ["9 weeks", "Median zero-trust rollout"],
+      ["0", "Downtime incidents on cutover"],
+    ],
+  },
+  {
+    id: "S.06",
+    title: "Cybersecurity Consulting",
+    description:
+      "Advisory to strengthen governance, policy, awareness, and strategic security execution.",
+    href: "/services/cybersecurity-consultancy",
+    icon: WalletCards,
+    capabilities: ["vCISO engagements", "ISO 27001 / SOC 2 readiness", "Board-level reporting"],
+    idealFor:
+      "Series B+ scale-ups, regulated newcomers, and board-ready posture reviews.",
+    deliverables:
+      "Strategy roadmap · Policy library · Board pack and operating model.",
+    metrics: [
+      ["6 months", "To ISO 27001 stage 2 (median)"],
+      ["100%", "Audit pass rate"],
+    ],
+  },
+];
 
 export default function ServicePage() {
-  const services = [
-    {
-      title: "Vulnerability Assessment",
-      description: `A structured process to uncover, analyze, and prioritize security weaknesses across IT infrastructure, applications, cloud, and endpoints.`,
-      imageName: "VA.png",
-    },
-    {
-      title: "Penetration Testing",
-      description: `Controlled ethical hacking that simulates real-world cyberattacks.`,
-      imageName: "PT.png",
-    },
-    {
-      title: "Security Operations Center",
-      description: `24/7 monitoring, detection, and response to cyber threats.`,
-      imageName: "SOC.png",
-    },
-    {
-      title: "Cloud Security",
-      description: `End-to-end protection for AWS, Azure, and GCP workloads.`,
-      imageName: "CS.png",
-    },
-    {
-      title: "Network Security",
-      description: `Multi-layered defenses including firewalls, IDS/IPS, endpoint controls, and zero-trust segmentation.`,
-      imageName: "NS.png",
-    },
-    {
-      title: "Cybersecurity Consultancy",
-      description: `Advisory services to strengthen governance, policies, employee awareness, and strategic planning.`,
-      imageName: "CC.png",
-    },
-  ];
-
-  const [isVisible, setIsVisible] = useState(Array(services.length).fill(false));
-  const serviceRefs = useRef([]);
-
-  useEffect(() => {
-    const observer = new IntersectionObserver(
-      (entries) => {
-        entries.forEach((entry) => {
-          if (entry.isIntersecting) {
-            const index = serviceRefs.current.findIndex(
-              (ref) => ref === entry.target
-            );
-            if (index !== -1) {
-              setIsVisible((prev) => {
-                const newState = [...prev];
-                newState[index] = true;
-                return newState;
-              });
-            }
-          }
-        });
-      },
-      { threshold: 0.2 }
-    );
-
-    serviceRefs.current.forEach((ref) => {
-      if (ref) observer.observe(ref);
-    });
-
-    return () => {
-      serviceRefs.current.forEach((ref) => {
-        if (ref) observer.unobserve(ref);
-      });
-    };
-  }, []);
-
-  // Animation variants for text (from left)
-  const textVariants = {
-    hidden: { 
-      opacity: 0, 
-      x: -100,
-      scale: 0.9
-    },
-    visible: { 
-      opacity: 1, 
-      x: 0,
-      scale: 1,
-      transition: {
-        duration: 0.8,
-        ease: "easeOut",
-        staggerChildren: 0.2
-      }
-    }
-  };
-
-  // Animation variants for images (from right)
-  const imageVariants = {
-    hidden: { 
-      opacity: 0, 
-      x: 100,
-      scale: 0.8,
-      rotateY: 15
-    },
-    visible: { 
-      opacity: 1, 
-      x: 0,
-      scale: 1,
-      rotateY: 0,
-      transition: {
-        duration: 0.9,
-        ease: "easeOut",
-        delay: 0.3
-      }
-    }
-  };
-
-  // Child animation variants for staggered text elements
-  const childVariants = {
-    hidden: { 
-      opacity: 0, 
-      y: 20,
-      x: -30
-    },
-    visible: { 
-      opacity: 1, 
-      y: 0,
-      x: 0,
-      transition: {
-        duration: 0.6,
-        ease: "easeOut"
-      }
-    }
-  };
-
   return (
-    <div className="min-h-screen bg-gradient-to-b from-gray-900 to-black text-white py-12 px-4 md:px-8 lg:px-16 overflow-hidden">
-      {/* Heading */}
-      <motion.div
-        className="text-center mb-16"
-        initial={{ opacity: 0, y: -40 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 1, ease: "easeOut" }}
-      >
-        <h1 className="text-5xl md:text-6xl lg:text-7xl font-black bg-clip-text text-transparent bg-gradient-to-r from-purple-400 to-indigo-500 mb-4 mt-4">
-          OUR SERVICES
-        </h1>
-        <p className="text-xl md:text-2xl text-gray-300 max-w-3xl mx-auto">
-          Comprehensive cybersecurity solutions to protect your digital assets
-        </p>
-        <motion.div
-          className="w-24 h-1 bg-gradient-to-r from-purple-500 to-indigo-500 mx-auto mt-6 rounded-full"
-          initial={{ scaleX: 0 }}
-          animate={{ scaleX: 1 }}
-          transition={{ duration: 1.2, ease: "easeInOut" }}
-        />
-      </motion.div>
+    <main className="site-page-shell bg-[#050505] text-white">
+      <section className="border-b border-white/6">
+        <div className="mx-auto max-w-7xl px-4 py-20 sm:px-6 lg:px-8">
+          <SectionIntro
+            eyebrow="Our Services"
+            title="Security services that scale with your risk."
+            description="Six disciplines, one accountable team. Senior consultants lead every engagement — from a single web app to a global multi-cloud estate."
+            className="mb-16"
+          />
 
-      {/* Services */}
-      <div className="space-y-20 md:space-y-32">
-        {services.map((service, index) => (
-          <div
-            key={index}
-            ref={(el) => (serviceRefs.current[index] = el)}
-            className={`flex flex-col md:flex-row items-center justify-between gap-8 md:gap-12 ${
-              index % 2 === 0 ? "md:flex-row-reverse" : ""
-            }`}
-          >
-            {/* Text Content */}
-            <motion.div
-              className="w-full md:w-1/2 flex flex-col justify-center"
-              variants={textVariants}
-              initial="hidden"
-              animate={isVisible[index] ? "visible" : "hidden"}
-            >
-              <motion.h2 
-                className="text-3xl md:text-4xl lg:text-5xl font-bold mb-6 bg-clip-text text-transparent bg-gradient-to-r from-purple-300 to-indigo-300"
-                variants={childVariants}
-              >
-                {service.title}
-              </motion.h2>
-              
-              <motion.p 
-                className="text-lg md:text-xl text-gray-300 mb-8 leading-relaxed"
-                variants={childVariants}
-              >
-                {service.description}
-              </motion.p>
+          <div className="space-y-8">
+            {serviceRows.map((service, index) => {
+              const Icon = service.icon;
 
-              <motion.div variants={childVariants}>
-                <Link
-                  href={`/services/${service.title
-                    .toLowerCase()
-                    .replace(/\s+/g, "-")}`}
-                  className="hidden md:inline-flex items-center justify-center px-8 py-3 text-lg font-semibold text-white bg-gradient-to-r from-purple-600 to-indigo-600 rounded-lg shadow-lg backdrop-blur-sm transition-all duration-300 ease-in-out hover:from-purple-700 hover:to-indigo-700 hover:shadow-xl hover:shadow-purple-500/30 hover:scale-105 w-fit group"
-                >
-                  Know More
-                  <motion.svg
-                    className="w-5 h-5 ml-2"
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
-                    whileHover={{ x: 5 }}
-                    transition={{ type: "spring", stiffness: 200 }}
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M17 8l4 4m0 0l-4 4m4-4H3"
-                    />
-                  </motion.svg>
-                </Link>
-              </motion.div>
-            </motion.div>
+              return (
+                <section key={service.id} className="border-t border-white/6 pt-8">
+                  <div className="grid gap-8 lg:grid-cols-[1.1fr_1.4fr] lg:items-start">
+                    <div className={`${index % 2 === 1 ? "lg:order-2" : ""} space-y-5`}>
+                      <p className="eyebrow">{service.id}</p>
+                      <div className="inline-flex h-10 w-10 items-center justify-center border border-[var(--gold)]/25 text-[var(--gold)]">
+                        <Icon className="h-4 w-4" />
+                      </div>
+                      <h2 className="font-mono text-3xl font-semibold text-white sm:text-4xl">
+                        {service.title}
+                      </h2>
+                      <p className="max-w-xl text-base leading-8 text-[var(--muted)]">
+                        {service.description}
+                      </p>
+                      <Link href={service.href} className="inline-flex items-center gap-2 font-mono text-sm text-[var(--gold)] transition hover:text-white">
+                        Discuss this service
+                        <ArrowRight className="h-4 w-4" />
+                      </Link>
+                    </div>
 
-            {/* Image Content */}
-            <motion.div
-              className="w-full md:w-1/2 relative group perspective-1000"
-              variants={imageVariants}
-              initial="hidden"
-              animate={isVisible[index] ? "visible" : "hidden"}
-              whileHover={{ scale: 1.02, rotateY: -2 }}
-              transition={{ type: "spring", stiffness: 120 }}
-            >
-              <motion.div 
-                className="relative overflow-hidden rounded-2xl shadow-2xl transform-gpu"
-                whileHover={{ 
-                  scale: 1.05,
-                  rotateX: 2,
-                  rotateY: -5,
-                  z: 50
-                }}
-                transition={{ duration: 0.4, ease: "easeOut" }}
-              >
-                <div className="absolute inset-0 bg-gradient-to-b from-transparent via-transparent to-black opacity-60 z-10"></div>
-                
-                {/* Animated border glow */}
-                <motion.div
-                  className="absolute inset-0 rounded-2xl"
-                  style={{
-                    background: "linear-gradient(45deg, transparent, rgba(147, 51, 234, 0.3), transparent, rgba(79, 70, 229, 0.3), transparent)",
-                    backgroundSize: "400% 400%"
-                  }}
-                  animate={{
-                    backgroundPosition: ["0% 50%", "100% 50%", "0% 50%"],
-                  }}
-                  transition={{
-                    duration: 3,
-                    repeat: Infinity,
-                    ease: "linear"
-                  }}
-                />
-                
-                <MotionImage
-                  src={`/services/${service.imageName}`}
-                  alt={service.title}
-                  width={600}
-                  height={400}
-                  className="w-full h-auto object-cover relative z-20"
-                  initial={{ scale: 1.1, opacity: 0 }}
-                  animate={isVisible[index] ? { scale: 1, opacity: 1 } : { scale: 1.1, opacity: 0 }}
-                  transition={{ duration: 1, ease: "easeOut", delay: 0.5 }}
-                  whileHover={{ scale: 1.15 }}
-                />
-              </motion.div>
-
-              {/* Enhanced floating elements */}
-              <motion.div
-                className="absolute -top-6 -right-6 w-12 h-12 bg-purple-500 rounded-full blur-xl opacity-0 group-hover:opacity-70"
-                animate={isVisible[index] ? { 
-                  y: [0, -15, 0],
-                  scale: [1, 1.2, 1],
-                  opacity: [0.3, 0.7, 0.3]
-                } : {}}
-                transition={{ repeat: Infinity, duration: 4, ease: "easeInOut" }}
-              />
-              <motion.div
-                className="absolute -bottom-6 -left-6 w-12 h-12 bg-indigo-500 rounded-full blur-xl opacity-0 group-hover:opacity-70"
-                animate={isVisible[index] ? { 
-                  y: [0, 15, 0],
-                  scale: [1, 1.3, 1],
-                  opacity: [0.3, 0.8, 0.3]
-                } : {}}
-                transition={{ repeat: Infinity, duration: 4, ease: "easeInOut", delay: 0.5 }}
-              />
-
-              {/* Additional particle effects */}
-              <motion.div
-                className="absolute top-1/2 -left-4 w-2 h-2 bg-purple-400 rounded-full opacity-0 group-hover:opacity-80"
-                animate={isVisible[index] ? {
-                  x: [0, 20, 0],
-                  opacity: [0, 0.8, 0],
-                  scale: [0, 1, 0]
-                } : {}}
-                transition={{ repeat: Infinity, duration: 3, ease: "easeInOut", delay: 1 }}
-              />
-
-              {/* Mobile Button with enhanced animation */}
-              <motion.div
-                initial={{ opacity: 0, y: 20 }}
-                animate={isVisible[index] ? { opacity: 1, y: 0 } : { opacity: 0, y: 20 }}
-                transition={{ duration: 0.6, ease: "easeOut", delay: 0.8 }}
-              >
-                <Link
-                  href={`/services/${service.title
-                    .toLowerCase()
-                    .replace(/\s+/g, "-")}`}
-                  className="mt-6 block md:hidden text-center px-8 py-3 text-lg font-semibold text-white bg-gradient-to-r from-purple-600 to-indigo-600 rounded-lg shadow-lg backdrop-blur-sm transition-all duration-300 ease-in-out hover:from-purple-700 hover:to-indigo-700 hover:shadow-xl hover:shadow-purple-500/30 hover:scale-105 group"
-                >
-                  Know More
-                </Link>
-              </motion.div>
-            </motion.div>
+                    <div className={`${index % 2 === 1 ? "lg:order-1" : ""} grid gap-4 md:grid-cols-2`}>
+                      <InfoPanel title="Capabilities">
+                        {service.capabilities.map((capability) => (
+                          <li key={capability}>{capability}</li>
+                        ))}
+                      </InfoPanel>
+                      <TextPanel title="Ideal For" text={service.idealFor} />
+                      <TextPanel title="Deliverables" text={service.deliverables} />
+                      <div className="grid gap-4 sm:grid-cols-2">
+                        {service.metrics.map(([value, label]) => (
+                          <div key={label} className="surface-panel p-6">
+                            <p className="font-mono text-4xl font-semibold text-white">{value}</p>
+                            <p className="mt-2 font-mono text-[0.62rem] uppercase tracking-[0.28em] text-white/28">
+                              {label}
+                            </p>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  </div>
+                </section>
+              );
+            })}
           </div>
-        ))}
-      </div>
+        </div>
+      </section>
+
+      <EngagementCta />
+    </main>
+  );
+}
+
+function InfoPanel({ title, children }) {
+  return (
+    <div className="surface-panel p-6">
+      <p className="eyebrow mb-5">{title}</p>
+      <ul className="space-y-3 text-sm leading-7 text-white/74 [&_li]:relative [&_li]:pl-5 [&_li::before]:absolute [&_li::before]:left-0 [&_li::before]:top-[0.7rem] [&_li::before]:h-1.5 [&_li::before]:w-1.5 [&_li::before]:rounded-full [&_li::before]:bg-[var(--gold)]">
+        {children}
+      </ul>
+    </div>
+  );
+}
+
+function TextPanel({ title, text }) {
+  return (
+    <div className="surface-panel p-6">
+      <p className="eyebrow mb-5">{title}</p>
+      <p className="text-sm leading-7 text-[var(--muted)]">{text}</p>
     </div>
   );
 }

@@ -173,10 +173,10 @@ export default function DarkThemeOpenRedirectTester() {
   }
 
   return (
-    <div className="min-h-screen bg-black text-white">
-      <div className="max-w-3xl mx-auto p-6">
+    <div className="tool-detail-page min-h-screen bg-black text-white">
+      <div className="tool-detail-shell max-w-3xl mx-auto p-6">
         {/* Header */}
-        <div className="flex items-center gap-4 mb-8 mt-15">
+        <div className="tool-detail-hero flex items-center gap-4 mb-8">
           {/* Replace logo div with image */}
           <div className="w-20 h-20 sm:w-30 sm:h-30 md:w-30 md:h-30 rounded-full border-4 border-red-500 flex items-center justify-center overflow-hidden flex-shrink-0">
             <img

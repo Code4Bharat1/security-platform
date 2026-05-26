@@ -186,11 +186,11 @@ export default function NexposeScanner() {
   }, [result, showPositivesOnly]);
 
   return (
-    <div className="min-h-screen bg-black flex flex-col items-center pt-10 px-4">
+    <div className="tool-detail-page min-h-screen bg-black flex flex-col items-center pt-10 px-4 text-white">
       {/* Header with logo and title */}
       {/* Header with logo and title */}
-      <div className="text-center mb-4 px-2 sm:px-4">
-        <div className="flex flex-row items-center justify-start mb-4 mt-15">
+      <div className="tool-detail-shell text-center mb-4 px-2 sm:px-4">
+        <div className="tool-detail-hero flex flex-row items-center justify-start mb-4">
           {/* Logo */}
           <div className="w-30 h-30 sm:w-24 md:w-30 sm:h-24 md:h-30 rounded-full border-4 border-red-500 flex items-center justify-center overflow-hidden mr-4 flex-shrink-0">
             <img

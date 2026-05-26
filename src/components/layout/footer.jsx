@@ -1,193 +1,118 @@
-import Link from "next/link";
-import { usePathname, useRouter } from "next/navigation";
-import { useEffect } from "react";
+import Link from 'next/link';
+import { Linkedin, Shield, Twitter } from 'lucide-react';
 
-const Footer = () => {
-  const router = useRouter();
-  const pathname = usePathname();
+import BrandMark from '@/components/marketing/BrandMark';
 
-  const scrollToSection = (id) => {
-    const section = document.getElementById(id);
-    if (section) {
-      section.scrollIntoView({ behavior: "smooth", block: "start" });
-    }
-  };
+const columns = [
+  {
+    title: 'Company',
+    links: [
+      { label: 'About', href: '/about' },
+      { label: 'Join The Network', href: '/join-the-network' },
+      { label: 'Gain Access', href: '/gain-access' },
+      { label: 'Contact', href: '/connect' },
+    ],
+  },
+  {
+    title: 'Services',
+    links: [
+      { label: 'Vulnerability Assessment', href: '/services/vulnerability-assessment' },
+      { label: 'Penetration Testing', href: '/services/penetration-testing' },
+      { label: 'Managed Detection & Response', href: '/services/security-operations-center' },
+      { label: 'Cloud Security', href: '/services/cloud-security' },
+      { label: 'Compliance Advisory', href: '/services/cybersecurity-consultancy' },
+    ],
+  },
+  {
+    title: 'Resources',
+    links: [
+      { label: 'Platform', href: '/tools' },
+      { label: 'Threat Research', href: '/tools/osint' },
+      { label: 'Case Studies', href: '/about' },
+      { label: 'Documentation', href: '/tools/Source-Code' },
+      { label: 'Trust Center', href: '/tools/blue-team' },
+    ],
+  },
+  {
+    title: 'Legal',
+    links: [
+      { label: 'Privacy Policy', href: '/tools/privacypolicy' },
+      { label: 'Terms of Service', href: '/tools/termscondition' },
+      { label: 'Security', href: '/services/security-operations-center' },
+      { label: 'Cookies', href: '/connect' },
+    ],
+  },
+];
 
-  // Auto-scroll when hash exists in URL (on homepage)
-  useEffect(() => {
-    if (typeof window !== "undefined") {
-      const hash = window.location.hash.replace("#", "");
-      if (hash) {
-        setTimeout(() => scrollToSection(hash), 200);
-      }
-    }
-  }, [pathname]);
-
-  const Section = ({ title, links }) => (
-    <div className="w-full md:w-auto mb-6 md:mb-0 md:px-4 font-inter">
-      <h3 className="w-full text-left text-lg font-bold text-white">{title}</h3>
-      <ul className="mt-2 space-y-2">
-        {links.map((link, index) => (
-          <li key={index}>
-            {link.id ? (
-              <button
-                onClick={() => {
-                  if (pathname === "/") {
-                    // Already on homepage → smooth scroll
-                    scrollToSection(link.id);
-                  } else {
-                    // Navigate to homepage + hash
-                    router.push(`/#${link.id}`);
-                  }
-                }}
-                className="text-white/90 cursor-pointer hover:underline transition-colors duration-200"
-              >
-                {link.label}
-              </button>
-            ) : (
-              <Link
-                href={link.href}
-                className="text-white/90 cursor-pointer hover:underline transition-colors duration-200"
-              >
-                {link.label}
-              </Link>
-            )}
-          </li>
-        ))}
-      </ul>
-    </div>
-  );
-
+export default function Footer() {
   return (
-    <footer className="relative z-0 bg-[#9d7af0]/30 backdrop-blur-xl border border-white/20 shadow-lg transition-all duration-300 transform text-white pt-10 px-4 md:px-0 font-inter">
-      <div className="max-w-7xl mx-auto grid md:grid-cols-4 gap-8 px-2 md:px-3">
-        {/* Left Section */}
-        <div className="md:col-span-1">
-          {/* className="w-full h-32 bg-black/10 mb-4" */}
-          <div className="">
-            <img
-              src="/logo1.png"
-              alt="Logo"
-              className="w-50 h-50 object-contain"
-            />
-          </div>
-
-          <p className="text-sm sm:text-base text-white/90 text-center md:text-left">
-            Our security platform provides advanced tools for red teaming, blue
-            teaming, forensic analysis, and cloud security. Built for enterprise
-            environments, it delivers real-time threat detection, proactive risk
-            management, and centralized control—ensuring robust and
-            comprehensive protection of your critical digital assets.
+    <footer className="border-t border-[color:var(--border)] bg-[color:var(--nav-bg)]">
+      <div className="mx-auto grid max-w-7xl gap-16 px-4 py-16 sm:px-6 lg:grid-cols-[1.1fr_repeat(4,minmax(0,1fr))] lg:px-8">
+        <div className="space-y-8">
+          <BrandMark href="/" />
+          <p className="max-w-sm text-sm leading-8 text-[var(--muted)]">
+            Enterprise cybersecurity for organizations operating in regulated, high-stakes
+            environments. Assessment, remediation, and 24x7 managed defense.
           </p>
-
-          {/* Social Icons */}
-          <div className="flex justify-center md:justify-start space-x-3 mt-4">
+          <div className="space-y-2 text-sm text-white/75">
+            <p>director@nexcorealliance.com</p>
+            <p>+91 95944 30295</p>
+            <p className="text-[var(--muted)]">Mumbai · Dubai · Johannesburg</p>
+          </div>
+          <div className="flex items-center gap-3">
             <Link
-              href="https://www.instagram.com/nexcorealliance/"
+              href="https://www.linkedin.com/company/nexcore-alliance/posts/?feedView=all"
               target="_blank"
-              className="w-10 h-10 bg-gradient-to-br from-yellow-400 to-pink-500 rounded-lg flex items-center justify-center text-white font-bold text-xl"
+              className="inline-flex h-10 w-10 items-center justify-center border border-white/8 text-white/55 transition hover:border-[var(--gold)]/45 hover:text-[var(--gold)]"
+              aria-label="LinkedIn"
             >
-              I
-            </Link>
-            <Link
-              href="https://www.facebook.com/people/Nexcore-Alliance/61570113656994/"
-              target="_blank"
-              className="w-10 h-10 bg-[#3b5998] rounded-lg flex items-center justify-center text-white font-bold text-xl"
-            >
-              f
+              <Linkedin className="h-4 w-4" />
             </Link>
             <Link
               href="https://x.com/Code4Bharat"
               target="_blank"
-              className="w-10 h-10 bg-black rounded-lg flex items-center justify-center text-white font-bold text-xl"
+              className="inline-flex h-10 w-10 items-center justify-center border border-white/8 text-white/55 transition hover:border-[var(--gold)]/45 hover:text-[var(--gold)]"
+              aria-label="X"
             >
-              x
+              <Twitter className="h-4 w-4" />
             </Link>
             <Link
-              href="https://www.linkedin.com/company/nexcore-alliance/posts/?feedView=all"
-              target="_blank"
-              className="w-10 h-10 bg-[#0e76a8] rounded-lg flex items-center justify-center text-white font-bold text-xl"
+              href="/services/security-operations-center"
+              className="inline-flex h-10 w-10 items-center justify-center border border-white/8 text-white/55 transition hover:border-[var(--gold)]/45 hover:text-[var(--gold)]"
+              aria-label="Security"
             >
-              in
+              <Shield className="h-4 w-4" />
             </Link>
           </div>
         </div>
 
-        {/* Services */}
-        <Section
-          title="Services"
-          links={[
-            {
-              label: "Vulnerability Assessment",
-              href: "/services/vulnerability-assessment",
-            },
-            {
-              label: "Penetration Testing",
-              href: "/services/penetration-testing",
-            },
-            {
-              label: "Security Operation Center",
-              href: "/services/security-operations-center",
-            },
-            { label: "Cloud Security", href: "/services/cloud-security" },
-            { label: "Network Security", href: "/services/network-security" },
-            {
-              label: "Cybersecurity Consultancy",
-              href: "/services/cybersecurity-consultancy",
-            },
-          ]}
-        />
-
-        {/* Tools */}
-        <Section
-          title="Tools"
-          links={[
-            { label: "WAF Scanner", href: "/tools/firewallDashboard" },
-            { label: "Vulnerability Scanner", href: "/tools/vuln-scanner" },
-            {
-              label: "Database Security Checker",
-              href: "/tools/DbSecurityChecker",
-            },
-            { label: "Link Detector", href: "/tools/check-link" },
-            {
-              label: "IP Address Info Finder",
-              href: "/tools/ip-address-info-finder",
-            },
-            { label: "Source Code Analyzer", href: "/tools/Source-Code" },
-          ]}
-        />
-
-        {/* Quick */}
-        <Section
-          title="Quick"
-          links={[
-            { label: "Blog", id: "blogs" },
-            { label: "Privacy Policy", href: "/tools/privacypolicy" },
-            { label: "Terms and Conditions", href: "/tools/termscondition" },
-            { label: "Schedule Meeting", href: "/tools/schedulemeeting" },
-            { label: "Why Choose Us", id: "why-us" },
-            { label: "Certificate", id: "certificates" },
-            { label: "Connect", href: "/connect" },
-            { label: "Feedback", href: "/tools/feedback" },
-          ]}
-        />
+        {columns.map((column) => (
+          <div key={column.title} className="space-y-5">
+            <p className="font-mono text-xs uppercase tracking-[0.28em] text-[color:var(--text-muted)]">
+              {column.title}
+            </p>
+            <ul className="space-y-3">
+              {column.links.map((link) => (
+                <li key={`${column.title}-${link.href}-${link.label}`}>
+                  <Link
+                    href={link.href}
+                    className="text-sm leading-7 text-[var(--muted)] transition hover:text-[color:var(--text-heading)]"
+                  >
+                    {link.label}
+                  </Link>
+                </li>
+              ))}
+            </ul>
+          </div>
+        ))}
       </div>
 
-      {/* Footer Bottom */}
-      <div className="flex flex-col md:flex-row justify-center items-center mt-10 text-center text-sm text-[#9d7af0] border-t border-white/20 py-3 gap-1 md:gap-4">
-        <div>
-          ©{new Date().getFullYear()}
-          <span className="hidden md:inline">&nbsp;|&nbsp;</span>
+      <div className="border-t border-[color:var(--border)]">
+        <div className="mx-auto flex max-w-7xl flex-col gap-4 px-4 py-5 text-[0.68rem] uppercase tracking-[0.26em] text-[color:var(--text-muted)] sm:px-6 lg:flex-row lg:items-center lg:justify-between lg:px-8">
+          <p>© 2026 Nexcore Alliance Pvt. Ltd. All rights reserved.</p>
+          <p>SOC 2 Type II · ISO 27001:2022 · Cert-In Empanelled</p>
         </div>
-        <div>
-          Developed By&nbsp;
-          <span className="font-bold text-black">Code4Bharat</span>
-          <span className="hidden md:inline">&nbsp;|&nbsp;</span>
-        </div>
-        <div>All Rights Reserved.</div>
       </div>
     </footer>
   );
-};
-
-export default Footer;
+}

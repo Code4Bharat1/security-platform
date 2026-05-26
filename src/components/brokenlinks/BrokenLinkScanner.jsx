@@ -6,8 +6,6 @@ export default function BrokenLinkScanner() {
   const [url, setUrl] = useState("");
   const [scanning, setScanning] = useState(false);
   const [result, setResult] = useState(null);
-  console.log('Env URL:', process.env.NEXT_PUBLIC_PROD_API_URL);
-
 
   const handleScan = async () => {
     if (!url.trim()) return;
@@ -25,51 +23,52 @@ export default function BrokenLinkScanner() {
       });
 
       const data = await res.json();
-      setResult(data.message || "✅ Scan complete. No broken links found.");
+      setResult(data.message || "Scan complete. No broken links found.");
     } catch (err) {
-      setResult("❌ Failed to scan website.");
+      setResult("Failed to scan website.");
     }
 
     setScanning(false);
   };
 
   return (
-    <div className="min-h-screen bg-gray-100 flex flex-col items-center pt-20 px-4">
-      <div className="text-center mb-10">
-        <Link2Off className="mx-auto mb-4 text-green-600" size={48} />
-        <h1 className="text-3xl font-bold text-green-800">
+    <div className="tool-detail-page flex min-h-screen flex-col items-center px-4 pt-20">
+      <div className="tool-detail-shell text-center">
+        <Link2Off className="mx-auto mb-4 text-[color:var(--gold)]" size={48} />
+        <h1 className="text-3xl font-bold text-[color:var(--text-heading)]">
           Broken Link & Dead Page Scanner
         </h1>
-        <p className="text-gray-600 mt-2">
+        <p className="mt-2 text-[color:var(--text-muted)]">
           Finds broken links and dead pages on websites.
         </p>
-      </div>
 
-      <div className="bg-white shadow-lg rounded-xl p-6 w-full max-w-lg text-center">
-        <input
-          type="text"
-          placeholder="🔗 Enter website URL..."
-          value={url}
-          onChange={(e) => setUrl(e.target.value.trim())}         className="w-full px-4 py-3 mb-4 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-600 text-gray-800"
-        />
+        <div className="mx-auto mt-10 w-full max-w-lg rounded-2xl border border-[color:var(--border)] bg-[color:var(--surface-card)] p-6 text-center shadow-[var(--shadow-elevated)]">
+          <input
+            type="text"
+            placeholder="Enter website URL..."
+            value={url}
+            onChange={(e) => setUrl(e.target.value.trim())}
+            className="mb-4 w-full rounded-lg border border-[color:var(--border)] bg-[color:var(--surface-subtle)] px-4 py-3 text-[color:var(--text-body)] placeholder:text-[color:var(--text-muted)]"
+          />
 
-        <button
-          onClick={handleScan}
-          disabled={scanning || !url}
-          className={`w-full py-3 rounded-md text-white font-semibold transition ${
-            scanning
-              ? "bg-green-400 cursor-not-allowed"
-              : "bg-green-700 hover:bg-green-800"
-          }`}
-        >
-          {scanning ? "Scanning..." : "Scan Website"}
-        </button>
+          <button
+            onClick={handleScan}
+            disabled={scanning || !url}
+            className={`w-full rounded-lg border border-[color:var(--gold)] py-3 font-semibold text-[color:var(--text-inverse)] transition ${
+              scanning
+                ? "cursor-not-allowed bg-[color:var(--gold)] opacity-70"
+                : "bg-[color:var(--gold)] hover:bg-[color:var(--gold-strong)]"
+            }`}
+          >
+            {scanning ? "Scanning..." : "Scan Website"}
+          </button>
 
-        {result && (
-          <div className="mt-6 text-center text-green-700 font-semibold">
-            {result}
-          </div>
-        )}
+          {result && (
+            <div className="mt-6 text-center font-semibold text-[color:var(--text-heading)]">
+              {result}
+            </div>
+          )}
+        </div>
       </div>
     </div>
   );

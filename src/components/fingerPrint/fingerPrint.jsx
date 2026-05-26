@@ -81,8 +81,9 @@ export default function TechnologyFingerprinter() {
   }, [results]);
 
   return (
-    <div className="p-4 max-w-4xl mx-auto">
-     <div className="flex items-center justify-left gap-10 mt-15 mb-10">
+    <div className="tool-detail-page">
+      <div className="tool-detail-shell p-4 max-w-4xl mx-auto text-white">
+     <div className="tool-detail-hero flex items-center justify-left gap-10 mb-10">
   {/* Image with circle border */}
  <div className="flex flex-row items-center gap-4 flex-wrap">
   {/* Image always on left */}
@@ -168,6 +169,7 @@ export default function TechnologyFingerprinter() {
           )}
         </div>
       )}
+      </div>
     </div>
   );
 }

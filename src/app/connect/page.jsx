@@ -1,6 +1,10 @@
 'use client';
 import { useState } from 'react';
-import { Mail, Phone, MapPin } from 'lucide-react';
+import Link from 'next/link';
+import { ArrowRight, Mail, MapPin, Phone } from 'lucide-react';
+
+import EngagementCta from '@/components/marketing/EngagementCta';
+import SectionIntro from '@/components/marketing/SectionIntro';
 
 export default function ContactPage() {
   const [name, setName] = useState('');
@@ -30,168 +34,144 @@ export default function ContactPage() {
   }
 
   return (
-    <div className="relative min-h-screen w-full text-white overflow-x-hidden">
-      {/* === Background Video === */}
-      <video
-        autoPlay
-        loop
-        muted
-        playsInline
-        className="absolute inset-0 w-full h-full object-cover"
-      >
-        <source src="/CN.mp4" type="video/mp4" />
-      </video>
+    <main className="site-page-shell bg-[#050505] text-white">
+      <section className="border-b border-white/6">
+        <div className="mx-auto max-w-7xl px-4 py-20 sm:px-6 lg:px-8">
+          <SectionIntro
+            eyebrow="Contact"
+            title="Let's talk about your security program."
+            description="Tell us about your environment and goals. A senior consultant will get back within one business day."
+            className="mb-12"
+          />
 
-      {/* Overlay for dark effect */}
-      <div className="absolute inset-0 bg-black/70" />
-
-      <div className="relative z-10 px-4 sm:px-6 py-10 sm:py-14 md:py-16">
-        <div className="mx-auto w-full max-w-5xl flex flex-col md:flex-row items-start justify-end gap-8">
-          
-          {/* === Desktop Contact Details === */}
-          <div className="hidden md:block relative w-[288px] h-[264px] 
-                rounded-[20px] p-[2px] 
-                bg-gradient-to-b from-[#0a0f1c] via-[#0c111d] to-[#0d0a1a]
-                shadow-[0_10px_25px_rgba(0,0,0,0.6),0_4px_15px_rgba(0,0,0,0.8)]
-                transform hover:scale-[1.01] transition-all duration-300
-                hover:shadow-[0_0_30px_rgba(168,85,247,0.7)]">
-  <div className="h-full rounded-[18px] bg-black/50 backdrop-blur-lg p-6">
-    <h2 className="mb-0 text-xl font-bold text-purple-200">Contact Details</h2>
-    <div className="mb-3 h-[2px] w-22 bg-purple-400/70" />
-    <ul className="space-y-2 text-sm text-white/90">
-      <li className="flex items-center gap-2">
-        <Mail className="h-5 w-5 text-purple-300 shrink-0" />
-        <a href="mailto:director@nexcorealliance.com" className="hover:text-purple-200">
-          director@nexcorealliance.com
-        </a>
-      </li>
-      <li className="flex items-center gap-2">
-        <Phone className="h-5 w-5 text-purple-300 shrink-0" />
-        <a href="tel:+919594430295" className="hover:text-purple-200 text-base font-semibold">
-          +91 95944 30295
-        </a>
-      </li>
-      <li className="flex items-start gap-2">
-        <MapPin className="h-5 w-5 text-purple-300 shrink-0 mt-0.5" />
-        <span>Off BKC, Mumbai, India 400070</span>
-      </li>
-    </ul>
-  </div>
-</div>
-
-
-          {/* === Contact Form === */}
-          <div className="relative z-0 w-full max-w-lg rounded-[20px] p-[2px]
-                          bg-gradient-to-b from-[#0a0f1c] via-[#0c111d] to-[#0d0a1a]
-                          shadow-[0_10px_25px_rgba(0,0,0,0.6),0_4px_15px_rgba(0,0,0,0.8)]
-                          transform hover:scale-[1.01] transition-all duration-300
-                          hover:shadow-[0_0_30px_rgba(168,85,247,0.7)]">
-            <div className="relative rounded-[18px] bg-black/50 backdrop-blur-lg px-6 py-8 sm:px-8 sm:py-12 md:px-20 md:py-16">
-              
-              <form onSubmit={handleSubmit} className="space-y-4 sm:space-y-5">
-                <div>
-                  <label className="mb-1 block text-sm sm:text-base font-bold text-purple-200">Name</label>
-                  <input
-                    type="text"
-                    value={name}
-                    onChange={(e) => setName(e.target.value)}
-                    placeholder="Enter Your Name"
-                    className="w-full rounded-md border border-purple-400/60 bg-black/50 px-3 py-2 text-xs sm:text-sm
-                               text-white placeholder-purple-200/40 outline-none shadow-inner
-                               focus:border-purple-300 focus:shadow-[0_0_15px_rgba(168,85,247,0.7)]"
-                    required
-                  />
+          <div className="grid gap-6 xl:grid-cols-[1.55fr_0.75fr]">
+            <div className="glow-panel p-6 sm:p-8">
+              <form onSubmit={handleSubmit} className="space-y-5">
+                <div className="grid gap-5 md:grid-cols-2">
+                  <Field label="Full name">
+                    <input
+                      type="text"
+                      value={name}
+                      onChange={(e) => setName(e.target.value)}
+                      placeholder="Enter your name"
+                      className="contact-input"
+                      required
+                    />
+                  </Field>
+                  <Field label="Work email">
+                    <input
+                      type="email"
+                      value={email}
+                      onChange={(e) => setEmail(e.target.value)}
+                      placeholder="name@company.com"
+                      className="contact-input"
+                      required
+                    />
+                  </Field>
                 </div>
-                <div>
-                  <label className="mb-1 block text-sm sm:text-base font-bold text-purple-200">Phone Number</label>
-                  <input
-                    type="tel"
-                    value={phone}
-                    onChange={(e) => setPhone(e.target.value)}
-                    placeholder="Enter Your Phone Number"
-                    className="w-full rounded-md border border-purple-400/60 bg-black/50 px-3 py-2 text-xs sm:text-sm
-                               text-white placeholder-purple-200/40 outline-none shadow-inner
-                               focus:border-purple-300 focus:shadow-[0_0_15px_rgba(168,85,247,0.7)]"
-                  />
+
+                <div className="grid gap-5 md:grid-cols-2">
+                  <Field label="Phone">
+                    <input
+                      type="tel"
+                      value={phone}
+                      onChange={(e) => setPhone(e.target.value)}
+                      placeholder="+91 95944 30295"
+                      className="contact-input"
+                    />
+                  </Field>
+                  <div className="surface-panel flex min-h-[5.8rem] items-center justify-center p-5 text-center text-xs uppercase tracking-[0.28em] text-white/32">
+                    Secure intake · NDA on request
+                  </div>
                 </div>
-                <div>
-                  <label className="mb-1 block text-sm sm:text-base font-bold text-purple-200">E-Mail Id</label>
-                  <input
-                    type="email"
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
-                    placeholder="Enter Your E-Mail id"
-                    className="w-full rounded-md border border-purple-400/60 bg-black/50 px-3 py-2 text-xs sm:text-sm
-                               text-white placeholder-purple-200/40 outline-none shadow-inner
-                               focus:border-purple-300 focus:shadow-[0_0_15px_rgba(168,85,247,0.7)]"
-                    required
-                  />
-                </div>
-                <div>
-                  <label className="mb-1 block text-sm sm:text-base font-bold text-purple-200">Message</label>
+
+                <Field label="How can we help?">
                   <textarea
-                    rows={5}
+                    rows={7}
                     value={message}
                     onChange={(e) => setMessage(e.target.value)}
-                    placeholder="Enter your message"
-                    className="w-full resize-y rounded-md border border-purple-400/60 bg-black/50 px-3 py-2 text-xs sm:text-sm
-                               text-white placeholder-purple-200/40 outline-none shadow-inner
-                               focus:border-purple-300 focus:shadow-[0_0_15px_rgba(168,85,247,0.7)]"
+                    placeholder="Describe your environment, timeline, and goals."
+                    className="contact-input min-h-40 resize-y"
                     required
                   />
-                </div>
-                <div className="pt-1">
-                  <button
-  type="submit"
-  className="mx-auto block w-full sm:w-38 rounded-md 
-             bg-gradient-to-r from-purple-600 to-indigo-600 
-             py-2 text-xs sm:text-sm font-semibold text-white 
-             shadow-lg hover:scale-[1.02] active:scale-[0.98]
-             hover:shadow-[0_0_20px_rgba(168,85,247,0.8)]
-             hover:from-purple-700 hover:to-indigo-700
-             transition-all duration-200 ease-in-out"
->
-  Send Message
-</button>
+                </Field>
 
+                <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+                  <button type="submit" className="gold-button">
+                    Send Message
+                    <ArrowRight className="h-4 w-4" />
+                  </button>
+                  {status ? (
+                    <p className="text-sm text-emerald-300">{status}</p>
+                  ) : (
+                    <p className="text-sm text-[var(--muted)]">
+                      Response target: within one business day.
+                    </p>
+                  )}
                 </div>
               </form>
+            </div>
 
-              {status && <p className="mt-5 text-center text-xs text-emerald-300">{status}</p>}
+            <div className="space-y-4">
+              <InfoCard icon={Mail} label="Email" value="director@nexcorealliance.com" href="mailto:director@nexcorealliance.com" />
+              <InfoCard icon={Phone} label="Phone" value="+91 95944 30295" href="tel:+919594430295" />
+              <InfoCard icon={MapPin} label="HQ" value="Off BKC, Mumbai, India 400070" />
+              <article className="surface-panel p-6">
+                <p className="eyebrow mb-5 text-white/40">Response Time</p>
+                <p className="text-sm leading-8 text-[var(--muted)]">
+                  All inquiries answered within <span className="text-[var(--gold)]">one business day</span>.
+                  Critical incidents: 24x7 via our SOC hotline.
+                </p>
+              </article>
             </div>
           </div>
-
-          {/* === Mobile Contact Details === */}
-          <div className="mt-6 w-full md:hidden 
-                          transition duration-300 hover:shadow-[0_0_25px_rgba(168,85,247,0.7)]">
-            <div className="rounded-[14px] p-[2px] bg-gradient-to-b from-[#0a0f1c] via-[#0c111d] to-[#0d0a1a] shadow-lg">
-              <div className="rounded-[13px] bg-black/50 backdrop-blur-md p-4">
-                <h3 className="mb-2 text-base font-semibold text-purple-200">Contact Details</h3>
-                <div className="mb-3 h-[2px] w-22 bg-purple-400/40" />
-                <ul className="space-y-2 text-sm text-white/90">
-                  <li className="flex items-center gap-2">
-                    <Mail className="h-5 w-5 text-purple-300 shrink-0" />
-                    <a href="mailto:director@nexcorealliance.com" className="ml-2 hover:text-purple-200">
-                      director@nexcorealliance.com
-                    </a>
-                  </li>
-                  <li className="flex items-center gap-2">
-                    <Phone className="h-5 w-5 text-purple-300 shrink-0" />
-                    <a href="tel:+919594430295" className="ml-2 hover:text-purple-200 text-base font-semibold">
-                      +91 95944 30295
-                    </a>
-                  </li>
-                  <li className="flex items-start gap-2">
-                    <MapPin className="h-5 w-5 text-purple-300 shrink-0 mt-0.5" />
-                    <span className="ml-2">Off BKC, Mumbai, India 400070</span>
-                  </li>
-                </ul>
-              </div>
-            </div>
-          </div>
-
         </div>
+      </section>
+
+      <EngagementCta
+        title="Ready to harden your security perimeter?"
+        primaryHref="/connect"
+        primaryLabel="Request Assessment"
+        secondaryHref="/gain-access"
+        secondaryLabel="Talk To A Consultant"
+      />
+    </main>
+  );
+}
+
+function Field({ label, children }) {
+  return (
+    <label className="block space-y-3">
+      <span className="font-mono text-[0.68rem] uppercase tracking-[0.28em] text-white/40">
+        {label}
+      </span>
+      {children}
+    </label>
+  );
+}
+
+function InfoCard({ icon: Icon, label, value, href }) {
+  const content = (
+    <article className="surface-panel flex items-start gap-4 p-5">
+      <span className="inline-flex h-11 w-11 items-center justify-center border border-[var(--gold)]/22 text-[var(--gold)]">
+        <Icon className="h-4 w-4" />
+      </span>
+      <div className="space-y-2">
+        <p className="font-mono text-[0.68rem] uppercase tracking-[0.28em] text-white/40">
+          {label}
+        </p>
+        <p className="text-sm leading-7 text-white/82">{value}</p>
       </div>
-    </div>
+    </article>
+  );
+
+  if (!href) {
+    return content;
+  }
+
+  return (
+    <Link href={href} className="block">
+      {content}
+    </Link>
   );
 }

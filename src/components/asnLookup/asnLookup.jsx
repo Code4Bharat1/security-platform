@@ -13,7 +13,10 @@ import {
 
 // Toast Component
 function Toast({ message, type, onClose }) {
-  const bgColor = type === "success" ? "bg-green-500" : "bg-red-500";
+  const bgColor =
+    type === "success"
+      ? "bg-[color:var(--success)]"
+      : "bg-[color:var(--danger)]";
   const icon =
     type === "success" ? (
       <CheckCircle className="w-5 h-5" />
@@ -23,7 +26,7 @@ function Toast({ message, type, onClose }) {
 
   return (
     <div
-      className={`fixed top-4 right-4 ${bgColor} text-white px-6 py-3 rounded-lg shadow-lg flex items-center gap-2 z-50 animate-in slide-in-from-top-2`}
+      className={`fixed right-4 top-4 z-50 flex items-center gap-2 rounded-lg border border-[color:var(--border)] ${bgColor} px-6 py-3 text-[color:var(--text-inverse)] shadow-[var(--shadow-soft)] animate-in slide-in-from-top-2`}
     >
       {icon}
       <span>{message}</span>
@@ -90,7 +93,7 @@ export default function ASNLookupFullPage() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-green-50 via-emerald-50 to-teal-50">
+    <div className="tool-detail-page min-h-screen">
       {toast && (
         <Toast
           message={toast.message}
@@ -99,30 +102,30 @@ export default function ASNLookupFullPage() {
         />
       )}
 
-      <div className="container mx-auto px-4 py-8">
-        <div className="max-w-2xl mx-auto">
+      <div className="tool-detail-shell">
+        <div className="mx-auto max-w-2xl">
           {/* Header */}
-          <div className="text-center mb-8">
-            <div className="inline-flex items-center justify-center w-16 h-16 bg-green-100 rounded-full mb-4">
-              <Globe className="w-8 h-8 text-green-600" />
+          <div className="mb-8 text-center">
+            <div className="mb-4 inline-flex h-16 w-16 items-center justify-center rounded-full border border-[color:var(--gold)] bg-[color:var(--surface-subtle)]">
+              <Globe className="h-8 w-8 text-[color:var(--gold)]" />
             </div>
-            <h1 className="text-4xl font-bold text-gray-800 mb-2">
+            <h1 className="mb-2 text-4xl font-bold text-[color:var(--text-heading)]">
               ASN Lookup
             </h1>
-            <p className="text-gray-600">
+            <p className="text-[color:var(--text-muted)]">
               Discover network information for any IP address
             </p>
           </div>
 
           {/* Main Card */}
-          <div className="bg-white/80 backdrop-blur-sm shadow-xl rounded-2xl border border-green-100 overflow-hidden">
+          <div className="overflow-hidden rounded-2xl border border-[color:var(--border)] bg-[color:var(--surface-card)] shadow-[var(--shadow-elevated)]">
             {/* Form Section */}
             <div className="p-8">
               <form onSubmit={handleSubmit} className="space-y-6">
                 <div className="relative">
                   <label
                     htmlFor="ip-input"
-                    className="block text-sm font-medium text-gray-700 mb-2"
+                    className="mb-2 block text-sm font-medium text-[color:var(--text-body)]"
                   >
                     IP Address
                   </label>
@@ -132,14 +135,14 @@ export default function ASNLookupFullPage() {
                       type="text"
                       value={ip}
                       onChange={(e) => setIp(e.target.value.trim())}                     placeholder="Enter IPv4 or IPv6 address (e.g., 8.8.8.8)"
-                      className="w-full pl-12 pr-4 py-3 border-2 border-green-200 rounded-xl focus:outline-none focus:border-green-500 focus:ring-4 focus:ring-green-100 transition-all duration-200 text-gray-700 placeholder-gray-400"
+                      className="w-full rounded-xl border pl-12 pr-4 py-3 text-[color:var(--text-body)] placeholder:text-[color:var(--text-muted)] focus:outline-none"
                     />
-                    <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 w-5 h-5 text-green-500" />
+                    <Search className="absolute left-4 top-1/2 h-5 w-5 -translate-y-1/2 text-[color:var(--gold)]" />
                   </div>
                 </div>
 
                 {error && (
-                  <div className="flex items-center gap-2 p-4 bg-red-50 border border-red-200 rounded-lg text-red-700">
+                  <div className="flex items-center gap-2 rounded-lg border border-red-500 bg-red-900/20 p-4 text-[color:var(--danger)]">
                     <AlertCircle className="w-5 h-5" />
                     <span className="text-sm">{error}</span>
                   </div>
@@ -149,7 +152,7 @@ export default function ASNLookupFullPage() {
                   <button
                     type="submit"
                     disabled={loading}
-                    className="flex-1 bg-gradient-to-r from-green-600 to-emerald-600 text-white py-3 px-6 rounded-xl hover:from-green-700 hover:to-emerald-700 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 font-medium shadow-lg hover:shadow-xl transform hover:-translate-y-0.5"
+                    className="flex-1 rounded-xl border border-[color:var(--gold)] bg-[color:var(--gold)] px-6 py-3 font-medium text-[color:var(--text-inverse)] shadow-[var(--shadow-soft)] transition-all duration-200 hover:bg-[color:var(--gold-strong)] disabled:cursor-not-allowed disabled:opacity-50"
                   >
                     {loading ? (
                       <div className="flex items-center justify-center gap-2">
@@ -164,7 +167,7 @@ export default function ASNLookupFullPage() {
                   <button
                     type="button"
                     onClick={clearForm}
-                    className="px-6 py-3 border-2 border-gray-300 text-gray-600 rounded-xl hover:bg-gray-50 hover:border-gray-400 transition-all duration-200 font-medium"
+                    className="rounded-xl border border-[color:var(--border)] bg-[color:var(--surface-subtle)] px-6 py-3 font-medium text-[color:var(--text-body)] transition-all duration-200 hover:border-[color:var(--gold)] hover:text-[color:var(--gold)]"
                   >
                     Clear
                   </button>
@@ -174,51 +177,51 @@ export default function ASNLookupFullPage() {
 
             {/* Results Section */}
             {result && (
-              <div className="border-t border-green-100 bg-gradient-to-br from-green-50 to-emerald-50 p-8">
+              <div className="border-t border-[color:var(--border)] bg-[color:var(--surface-subtle)] p-8">
                 <div className="flex items-center gap-2 mb-6">
-                  <CheckCircle className="w-6 h-6 text-green-600" />
-                  <h3 className="text-xl font-semibold text-gray-800">
+                  <CheckCircle className="h-6 w-6 text-[color:var(--success)]" />
+                  <h3 className="text-xl font-semibold text-[color:var(--text-heading)]">
                     ASN Information
                   </h3>
                 </div>
 
                 <div className="grid gap-4">
-                  <div className="bg-white/70 backdrop-blur-sm rounded-xl p-4 border border-green-100">
+                  <div className="rounded-xl border border-[color:var(--border)] bg-[color:var(--surface-card)] p-4">
                     <div className="flex items-center gap-3">
-                      <div className="w-10 h-10 bg-green-100 rounded-lg flex items-center justify-center">
-                        <Database className="w-5 h-5 text-green-600" />
+                      <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-[color:var(--surface-subtle)]">
+                        <Database className="h-5 w-5 text-[color:var(--gold)]" />
                       </div>
                       <div>
-                        <p className="text-sm text-gray-600">ASN Number</p>
-                        <p className="text-lg font-semibold text-gray-800">
+                        <p className="text-sm text-[color:var(--text-muted)]">ASN Number</p>
+                        <p className="font-mono text-lg font-semibold text-[color:var(--text-heading)]">
                           {result.asn}
                         </p>
                       </div>
                     </div>
                   </div>
 
-                  <div className="bg-white/70 backdrop-blur-sm rounded-xl p-4 border border-green-100">
+                  <div className="rounded-xl border border-[color:var(--border)] bg-[color:var(--surface-card)] p-4">
                     <div className="flex items-center gap-3">
-                      <div className="w-10 h-10 bg-green-100 rounded-lg flex items-center justify-center">
-                        <Building className="w-5 h-5 text-green-600" />
+                      <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-[color:var(--surface-subtle)]">
+                        <Building className="h-5 w-5 text-[color:var(--gold)]" />
                       </div>
                       <div className="flex-1">
-                        <p className="text-sm text-gray-600">Organization</p>
-                        <p className="text-lg font-semibold text-gray-800">
+                        <p className="text-sm text-[color:var(--text-muted)]">Organization</p>
+                        <p className="text-lg font-semibold text-[color:var(--text-heading)]">
                           {result.name}
                         </p>
                       </div>
                     </div>
                   </div>
 
-                  <div className="bg-white/70 backdrop-blur-sm rounded-xl p-4 border border-green-100">
+                  <div className="rounded-xl border border-[color:var(--border)] bg-[color:var(--surface-card)] p-4">
                     <div className="flex items-center gap-3">
-                      <div className="w-10 h-10 bg-green-100 rounded-lg flex items-center justify-center">
-                        <MapPin className="w-5 h-5 text-green-600" />
+                      <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-[color:var(--surface-subtle)]">
+                        <MapPin className="h-5 w-5 text-[color:var(--gold)]" />
                       </div>
                       <div>
-                        <p className="text-sm text-gray-600">Country</p>
-                        <p className="text-lg font-semibold text-gray-800">
+                        <p className="text-sm text-[color:var(--text-muted)]">Country</p>
+                        <p className="font-mono text-lg font-semibold text-[color:var(--text-heading)]">
                           {result.country_code}
                         </p>
                       </div>
@@ -226,14 +229,14 @@ export default function ASNLookupFullPage() {
                   </div>
 
                   {result.description && (
-                    <div className="bg-white/70 backdrop-blur-sm rounded-xl p-4 border border-green-100">
+                    <div className="rounded-xl border border-[color:var(--border)] bg-[color:var(--surface-card)] p-4">
                       <div className="flex items-center gap-3">
-                        <div className="w-10 h-10 bg-green-100 rounded-lg flex items-center justify-center">
-                          <FileText className="w-5 h-5 text-green-600" />
+                        <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-[color:var(--surface-subtle)]">
+                          <FileText className="h-5 w-5 text-[color:var(--gold)]" />
                         </div>
                         <div className="flex-1">
-                          <p className="text-sm text-gray-600">Description</p>
-                          <p className="text-lg font-semibold text-gray-800">
+                          <p className="text-sm text-[color:var(--text-muted)]">Description</p>
+                          <p className="text-lg font-semibold text-[color:var(--text-heading)]">
                             {result.description}
                           </p>
                         </div>
@@ -241,14 +244,14 @@ export default function ASNLookupFullPage() {
                     </div>
                   )}
 
-                  <div className="bg-white/70 backdrop-blur-sm rounded-xl p-4 border border-green-100">
+                  <div className="rounded-xl border border-[color:var(--border)] bg-[color:var(--surface-card)] p-4">
                     <div className="flex items-center gap-3">
-                      <div className="w-10 h-10 bg-green-100 rounded-lg flex items-center justify-center">
-                        <Globe className="w-5 h-5 text-green-600" />
+                      <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-[color:var(--surface-subtle)]">
+                        <Globe className="h-5 w-5 text-[color:var(--gold)]" />
                       </div>
                       <div>
-                        <p className="text-sm text-gray-600">Registry</p>
-                        <p className="text-lg font-semibold text-gray-800">
+                        <p className="text-sm text-[color:var(--text-muted)]">Registry</p>
+                        <p className="font-mono text-lg font-semibold text-[color:var(--text-heading)]">
                           {result.registry}
                         </p>
                       </div>
@@ -260,7 +263,7 @@ export default function ASNLookupFullPage() {
           </div>
 
           {/* Footer */}
-          <div className="text-center mt-8 text-gray-500 text-sm">
+          <div className="mt-8 text-center text-sm text-[color:var(--text-muted)]">
             <p>Enter any IPv4 or IPv6 address to retrieve ASN information</p>
           </div>
         </div>

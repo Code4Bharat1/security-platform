@@ -13,7 +13,7 @@ export default function SeoScoreAnalyzer() {
 
   const analyzeSEO = async () => {
     if (!url) {
-      setError("⚠️ Please enter a valid URL");
+      setError("Please enter a valid URL");
       return;
     }
     setLoading(true);
@@ -42,7 +42,7 @@ export default function SeoScoreAnalyzer() {
         }
       } catch (err) {
         console.log(err);
-        setError("🚨 Failed to connect with backend!");
+        setError("Failed to connect with backend!");
       } finally {
         setLoading(false);
       }
@@ -50,57 +50,53 @@ export default function SeoScoreAnalyzer() {
   };
 
   return (
-    <div className="min-h-screen bg-black flex flex-col items-center justify-center p-6">
+    <div className="tool-detail-page flex min-h-screen flex-col items-center justify-center p-6">
       <GreenLayout
         heroData={{
           imgPath: "/GreenTeam/seo-score.png",
           title: "SEO Score Analyzer",
         }}
       />
-      <div className="w-full max-w-3xl bg-black border border-white text-white rounded-2xl shadow-xl p-8 border border-gray-700">
-        {/* Input Section */}
-        <div className="flex gap-3 mb-6">
+      <div className="w-full max-w-3xl rounded-2xl border border-[color:var(--border)] bg-[color:var(--surface-card)] p-8 text-[color:var(--text-body)] shadow-[var(--shadow-elevated)]">
+        <div className="mb-6 flex gap-3">
           <input
             type="text"
             value={url}
             onChange={(e) => setUrl(e.target.value)}
             placeholder="Enter website URL (e.g. https://example.com)"
-            className="flex-1 border border-gray-600 bg-gray-700 text-white p-3 rounded-lg focus:ring-2 focus:ring-green-500"
+            className="flex-1 rounded-lg border border-[color:var(--border)] bg-[color:var(--surface-subtle)] p-3 text-[color:var(--text-body)] placeholder:text-[color:var(--text-muted)]"
           />
         </div>
-        <div className="flex justify-center mb-6 space-x-4">
+        <div className="mb-6 flex justify-center space-x-4">
           <button
             onClick={analyzeSEO}
             disabled={loading}
-            className="bg-green-600 hover:bg-green-700 text-white px-6 py-3 rounded-lg transition disabled:bg-gray-500"
+            className="rounded-lg border border-[color:var(--gold)] bg-[color:var(--gold)] px-6 py-3 text-[color:var(--text-inverse)] transition hover:bg-[color:var(--gold-strong)] disabled:opacity-50"
           >
             {loading ? "Analyzing..." : "Analyze"}
           </button>
         </div>
-        {/* Error Message */}
+
         {error && (
-          <p className="text-red-400 font-medium mb-4 bg-red-900/40 p-3 rounded-lg">
+          <p className="mb-4 rounded-lg bg-red-900/20 p-3 font-medium text-[color:var(--danger)]">
             {error}
           </p>
         )}
 
-        {/* Loader */}
         {loading && (
-          <div className="flex justify-center items-center py-6">
-            <div className="w-10 h-10 border-4 border-green-500 border-dashed rounded-full animate-spin"></div>
+          <div className="flex items-center justify-center py-6">
+            <div className="h-10 w-10 animate-spin rounded-full border-4 border-[color:var(--gold)] border-dashed"></div>
           </div>
         )}
 
-        {/* Results */}
         {result && (
           <div className="space-y-6">
-            {/* Score Card */}
-            <div className="bg-gray-700 rounded-xl p-6 flex flex-col items-center shadow-md">
-              <h2 className="text-xl font-semibold mb-2">SEO Score</h2>
-              <div className="relative w-32 h-32">
-                <svg className="w-32 h-32">
+            <div className="flex flex-col items-center rounded-xl border border-[color:var(--border)] bg-[color:var(--surface-subtle)] p-6 shadow-[var(--shadow-soft)]">
+              <h2 className="mb-2 text-xl font-semibold text-[color:var(--text-heading)]">SEO Score</h2>
+              <div className="relative h-32 w-32">
+                <svg className="h-32 w-32">
                   <circle
-                    className="text-gray-600"
+                    className="text-[color:var(--border)]"
                     strokeWidth="10"
                     stroke="currentColor"
                     fill="transparent"
@@ -109,7 +105,7 @@ export default function SeoScoreAnalyzer() {
                     cy="64"
                   />
                   <circle
-                    className="text-green-400"
+                    className="text-[color:var(--gold)]"
                     strokeWidth="10"
                     strokeDasharray={2 * Math.PI * 50}
                     strokeDashoffset={
@@ -124,33 +120,29 @@ export default function SeoScoreAnalyzer() {
                     cy="64"
                   />
                 </svg>
-                <span className="absolute inset-0 flex items-center justify-center text-2xl font-bold">
+                <span className="absolute inset-0 flex items-center justify-center text-2xl font-bold text-[color:var(--text-heading)]">
                   {result.score || 0}
                 </span>
               </div>
             </div>
 
-            {/* Info Section */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <div className="bg-gray-700 p-5 rounded-xl shadow-md">
-                <h3 className="text-lg font-semibold mb-2">📌 Title</h3>
-                <p className="text-gray-300">{result.title || "N/A"}</p>
+            <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
+              <div className="rounded-xl border border-[color:var(--border)] bg-[color:var(--surface-subtle)] p-5 shadow-[var(--shadow-soft)]">
+                <h3 className="mb-2 text-lg font-semibold text-[color:var(--text-heading)]">Title</h3>
+                <p className="text-[color:var(--text-body)]">{result.title || "N/A"}</p>
               </div>
-              <div className="bg-gray-700 p-5 rounded-xl shadow-md">
-                <h3 className="text-lg font-semibold mb-2">
-                  📝 Meta Description
-                </h3>
-                <p className="text-gray-300">
+              <div className="rounded-xl border border-[color:var(--border)] bg-[color:var(--surface-subtle)] p-5 shadow-[var(--shadow-soft)]">
+                <h3 className="mb-2 text-lg font-semibold text-[color:var(--text-heading)]">Meta Description</h3>
+                <p className="text-[color:var(--text-body)]">
                   {result.metaDescription || "N/A"}
                 </p>
               </div>
             </div>
 
-            {/* Strengths & Weaknesses */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <div className="bg-green-900/40 p-5 rounded-xl shadow-md border border-green-600">
-                <h3 className="text-lg font-semibold mb-3">✅ Strengths</h3>
-                <ul className="list-disc pl-5 space-y-1 text-green-300">
+            <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
+              <div className="rounded-xl border border-[color:var(--border)] bg-green-900/20 p-5 shadow-[var(--shadow-soft)]">
+                <h3 className="mb-3 text-lg font-semibold text-[color:var(--text-heading)]">Strengths</h3>
+                <ul className="list-disc space-y-1 pl-5 text-[color:var(--success)]">
                   {result.summary?.strengths?.length > 0 ? (
                     result.summary.strengths.map((item, index) => (
                       <li key={index}>{item}</li>
@@ -161,9 +153,9 @@ export default function SeoScoreAnalyzer() {
                 </ul>
               </div>
 
-              <div className="bg-red-900/40 p-5 rounded-xl shadow-md border border-red-600">
-                <h3 className="text-lg font-semibold mb-3">❌ Weaknesses</h3>
-                <ul className="list-disc pl-5 space-y-1 text-red-300">
+              <div className="rounded-xl border border-[color:var(--border)] bg-red-900/20 p-5 shadow-[var(--shadow-soft)]">
+                <h3 className="mb-3 text-lg font-semibold text-[color:var(--text-heading)]">Weaknesses</h3>
+                <ul className="list-disc space-y-1 pl-5 text-[color:var(--danger)]">
                   {result.summary?.weaknesses?.length > 0 ? (
                     result.summary.weaknesses.map((item, index) => (
                       <li key={index}>{item}</li>

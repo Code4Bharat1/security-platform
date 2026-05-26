@@ -1,92 +1,105 @@
 'use client';
 
 import Link from "next/link";
+import { ArrowRight, ExternalLink } from "lucide-react";
+
+import EngagementCta from "@/components/marketing/EngagementCta";
+import SectionIntro from "@/components/marketing/SectionIntro";
+
+const teamTheme = {
+  red: {
+    label: "Red Team",
+    accent: "text-[#ff6f7f]",
+    border: "border-[#ff6f7f]/28",
+    glow: "hover:shadow-[0_0_50px_rgba(255,111,127,0.12)]",
+    tint: "from-[#ff6f7f]/8",
+  },
+  blue: {
+    label: "Blue Team",
+    accent: "text-[#64d6ff]",
+    border: "border-[#64d6ff]/28",
+    glow: "hover:shadow-[0_0_50px_rgba(100,214,255,0.12)]",
+    tint: "from-[#64d6ff]/8",
+  },
+  green: {
+    label: "Green Team",
+    accent: "text-[#7dcf93]",
+    border: "border-[#7dcf93]/28",
+    glow: "hover:shadow-[0_0_50px_rgba(125,207,147,0.12)]",
+    tint: "from-[#7dcf93]/8",
+  },
+  purple: {
+    label: "Purple Team",
+    accent: "text-[#c995ff]",
+    border: "border-[#c995ff]/28",
+    glow: "hover:shadow-[0_0_50px_rgba(201,149,255,0.12)]",
+    tint: "from-[#c995ff]/8",
+  },
+  va: {
+    label: "Vulnerability Assessment",
+    accent: "text-[var(--gold)]",
+    border: "border-[var(--gold)]/30",
+    glow: "hover:shadow-[0_0_50px_rgba(212,166,74,0.12)]",
+    tint: "from-[var(--gold)]/8",
+  },
+};
 
 export default function ToolLayout({ team = "green", toolList = [] }) {
-    if (!team || !toolList) {
-        console.error("ToolLayout received invalid props:", { team, toolList });
-        return <div>Error: Invalid tool configuration</div>;
-    }
+  const currentTheme = teamTheme[team] ?? teamTheme.green;
 
-    try {
-        const borderColor = {
-            "red": "border-[#D01A1A]/70",
-            "blue": "border-[#3C6DFF]/70",
-            "purple": "border-[#A020F0]/70",
-            "va":"border-[#D4AF37]/70",
-            "green": "border-[#008000]/70"
-        }[team] || "border-gray-500";
+  return (
+    <main className="site-page-shell bg-[#050505] text-white">
+      <section className="border-b border-white/6">
+        <div className="mx-auto max-w-7xl px-4 py-20 sm:px-6 lg:px-8">
+          <SectionIntro
+            eyebrow={currentTheme.label}
+            title={`${currentTheme.label} toolkit`}
+            description="Launch existing workflows without changing any API wiring, route structure, or business logic."
+            className="mb-12"
+          />
 
-        const textColor = {
-            "red": "text-[#D01A1A]/70",
-            "blue": "text-[#3C6DFF]/70",
-            "purple": "text-[#A020F0]/70",
-            "va":"  text-[#D4AF37       ]/50",
-            "green": "text-[#008000]/70"
-        }[team] || "text-gray-500";
+          <div className="grid gap-5 md:grid-cols-2 xl:grid-cols-3">
+            {toolList.map((tool) => (
+              <article
+                key={`${team}-${tool.slug}-${tool.name}`}
+                className={`group flex min-h-64 flex-col justify-between border bg-[linear-gradient(180deg,rgba(255,255,255,0.03),rgba(255,255,255,0.02))] p-5 transition ${currentTheme.border} ${currentTheme.glow}`}
+              >
+                <div className="space-y-5">
+                  <div className="flex items-start justify-between gap-4">
+                    <div>
+                      <p className="eyebrow mb-3">{currentTheme.label}</p>
+                      <h3 className="font-mono text-2xl font-semibold text-white">
+                        {tool.name}
+                      </h3>
+                    </div>
+                    <span className={`rounded-full border px-3 py-1 font-mono text-[0.62rem] uppercase tracking-[0.28em] ${currentTheme.border} ${currentTheme.accent}`}>
+                      {tool.status ?? "active"}
+                    </span>
+                  </div>
 
-        const bgColor = {
-            "red": "bg-[#D01A1A]/70",
-            "blue": "bg-[#3C6DFF]/70",
-            "purple": "bg-[#A020F0]/70",
-            "va":   "bg-[#D4AF37]/70",
-            "green": "bg-[#008000]/70"
-        }[team] || "bg-gray-500";
-
-        return (    
-            <div>
-                <button className={`block mx-auto p-5 w-2/3 rounded-3xl border-2 ${borderColor} text-white text-2xl sm:text-4xl md:text-6xl font-bold leading-snug text-center mt-15`}>
-                    <span className={`${textColor} `}>{team.toUpperCase()}</span>&nbsp;Team Toolkit
-                </button>
-
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8 md:gap-5 lg:gap-8 mt-2 sm:mt-5 p-5 sm:p-8 place-items-center">
-                    {toolList
-                        .filter(tool => tool && typeof tool.name === 'string' && typeof tool.description === 'string' && typeof tool.slug === 'string')
-                        .map((tool, i) => (
-                            <Card
-                                key={i}
-                                data={tool}
-                                bgColor={bgColor}
-                                textColor={textColor}
-                                borderColor={borderColor}
-                                team={team}
-                            />
-                        ))}
+                  <p className="text-sm leading-7 text-[var(--muted)]">{tool.description}</p>
                 </div>
-            </div>
-        );
-    } catch (error) {
-        console.error("Error in ToolLayout:", error);
-        return <div>Error loading tools. Please try again.</div>;
-    }
-}
 
-function Card({ data, borderColor, textColor, bgColor, team }) {
-    if (!data || !data.image || !data.name || !data.description || !data.slug || !data.buttonLabel) {
-        console.error("Card received invalid data:", data);
-        return null;
-    }
+                <div className="mt-8 flex items-center justify-between">
+                  <Link
+                    href={`/tools/${tool.slug}`}
+                    className={`inline-flex items-center gap-2 font-mono text-sm transition ${currentTheme.accent} hover:text-white`}
+                  >
+                    <span>{tool.buttonLabel}</span>
+                    <ArrowRight className="h-4 w-4" />
+                  </Link>
 
-    return (
-        <div className={`flex flex-col aspect-4/3 rounded-xl w-full overflow-hidden hover:scale-105 bg-white/10 backdrop-blur-xl border-2 ${borderColor} shadow-lg transition-all duration-200 transform cursor-pointer hover:shadow-[0_0_20px_rgba(255,255,255,0.3)] text-white justify-around px-5`}>
-            <img
-                src={`${data.image}`}
-                alt={data.team}
-                className="h-24 object-contain mx-auto aspect-square object-bottom"
-            />
-            <h3 className={`${textColor} text-xl text-center font-semibold`}>
-                {data.name}
-            </h3>
-            <p className="text-white text-sm sm:text-md xl:text-lg text-center">
-                {data.description}
-            </p>
-            {/* Scan Button */}
-            <Link
-                href={`/tools/${data.slug}`}
-                className={`${bgColor} text-white py-2 w-full rounded-xl hover:scale-102 transition-colors duration-300 cursor-pointer text-center my-2`}
-            >
-                {data.buttonLabel}
-            </Link>
+                  <Link href={`/tools/${tool.slug}`} aria-label={`Open ${tool.name}`} className="text-white/30 transition hover:text-white">
+                    <ExternalLink className="h-4 w-4" />
+                  </Link>
+                </div>
+              </article>
+            ))}
+          </div>
         </div>
-    );
+      </section>
+
+      <EngagementCta />
+    </main>
+  );
 }

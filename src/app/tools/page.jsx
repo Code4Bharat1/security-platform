@@ -1,12 +1,5 @@
-import DynamicTool from '@/components/Tool/DynamicTool';
-
-export const generateStaticParams = () => [];
-export const revalidate = 0;
+import PlatformOverview from '@/components/Tool/PlatformOverview';
 
 export default function Page() {
-  return (
-    <div className="min-h-screen bg-gray-900">
-      <DynamicTool />
-    </div>
-  );
+  return <div className="tool-route-premium"><PlatformOverview /></div>;
 }

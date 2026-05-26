@@ -75,28 +75,28 @@ export default function GainAccess() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-black p-4">
-      <div className="relative bg-[#1e293b] text-white rounded-2xl shadow-lg p-8 w-full max-w-md">
+    <div className="flex min-h-screen items-center justify-center bg-[var(--background)] p-4 text-[color:var(--text-body)]">
+      <div className="relative w-full max-w-md rounded-2xl border border-[color:var(--border)] bg-[color:var(--surface-card)] p-8 text-[color:var(--text-body)] shadow-[var(--shadow-elevated)]">
         {/* Close Button */}
         <button
           onClick={() => router.back()}
-          className="absolute top-3 right-3 text-gray-400 hover:text-white"
+          className="absolute top-3 right-3 text-[color:var(--text-muted)] hover:text-[color:var(--text-heading)]"
           aria-label="Close"
         >
           <X size={24} />
         </button>
 
-        <h2 className="text-4xl font-extrabold mb-2 text-gray-200 text-center">
+        <h2 className="mb-2 text-center text-4xl font-extrabold text-[color:var(--text-heading)]">
           Welcome Back
         </h2>
-        <p className="text-sm text-gray-100 mb-6 text-center">
+        <p className="mb-6 text-center text-sm text-[color:var(--text-muted)]">
           Please enter your credentials to Gain Access
         </p>
 
         <form onSubmit={handleSubmit}>
           {/* Email */}
           <div className="mb-4">
-            <label className="block text-gray-100 text-sm font-medium mb-1">
+            <label className="mb-1 block text-sm font-medium text-[color:var(--text-body)]">
               Email
             </label>
             <input
@@ -105,19 +105,19 @@ export default function GainAccess() {
               placeholder="Enter your email"
               value={formData.email}
               onChange={handleChange}
-              className={`w-full px-4 py-2 border ${
-                errors.email ? "border-red-500" : "border-gray-300"
-              } rounded-lg bg-gray-100 focus:outline-none focus:ring-2 focus:ring-[#9d7af0] text-black`}
+              className={`w-full rounded-lg border px-4 py-2 ${
+                errors.email ? "border-[color:var(--danger)]" : "border-[color:var(--border)]"
+              } bg-[color:var(--surface-subtle)] text-[color:var(--text-body)] placeholder:text-[color:var(--text-muted)] focus:outline-none focus:ring-2 focus:ring-[color:var(--ring)]`}
               autoComplete="email"
             />
             {errors.email && (
-              <p className="text-red-500 text-sm mt-1">{errors.email}</p>
+              <p className="mt-1 text-sm text-[color:var(--danger)]">{errors.email}</p>
             )}
           </div>
 
           {/* Password */}
           <div className="mb-4 relative">
-            <label className="block text-white text-sm font-medium mb-1">
+            <label className="mb-1 block text-sm font-medium text-[color:var(--text-body)]">
               Password
             </label>
             <input
@@ -126,21 +126,21 @@ export default function GainAccess() {
               placeholder="Enter your password"
               value={formData.password}
               onChange={handleChange}
-              className={`w-full px-4 py-2 border ${
-                errors.password ? "border-red-500" : "border-gray-300"
-              } rounded-lg bg-gray-100 focus:outline-none focus:ring-2 focus:ring-[#9d7af0] text-black`}
+              className={`w-full rounded-lg border px-4 py-2 ${
+                errors.password ? "border-[color:var(--danger)]" : "border-[color:var(--border)]"
+              } bg-[color:var(--surface-subtle)] text-[color:var(--text-body)] placeholder:text-[color:var(--text-muted)] focus:outline-none focus:ring-2 focus:ring-[color:var(--ring)]`}
               autoComplete="current-password"
             />
             <button
               type="button"
               onClick={() => setShowPassword((prev) => !prev)}
-              className="absolute right-3 top-10 text-gray-600"
+              className="absolute right-3 top-10 text-[color:var(--text-muted)] hover:text-[color:var(--gold)]"
               aria-label="Toggle password visibility"
             >
               {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
             </button>
             {errors.password && (
-              <p className="text-red-500 text-sm mt-1">{errors.password}</p>
+              <p className="mt-1 text-sm text-[color:var(--danger)]">{errors.password}</p>
             )}
           </div>
 
@@ -148,7 +148,7 @@ export default function GainAccess() {
           <button
             type="submit"
             disabled={loading}
-            className={`w-full text-center text-white mt-6 bg-[#9d7af0] py-3 rounded-lg hover:bg-[#a67fea] transition font-semibold ${
+            className={`mt-6 w-full rounded-lg border border-[color:var(--gold)] bg-[color:var(--gold)] py-3 text-center font-semibold text-[color:var(--text-inverse)] hover:bg-[color:var(--gold-strong)] ${
               loading ? "opacity-50 cursor-not-allowed" : ""
             }`}
           >
@@ -156,11 +156,11 @@ export default function GainAccess() {
           </button>
         </form>
 
-        <p className="text-center text-sm text-gray-100 mt-6">
+        <p className="mt-6 text-center text-sm text-[color:var(--text-muted)]">
           Don&apos;t have an account?{" "}
           <Link
             href="/join-the-network"
-            className="text-[#9d7af0] font-medium hover:underline"
+            className="font-medium text-[color:var(--gold)] hover:text-[color:var(--gold-strong)] hover:underline"
           >
             Join the Network here.
           </Link>

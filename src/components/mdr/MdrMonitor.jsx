@@ -1,5 +1,4 @@
 "use client";
-import { ShieldCheck } from "lucide-react";
 import React, { useState } from "react";
 import useProtectedAction from "../UseProtectedAction/UseProtectedAction";
 
@@ -32,7 +31,7 @@ export default function MdrMonitor() {
         const json = await res.json();
         setData(json);
       } catch (err) {
-        setData({ summary: "❌ Failed to connect to MDR Monitor server." });
+        setData({ summary: "Failed to connect to MDR Monitor server." });
       }
 
       setLoading(false);
@@ -40,36 +39,37 @@ export default function MdrMonitor() {
   };
 
   return (
-    <div className="min-h-screen bg-black flex flex-col items-center pt-20 px-4">
-      {/* Row with image and text */}
-      <div className="flex items-center gap-4 mb-4 w-full justify-start lg:px-80 mt-15">
+    <div className="tool-detail-page flex min-h-screen flex-col items-center pt-20 px-4">
+      <div className="tool-detail-shell mb-4 flex w-full items-center gap-4 justify-start">
         <img
           src="/BlueTeam/MDR.png"
           alt="Reverse DNS"
-          className="w-30 h-30 rounded-full border-4 border-blue-500"
+          className="h-30 w-30 rounded-full border-4 border-[color:var(--gold)]"
         />
         <div className="text-left">
-          <h1 className="text-3xl font-bold text-white">MDR Monitor</h1>
-          <p className="text-white mt-2">
+          <h1 className="text-3xl font-bold text-[color:var(--text-heading)]">MDR Monitor</h1>
+          <p className="mt-2 text-[color:var(--text-muted)]">
             Monitors and responds to real-time security threats.
           </p>
         </div>
       </div>
 
-      <div className="bg-black shadow-lg rounded-xl p-6 w-full max-w-4xl border border-white px-10 py-10">
+      <div className="w-full max-w-4xl rounded-2xl border border-[color:var(--border)] bg-[color:var(--surface-card)] px-10 py-10 shadow-[var(--shadow-elevated)]">
         <input
           type="text"
-          placeholder="🔗 Enter website URL..."
+          placeholder="Enter website URL..."
           value={url}
           onChange={(e) => setUrl(e.target.value.trim())}
-          className="w-full px-4 py-3 mb-4 border border-blue-500 rounded-md text-white"
+          className="mb-4 w-full rounded-lg border border-[color:var(--border)] bg-[color:var(--surface-subtle)] px-4 py-3 text-[color:var(--text-body)] placeholder:text-[color:var(--text-muted)]"
         />
 
         <button
           onClick={handleMonitor}
           disabled={loading || !url}
-          className={`w-full py-3 rounded-md text-white font-semibold transition ${
-            loading ? "bg-blue-500 cursor-not-allowed" : "bg-blue-700 "
+          className={`w-full rounded-lg border border-[color:var(--gold)] py-3 font-semibold text-[color:var(--text-inverse)] transition ${
+            loading
+              ? "cursor-not-allowed bg-[color:var(--gold)] opacity-70"
+              : "bg-[color:var(--gold)] hover:bg-[color:var(--gold-strong)]"
           }`}
         >
           {loading ? "Monitoring..." : "Start Monitoring"}
@@ -77,9 +77,9 @@ export default function MdrMonitor() {
 
         {data && (
           <div className="mt-6">
-            <p className="text-lg font-bold text-green-700">{data.summary}</p>
+            <p className="text-lg font-bold text-[color:var(--success)]">{data.summary}</p>
             {data.results && (
-              <ul className="mt-3 list-disc list-inside text-gray-700 text-left">
+              <ul className="mt-3 list-inside list-disc text-left text-[color:var(--text-body)]">
                 {data.results.map((item, i) => (
                   <li key={i}>{item}</li>
                 ))}

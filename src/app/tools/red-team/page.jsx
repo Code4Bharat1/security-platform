@@ -2,6 +2,6 @@ import RedTool from "@/components/Tool/RedTool";
 
 export default function Page() {
   return (
-      <RedTool/>
+      <div className="tool-route-premium"><RedTool/></div>
   )
 }

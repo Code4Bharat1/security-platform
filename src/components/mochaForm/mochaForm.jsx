@@ -196,7 +196,7 @@ export default function MochaForm() {
   };
 
   return (
-    <div className="min-h-screen bg-black-900">
+    <div className="tool-detail-page mocha-tool-page min-h-screen">
       {/* Toast */}
       {showToast && (
         <div
@@ -218,8 +218,8 @@ export default function MochaForm() {
       )}
 
       {/* Header */}
-      <div className="pt-8 pb-6 px-4 sm:px-6 lg:px-8 bg-black mt-15">
-        <div className="max-w-5xl flex items-center gap-4 lg:ml-70">
+      <div className="px-4 pb-6 pt-8 sm:px-6 lg:px-8">
+        <div className="tool-detail-shell flex max-w-5xl items-center gap-4">
           {/* Logo always left */}
           <img
             src="/RedTeam/mocha-logo.png"
@@ -229,19 +229,19 @@ export default function MochaForm() {
 
           {/* Text always right */}
           <div className="text-left">
-            <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold text-white">
+            <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold text-[color:var(--text-heading)]">
               Mocha API Testing
             </h1>
 
             {/* Subtext */}
-            <p className="text-gray-400 max-w-2xl mt-2 text-sm sm:text-base">
+            <p className="mt-2 max-w-2xl text-sm text-[color:var(--text-muted)] sm:text-base">
               Test your API endpoints with ease. Enter your API details below{" "}
               <br />
               and get instant feedback on performance and reliability.
             </p>
 
             {/* Connection Info */}
-            <div className="mt-4 text-gray-400 text-sm">
+            <div className="mt-4 text-sm text-[color:var(--text-muted)]">
               <p>Connected to: localhost:5000</p>
             </div>
           </div>
@@ -250,7 +250,7 @@ export default function MochaForm() {
 
       {/* Main */}
       <div className="max-w-4xl mx-auto px-4 pb-12">
-        <div className="bg-gray-800 rounded-lg shadow-xl border border-white-700 overflow-hidden">
+        <div className="overflow-hidden rounded-2xl border border-[color:var(--border)] bg-[color:var(--surface-card)] shadow-[var(--shadow-elevated)]">
           {/* Header Bar */}
           <div className="bg-red-600 px-6 py-4">
             <div className="flex items-center justify-between">
