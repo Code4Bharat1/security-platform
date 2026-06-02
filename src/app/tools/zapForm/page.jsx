@@ -1,9 +1,7 @@
-// import ZapForm from '@/components/zapForm/zapForm'
+import ZapForm from '@/components/zapForm/zapForm'
 
-
-// export default function Page() {
-//   return (
-//       <ZapForm/>
-//   )
-// }
-
+export default function Page() {
+  return (
+      <ZapForm/>
+  )
+}

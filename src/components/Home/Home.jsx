@@ -143,62 +143,73 @@ const logoStrip = ["BARCLAYS", "HSBC", "ST. JUDE", "BOEING", "NATO", "FDA"];
 export default function Home() {
   return (
     <main className="site-page-shell bg-[#050505] text-white">
-      <section className="border-b border-white/6">
-        <div className="mx-auto grid max-w-7xl gap-14 px-4 py-16 sm:px-6 lg:grid-cols-[1.05fr_0.95fr] lg:items-center lg:px-8 lg:py-20">
-          <motion.div
-            initial={{ opacity: 0, y: 24 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.55, ease: "easeOut" }}
-            className="space-y-8"
-          >
-            <div className="eyebrow inline-flex items-center gap-3 border border-[var(--gold)]/18 bg-[var(--gold)]/8 px-3 py-2">
-              <span>v6.08</span>
-              <span>Architecture Release</span>
-            </div>
+      <section className="group relative border-b border-white/6 flex items-center justify-start min-h-[calc(100vh-80px)] lg:min-h-[calc(100vh-113px)] bg-black overflow-hidden">
+        {/* Full-bleed Video Background */}
+        <video
+          autoPlay
+          loop
+          muted
+          playsInline
+          className="absolute inset-0 z-0 h-full w-full object-cover opacity-40 transition-opacity duration-500 group-hover:opacity-50"
+        >
+          <source src="/video.mp4" type="video/mp4" />
+        </video>
 
-            <h1 className="mono-heading max-w-3xl text-5xl font-semibold uppercase leading-[0.88] text-white sm:text-6xl lg:text-7xl">
-              Protecting Your Digital Assets in an Evolving{" "}
-              <span className="text-[var(--gold)]">Threat Landscape</span>
+        {/* Vignette Overlay */}
+        <div className="absolute inset-0 z-10 bg-[radial-gradient(circle_at_center,transparent_10%,rgba(0,0,0,0.85)_100%)] pointer-events-none" />
+
+        <div className="relative z-20 w-full px-4 sm:px-6 lg:px-20 py-12 lg:py-20">
+          <motion.div
+            initial={{ opacity: 0, x: -30 }}
+            animate={{ opacity: 1, x: 0 }}
+            transition={{ duration: 0.8, ease: "easeOut" }}
+            className="max-w-4xl space-y-8"
+          >
+
+
+            <h1 className="mono-heading text-5xl font-bold uppercase leading-[0.9] text-white sm:text-7xl lg:text-8xl">
+              Protecting Your <br />
+              <span className="text-[var(--gold)]">Digital Assets</span>
             </h1>
 
-            <p className="max-w-2xl text-base leading-8 text-[var(--muted)] sm:text-lg">
-              Our advanced security platform offers comprehensive protection
-              against the most sophisticated cyber threats, keeping your data
-              safe and your business compliant.
+            <p className="max-w-2xl text-base leading-relaxed text-white/70 sm:text-lg lg:text-xl">
+              Next-generation security platform for the modern enterprise.
+              Deploy deep-stack infrastructure analysis and contain threats
+              before they impact your operations.
             </p>
 
-            <div className="flex flex-col gap-4 sm:flex-row">
-              <Link href="/gain-access" className="gold-button">
-                Get Started
+            <div className="flex flex-col gap-5 sm:flex-row">
+              <Link href="/gain-access" className="gold-button !px-10 !py-4 !text-sm">
+                Get Started Now
                 <ArrowRight className="h-4 w-4" />
               </Link>
-              <Link href="/connect" className="ghost-button">
-                Shedule a Demo
+              <Link href="/connect" className="ghost-button !px-10 !py-4 !text-sm !backdrop-blur-sm">
+                Schedule Demo
               </Link>
             </div>
 
-            <div className="flex flex-wrap gap-6 border-t border-white/6 pt-6 font-mono text-[0.68rem] uppercase tracking-[0.24em] text-white/30">
-              <span>SOC 2 Type II</span>
-              <span>ISO 27001:2022</span>
-              <span>Cert-In Empanelled</span>
+            <div className="flex flex-wrap gap-x-10 gap-y-4 border-t border-white/10 pt-8 font-mono text-[0.7rem] uppercase tracking-[0.24em] text-white/40">
+              <span className="flex items-center gap-2">
+                <ShieldCheck className="h-4 w-4 text-[var(--gold)]" />
+                SOC 2 Type II
+              </span>
+              <span className="flex items-center gap-2">
+                <ShieldCheck className="h-4 w-4 text-[var(--gold)]" />
+                ISO 27001:2022
+              </span>
+              <span className="flex items-center gap-2">
+                <ShieldCheck className="h-4 w-4 text-[var(--gold)]" />
+                GDPR COMPLIANT
+              </span>
             </div>
-          </motion.div>
-
-          <motion.div
-            initial={{ opacity: 0, scale: 0.96 }}
-            animate={{ opacity: 1, scale: 1 }}
-            transition={{ duration: 0.65, ease: "easeOut", delay: 0.08 }}
-            className="flex justify-center lg:justify-end"
-          >
-            <OrbitRadar />
           </motion.div>
         </div>
       </section>
 
       <section className="border-b border-white/6">
-        <div className="mx-auto max-w-7xl px-4 py-7 sm:px-6 lg:px-8">
+        <div className="mx-auto max-w-7xl px-4 py-5 sm:px-6 lg:px-8">
           <p className="eyebrow mb-6 text-center text-white/32">
-            Trusted by world-leading institutions
+            Trusted by Many World Leading Organizations
           </p>
           <div className="grid gap-6 text-center font-mono text-sm uppercase tracking-[0.22em] text-white/38 sm:grid-cols-3 lg:grid-cols-6">
             {logoStrip.map((logo) => (
@@ -211,13 +222,13 @@ export default function Home() {
       <section className="border-b border-white/6">
         <div className="mx-auto max-w-7xl px-4 py-20 sm:px-6 lg:px-8">
           <SectionIntro
-            eyebrow="// Disciplines"
-            title="Six disciplines. One accountable team."
+            eyebrow="// Services"
+            title="Six Services. One accountable team."
             description="A single roster of senior consultants covering the full security lifecycle — without vendor sprawl."
             className="mb-12"
           />
 
-          <div className="grid gap-px overflow-hidden border border-white/8 bg-white/8 md:grid-cols-2 xl:grid-cols-3">
+          <div className="grid gap-8 md:grid-cols-2 xl:grid-cols-3 lg:items-stretch">
             {services.map((service) => {
               const Icon = service.icon;
 
@@ -225,14 +236,14 @@ export default function Home() {
                 <Link
                   key={service.title}
                   href={service.href}
-                  className="group bg-[#0b0b0c] p-8 transition hover:bg-[#101011]"
+                  className="group flex h-full flex-col border border-white/8 bg-[#0b0b0c] p-8 lg:p-10 transition-all duration-300 hover:bg-[#101011] hover:border-[var(--gold)]/30 hover:-translate-y-2 hover:shadow-[0_20px_40px_rgba(0,0,0,0.4)]"
                 >
                   <p className="eyebrow mb-6">{service.index}</p>
                   <div className="mb-8 flex items-center justify-between">
                     <Icon className="h-5 w-5 text-[var(--gold)]" />
                     <ArrowRight className="h-4 w-4 text-white/28 transition group-hover:text-[var(--gold)]" />
                   </div>
-                  <h3 className="font-mono text-2xl font-semibold text-white">
+                  <h3 className="font-mono text-2xl font-semibold text-white break-words">
                     {service.title}
                   </h3>
                   <p className="mt-4 text-sm leading-7 text-[var(--muted)]">
@@ -273,26 +284,36 @@ export default function Home() {
         </div>
       </section>
 
-      <section className="border-b border-white/6">
+      <section className="border-b border-white/6 overflow-hidden">
         <div className="mx-auto max-w-7xl px-4 py-20 sm:px-6 lg:px-8">
-          <SectionIntro
-            eyebrow="// We Operate"
-            title="A continuous program — not a one-time audit."
-            className="mb-12"
-          />
+          <div className="grid gap-20 lg:grid-cols-[1fr_520px] lg:items-stretch">
+            <div>
+              <SectionIntro
+                eyebrow="// We Operate"
+                title="A continuous program — not a one-time audit."
+                className="mb-12"
+              />
 
-          <div className="grid gap-px overflow-hidden border border-white/8 bg-white/8 lg:grid-cols-4">
-            {processSteps.map((step) => (
-              <div key={step.index} className="bg-[#0b0b0c] p-6">
-                <p className="eyebrow mb-5">{step.index}</p>
-                <h3 className="font-mono text-xl font-semibold text-white">
-                  {step.title}
-                </h3>
-                <p className="mt-3 text-sm leading-7 text-[var(--muted)]">
-                  {step.description}
-                </p>
+              <div className="grid gap-6 md:grid-cols-2">
+                {processSteps.map((step) => (
+                  <div key={step.index} className="bg-[#0b0b0c] p-8 border border-white/8 transition-all duration-300 hover:bg-[#101011] hover:border-[var(--gold)]/30 hover:-translate-y-2 hover:shadow-[0_20px_40px_rgba(0,0,0,0.4)]">
+                    <p className="eyebrow mb-5">{step.index}</p>
+                    <h3 className="font-mono text-xl font-semibold text-white">
+                      {step.title}
+                    </h3>
+                    <p className="mt-3 text-sm leading-7 text-[var(--muted)]">
+                      {step.description}
+                    </p>
+                  </div>
+                ))}
               </div>
-            ))}
+            </div>
+
+            <div className="relative flex h-full items-center justify-center lg:justify-end">
+              <div className="w-full max-w-[520px] aspect-square flex items-center justify-center lg:translate-y-24">
+                <OrbitRadar />
+              </div>
+            </div>
           </div>
         </div>
       </section>
@@ -319,7 +340,7 @@ export default function Home() {
               <Link
                 key={module.title}
                 href={module.href}
-                className="group border border-white/8 bg-white/[0.025] p-6 transition hover:border-[var(--gold)]/35 hover:shadow-[0_0_50px_rgba(212,166,74,0.10)]"
+                className="group border border-white/8 bg-white/[0.025] p-6 transition-all duration-300 hover:border-[var(--gold)]/35 hover:-translate-y-2 hover:shadow-[0_20px_40px_rgba(0,0,0,0.4)]"
               >
                 <div className="mb-6 inline-flex h-10 w-10 items-center justify-center border border-[var(--gold)]/25 text-[var(--gold)]">
                   <ShieldCheck className="h-4 w-4" />

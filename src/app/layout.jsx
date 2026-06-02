@@ -13,17 +13,12 @@ import Chatbot from '@/components/Chatbot/chatbot';
 const themeInitScript = `
   (() => {
     try {
-      const storageKey = "nexcore-theme";
       const root = document.documentElement;
-      const stored = localStorage.getItem(storageKey);
-      const prefersDark = window.matchMedia("(prefers-color-scheme: dark)").matches;
-      const theme = stored === "light" || stored === "dark"
-        ? stored
-        : (prefersDark ? "dark" : "light");
       root.classList.remove("theme-light", "theme-dark");
-      root.classList.add(theme === "dark" ? "theme-dark" : "theme-light");
-      root.style.colorScheme = theme;
-      root.dataset.theme = theme;
+      root.classList.add("theme-dark");
+      root.style.colorScheme = "dark";
+      root.dataset.theme = "dark";
+      localStorage.setItem("nexcore-theme", "dark");
     } catch (error) {
       document.documentElement.classList.add("theme-dark");
       document.documentElement.style.colorScheme = "dark";

@@ -57,11 +57,10 @@ export default function PlatformOverview() {
                     key={group.key}
                     type="button"
                     onClick={() => setActiveGroup(group.key)}
-                    className={`inline-flex items-center gap-3 rounded-sm border px-4 py-2 font-mono text-xs uppercase tracking-[0.2em] transition ${
-                      isActive
+                    className={`inline-flex items-center gap-3 rounded-sm border px-4 py-2 font-mono text-xs uppercase tracking-[0.2em] transition ${isActive
                         ? "border-[var(--gold)] bg-[var(--gold)] text-black"
                         : "border-white/8 bg-white/[0.03] text-white/72 hover:border-[var(--gold)]/40 hover:text-white"
-                    }`}
+                      }`}
                   >
                     <span>{group.label}</span>
                     <span className={`text-[0.68rem] ${isActive ? "text-black/65" : "text-white/35"}`}>
@@ -88,7 +87,7 @@ export default function PlatformOverview() {
             {filteredTools.map((tool) => (
               <article
                 key={`${currentGroup.key}-${tool.slug}-${tool.name}`}
-                className="group flex min-h-64 flex-col justify-between border border-white/8 bg-white/[0.025] p-5 transition hover:border-[var(--gold)]/35 hover:bg-[linear-gradient(180deg,rgba(212,166,74,0.08),rgba(12,12,13,0.92))] hover:shadow-[0_0_60px_rgba(212,166,74,0.10)]"
+                className="group flex min-h-64 flex-col justify-between border border-white/8 bg-white/[0.025] p-5 transition-all duration-300 hover:border-[var(--gold)]/35 hover:bg-[linear-gradient(180deg,rgba(212,166,74,0.08),rgba(12,12,13,0.92))] hover:-translate-y-2 hover:shadow-[0_20px_40px_rgba(0,0,0,0.4)]"
               >
                 <div className="space-y-5">
                   <div className="flex items-start justify-between gap-4">
@@ -98,11 +97,11 @@ export default function PlatformOverview() {
                         {tool.name}
                       </h3>
                     </div>
-                    <span
+                    {/* <span
                       className={`rounded-full border px-3 py-1 font-mono text-[0.62rem] uppercase tracking-[0.28em] ${badgeTone[tool.status]}`}
                     >
                       {tool.status}
-                    </span>
+                    </span> */}
                   </div>
                   <p className="text-sm leading-7 text-[var(--muted)]">
                     {tool.description}

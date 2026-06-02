@@ -43,21 +43,21 @@ export default function GainAccess() {
         console.log("Login Response:", result);
 
         if (res.status === 200 && result.token) {
-          alert("Login successful! ✅");
+          alert("Login successful!");
           localStorage.setItem("token", result.token);
           localStorage.setItem("user", JSON.stringify(result.user));
 
           const redirectPath = localStorage.getItem("redirectAfterLogin");
-          console.log("🎯 Redirect Path from storage:", redirectPath);
+          console.log("Redirect Path from storage:", redirectPath);
 
           if (redirectPath && redirectPath !== "/gain-access") {
-            console.log("🔁 Redirecting to:", redirectPath);
+            console.log("Redirecting to:", redirectPath);
             setTimeout(() => {
               localStorage.removeItem("redirectAfterLogin");
               router.push(redirectPath);
             }, 100);
           } else {
-            console.log("🏠 No redirect path found. Going to home page.");
+            console.log("No redirect path found. Going to home page.");
             router.push("/");
           }
         } else {

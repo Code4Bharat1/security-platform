@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { Menu, MoonStar, SunMedium, UserRound, X } from 'lucide-react';
+import { Home, Menu, UserRound, X } from 'lucide-react';
 import { useEffect, useMemo, useRef, useState } from 'react';
 
 import BrandMark from '@/components/marketing/BrandMark';
@@ -27,7 +27,6 @@ export default function Navbar() {
   const [userName, setUserName] = useState('');
   const [menuOpen, setMenuOpen] = useState(false);
   const [showDropdown, setShowDropdown] = useState(false);
-  const [theme, setTheme] = useState('dark');
 
   useEffect(() => {
     if (typeof window === 'undefined') {
@@ -43,14 +42,6 @@ export default function Navbar() {
     }
   }, [pathname]);
 
-  useEffect(() => {
-    if (typeof document === 'undefined') {
-      return;
-    }
-
-    const root = document.documentElement;
-    setTheme(root.classList.contains('theme-light') ? 'light' : 'dark');
-  }, []);
 
   useEffect(() => {
     const handleClickOutside = (event) => {
@@ -84,21 +75,6 @@ export default function Navbar() {
     window.location.href = '/';
   };
 
-  const applyTheme = (nextTheme) => {
-    if (typeof document === 'undefined') {
-      return;
-    }
-
-    const root = document.documentElement;
-    root.classList.remove('theme-light', 'theme-dark');
-    root.classList.add(nextTheme === 'light' ? 'theme-light' : 'theme-dark');
-    root.style.colorScheme = nextTheme;
-    root.dataset.theme = nextTheme;
-    localStorage.setItem('nexcore-theme', nextTheme);
-    setTheme(nextTheme);
-  };
-
-  const toggleTheme = () => applyTheme(theme === 'dark' ? 'light' : 'dark');
 
   const isActive = (href) => {
     if (href === '/') {
@@ -120,15 +96,22 @@ export default function Navbar() {
               </span>
             ))}
           </div>
-          <div className="font-mono">Uptime 99.998% — Nodes 4,129 — Latency 12ms</div>
         </div>
       </div>
 
       <div className="mx-auto flex max-w-7xl items-center justify-between px-4 py-4 sm:px-6 lg:px-8">
         <div className="flex items-center gap-10">
-          <BrandMark />
+          <BrandMark href={null} />
 
           <nav className="hidden items-center gap-8 md:flex">
+            <Link
+              href="/"
+              className={`mono-heading text-sm tracking-[-0.02em] transition ${
+                isActive('/') ? 'font-medium text-white' : 'text-white/54 hover:text-white'
+              }`}
+            >
+              Home
+            </Link>
             {navItems.map((item) => (
               <Link
                 key={item.href}
@@ -146,14 +129,6 @@ export default function Navbar() {
         </div>
 
         <div className="hidden items-center gap-4 md:flex" ref={dropdownRef}>
-          <button
-            type="button"
-            onClick={toggleTheme}
-            className="inline-flex h-11 w-11 items-center justify-center border border-[color:var(--border)] bg-[color:var(--surface-card)] text-[color:var(--text-body)] transition hover:border-[color:var(--gold)] hover:text-[color:var(--gold)]"
-            aria-label={`Switch to ${theme === 'dark' ? 'light' : 'dark'} mode`}
-          >
-            {theme === 'dark' ? <SunMedium className="h-4 w-4" /> : <MoonStar className="h-4 w-4" />}
-          </button>
           {userName ? (
             <div className="relative">
               <button
@@ -202,15 +177,18 @@ export default function Navbar() {
       {menuOpen ? (
         <div className="border-t border-[color:var(--border)] md:hidden">
           <div className="mx-auto flex max-w-7xl flex-col gap-3 px-4 py-5 sm:px-6">
-            <button
-              type="button"
-              onClick={toggleTheme}
-              className="inline-flex items-center justify-center gap-2 border border-[color:var(--border)] bg-[color:var(--surface-card)] px-4 py-3 text-xs uppercase tracking-[0.18em] text-[color:var(--text-heading)] transition hover:border-[color:var(--gold)] hover:text-[color:var(--gold)]"
-              style={{ fontFamily: "var(--font-display)" }}
+            <Link
+              href="/"
+              onClick={() => setMenuOpen(false)}
+              className={`border px-4 py-3 text-xs uppercase tracking-[0.18em] transition ${
+                isActive('/')
+                  ? 'border-[color:var(--gold)] bg-[color:var(--surface-subtle)] text-[color:var(--text-heading)]'
+                  : 'border-[color:var(--border)] bg-[color:var(--surface-card)] text-[color:var(--text-body)] hover:text-[color:var(--text-heading)]'
+              }`}
+              style={{ fontFamily: 'var(--font-display)' }}
             >
-              {theme === 'dark' ? <SunMedium className="h-4 w-4" /> : <MoonStar className="h-4 w-4" />}
-              <span>{theme === 'dark' ? 'Light Mode' : 'Dark Mode'}</span>
-            </button>
+              Home
+            </Link>
             {navItems.map((item) => (
               <Link
                 key={item.href}
