@@ -50,14 +50,14 @@ export default function Vulnscanner() {
 
   const API_BASE = useMemo(
     () => process.env.NEXT_PUBLIC_PROD_API_URL.replace(/\/+$/, ""),
-    []
+    [],
   );
 
   const validateUrl = (v) => {
     const val = (v || "").trim();
     const urlPattern = new RegExp(
       "^(https?:\\/\\/)?(([a-zA-Z\\d]([a-zA-Z\\d-]*[a-zA-Z\\d])*)\\.)+[a-zA-Z]{2,}(:\\d+)?(\\/.*)?$",
-      "i"
+      "i",
     );
     return !!urlPattern.test(val);
   };
@@ -73,13 +73,13 @@ export default function Vulnscanner() {
       setHistory(null);
       const res = await fetch(
         `${API_BASE}/scan/history?domain=${encodeURIComponent(
-          domain
+          domain,
         )}&limit=10`,
         {
           headers: {
             Authorization: `Bearer ${token}`,
           },
-        }
+        },
       );
 
       if (!res.ok) {
@@ -124,10 +124,14 @@ export default function Vulnscanner() {
         const result = await response.json();
 
         console.log("SCAN RESULT:", result);
+        console.log("SSL:", result.ssl);
+        console.log("Port Scan:", result.portScan);
+        console.log("Vulnerability Count:", result.vulnerabilityCount);
+        console.log("Vulnerabilities:", result.vulnerabilities);
         console.log("RAW HEADERS (as sent):", result?.headers?.rawHeaders);
         console.log(
           "COOKIES (as sent):",
-          result?.headers?.cookieFindings ?? result?.headers?.cookies
+          result?.headers?.cookieFindings ?? result?.headers?.cookies,
         );
 
         if (result.error) {
@@ -137,7 +141,7 @@ export default function Vulnscanner() {
         }
 
         setScanData(result);
-        console.log("Scan Data.....................", scanData);
+        console.log("Scan Result:", result);
 
         setActiveTab("overview");
         await fetchHistory(domain, token);
@@ -869,7 +873,7 @@ export default function Vulnscanner() {
 
       ["critical", "high", "medium", "low", "info"].forEach((severity) => {
         const vulns = scanData.vulnerabilities.filter(
-          (v) => v.severity === severity
+          (v) => v.severity === severity,
         );
 
         vulns.forEach((vuln) => {
@@ -884,7 +888,7 @@ export default function Vulnscanner() {
           doc.text(
             `Vulnerability name: ${getVulnerabilityTypeLabel(vuln.type)}`,
             20,
-            yPos
+            yPos,
           );
 
           const severityColors = {
@@ -929,7 +933,7 @@ export default function Vulnscanner() {
           // ✅ GET HELPER DATA - ALWAYS USE FOR PDF (ignore backend)
           const vulnDetails = getDetailedVulnerabilityInfo(
             vuln.type,
-            vuln.severity
+            vuln.severity,
           );
 
           // ✅ Impact Section - FORCE USE HELPER
@@ -1137,14 +1141,14 @@ export default function Vulnscanner() {
   const getCriticalVulnCount = () => {
     if (!scanData?.vulnerabilities) return 0;
     return scanData.vulnerabilities.filter(
-      (v) => v.severity?.toLowerCase() === "critical"
+      (v) => v.severity?.toLowerCase() === "critical",
     ).length;
   };
 
   const getHighVulnCount = () => {
     if (!scanData?.vulnerabilities) return 0;
     return scanData.vulnerabilities.filter(
-      (v) => v.severity?.toLowerCase() === "high"
+      (v) => v.severity?.toLowerCase() === "high",
     ).length;
   };
 
@@ -1177,14 +1181,21 @@ export default function Vulnscanner() {
               Vulnerability <span className="text-[var(--gold)]">Scanner</span>
             </h1>
             <p className="max-w-3xl text-base leading-8 text-[var(--muted)] sm:text-lg">
-              Our advanced security scanner identifies vulnerabilities before attackers
-              can exploit them. Launch the existing assessment workflow with the new
-              command-center UI, richer visibility, and premium reporting treatment.
+              Our advanced security scanner identifies vulnerabilities before
+              attackers can exploit them. Launch the existing assessment
+              workflow with the new command-center UI, richer visibility, and
+              premium reporting treatment.
             </p>
             <div className="flex flex-wrap gap-3 font-mono text-[0.68rem] uppercase tracking-[0.22em] text-white/34">
-              <span className="border border-white/8 bg-white/[0.03] px-3 py-2">Live scan engine</span>
-              <span className="border border-white/8 bg-white/[0.03] px-3 py-2">Authenticated workflow</span>
-              <span className="border border-white/8 bg-white/[0.03] px-3 py-2">PDF reporting</span>
+              <span className="border border-white/8 bg-white/[0.03] px-3 py-2">
+                Live scan engine
+              </span>
+              <span className="border border-white/8 bg-white/[0.03] px-3 py-2">
+                Authenticated workflow
+              </span>
+              <span className="border border-white/8 bg-white/[0.03] px-3 py-2">
+                PDF reporting
+              </span>
             </div>
           </div>
         </div>
@@ -1195,9 +1206,9 @@ export default function Vulnscanner() {
               Website Vulnerability Scanner
             </h2>
             <p className="mx-auto max-w-2xl text-center text-sm leading-7 text-[var(--muted)] sm:text-base">
-              Scan a public target, review vulnerability posture, inspect headers and
-              TLS configuration, and export the final report without changing the
-              existing backend workflow.
+              Scan a public target, review vulnerability posture, inspect
+              headers and TLS configuration, and export the final report without
+              changing the existing backend workflow.
             </p>
 
             <form onSubmit={handleSubmit} className="mt-6 space-y-4">
@@ -1275,21 +1286,17 @@ export default function Vulnscanner() {
                   <div className="flex flex-col sm:flex-row items-start sm:items-center gap-2 sm:gap-4">
                     {scanData.headers?._benchmark?.grade && (
                       <div className="font-mono text-xs uppercase tracking-[0.22em] text-white/70">
-                        <span className="mr-2 text-white/36">
-                          Grade:
-                        </span>
+                        <span className="mr-2 text-white/36">Grade:</span>
                         <span className="text-[var(--gold)] font-semibold">
                           {scanData.headers._benchmark.grade}
                         </span>
                       </div>
                     )}
                     <div className="font-mono text-xs uppercase tracking-[0.22em] text-white/70">
-                      <span className="mr-2 text-white/36">
-                        Risk Level:
-                      </span>
+                      <span className="mr-2 text-white/36">Risk Level:</span>
                       <span
                         className={`font-bold ${getRiskLevelColor(
-                          scanData.riskLevel
+                          scanData.riskLevel,
                         )}`}
                       >
                         {scanData.riskLevel?.toUpperCase() || "—"}
@@ -1403,7 +1410,7 @@ export default function Vulnscanner() {
                               Risk Level:{" "}
                               <span
                                 className={getRiskLevelColor(
-                                  scanData.riskLevel
+                                  scanData.riskLevel,
                                 )}
                               >
                                 {scanData.riskLevel?.toUpperCase() || "—"}
@@ -1463,7 +1470,7 @@ export default function Vulnscanner() {
                                 ? scanData.vulnerabilityBreakdown[severity] || 0
                                 : scanData.vulnerabilities.filter(
                                     (v) =>
-                                      v.severity?.toLowerCase() === severity
+                                      v.severity?.toLowerCase() === severity,
                                   ).length;
 
                               return (
@@ -1473,12 +1480,12 @@ export default function Vulnscanner() {
                                       severity === "critical"
                                         ? "text-purple-400"
                                         : severity === "high"
-                                        ? "text-red-400"
-                                        : severity === "medium"
-                                        ? "text-yellow-400"
-                                        : severity === "low"
-                                        ? "text-blue-400"
-                                        : "text-gray-400"
+                                          ? "text-red-400"
+                                          : severity === "medium"
+                                            ? "text-yellow-400"
+                                            : severity === "low"
+                                              ? "text-blue-400"
+                                              : "text-gray-400"
                                     }`}
                                   >
                                     {count}
@@ -1488,7 +1495,7 @@ export default function Vulnscanner() {
                                   </div>
                                 </div>
                               );
-                            }
+                            },
                           )}
                         </div>
                       </div>
@@ -1662,7 +1669,7 @@ export default function Vulnscanner() {
                                   {getSeverityIcon(v.severity)}
                                   <span
                                     className={`inline-block px-2 py-1 text-xs rounded-full border ${getSeverityColor(
-                                      v.severity
+                                      v.severity,
                                     )}`}
                                   >
                                     {v.severity?.toUpperCase()}
@@ -1781,7 +1788,7 @@ export default function Vulnscanner() {
                                 <td className="px-4 py-3 text-sm text-gray-300">
                                   {scanData.ssl.validFrom
                                     ? new Date(
-                                        scanData.ssl.validFrom
+                                        scanData.ssl.validFrom,
                                       ).toLocaleString()
                                     : "N/A"}
                                 </td>
@@ -1793,7 +1800,7 @@ export default function Vulnscanner() {
                                 <td className="px-4 py-3 text-sm text-gray-300">
                                   {scanData.ssl.validTo
                                     ? new Date(
-                                        scanData.ssl.validTo
+                                        scanData.ssl.validTo,
                                       ).toLocaleString()
                                     : "N/A"}
                                 </td>
@@ -1808,8 +1815,8 @@ export default function Vulnscanner() {
                                       scanData.ssl.daysRemaining > 30
                                         ? "text-green-400 font-medium"
                                         : scanData.ssl.daysRemaining > 0
-                                        ? "text-yellow-400 font-medium"
-                                        : "text-red-400 font-medium"
+                                          ? "text-yellow-400 font-medium"
+                                          : "text-red-400 font-medium"
                                     }
                                   >
                                     {scanData.ssl.daysRemaining ?? "0"}
@@ -1922,7 +1929,7 @@ export default function Vulnscanner() {
                                         </div>
                                       </div>
                                     </div>
-                                  )
+                                  ),
                                 )}
                               </div>
                             </div>
@@ -2001,7 +2008,7 @@ export default function Vulnscanner() {
                                   ([version, supported]) => {
                                     const versionName = version.replace(
                                       "_",
-                                      "."
+                                      ".",
                                     );
                                     const isDeprecated =
                                       version === "TLSv1" ||
@@ -2015,10 +2022,10 @@ export default function Vulnscanner() {
                                           supported && isDeprecated
                                             ? "bg-red-500/10 border-red-500/30"
                                             : supported && isModern
-                                            ? "bg-green-500/10 border-green-500/30"
-                                            : supported
-                                            ? "bg-blue-500/10 border-blue-500/30"
-                                            : "bg-gray-800 border-gray-700"
+                                              ? "bg-green-500/10 border-green-500/30"
+                                              : supported
+                                                ? "bg-blue-500/10 border-blue-500/30"
+                                                : "bg-gray-800 border-gray-700"
                                         }`}
                                       >
                                         <div className="flex items-center justify-between mb-2">
@@ -2031,8 +2038,8 @@ export default function Vulnscanner() {
                                                 isDeprecated
                                                   ? "text-red-400"
                                                   : isModern
-                                                  ? "text-green-400"
-                                                  : "text-blue-400"
+                                                    ? "text-green-400"
+                                                    : "text-blue-400"
                                               }`}
                                             />
                                           ) : (
@@ -2044,10 +2051,10 @@ export default function Vulnscanner() {
                                             supported && isDeprecated
                                               ? "text-red-400"
                                               : supported && isModern
-                                              ? "text-green-400"
-                                              : supported
-                                              ? "text-blue-400"
-                                              : "text-gray-500"
+                                                ? "text-green-400"
+                                                : supported
+                                                  ? "text-blue-400"
+                                                  : "text-gray-500"
                                           }`}
                                         >
                                           {supported
@@ -2061,7 +2068,7 @@ export default function Vulnscanner() {
                                         )}
                                       </div>
                                     );
-                                  }
+                                  },
                                 )}
                               </div>
                             </div>
@@ -2103,8 +2110,8 @@ export default function Vulnscanner() {
                                               cipher.bits >= 256
                                                 ? "bg-green-500/20 text-green-400"
                                                 : cipher.bits >= 128
-                                                ? "bg-blue-500/20 text-blue-400"
-                                                : "bg-red-500/20 text-red-400"
+                                                  ? "bg-blue-500/20 text-blue-400"
+                                                  : "bg-red-500/20 text-red-400"
                                             }`}
                                           >
                                             {cipher.bits} bits
@@ -2115,7 +2122,7 @@ export default function Vulnscanner() {
                                         Protocol: {cipher.version}
                                       </div>
                                     </div>
-                                  )
+                                  ),
                                 )}
                               </div>
                             </div>
@@ -2183,7 +2190,7 @@ export default function Vulnscanner() {
                                         {protocol}
                                       </span>
                                     </div>
-                                  )
+                                  ),
                                 )}
                               </div>
                             </div>
@@ -2218,7 +2225,7 @@ export default function Vulnscanner() {
                                 "tls_weak_cipher",
                                 "tls_cbc_cipher",
                                 "tls_no_pfs",
-                              ].includes(v.type)
+                              ].includes(v.type),
                             ) || [];
 
                           return (
@@ -2242,8 +2249,8 @@ export default function Vulnscanner() {
                                           vuln.severity === "high"
                                             ? "bg-red-500/10 border-red-500/30"
                                             : vuln.severity === "medium"
-                                            ? "bg-yellow-500/10 border-yellow-500/30"
-                                            : "bg-blue-500/10 border-blue-500/30"
+                                              ? "bg-yellow-500/10 border-yellow-500/30"
+                                              : "bg-blue-500/10 border-blue-500/30"
                                         }`}
                                       >
                                         <div className="flex items-start gap-3 mb-2">
@@ -2254,8 +2261,8 @@ export default function Vulnscanner() {
                                                 vuln.severity === "high"
                                                   ? "text-red-400"
                                                   : vuln.severity === "medium"
-                                                  ? "text-yellow-400"
-                                                  : "text-blue-400"
+                                                    ? "text-yellow-400"
+                                                    : "text-blue-400"
                                               }`}
                                             >
                                               {vuln.description}
@@ -2406,7 +2413,7 @@ export default function Vulnscanner() {
                                         "cookieFindings",
                                         "csp",
                                         "_benchmark",
-                                      ].includes(k)
+                                      ].includes(k),
                                   )
                                   .map(([key, value], index) => (
                                     <tr
@@ -2610,7 +2617,7 @@ export default function Vulnscanner() {
                                               >
                                                 • {issue}
                                               </li>
-                                            )
+                                            ),
                                           )}
                                         </ul>
                                       </div>
@@ -2717,7 +2724,7 @@ export default function Vulnscanner() {
                                                     >
                                                       • {issue}
                                                     </li>
-                                                  )
+                                                  ),
                                                 )}
                                               </ul>
                                             </div>
@@ -2725,7 +2732,7 @@ export default function Vulnscanner() {
                                         </div>
                                       </div>
                                     </div>
-                                  )
+                                  ),
                                 )}
                               </div>
                             ) : (
@@ -2897,7 +2904,7 @@ export default function Vulnscanner() {
                                   </div>
                                 </div>
                               </div>
-                            )
+                            ),
                           )}
                         </div>
                       </div>
@@ -3044,7 +3051,7 @@ export default function Vulnscanner() {
                                       Value: {cookie.value.substring(0, 50)}...
                                     </p>
                                   </div>
-                                )
+                                ),
                               )}
                             </div>
                           )}
@@ -3092,7 +3099,7 @@ export default function Vulnscanner() {
                                       </div>
                                     </div>
                                   </div>
-                                )
+                                ),
                               )}
                             </div>
                           )}
@@ -3199,7 +3206,7 @@ export default function Vulnscanner() {
                                 {scanData.headers.csp.issues.map(
                                   (issue, idx) => (
                                     <li key={idx}>{issue}</li>
-                                  )
+                                  ),
                                 )}
                               </ul>
                             ) : (
@@ -3218,7 +3225,7 @@ export default function Vulnscanner() {
                               .length ? (
                               <div className="text-sm text-gray-300 space-y-2 max-h-60 overflow-y-auto">
                                 {Object.entries(
-                                  scanData.headers.csp.directives
+                                  scanData.headers.csp.directives,
                                 ).map(([k, vals]) => (
                                   <div
                                     key={k}
@@ -3292,12 +3299,12 @@ export default function Vulnscanner() {
                                     scanData.securityGrade === "A"
                                       ? "text-green-400"
                                       : scanData.securityGrade === "B"
-                                      ? "text-blue-400"
-                                      : scanData.securityGrade === "C"
-                                      ? "text-yellow-400"
-                                      : scanData.securityGrade === "D"
-                                      ? "text-orange-400"
-                                      : "text-red-400"
+                                        ? "text-blue-400"
+                                        : scanData.securityGrade === "C"
+                                          ? "text-yellow-400"
+                                          : scanData.securityGrade === "D"
+                                            ? "text-orange-400"
+                                            : "text-red-400"
                                   }`}
                                 >
                                   {scanData.securityGrade}
@@ -3317,7 +3324,7 @@ export default function Vulnscanner() {
                               </h4>
                               <div className="space-y-2 text-sm">
                                 {Object.entries(
-                                  scanData.headers._benchmark.deltas
+                                  scanData.headers._benchmark.deltas,
                                 ).map(([key, delta]) => {
                                   const label = key
                                     .replace(/([A-Z])/g, " $1")
@@ -3337,8 +3344,8 @@ export default function Vulnscanner() {
                                           isImprovement
                                             ? "text-green-400"
                                             : delta > 0
-                                            ? "text-red-400"
-                                            : "text-gray-400"
+                                              ? "text-red-400"
+                                              : "text-gray-400"
                                         }`}
                                       >
                                         {delta > 0 ? "+" : ""}
@@ -3515,9 +3522,9 @@ export default function Vulnscanner() {
                                           .statusCode === 200
                                           ? "bg-green-500/20 text-green-400"
                                           : scanData.serviceDetection.httpInfo
-                                              .statusCode >= 400
-                                          ? "bg-red-500/20 text-red-400"
-                                          : "bg-yellow-500/20 text-yellow-400"
+                                                .statusCode >= 400
+                                            ? "bg-red-500/20 text-red-400"
+                                            : "bg-yellow-500/20 text-yellow-400"
                                       }`}
                                     >
                                       {
@@ -3547,7 +3554,7 @@ export default function Vulnscanner() {
                                             >
                                               {feature}
                                             </span>
-                                          )
+                                          ),
                                         )}
                                       </div>
                                     </td>
@@ -3819,7 +3826,7 @@ export default function Vulnscanner() {
                                       Detected via: {fw.detected}
                                     </div>
                                   </div>
-                                )
+                                ),
                               )}
                             </div>
                           </div>
@@ -3869,7 +3876,7 @@ export default function Vulnscanner() {
                                       Detected via: {server.detected}
                                     </div>
                                   </div>
-                                )
+                                ),
                               )}
                             </div>
                           </div>
@@ -3946,7 +3953,7 @@ export default function Vulnscanner() {
                                       {tech.confidence} confidence
                                     </span>
                                   </div>
-                                )
+                                ),
                               )}
                             </div>
                           </div>
@@ -3985,7 +3992,7 @@ export default function Vulnscanner() {
                                         >
                                           {ip}
                                         </span>
-                                      )
+                                      ),
                                     )}
                                   </div>
                                 </div>
@@ -4021,7 +4028,7 @@ export default function Vulnscanner() {
                                                   >
                                                     {hostname}
                                                   </span>
-                                                )
+                                                ),
                                               )}
                                             </div>
                                           ) : (
@@ -4030,7 +4037,7 @@ export default function Vulnscanner() {
                                             </span>
                                           )}
                                         </div>
-                                      )
+                                      ),
                                     )}
                                   </div>
                                 </div>
@@ -4109,7 +4116,7 @@ export default function Vulnscanner() {
                                         >
                                           {ip}
                                         </span>
-                                      )
+                                      ),
                                     )}
                                   </div>
                                 </div>
@@ -4146,7 +4153,7 @@ export default function Vulnscanner() {
                                                   >
                                                     {hostname}
                                                   </span>
-                                                )
+                                                ),
                                               )}
                                             </div>
                                           ) : (
@@ -4155,7 +4162,7 @@ export default function Vulnscanner() {
                                             </span>
                                           )}
                                         </div>
-                                      )
+                                      ),
                                     )}
                                   </div>
                                 </div>
@@ -4230,7 +4237,7 @@ export default function Vulnscanner() {
                                             )}
                                           </td>
                                         </tr>
-                                      )
+                                      ),
                                     )}
                                   </tbody>
                                 </table>
@@ -4259,7 +4266,7 @@ export default function Vulnscanner() {
                                   </div>
                                   <div className="text-2xl font-bold text-purple-400">
                                     {scanData.serviceDetection.networkTimings.timings.dnsLookup.toFixed(
-                                      2
+                                      2,
                                     )}
                                     <span className="text-sm ml-1">ms</span>
                                   </div>
@@ -4274,7 +4281,7 @@ export default function Vulnscanner() {
                                   </div>
                                   <div className="text-2xl font-bold text-blue-400">
                                     {scanData.serviceDetection.networkTimings.timings.tcpConnection.toFixed(
-                                      2
+                                      2,
                                     )}
                                     <span className="text-sm ml-1">ms</span>
                                   </div>
@@ -4289,7 +4296,7 @@ export default function Vulnscanner() {
                                   </div>
                                   <div className="text-2xl font-bold text-green-400">
                                     {scanData.serviceDetection.networkTimings.timings.tlsHandshake.toFixed(
-                                      2
+                                      2,
                                     )}
                                     <span className="text-sm ml-1">ms</span>
                                   </div>
@@ -4304,7 +4311,7 @@ export default function Vulnscanner() {
                                   </div>
                                   <div className="text-2xl font-bold text-yellow-400">
                                     {scanData.serviceDetection.networkTimings.timings.ttfb.toFixed(
-                                      2
+                                      2,
                                     )}
                                     <span className="text-sm ml-1">ms</span>
                                   </div>
@@ -4319,7 +4326,7 @@ export default function Vulnscanner() {
                                   </div>
                                   <div className="text-2xl font-bold text-cyan-400">
                                     {scanData.serviceDetection.networkTimings.timings.totalTime.toFixed(
-                                      2
+                                      2,
                                     )}
                                     <span className="text-sm ml-1">ms</span>
                                   </div>
@@ -4340,19 +4347,19 @@ export default function Vulnscanner() {
                                         .timings.totalTime < 200
                                         ? "bg-green-500/20 text-green-400"
                                         : scanData.serviceDetection
-                                            .networkTimings.timings.totalTime <
-                                          500
-                                        ? "bg-yellow-500/20 text-yellow-400"
-                                        : "bg-red-500/20 text-red-400"
+                                              .networkTimings.timings
+                                              .totalTime < 500
+                                          ? "bg-yellow-500/20 text-yellow-400"
+                                          : "bg-red-500/20 text-red-400"
                                     }`}
                                   >
                                     {scanData.serviceDetection.networkTimings
                                       .timings.totalTime < 200
                                       ? "Excellent"
                                       : scanData.serviceDetection.networkTimings
-                                          .timings.totalTime < 500
-                                      ? "Good"
-                                      : "Needs Improvement"}
+                                            .timings.totalTime < 500
+                                        ? "Good"
+                                        : "Needs Improvement"}
                                   </span>
                                 </div>
                               </div>
@@ -4398,7 +4405,7 @@ export default function Vulnscanner() {
                                         Visit
                                       </a>
                                     </div>
-                                  )
+                                  ),
                                 )}
                               </div>
                             </div>
@@ -4495,8 +4502,8 @@ export default function Vulnscanner() {
                                         (row.vulnerabilityCount || 0) === 0
                                           ? "text-green-400"
                                           : (row.vulnerabilityCount || 0) <= 2
-                                          ? "text-yellow-400"
-                                          : "text-red-400"
+                                            ? "text-yellow-400"
+                                            : "text-red-400"
                                       }`}
                                     >
                                       {row.vulnerabilityCount ?? "—"}
@@ -4505,7 +4512,7 @@ export default function Vulnscanner() {
                                   <td className="px-3 py-2 text-xs sm:text-sm">
                                     <span
                                       className={`${getRiskLevelColor(
-                                        row.riskLevel
+                                        row.riskLevel,
                                       )} font-medium`}
                                     >
                                       {row.riskLevel?.toUpperCase() || "—"}
@@ -4559,7 +4566,7 @@ export default function Vulnscanner() {
                   <div className="space-y-4">
                     {/* 🛡️ 1. Clickjacking Vulnerability */}
                     {scanData.vulnerabilities?.some(
-                      (v) => v.type === "clickjacking"
+                      (v) => v.type === "clickjacking",
                     ) && (
                       <div className="bg-black rounded-xl border border-white overflow-hidden">
                         <div className="p-4 bg-gray-900 border-b border-white">
@@ -4689,7 +4696,7 @@ export default function Vulnscanner() {
                                         >
                                           • {issue}
                                         </div>
-                                      )
+                                      ),
                                     )}
                                   </div>
                                   <div className="mt-3 bg-gray-900 p-3 rounded border border-yellow-500/20">
@@ -4759,7 +4766,7 @@ export default function Vulnscanner() {
                                           >
                                             → {action}
                                           </li>
-                                        )
+                                        ),
                                       )}
                                     </ul>
                                   </div>
@@ -4857,7 +4864,7 @@ export default function Vulnscanner() {
                                           </a>
                                         </td>
                                       </tr>
-                                    )
+                                    ),
                                   )}
                                 </tbody>
                               </table>
@@ -4945,7 +4952,7 @@ export default function Vulnscanner() {
                             ))}
 
                           {scanData.headers.cookieFindings.every(
-                            (c) => c.issues.length === 0
+                            (c) => c.issues.length === 0,
                           ) && (
                             <div className="bg-green-500/10 border border-green-500/30 rounded-lg p-4">
                               <div className="flex items-center gap-3">
@@ -5061,7 +5068,7 @@ export default function Vulnscanner() {
                                               {url}
                                             </a>
                                           </div>
-                                        )
+                                        ),
                                       )}
                                     </div>
                                   </div>
@@ -5087,7 +5094,7 @@ export default function Vulnscanner() {
                                               {sitemapUrl}
                                             </a>
                                           </li>
-                                        )
+                                        ),
                                       )}
                                     </ul>
                                   </div>
@@ -5178,7 +5185,7 @@ export default function Vulnscanner() {
                                             >
                                               🚫 {path || "(empty)"}
                                             </li>
-                                          )
+                                          ),
                                         )}
                                       </ul>
                                     </div>
@@ -5206,7 +5213,7 @@ export default function Vulnscanner() {
                                               {sitemapUrl}
                                             </a>
                                           </li>
-                                        )
+                                        ),
                                       )}
                                     </ul>
                                   </div>
@@ -5319,7 +5326,7 @@ export default function Vulnscanner() {
                                             </span>
                                           </div>
                                         </div>
-                                      )
+                                      ),
                                     )}
                                   </div>
                                 </div>
@@ -5450,7 +5457,7 @@ export default function Vulnscanner() {
                                     </a>
                                     <ExternalLink className="w-4 h-4 text-gray-500 flex-shrink-0" />
                                   </div>
-                                )
+                                ),
                               )}
                             </div>
                           </div>
@@ -5508,9 +5515,9 @@ export default function Vulnscanner() {
                                         scanData.firewall.confidence === "high"
                                           ? "text-green-400"
                                           : scanData.firewall.confidence ===
-                                            "medium"
-                                          ? "text-yellow-400"
-                                          : "text-gray-400"
+                                              "medium"
+                                            ? "text-yellow-400"
+                                            : "text-gray-400"
                                       }`}
                                     >
                                       {scanData.firewall.confidence.toUpperCase()}
@@ -5590,7 +5597,7 @@ export default function Vulnscanner() {
                                         {fp.value || fp.pattern}
                                       </p>
                                     </div>
-                                  )
+                                  ),
                                 )}
                               </div>
                             </div>
@@ -5657,7 +5664,7 @@ export default function Vulnscanner() {
                                         </div>
                                       </div>
                                     </div>
-                                  )
+                                  ),
                                 )}
                               </div>
                             </div>
@@ -5678,7 +5685,7 @@ export default function Vulnscanner() {
                                     >
                                       • {detail}
                                     </li>
-                                  )
+                                  ),
                                 )}
                               </ul>
                             </div>
@@ -5819,10 +5826,10 @@ export default function Vulnscanner() {
                                               port.risk === "critical"
                                                 ? "bg-red-500/20 text-red-400 border-red-500/30"
                                                 : port.risk === "high"
-                                                ? "bg-orange-500/20 text-orange-400 border-orange-500/30"
-                                                : port.risk === "medium"
-                                                ? "bg-yellow-500/20 text-yellow-400 border-yellow-500/30"
-                                                : "bg-green-500/20 text-green-400 border-green-500/30"
+                                                  ? "bg-orange-500/20 text-orange-400 border-orange-500/30"
+                                                  : port.risk === "medium"
+                                                    ? "bg-yellow-500/20 text-yellow-400 border-yellow-500/30"
+                                                    : "bg-green-500/20 text-green-400 border-green-500/30"
                                             }`}
                                           >
                                             {port.risk?.toUpperCase() || "LOW"}{" "}
@@ -5882,7 +5889,7 @@ export default function Vulnscanner() {
                                         )}
                                       </div>
                                     </div>
-                                  )
+                                  ),
                                 )}
                               </div>
                             </div>
@@ -5921,7 +5928,7 @@ export default function Vulnscanner() {
                                           </span>
                                         )}
                                     </div>
-                                  )
+                                  ),
                                 )}
                               </div>
                             </div>
@@ -5948,7 +5955,7 @@ export default function Vulnscanner() {
                                           : port}
                                       </span>
                                     </div>
-                                  )
+                                  ),
                                 )}
                               </div>
                             </div>
@@ -5974,10 +5981,10 @@ export default function Vulnscanner() {
                                             impact.severity === "critical"
                                               ? "bg-red-500/20 text-red-400"
                                               : impact.severity === "high"
-                                              ? "bg-orange-500/20 text-orange-400"
-                                              : impact.severity === "medium"
-                                              ? "bg-yellow-500/20 text-yellow-400"
-                                              : "bg-green-500/20 text-green-400"
+                                                ? "bg-orange-500/20 text-orange-400"
+                                                : impact.severity === "medium"
+                                                  ? "bg-yellow-500/20 text-yellow-400"
+                                                  : "bg-green-500/20 text-green-400"
                                           }`}
                                         >
                                           {impact.severity?.toUpperCase()}
@@ -5994,7 +6001,7 @@ export default function Vulnscanner() {
                                         </div>
                                       </div>
                                     </div>
-                                  )
+                                  ),
                                 )}
                               </div>
                             </div>
@@ -6015,10 +6022,7 @@ export default function Vulnscanner() {
                 {/* Download PDF Button */}
                 {scanData && (
                   <div className="flex justify-center sm:justify-end mt-6 pt-6 border-t border-white/8">
-                    <button
-                      onClick={generatePDF}
-                      className="gold-button"
-                    >
+                    <button onClick={generatePDF} className="gold-button">
                       <FileText className="h-4 w-4" />
                       <span className="text-sm">Download PDF Report</span>
                     </button>
