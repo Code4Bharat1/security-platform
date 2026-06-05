@@ -41,6 +41,12 @@ export default function SitemapForm() {
       return;
     }
 
+    const finalDepth = parseInt(depth, 10);
+    if (isNaN(finalDepth) || finalDepth < 1 || finalDepth > 5) {
+      setError("Please enter a crawl depth between 1 and 5.");
+      return;
+    }
+
     setError("");
     setLoading(true);
     setSitemapData(null);
@@ -180,8 +186,11 @@ export default function SitemapForm() {
               name="depth"
               min="1"
               max="5"
-              value={depth}
-              onChange={(e) => setDepth(parseInt(e.target.value || "", 10))}
+              value={isNaN(depth) ? "" : depth}
+              onChange={(e) => {
+                const val = parseInt(e.target.value, 10);
+                setDepth(isNaN(val) ? "" : val);
+              }}
               className="w-full text-white border border-gray-300 rounded-lg p-2 focus:outline-none focus:ring-2 focus:ring-green-800 focus:border-green-800"
             />
           </div>

@@ -87,10 +87,13 @@ export default function PortScannerForm() {
               filter,
               includeHostnames: includeHostnames.toString(),
             }).toString();
-            const r = await fetch(`${API}/port/port-scan?${q}`, {
+            const r = await fetch(`${API}/port-scanner/port-scan?${q}`, {
               headers: { Authorization: `Bearer ${token}` },
             });
-            if (!r.ok) throw new Error(`HTTP ${r.status}`);
+            if (!r.ok) {
+              const errData = await r.json().catch(() => ({}));
+              throw new Error(errData.message || errData.error || `HTTP ${r.status}`);
+            }
             const d = await r.json();
             if (d.portList && d.portList.length > 0) {
               gathered.push(...d.portList);
@@ -136,10 +139,13 @@ export default function PortScannerForm() {
           return;
         }
 
-        const res = await fetch(`${API}/port/port-scan?${qs.toString()}`, {
+        const res = await fetch(`${API}/port-scanner/port-scan?${qs.toString()}`, {
           headers: { Authorization: `Bearer ${token}` },
         });
-        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+        if (!res.ok) {
+          const errData = await res.json().catch(() => ({}));
+          throw new Error(errData.message || errData.error || `HTTP ${res.status}`);
+        }
         const data = await res.json();
         setResult(data);
       } catch (err) {
@@ -318,8 +324,15 @@ export default function PortScannerForm() {
 
             {/* Error */}
             {error && (
-              <div className="mb-4 p-3 bg-red-900 border border-white rounded">
-                <p className="text-red-200 text-sm">{error}</p>
+              <div 
+                className="mb-4 p-3 border rounded text-sm font-medium"
+                style={{ 
+                  backgroundColor: "rgba(220, 38, 38, 0.15)", 
+                  borderColor: "rgba(220, 38, 38, 0.4)", 
+                  color: "#fc8181" 
+                }}
+              >
+                {error}
               </div>
             )}
 

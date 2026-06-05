@@ -77,7 +77,17 @@ export default function MdrMonitor() {
 
         {data && (
           <div className="mt-6">
-            <p className="text-lg font-bold text-[color:var(--success)]">{data.summary}</p>
+            <p
+              className={`text-lg font-bold ${
+                data.summary?.includes("Failed") ||
+                data.summary?.includes("Unreachable") ||
+                data.threatsFound
+                  ? "text-[color:var(--danger)]"
+                  : "text-[color:var(--success)]"
+              }`}
+            >
+              {data.summary}
+            </p>
             {data.results && (
               <ul className="mt-3 list-inside list-disc text-left text-[color:var(--text-body)]">
                 {data.results.map((item, i) => (
