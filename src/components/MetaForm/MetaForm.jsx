@@ -54,16 +54,24 @@ export default function MetaForm() {
     setReport(null);
     await protectedAction(async (userToken) => {
       try {
-        const normalized = url.startsWith("http") ? url : `https://${url}`;
+        const targetUrl = url.trim();
         const res = await fetch(`${apiBase}/meta/meta-analyze`, {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
             Authorization: `Bearer ${userToken}`,
           },
-          body: JSON.stringify({ url: normalized }),
+          body: JSON.stringify({ url: targetUrl }),
         });
         const data = await res.json();
+        if (!res.ok) {
+          setReport({
+            error:
+              data?.error || "Meta tag analysis failed. Please try again.",
+            targetUrl: data?.targetUrl || targetUrl,
+          });
+          return;
+        }
         setReport(data);
       } catch (err) {
         console.error(err);
@@ -396,6 +404,25 @@ table{border-collapse:collapse;width:100%;font-size:13px} td,th{border:1px solid
 
             {!loading && report && (
               <div className="space-y-8">
+                {report.error && (
+                  <div className="rounded-xl border border-red-300 bg-red-50 p-4 text-red-700">
+                    <div className="flex items-start gap-3">
+                      <XCircle className="mt-0.5 h-5 w-5 flex-shrink-0" />
+                      <div>
+                        <div className="font-semibold">Analysis failed</div>
+                        <div className="mt-1 text-sm">{report.error}</div>
+                        {report.targetUrl && (
+                          <div className="mt-2 text-xs font-mono opacity-80">
+                            Target: {report.targetUrl}
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                )}
+
+                {!report.error && (
+                  <>
                 {/* Top summary + export */}
                 <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
                   <div>
@@ -693,6 +720,8 @@ table{border-collapse:collapse;width:100%;font-size:13px} td,th{border:1px solid
                     </>
                   )}
                 </Section>
+                  </>
+                )}
               </div>
             )}
           </div>
