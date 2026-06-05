@@ -1,6 +1,8 @@
 "use client";
 import { useState } from "react";
 import axios from "axios";
+import jsPDF from "jspdf";
+import autoTable from "jspdf-autotable";
 import useProtectedAction from "../UseProtectedAction/UseProtectedAction";
 
 export default function SubdomainScanner() {
@@ -51,7 +53,7 @@ export default function SubdomainScanner() {
         const response = await axios.post(
           `${API_URL}/subdomain/subdomains-scan`,
           { domain: cleanDomain },
-          { headers: { Authorization: `Bearer${token}` } }
+          { headers: { Authorization: `Bearer ${token}` } }
         );
 
         const data = response.data;
@@ -77,7 +79,53 @@ export default function SubdomainScanner() {
   };
 
   const downloadPDF = () => {
-    alert("PDF download functionality would be implemented here");
+    if (!results || results.length === 0) return;
+
+    const doc = new jsPDF();
+    const tableColumn = ["#", "Subdomain"];
+    const tableRows = [];
+
+    results.forEach((item, index) => {
+      const subdomainData = [index + 1, item.subdomain];
+      tableRows.push(subdomainData);
+    });
+
+    // Header
+    doc.setFontSize(20);
+    doc.setTextColor(220, 38, 38); // Red-600
+    doc.text("Security Platform", 14, 22);
+    
+    doc.setFontSize(16);
+    doc.setTextColor(0, 0, 0);
+    doc.text("Subdomain Enumeration Report", 14, 32);
+
+    // Metadata
+    doc.setFontSize(10);
+    doc.setTextColor(100, 100, 100);
+    const date = new Date().toLocaleString();
+    doc.text(`Target Domain: ${domain}`, 14, 42);
+    doc.text(`Total Subdomains Discovery: ${stats?.total || results.length}`, 14, 47);
+    doc.text(`Scan Date: ${date}`, 14, 52);
+    if (stats?.durationMs) {
+      doc.text(`Scan Duration: ${formatDuration(stats.durationMs)}`, 14, 57);
+    }
+
+    // Table
+    autoTable(doc, {
+      startY: 65,
+      head: [tableColumn],
+      body: tableRows,
+      theme: "grid",
+      headStyles: { fillColor: [220, 38, 38], textColor: [255, 255, 255] },
+      styles: { fontSize: 9, cellPadding: 3 },
+      columnStyles: {
+        0: { cellWidth: 15 },
+        1: { cellWidth: "auto" },
+      },
+    });
+
+    const fileName = `subdomain_scan_${domain.replace(/[^a-z0-9]/gi, "_")}.pdf`;
+    doc.save(fileName);
   };
 
   const handleSubdomainClick = (subdomain) => {

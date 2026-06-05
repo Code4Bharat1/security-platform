@@ -50,7 +50,7 @@ export const tools = [
   {
     name: "Technology Fingerprinter",
     image: "/tools/card-images/fingerprint.png",
-    description: "un an OWASP ZAP-powered automated security scan to detect vulnerabilities.",
+    description: "Identify the tech stack, CMS, frameworks, and third-party scripts used on any website.",
     slug: "fingerPrint",
     buttonLabel: "fingerPrint",
     type: "red-team"
@@ -58,7 +58,7 @@ export const tools = [
   {
     name: "Brute Force Scanner",
     image: "/tools/card-images/brute-force.png",
-    description: "un an OWASP ZAP-powered automated security scan to detect vulnerabilities.",
+    description: "Automated path and endpoint enumeration to discover exposed assets and directories.",
     slug: "bruteForce",
     buttonLabel: "bruteForce",
     type: "red-team"

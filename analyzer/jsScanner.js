@@ -13,7 +13,7 @@ const rules = [
 ];
 
 /**
- * Run security analysis on JavaScript code
+ * Run security analysis on  code
  * @param {string} code - JavaScript code to analyze
  * @returns {Array} - Array of security issues found
  */

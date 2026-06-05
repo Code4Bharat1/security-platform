@@ -1,5 +1,6 @@
 "use client";
 import { useState } from "react";
+import axios from "axios";
 import { Loader2, Shield, ClipboardPaste } from "lucide-react";
 import useProtectedAction from "../UseProtectedAction/UseProtectedAction";
 
@@ -8,8 +9,10 @@ const WordPressScanner = () => {
   const [error, setError] = useState("");
   const [scanData, setScanData] = useState(null);
   const [loading, setLoading] = useState(false);
-
+  
   const protectedAction = useProtectedAction();
+  const API_URL = process.env.NEXT_PUBLIC_PROD_API_URL;
+
   const validateUrl = (url) => {
     const urlPattern = new RegExp(
       "^(https?:\\/\\/)?(([a-zA-Z\\d]([a-zA-Z\\d-]*[a-zA-Z\\d])*)\\.)+[a-zA-Z]{2,}(:\\d+)?(\\/.*)?$",
@@ -30,29 +33,26 @@ const WordPressScanner = () => {
     setLoading(true);
     setScanData(null);
 
-    // ✅ Wrap the scan logic inside protectedAction
     await protectedAction(async (token) => {
       try {
-        // Simulate API call with mock data
-        await new Promise((resolve) => setTimeout(resolve, 3000));
+        const response = await axios.post(
+          `${API_URL}/wordpress/wordpress-scan`,
+          { url },
+          {
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+          }
+        );
 
-        const mockResult = {
-          version: "WordPress 6.3.1",
-          theme: { name: "Twenty Twenty-Three" },
-          vulnerablePlugins: "2 plugins found",
-          outdatedPlugins: "1 plugin needs update",
-          securityScore: 85,
-          issues: [
-            "Outdated WordPress version detected",
-            "Admin user with weak password",
-            "Directory listing enabled",
-          ],
-        };
-
-        setScanData(mockResult);
+        if (response.data.error) {
+          setError(response.data.error);
+        } else {
+          setScanData(response.data);
+        }
       } catch (error) {
         console.error("Error:", error);
-        setError("Something went wrong.");
+        setError(error.response?.data?.error || "Failed to scan WordPress site.");
       } finally {
         setLoading(false);
       }

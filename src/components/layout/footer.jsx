@@ -7,10 +7,10 @@ const columns = [
   {
     title: 'Company',
     links: [
-      { label: 'About', href: '/about' },
+      { label: 'About Us', href: '/about' },
       { label: 'Join The Network', href: '/join-the-network' },
       { label: 'Gain Access', href: '/gain-access' },
-      { label: 'Contact', href: '/connect' },
+      { label: 'Schedule A Call', href: '/connect' },
     ],
   },
   {
@@ -26,20 +26,18 @@ const columns = [
   {
     title: 'Resources',
     links: [
-      { label: 'Platform', href: '/tools' },
-      { label: 'Threat Research', href: '/tools/osint' },
-      { label: 'Case Studies', href: '/about' },
-      { label: 'Documentation', href: '/tools/Source-Code' },
-      { label: 'Trust Center', href: '/tools/blue-team' },
+      { label: 'Red Team', href: '/tools' },
+      { label: 'Green Team Research', href: '/tools' },
+      { label: 'Blue Team', href: '/tools' },
+      { label: 'Purple Team', href: '/tools' },
+      { label: 'VA', href: '/tools' },
     ],
   },
   {
     title: 'Legal',
     links: [
       { label: 'Privacy Policy', href: '/tools/privacypolicy' },
-      { label: 'Terms of Service', href: '/tools/termscondition' },
-      { label: 'Security', href: '/services/security-operations-center' },
-      { label: 'Cookies', href: '/connect' },
+      { label: 'Terms of Service', href: '/tools/termscondition' }
     ],
   },
 ];

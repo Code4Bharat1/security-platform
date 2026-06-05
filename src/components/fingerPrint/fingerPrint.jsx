@@ -100,7 +100,7 @@ export default function TechnologyFingerprinter() {
   Technology Fingerprinter
 </h2>
 <p className="text-white text-sm sm:text-base md:text-lg mt-2">
-  Run an OWASP ZAP-powered automated security scan to detect vulnerabilities.
+  Identify the tech stack, CMS, frameworks, and third-party scripts used on any website.
 </p>
 
 </div>

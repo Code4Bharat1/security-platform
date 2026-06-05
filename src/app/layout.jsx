@@ -1,7 +1,4 @@
-"use client"
-
-// IMPORTANT REMOVE "use client" and uncomment the `metadata` and 
-// remove ctonditional bgColor Rendering in final deploymen
+import Script from "next/script";
 import { Geist, JetBrains_Mono, Space_Grotesk } from "next/font/google";
 import "./globals.css";
 
@@ -59,7 +56,11 @@ export default function RootLayout({ children }) {
   return (
     <html lang="en" suppressHydrationWarning>
       <head>
-        <script dangerouslySetInnerHTML={{ __html: themeInitScript }} />
+        <Script
+          id="theme-init"
+          strategy="beforeInteractive"
+          dangerouslySetInnerHTML={{ __html: themeInitScript }}
+        />
       </head>
       <body
         suppressHydrationWarning

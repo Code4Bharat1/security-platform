@@ -21,7 +21,7 @@ export default function ToolsCard() {
         name: "Source Code Analyzer",
         image: "/RedTeam/code.png",
         description:
-          "Scan websites for security weaknesses like XSS or SQL injection.",
+          "Analyze source code repositories for security flaws and vulnerabilities.",
         slug: "Source-Code",
         buttonLabel: "Check Your Code's",
         type: "red-team",
@@ -30,7 +30,7 @@ export default function ToolsCard() {
         name: "Checkmarx Scanner",
         image: "/RedTeam/heckmarx.png",
         description:
-          "Scan websites for security weaknesses like XSS or SQL injection.",
+          "Enterprise-grade code security review and static analysis workflow.",
         slug: "codeAnalysis",
         buttonLabel: "Scan your codes",
         type: "red-team",
@@ -57,7 +57,7 @@ export default function ToolsCard() {
         name: "Technology Fingerprinter",
         image: "/RedTeam/fingerprint.png",
         description:
-          "Run an OWASP ZAP-powered automated security scan to detect vulnerabilities.",
+          "Identify the tech stack, CMS, frameworks, and third-party scripts used on any website.",
         slug: "fingerPrint",
         buttonLabel: "fingerPrint",
         type: "red-team",
