@@ -11,16 +11,28 @@ export default function SeoScoreAnalyzer() {
   const [error, setError] = useState("");
   const protectedAction = useProtectedAction();
 
+  const strengths =
+    result?.summary?.strengths || result?.strengths || [];
+  const weaknesses =
+    result?.summary?.weaknesses || result?.issues || [];
+  const metaDescription =
+    result?.metaDescription || result?.description || "N/A";
+
   const analyzeSEO = async () => {
-    if (!url) {
+    if (!url.trim()) {
       setError("Please enter a valid URL");
       return;
     }
     setLoading(true);
     setError("");
     setResult(null);
-    protectedAction(async (userToken) => {
+    let requestStarted = false;
+    await protectedAction(async (userToken) => {
+      requestStarted = true;
       try {
+        const normalizedUrl = /^https?:\/\//i.test(url.trim())
+          ? url.trim()
+          : `https://${url.trim()}`;
         const res = await fetch(
           `${process.env.NEXT_PUBLIC_PROD_API_URL}/seo/analyze`,
           {
@@ -29,7 +41,7 @@ export default function SeoScoreAnalyzer() {
               "Content-Type": "application/json",
               Authorization: `Bearer ${userToken}`,
             },
-            body: JSON.stringify({ url }),
+            body: JSON.stringify({ url: normalizedUrl }),
           }
         );
 
@@ -47,6 +59,9 @@ export default function SeoScoreAnalyzer() {
         setLoading(false);
       }
     });
+    if (!requestStarted) {
+      setLoading(false);
+    }
   };
 
   return (
@@ -134,7 +149,7 @@ export default function SeoScoreAnalyzer() {
               <div className="rounded-xl border border-[color:var(--border)] bg-[color:var(--surface-subtle)] p-5 shadow-[var(--shadow-soft)]">
                 <h3 className="mb-2 text-lg font-semibold text-[color:var(--text-heading)]">Meta Description</h3>
                 <p className="text-[color:var(--text-body)]">
-                  {result.metaDescription || "N/A"}
+                  {metaDescription}
                 </p>
               </div>
             </div>
@@ -143,8 +158,8 @@ export default function SeoScoreAnalyzer() {
               <div className="rounded-xl border border-[color:var(--border)] bg-green-900/20 p-5 shadow-[var(--shadow-soft)]">
                 <h3 className="mb-3 text-lg font-semibold text-[color:var(--text-heading)]">Strengths</h3>
                 <ul className="list-disc space-y-1 pl-5 text-[color:var(--success)]">
-                  {result.summary?.strengths?.length > 0 ? (
-                    result.summary.strengths.map((item, index) => (
+                  {strengths.length > 0 ? (
+                    strengths.map((item, index) => (
                       <li key={index}>{item}</li>
                     ))
                   ) : (
@@ -156,8 +171,8 @@ export default function SeoScoreAnalyzer() {
               <div className="rounded-xl border border-[color:var(--border)] bg-red-900/20 p-5 shadow-[var(--shadow-soft)]">
                 <h3 className="mb-3 text-lg font-semibold text-[color:var(--text-heading)]">Weaknesses</h3>
                 <ul className="list-disc space-y-1 pl-5 text-[color:var(--danger)]">
-                  {result.summary?.weaknesses?.length > 0 ? (
-                    result.summary.weaknesses.map((item, index) => (
+                  {weaknesses.length > 0 ? (
+                    weaknesses.map((item, index) => (
                       <li key={index}>{item}</li>
                     ))
                   ) : (
