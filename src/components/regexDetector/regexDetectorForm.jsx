@@ -14,7 +14,10 @@ import {
   Beaker,
   Network,
 } from "lucide-react";
+import { jsPDF } from "jspdf";
+import autoTable from "jspdf-autotable";
 import useProtectedAction from "../UseProtectedAction/UseProtectedAction";
+
 
 // --------- small helpers ----------
 const apiBase = (process.env.NEXT_PUBLIC_PROD_API_URL || "").replace(/\/$/, "");
@@ -57,7 +60,10 @@ const regex = new RegExp(userInput); // ⚠️ Unescaped input`
   const [vizEscaped, setVizEscaped] = useState(
     escapeForRegex("a.*(test)?[abc]{2,3}")
   );
+  const [scanPerformed, setScanPerformed] = useState(false);
   const protectedAction = useProtectedAction();
+
+
 
   // ---------- toast ----------
   const addToast = (message, type = "info") => {
@@ -123,6 +129,8 @@ const regex = new RegExp(userInput); // ⚠️ Unescaped input`
         const fixSuggestions = data.fixes || [];
         setResults(issues);
         setFixes(fixSuggestions);
+        setScanPerformed(true);
+
 
         if (!issues.length) {
           addToast(
@@ -238,7 +246,12 @@ const regex = new RegExp(userInput); // ⚠️ Unescaped input`
 
   // ---------- exports ----------
   const downloadTXT = () => {
+    if (!scanPerformed) {
+      addToast("Please run a scan first before downloading.", "warning");
+      return;
+    }
     const body = [
+
       "=== Regex Injection Detector Report ===",
       "",
       `Total issues: ${results.length}`,
@@ -246,9 +259,9 @@ const regex = new RegExp(userInput); // ⚠️ Unescaped input`
       "Issues:",
       ...(results.length
         ? results.map(
-            (i, idx) =>
-              `${idx + 1}. Line ${i.line} — ${i.risk}\n   Pattern: ${i.pattern}`
-          )
+          (i, idx) =>
+            `${idx + 1}. Line ${i.line} — ${i.risk}\n   Pattern: ${i.pattern}`
+        )
         : ["(none)"]),
       "",
       "Suggested Fixes:",
@@ -269,9 +282,69 @@ const regex = new RegExp(userInput); // ⚠️ Unescaped input`
   };
 
   const downloadPDF = () => {
-    // PDF functionality would need jsPDF library
-    addToast("PDF download feature requires jsPDF library", "info");
+    if (!scanPerformed) {
+      addToast("Please run a scan first.", "warning");
+      return;
+    }
+
+
+    try {
+      const doc = new jsPDF({ orientation: "p", unit: "pt", format: "a4" });
+
+      // Title
+      doc.setFontSize(18);
+      doc.setTextColor(0, 102, 204);
+      doc.text("Regex Injection Detector Report", 40, 40);
+
+      // Meta Info
+      doc.setFontSize(10);
+      doc.setTextColor(100);
+      doc.text(`Total Issues: ${results.length}`, 40, 60);
+      doc.text(`Scan Date: ${new Date().toLocaleString()}`, 40, 75);
+
+      // Issues Table
+      const head = [["#", "Line", "Risk Level", "Pattern Snapshot"]];
+      const rows = results.map((r, i) => [
+        String(i + 1),
+        String(r.line),
+        r.risk,
+        (r.pattern || "").slice(0, 80),
+      ]);
+
+      autoTable(doc, {
+        startY: 100,
+        head,
+        body: rows,
+        styles: { fontSize: 8, cellPadding: 5, overflow: "linebreak" },
+        headStyles: { fillColor: [0, 102, 204], textColor: 255 },
+        margin: { left: 40, right: 40 },
+      });
+
+      // Simple next page for fixes if needed
+      if (fixes.length > 0) {
+        doc.addPage();
+        doc.setFontSize(14);
+        doc.setTextColor(0, 102, 204);
+        doc.text("Suggested Fixes", 40, 40);
+
+        doc.setFontSize(9);
+        doc.setTextColor(33);
+        doc.setFont("courier", "normal");
+        const fixesText = fixes.join("\n\n");
+        const splitFixes = doc.splitTextToSize(fixesText, 515);
+        doc.text(splitFixes, 40, 60);
+      }
+
+      doc.save(`regex_scan_${Date.now()}.pdf`);
+      addToast("PDF report downloaded", "success");
+    } catch (err) {
+      console.error("PDF Export Error:", err);
+      addToast("Failed to generate PDF. Check console.", "error");
+    }
   };
+
+
+
 
   // ---------- visualizer ----------
   const vizTokens = useMemo(() => tokenizeRegex(vizEscaped), [vizEscaped]);
@@ -292,28 +365,28 @@ const regex = new RegExp(userInput); // ⚠️ Unescaped input`
     type === "success"
       ? "bg-green-900/20 border-green-800"
       : type === "error"
-      ? "bg-red-900/20 border-red-800"
-      : type === "warning"
-      ? "bg-yellow-900/20 border-yellow-800"
-      : "bg-blue-900/20 border-blue-800";
+        ? "bg-red-900/20 border-red-800"
+        : type === "warning"
+          ? "bg-yellow-900/20 border-yellow-800"
+          : "bg-blue-900/20 border-blue-800";
 
   return (
     <div className="min-h-screen bg-black text-white">
       {/* Toasts */}
-      <div className="fixed top-4 right-4 z-50 space-y-2">
+      <div className="fixed top-30 right-8 z-50 space-y-3 pointer-events-none">
         {toasts.map((t) => (
           <div
             key={t.id}
             className={`${getToastBg(
               t.type
-            )} border rounded-lg p-4 shadow-lg backdrop-blur-sm max-w-sm animate-in slide-in-from-right duration-300`}
+            )} border rounded-xl p-4 shadow-2xl backdrop-blur-md max-w-sm animate-in slide-in-from-right duration-300 pointer-events-auto`}
           >
-            <div className="flex items-start gap-3">
+            <div className="flex items-start gap-4">
               {getToastIcon(t.type)}
-              <p className="text-sm text-gray-300 flex-1">{t.message}</p>
+              <p className="text-sm text-gray-200 flex-1 font-medium">{t.message}</p>
               <button
                 onClick={() => removeToast(t.id)}
-                className="text-gray-400 hover:text-gray-200 transition-colors"
+                className="text-gray-500 hover:text-gray-200 transition-colors mt-0.5"
               >
                 <X className="w-4 h-4" />
               </button>
@@ -321,6 +394,7 @@ const regex = new RegExp(userInput); // ⚠️ Unescaped input`
           </div>
         ))}
       </div>
+
 
       <div className="container mx-auto px-6 py-8 max-w-4xl">
         {/* Header */}
@@ -351,13 +425,22 @@ const regex = new RegExp(userInput); // ⚠️ Unescaped input`
 
           {/* Buttons - jaha the wahi rakhe */}
           <div className="mt-4 flex items-center justify-left gap-3">
-            <button className="px-4 py-2 rounded-lg bg-blue-600 text-white hover:bg-blue-700">
+            <button
+              onClick={downloadPDF}
+              className="px-4 py-2 rounded-lg bg-blue-600 text-white hover:bg-blue-700 transition-colors flex items-center gap-2"
+            >
+              <Download className="w-4 h-4" />
               Download PDF (ALL)
             </button>
-            <button className="px-4 py-2 rounded-lg bg-blue-600 text-white hover:bg-blue-700">
+            <button
+              onClick={downloadTXT}
+              className="px-4 py-2 rounded-lg bg-blue-600 text-white hover:bg-blue-700 transition-colors flex items-center gap-2"
+            >
+              <FileText className="w-4 h-4" />
               Download TXT (ALL)
             </button>
           </div>
+
         </div>
 
         {/* Main Card - single rounded container like image */}
@@ -417,11 +500,10 @@ const regex = new RegExp(userInput); // ⚠️ Unescaped input`
           {/* Scan Button - exactly like image */}
           <div className="text-center mb-6">
             <button
-              className={`px-8 py-3 rounded-full font-medium text-white transition-colors ${
-                loading
+              className={`px-8 py-3 rounded-full font-medium text-white transition-colors ${loading
                   ? "bg-gray-600 cursor-not-allowed"
                   : "bg-blue-600 hover:bg-blue-700"
-              }`}
+                }`}
               onClick={scanCode}
               disabled={loading}
             >
@@ -439,41 +521,37 @@ const regex = new RegExp(userInput); // ⚠️ Unescaped input`
           {/* Tabs - exactly like image */}
           <div className="flex space-x-1 mb-6 bg-gray-800 rounded-lg p-1">
             <button
-              className={`flex-1 px-4 py-2 text-sm font-medium rounded-md transition-colors ${
-                activeTab === "results"
+              className={`flex-1 px-4 py-2 text-sm font-medium rounded-md transition-colors ${activeTab === "results"
                   ? "bg-blue-600 text-white"
                   : "text-gray-400 hover:text-white hover:bg-gray-700"
-              }`}
+                }`}
               onClick={() => setActiveTab("results")}
             >
               Issues ({results.length})
             </button>
             <button
-              className={`flex-1 px-4 py-2 text-sm font-medium rounded-md transition-colors ${
-                activeTab === "fixes"
+              className={`flex-1 px-4 py-2 text-sm font-medium rounded-md transition-colors ${activeTab === "fixes"
                   ? "bg-blue-600 text-white"
                   : "text-gray-400 hover:text-white hover:bg-gray-700"
-              }`}
+                }`}
               onClick={() => setActiveTab("fixes")}
             >
               Auto-fix Preview ({fixes.length})
             </button>
             <button
-              className={`flex-1 px-4 py-2 text-sm font-medium rounded-md transition-colors ${
-                activeTab === "visualizer"
+              className={`flex-1 px-4 py-2 text-sm font-medium rounded-md transition-colors ${activeTab === "visualizer"
                   ? "bg-blue-600 text-white"
                   : "text-gray-400 hover:text-white hover:bg-gray-700"
-              }`}
+                }`}
               onClick={() => setActiveTab("visualizer")}
             >
               Visualizer
             </button>
             <button
-              className={`flex-1 px-4 py-2 text-sm font-medium rounded-md transition-colors ${
-                activeTab === "tests"
+              className={`flex-1 px-4 py-2 text-sm font-medium rounded-md transition-colors ${activeTab === "tests"
                   ? "bg-blue-600 text-white"
                   : "text-gray-400 hover:text-white hover:bg-gray-700"
-              }`}
+                }`}
               onClick={() => setActiveTab("tests")}
             >
               Unit Tests
@@ -635,15 +713,14 @@ const regex = new RegExp(userInput); // ⚠️ Unescaped input`
                     {vizTokens.map((t, i) => (
                       <span
                         key={i}
-                        className={`px-2 py-1 rounded text-xs font-mono ${
-                          t.kind === "meta"
+                        className={`px-2 py-1 rounded text-xs font-mono ${t.kind === "meta"
                             ? "bg-purple-900/30 text-purple-400 border border-purple-800"
                             : t.kind === "escape"
-                            ? "bg-amber-900/30 text-amber-400 border border-amber-800"
-                            : t.kind === "alt"
-                            ? "bg-sky-900/30 text-sky-400 border border-sky-800"
-                            : "bg-gray-700 text-gray-300"
-                        }`}
+                              ? "bg-amber-900/30 text-amber-400 border border-amber-800"
+                              : t.kind === "alt"
+                                ? "bg-sky-900/30 text-sky-400 border border-sky-800"
+                                : "bg-gray-700 text-gray-300"
+                          }`}
                         title={t.kind}
                       >
                         {t.val}

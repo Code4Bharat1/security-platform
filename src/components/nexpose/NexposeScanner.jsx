@@ -128,11 +128,12 @@ export default function NexposeScanner() {
     doc.setFontSize(14);
     doc.text("SQL Injection Scan Report", 40, 40);
     doc.setFontSize(10);
-    doc.text(`Target: ${result.url}`, 40, 58);
-    doc.text(`Method: ${result.method} (param: ${result.paramName})`, 40, 72);
-    doc.text(`Risk: ${result.riskScore}/100 (${result.riskLevel})`, 40, 86);
-    doc.text(`Coverage: ${result.payloadsTested} payloads`, 40, 100);
-    doc.text(`Types: ${(result.typesAttempted || []).join(", ")}`, 40, 114);
+    doc.text(`Target: ${result.url || "N/A"}`, 40, 58);
+    doc.text(`Method: ${result.method || "N/A"} (param: ${result.paramName || "N/A"})`, 40, 72);
+    doc.text(`Risk: ${result.riskScore ?? 0}/100 (${result.riskLevel || "N/A"})`, 40, 86);
+    doc.text(`Coverage: ${result.payloadsAttempted ?? 0} payloads`, 40, 100);
+    doc.text(`Types: ${(result.typesAttempted || []).join(", ") || "None"}`, 40, 114);
+
     doc.text(`OWASP: ${result.owasp}`, 40, 128);
 
     const head = [
@@ -368,9 +369,10 @@ export default function NexposeScanner() {
               <span className="font-semibold text-white">
                 {showPositivesOnly
                   ? result.findingsCount || 0
-                  : result.payloadsTested || 0}
+                  : result.payloadsAttempted || 0}
               </span>{" "}
               {showPositivesOnly ? "positive finding(s)" : "test(s)"}
+
             </div>
             <div className="flex gap-2">
               <button

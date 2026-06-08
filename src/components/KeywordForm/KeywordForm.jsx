@@ -35,7 +35,7 @@ export default function KeywordPage() {
         const timeoutId = setTimeout(() => controller.abort(), 30000); // 30s
 
         const response = await fetch(
-          `${process.env.NEXT_PUBLIC_PROD_API_URL}/keyword/generate`,
+          `${process.env.NEXT_PUBLIC_PROD_API_URL}/keyword/analyze`,
           {
             method: "POST",
             headers: {

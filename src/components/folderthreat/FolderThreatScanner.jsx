@@ -34,6 +34,11 @@ export default function FileThreatScanner() {
           }
         );
 
+        if (!res.ok) {
+          const errorData = await res.json();
+          throw new Error(errorData.error || "Scan failed");
+        }
+
         const data = await res.json();
         setResults(data.files || []);
       } catch (err) {

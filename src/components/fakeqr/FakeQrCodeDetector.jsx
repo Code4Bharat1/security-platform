@@ -118,6 +118,9 @@ const FakeQRCodeDetectorAndQRGenerator = () => {
           {
             // replace with your backend URL
             method: "POST",
+            headers: {
+              Authorization: `Bearer ${userToken}`,
+            },
             body: formData,
           }
         );
@@ -157,6 +160,7 @@ const FakeQRCodeDetectorAndQRGenerator = () => {
             method: "POST",
             headers: {
               "Content-Type": "application/json",
+              Authorization: `Bearer ${userToken}`,
             },
             body: JSON.stringify({ text: qrText }),
           }

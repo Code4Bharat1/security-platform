@@ -2,6 +2,8 @@
 import { useMemo, useState } from 'react';
 import axios from 'axios';
 import useProtectedAction from '../UseProtectedAction/UseProtectedAction';
+import { jsPDF } from 'jspdf';
+import autoTable from 'jspdf-autotable';
 // import { headers } from 'next/headers';
 
 // Build a sane API base: prefer env, else /api, trim trailing slashes
@@ -190,7 +192,70 @@ el.textContent = someUserInput; // safe
   };
 
   const exportPDF = () => {
-    alert('PDF export functionality would create a detailed security report');
+    const doc = new jsPDF('l', 'mm', 'a4');
+    
+    // Header
+    doc.setFillColor(31, 41, 55);
+    doc.rect(0, 0, 297, 40, 'F');
+    doc.setTextColor(255, 255, 255);
+    doc.setFontSize(22);
+    doc.text('JavaScript Security Analysis Report', 14, 20);
+    doc.setFontSize(12);
+    doc.text(`Generated on: ${new Date().toLocaleString()}`, 14, 30);
+    doc.text(`Overall Risk: ${riskBand} (${riskScore}/100)`, 14, 37);
+
+    // Summary Analytics
+    let yPos = 50;
+    doc.setTextColor(0, 0, 0);
+    doc.setFontSize(16);
+    doc.text('Summary Statistics', 14, yPos);
+    yPos += 10;
+    
+    const analyticsData = [
+      ['Category', 'Total', 'Details'],
+      ['Total Issues', analytics.totalIssues, '-'],
+      ['By Severity', '', `Critical: ${analytics.bySeverity.Critical}, High: ${analytics.bySeverity.High}, Medium: ${analytics.bySeverity.Medium}, Low: ${analytics.bySeverity.Low}`],
+      ['By Type', '', `XSS: ${analytics.byType.XSS}, SQLi: ${analytics.byType.SQLi}, Eval: ${analytics.byType.Eval}`]
+    ];
+
+    autoTable(doc, {
+      startY: yPos,
+      head: [analyticsData[0]],
+      body: analyticsData.slice(1),
+      theme: 'grid',
+      styles: { fontSize: 10 }
+    });
+
+    // Detailed Issues
+    yPos = doc.lastAutoTable.finalY + 15;
+    doc.setFontSize(16);
+    doc.text('Detailed Security Findings', 14, yPos);
+    
+    const tableData = filtered.map((it, i) => [
+      i + 1,
+      it.line,
+      it.severity,
+      it.type,
+      it.message,
+      it.snippet,
+      it.fix
+    ]);
+
+    autoTable(doc, {
+      startY: yPos + 5,
+      head: [['#', 'Line', 'Severity', 'Type', 'Issue Description', 'Vulnerable Code', 'Recommended Fix']],
+      body: tableData,
+      theme: 'striped',
+      headStyles: { fillColor: [220, 38, 38] },
+      styles: { fontSize: 8, cellPadding: 2 },
+      columnStyles: {
+        4: { cellWidth: 40 },
+        5: { cellWidth: 60 },
+        6: { cellWidth: 60 }
+      }
+    });
+
+    doc.save('security_analysis_report.pdf');
   };
 
   const exportTXT = () => {
@@ -258,7 +323,7 @@ el.textContent = someUserInput; // safe
 
   return (
     <div className="min-h-screen bg-black text-white">
-      <div className="max-w-4xl mx-auto p-6">
+      <div className="max-w-7xl mx-auto p-6">
         {/* Header */}
         <div className="flex items-center gap-4 mb-6 mt-15">
           <div className="w-30 h-30 bg-gray-800 rounded-full border-4 border-red-500 flex items-center justify-center overflow-hidden">
@@ -438,10 +503,10 @@ el.textContent = someUserInput; // safe
         </div>
 
         {/* Results Table */}
-        <div className="bg-gray-900 border border-white-700 rounded-lg mb-6">
+        <div className="bg-gray-900 border border-white-700 rounded-lg mb-6 overflow-x-auto">
           {/* Table Header */}
-          <div className="bg-red-600 text-white p-3 rounded-t-lg">
-            <div className="grid grid-cols-9 gap-2 text-sm font-medium">
+          <div className="bg-red-600 text-white p-3 rounded-t-lg min-w-[1000px]">
+            <div className="grid grid-cols-[40px_60px_100px_100px_1fr_1fr_1fr_80px_120px] gap-4 text-sm font-medium items-center">
               <div>#</div>
               <div>Line</div>
               <div>Severity</div>
@@ -455,52 +520,56 @@ el.textContent = someUserInput; // safe
           </div>
           
           {/* Table Body */}
-          <div className="p-4">
+          <div className="p-4 min-w-[1000px]">
             {filtered.length === 0 ? (
               <div className="text-center text-gray-400 py-8">
                 No Security Issues Found......
               </div>
             ) : (
-              <div className="space-y-2">
+              <div className="space-y-4">
                 {filtered.map((it, idx) => (
-                  <div key={idx} className="grid grid-cols-9 gap-2 text-sm py-2 border-b border-white-700 last:border-b-0">
-                    <div className="text-gray-300">{idx + 1}</div>
-                    <div className="text-gray-300">{it.line}</div>
+                  <div key={idx} className="grid grid-cols-[40px_60px_100px_100px_1fr_1fr_1fr_80px_120px] gap-4 text-sm py-3 border-b border-white-700 last:border-b-0 items-start">
+                    <div className="text-gray-300 pt-1">{idx + 1}</div>
+                    <div className="text-gray-300 pt-1">{it.line}</div>
                     <div>
-                      <span className={`px-2 py-1 rounded text-xs ${severityColors[it.severity]}`}>
+                      <span className={`px-2 py-1 rounded text-[10px] font-bold uppercase ${severityColors[it.severity]}`}>
                         {it.severity}
                       </span>
                     </div>
                     <div className="relative group">
-                      <span className="px-2 py-1 rounded bg-gray-700 text-gray-300 text-xs cursor-help">
+                      <span className="px-2 py-1 rounded bg-gray-700 text-gray-300 text-[10px] uppercase font-bold cursor-help">
                         {it.type}
                       </span>
-                      <div className="absolute hidden group-hover:block z-10 w-64 p-2 bg-gray-800 text-white text-xs rounded shadow-lg left-0 top-full mt-1">
+                      <div className="absolute hidden group-hover:block z-20 w-64 p-3 bg-gray-800 text-white text-xs rounded-xl shadow-2xl left-0 top-full mt-2 border border-white/10">
                         {issueDescriptions[it.type] || "No description available"}
                       </div>
                     </div>
-                    <div className="text-gray-300">{it.message}</div>
-                    <div className="text-gray-400 font-mono text-xs">{it.snippet}</div>
-                    <div className="text-gray-400 text-xs">{it.fix}</div>
+                    <div className="text-gray-300 leading-relaxed pr-2">{it.message}</div>
+                    <div className="text-gray-400 font-mono text-[11px] bg-black/40 p-2 rounded border border-white/5 whitespace-pre-wrap break-all">
+                      {it.snippet}
+                    </div>
+                    <div className="text-gray-300 font-mono text-[11px] bg-green-900/10 p-2 rounded border border-green-500/10 whitespace-pre-wrap break-all">
+                      {it.fix}
+                    </div>
                     <div>
                       <button 
                         onClick={() => applyFix(it.fix, it.snippet)}
-                        className="px-2 py-1 text-xs bg-green-600 hover:bg-green-700 text-white rounded mr-1"
+                        className="w-full px-3 py-1.5 text-[10px] font-bold bg-amber-600 hover:bg-amber-700 text-white rounded-lg transition-colors uppercase tracking-wider"
                       >
                         Apply
                       </button>
                     </div>
-                    <div>
+                    <div className="flex gap-2">
                       <button 
                         onClick={() => copySnippet(it.snippet)} 
-                        className="px-2 py-1 text-xs bg-red-600 hover:bg-red-700 text-white rounded mr-1"
+                        className="flex-1 px-3 py-1.5 text-[10px] font-bold bg-gray-700 hover:bg-gray-600 text-white rounded-lg transition-colors uppercase tracking-wider"
                         title="Copy snippet"
                       >
                         Copy
                       </button>
                       <button 
                         onClick={() => copySnippet(it.fix)} 
-                        className="px-2 py-1 text-xs bg-blue-600 hover:bg-blue-700 text-white rounded"
+                        className="flex-1 px-3 py-1.5 text-[10px] font-bold bg-gray-700 hover:bg-gray-600 text-white rounded-lg transition-colors uppercase tracking-wider underline decoration-amber-500"
                         title="Copy fix"
                       >
                         Fix
