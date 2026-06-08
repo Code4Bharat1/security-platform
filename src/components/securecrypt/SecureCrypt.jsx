@@ -80,7 +80,10 @@ export default function SecureCrypt() {
 
         const res = await fetch(`${API}/securecrypt/decrypt`, {
           method: "POST",
-          headers: { "Content-Type": "application/json" },
+          headers: { 
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${userToken}`,
+          },
           body: JSON.stringify(body),
         });
 

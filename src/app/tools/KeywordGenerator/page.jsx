@@ -266,7 +266,7 @@ export default function KeywordIntelligencePage() {
         r.volume || "—",
         r.cpc || "—",
         r.difficulty || "—",
-        r.trend6m || "—",
+        r.trend6m === "↗" ? "Rising" : r.trend6m === "↘" ? "Falling" : r.trend6m === "↔" ? "Stable" : r.trend6m || "—",
         r.intent || "—",
       ]),
       styles: { fontSize: 9 },
@@ -282,7 +282,7 @@ export default function KeywordIntelligencePage() {
         r.keyword,
         r.volume || "—",
         r.difficulty || "—",
-        "—",
+        r.ctrPotential || "—",
       ]),
       styles: { fontSize: 9 },
       headStyles: { fontStyle: "bold" },
@@ -290,14 +290,20 @@ export default function KeywordIntelligencePage() {
       theme: "grid",
     });
 
+    const isCustomOverlap = overlap.length > 0 && ('commonCompetitors' in overlap[0] || 'sharedKeywords' in overlap[0]);
+    const overlapHeaders = isCustomOverlap
+      ? ["Common Competitors", "Shared Keywords", "Overlap Score"]
+      : ["Keyword", "Rank on Your Site", "Rank on Competitor"];
+    const overlapBody = overlap.map((r) =>
+      isCustomOverlap
+        ? [r.commonCompetitors || "—", r.sharedKeywords || "—", r.overlapScore || "—"]
+        : [r.keyword || "—", r.yours || "—", r.competitor || "—"]
+    );
+
     autoTable(doc, {
       startY: doc.lastAutoTable.finalY + 22,
-      head: [["Keyword", "Rank on Your Site", "Rank on Competitor"]],
-      body: overlap.map((r) => [
-        r.keyword,
-        r.yours || "—",
-        r.competitor || "—",
-      ]),
+      head: [overlapHeaders],
+      body: overlapBody,
       styles: { fontSize: 9 },
       headStyles: { fontStyle: "bold" },
       margin: { left: marginX, right: marginX },
@@ -466,6 +472,24 @@ const inputSmCls =
 const selectCls =
   "border border-slate-700 bg-slate-900 text-slate-100 rounded px-2 py-1 focus:outline-none focus:ring-2 focus:ring-indigo-500/30";
 
+const SparklineUp = () => (
+  <svg className="w-16 h-6 stroke-green-500 fill-none stroke-[2] inline-block" viewBox="0 0 50 20">
+    <path d="M 0 18 L 10 12 L 20 15 L 30 5 L 40 8 L 50 2" />
+  </svg>
+);
+
+const SparklineDown = () => (
+  <svg className="w-16 h-6 stroke-red-500 fill-none stroke-[2] inline-block" viewBox="0 0 50 20">
+    <path d="M 0 2 L 10 8 L 20 5 L 30 15 L 40 12 L 50 18" />
+  </svg>
+);
+
+const SparklineFlat = () => (
+  <svg className="w-16 h-6 stroke-slate-500 fill-none stroke-[2] inline-block" viewBox="0 0 50 20">
+    <path d="M 0 10 L 10 12 L 20 8 L 30 11 L 40 9 L 50 10" />
+  </svg>
+);
+
 function TableHP({ rows, editable, onChange }) {
   return (
     <div>
@@ -534,6 +558,9 @@ function TableHP({ rows, editable, onChange }) {
                       onChange={(e) => onChange(i, "trend6m", e.target.value)}
                     />
                   ) : (
+                    r.trend6m === "↗" ? <SparklineUp /> :
+                    r.trend6m === "↘" ? <SparklineDown /> :
+                    r.trend6m === "↔" ? <SparklineFlat /> :
                     r.trend6m || "—"
                   )}
                 </td>
@@ -551,6 +578,10 @@ function TableHP({ rows, editable, onChange }) {
                       <option>Navigational</option>
                     </select>
                   ) : (
+                    r.intent === "Navigational" ? <span className="px-2.5 py-1 rounded-md bg-blue-500/10 text-blue-400 font-semibold text-xs border border-blue-500/20 shadow-sm">Navigational</span> :
+                    r.intent === "Informational" ? <span className="px-2.5 py-1 rounded-md bg-emerald-500/10 text-emerald-400 font-semibold text-xs border border-emerald-500/20 shadow-sm">Informational</span> :
+                    r.intent === "Commercial" ? <span className="px-2.5 py-1 rounded-md bg-amber-500/10 text-amber-400 font-semibold text-xs border border-amber-500/20 shadow-sm">Commercial</span> :
+                    r.intent === "Transactional" ? <span className="px-2.5 py-1 rounded-md bg-violet-500/10 text-violet-400 font-semibold text-xs border border-violet-500/20 shadow-sm">Transactional</span> :
                     r.intent || "—"
                   )}
                 </td>
@@ -609,7 +640,13 @@ function TableLT({ rows, editable, onChange }) {
                     r.difficulty || "—"
                   )}
                 </td>
-                <td className="text-slate-400">—</td>
+                <td className={
+                  r.ctrPotential === "High" ? "text-green-500 font-semibold" :
+                  r.ctrPotential === "Medium" ? "text-yellow-500 font-semibold" :
+                  "text-slate-400"
+                }>
+                  {r.ctrPotential || "—"}
+                </td>
               </tr>
             ))}
           </tbody>
@@ -620,48 +657,68 @@ function TableLT({ rows, editable, onChange }) {
 }
 
 function TableOverlap({ rows, editable, onChange }) {
+  const isCustomOverlap = rows.length > 0 && ('commonCompetitors' in rows[0] || 'sharedKeywords' in rows[0]);
+
   return (
     <div>
       <h2 className="text-lg font-semibold mb-3">📌 Competitor Overlap</h2>
       <div className="overflow-x-auto">
         <table className="w-full text-sm rounded-xl overflow-hidden border border-slate-800">
           <thead className={theadCls}>
-            <tr>
-              <th>Keyword</th>
-              <th>Rank on Your Site</th>
-              <th>Rank on Competitor (ABC.com)</th>
-            </tr>
+            {isCustomOverlap ? (
+              <tr>
+                <th>Common Competitors</th>
+                <th>Shared Keywords</th>
+                <th>Overlap Score</th>
+              </tr>
+            ) : (
+              <tr>
+                <th>Keyword</th>
+                <th>Rank on Your Site</th>
+                <th>Rank on Competitor</th>
+              </tr>
+            )}
           </thead>
           <tbody className="text-slate-200">
             {rows.map((r, i) => (
               <tr key={i} className={rowCls}>
-                <td className="font-medium">{r.keyword}</td>
-                <td>
-                  {editable ? (
-                    <input
-                      type="number"
-                      className={inputCls}
-                      value={r.yours}
-                      onChange={(e) => onChange(i, "yours", e.target.value)}
-                    />
-                  ) : (
-                    r.yours || "—"
-                  )}
-                </td>
-                <td>
-                  {editable ? (
-                    <input
-                      type="number"
-                      className={inputCls}
-                      value={r.competitor}
-                      onChange={(e) =>
-                        onChange(i, "competitor", e.target.value)
-                      }
-                    />
-                  ) : (
-                    r.competitor || "—"
-                  )}
-                </td>
+                {isCustomOverlap ? (
+                  <>
+                    <td className="font-medium text-slate-300">{r.commonCompetitors}</td>
+                    <td className="text-slate-300">{r.sharedKeywords}</td>
+                    <td className="text-emerald-500 font-semibold">{r.overlapScore}</td>
+                  </>
+                ) : (
+                  <>
+                    <td className="font-medium">{r.keyword}</td>
+                    <td>
+                      {editable ? (
+                        <input
+                          type="number"
+                          className={inputCls}
+                          value={r.yours}
+                          onChange={(e) => onChange(i, "yours", e.target.value)}
+                        />
+                      ) : (
+                        r.yours || "—"
+                      )}
+                    </td>
+                    <td>
+                      {editable ? (
+                        <input
+                          type="number"
+                          className={inputCls}
+                          value={r.competitor}
+                          onChange={(e) =>
+                            onChange(i, "competitor", e.target.value)
+                          }
+                        />
+                      ) : (
+                        r.competitor || "—"
+                      )}
+                    </td>
+                  </>
+                )}
               </tr>
             ))}
           </tbody>

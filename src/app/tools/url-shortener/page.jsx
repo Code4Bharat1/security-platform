@@ -13,7 +13,33 @@ export default function UrlShortener() {
   const protectedAction = useProtectedAction();
 
   const handleShorten = async () => {
-    if (!originalUrl.trim()) return;
+    const trimmedUrl = originalUrl.trim();
+    if (!trimmedUrl) return;
+
+    let formatted = trimmedUrl;
+    if (!/^https?:\/\//i.test(formatted)) {
+      formatted = 'https://' + formatted;
+    }
+
+    let isValid = false;
+    try {
+      const parsed = new URL(formatted);
+      const hostname = parsed.hostname;
+      const isIp = /^(?:[0-9]{1,3}\.){3}[0-9]{1,3}$/.test(hostname);
+      if ((parsed.protocol === 'http:' || parsed.protocol === 'https:') &&
+          (hostname === 'localhost' || isIp || hostname.includes('.'))) {
+        isValid = true;
+      }
+    } catch (_) {
+      isValid = false;
+    }
+
+    if (!isValid) {
+      setError("❌ Invalid URL. Please enter a valid URL (e.g., https://example.com).");
+      setShortUrl("");
+      return;
+    }
+
     setLoading(true);
     setError("");
     setShortUrl("");

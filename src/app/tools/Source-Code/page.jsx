@@ -39,7 +39,7 @@ export default function SourceCodeAnalyzer() {
 
         // 2️⃣ Run code analysis API
         const res = await fetch(
-          `${process.env.NEXT_PUBLIC_PROD_API_URL}/analyze/analyzeCode`,
+          `${process.env.NEXT_PUBLIC_PROD_API_URL}/source-code/analyze-code`,
           {
             method: "POST",
             headers: {
