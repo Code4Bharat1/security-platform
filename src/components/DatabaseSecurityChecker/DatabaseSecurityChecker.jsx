@@ -169,19 +169,25 @@ export default function DbSecurityChecker() {
       {/* Result Card */}
       {result && (
         <div className="bg-gray-800 text-green-400 mt-6 p-4 w-full max-w-md rounded-lg font-mono text-sm border border-white-600">
-          <p>📊 Security Score: {result.securityScore}/100</p>
-          <p>❗ Issues Found: {result.issues}</p>
-          {result.findings.map((f, i) => (
-            <p key={i}>
-              {f.type === "warning" ? "⚠️" : "✅"} {f.message}
-            </p>
-          ))}
-          {result.suggestions.length > 0 && (
+          {result.error || result.message ? (
+            <p className="text-red-400">❌ Scan Failed: {result.error || result.message}</p>
+          ) : (
             <>
-              <p className="mt-2">💡 Suggestions:</p>
-              {result.suggestions.map((s, i) => (
-                <p key={i}>- {s}</p>
+              <p>📊 Security Score: {result.securityScore}/100</p>
+              <p>❗ Issues Found: {result.issues}</p>
+              {Array.isArray(result.findings) && result.findings.map((f, i) => (
+                <p key={i}>
+                  {f.type === "warning" ? "⚠️" : "✅"} {f.message}
+                </p>
               ))}
+              {Array.isArray(result.suggestions) && result.suggestions.length > 0 && (
+                <>
+                  <p className="mt-2">💡 Suggestions:</p>
+                  {result.suggestions.map((s, i) => (
+                    <p key={i}>- {s}</p>
+                  ))}
+                </>
+              )}
             </>
           )}
         </div>

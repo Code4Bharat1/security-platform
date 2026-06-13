@@ -12,6 +12,9 @@ const navItems = [
   { href: '/tools', label: 'Platform' },
   { href: '/about', label: 'Company' },
   { href: '/connect', label: 'Contact' },
+  { href: '/history', label: 'History' },
+  { href: '/integrity-scanner', label: 'Integrity Scanner',}, 
+  { href: '/admin', label: 'Admin Dashboard'}
 ];
 
 const telemetryItems = [
@@ -67,6 +70,15 @@ export default function Navbar() {
     return `${parts[0][0] ?? ''}${parts[1][0] ?? ''}`.toUpperCase();
   }, [userName]);
 
+  const visibleNavItems = useMemo(() => {
+    return navItems.filter((item) => {
+      if (item.href === '/history') {
+        return !!userName;
+      }
+      return true;
+    });
+  }, [userName]);
+
   const handleLogout = () => {
     localStorage.removeItem('token');
     localStorage.removeItem('user');
@@ -106,21 +118,19 @@ export default function Navbar() {
           <nav className="hidden items-center gap-8 md:flex">
             <Link
               href="/"
-              className={`mono-heading text-sm tracking-[-0.02em] transition ${
-                isActive('/') ? 'font-medium text-white' : 'text-white/54 hover:text-white'
-              }`}
+              className={`mono-heading text-sm tracking-[-0.02em] transition ${isActive('/') ? 'font-medium text-white' : 'text-white/54 hover:text-white'
+                }`}
             >
               Home
             </Link>
-            {navItems.map((item) => (
+            {visibleNavItems.map((item) => (
               <Link
                 key={item.href}
                 href={item.href}
-                className={`mono-heading text-sm tracking-[-0.02em] transition ${
-                  isActive(item.href)
+                className={`mono-heading text-sm tracking-[-0.02em] transition ${isActive(item.href)
                     ? 'font-medium text-white'
                     : 'text-white/54 hover:text-white'
-                }`}
+                  }`}
               >
                 {item.label}
               </Link>
@@ -180,25 +190,23 @@ export default function Navbar() {
             <Link
               href="/"
               onClick={() => setMenuOpen(false)}
-              className={`border px-4 py-3 text-xs uppercase tracking-[0.18em] transition ${
-                isActive('/')
+              className={`border px-4 py-3 text-xs uppercase tracking-[0.18em] transition ${isActive('/')
                   ? 'border-[color:var(--gold)] bg-[color:var(--surface-subtle)] text-[color:var(--text-heading)]'
                   : 'border-[color:var(--border)] bg-[color:var(--surface-card)] text-[color:var(--text-body)] hover:text-[color:var(--text-heading)]'
-              }`}
+                }`}
               style={{ fontFamily: 'var(--font-display)' }}
             >
               Home
             </Link>
-            {navItems.map((item) => (
+            {visibleNavItems.map((item) => (
               <Link
                 key={item.href}
                 href={item.href}
                 onClick={() => setMenuOpen(false)}
-                className={`border px-4 py-3 text-xs uppercase tracking-[0.18em] transition ${
-                  isActive(item.href)
+                className={`border px-4 py-3 text-xs uppercase tracking-[0.18em] transition ${isActive(item.href)
                     ? 'border-[color:var(--gold)] bg-[color:var(--surface-subtle)] text-[color:var(--text-heading)]'
                     : 'border-[color:var(--border)] bg-[color:var(--surface-card)] text-[color:var(--text-body)] hover:text-[color:var(--text-heading)]'
-                }`}
+                  }`}
                 style={{ fontFamily: "var(--font-display)" }}
               >
                 {item.label}
