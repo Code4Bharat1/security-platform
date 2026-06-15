@@ -155,8 +155,6 @@ export default function Home() {
           <source src="/video.mp4" type="video/mp4" />
         </video>
 
-        {/* Vignette Overlay */}
-        <div className="absolute inset-0 z-10 bg-[radial-gradient(circle_at_center,transparent_10%,rgba(0,0,0,0.85)_100%)] pointer-events-none" />
 
         <div className="relative z-20 w-full px-4 sm:px-6 lg:px-20 py-12 lg:py-20">
           <motion.div
