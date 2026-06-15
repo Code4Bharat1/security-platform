@@ -3,16 +3,22 @@
 import FirewallDashboard from "@/components/firewallDashboard/firewallDashboard";
 import React, { useState } from "react";
 import useProtectedAction from "@/components/UseProtectedAction/UseProtectedAction";
+import OwnershipVerificationWizard from "@/components/ownership/OwnershipVerificationWizard";
 
 export default function DashboardPage() {
   const [url, setUrl] = useState("");
   const [data, setData] = useState(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
+  const [ownershipVerified, setOwnershipVerified] = useState(false);
 
   const protectedAction = useProtectedAction();
   async function handleScan(e) {
     e.preventDefault();
+    if (!ownershipVerified) {
+      setError("Verify ownership of this website before running the WAF scan.");
+      return;
+    }
     setLoading(true);
     setError(null);
     setData(null);
@@ -92,6 +98,12 @@ export default function DashboardPage() {
         >
           {loading ? "Scanning..." : "Scan URL"}
         </button>
+        <OwnershipVerificationWizard
+          targetValue={url}
+          targetLabel="Website URL"
+          onVerifiedChange={setOwnershipVerified}
+          className="mt-4 w-full"
+        />
       </form>
 
       {/* Error Message */}

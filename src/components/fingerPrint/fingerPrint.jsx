@@ -1,6 +1,7 @@
 'use client';
 import { useMemo, useState } from 'react';
 import useProtectedAction from '../UseProtectedAction/UseProtectedAction';
+import OwnershipVerificationWizard from '@/components/ownership/OwnershipVerificationWizard';
 
 export default function TechnologyFingerprinter() {
   const protectedAction = useProtectedAction();
@@ -9,6 +10,7 @@ export default function TechnologyFingerprinter() {
   const [meta, setMeta] = useState(null);        // { startedAt, finishedAt, durationMs, status, finalUrl, contentLength }
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
+  const [ownershipVerified, setOwnershipVerified] = useState(false);
 
   const formatDate = (iso) => {
     if (!iso) return '-';
@@ -27,6 +29,16 @@ export default function TechnologyFingerprinter() {
 
   const analyzeTech = async () => {
     await protectedAction(async (token) => {
+    const trimmedUrl = url.trim();
+    if (!trimmedUrl) {
+      setError('Please enter a website URL.');
+      return;
+    }
+    if (!ownershipVerified) {
+      setError('Verify ownership of this website before fingerprinting it.');
+      return;
+    }
+
     setLoading(true);
     setError('');
     setResults([]);
@@ -36,7 +48,7 @@ export default function TechnologyFingerprinter() {
       const res = await fetch(`${process.env.NEXT_PUBLIC_PROD_API_URL}/fingerprint/fingerprint-scan`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', "Authorization": `Bearer ${token}`},
-        body: JSON.stringify({ url: url.trim() }),
+        body: JSON.stringify({ url: trimmedUrl }),
       });
 
       const data = await res.json();
@@ -124,6 +136,12 @@ export default function TechnologyFingerprinter() {
       {loading ? 'Analyzing...' : 'Analyze'}
     </button>
   </div>
+  <OwnershipVerificationWizard
+    targetValue={url}
+    targetLabel="Website URL"
+    onVerifiedChange={setOwnershipVerified}
+    className="mt-4"
+  />
 </div>
 
       {error && <p className="text-red-500">{error}</p>}

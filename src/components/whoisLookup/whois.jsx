@@ -15,6 +15,7 @@ import {
 import { jsPDF } from "jspdf";
 import { toPng } from "html-to-image";
 import useProtectedAction from "../UseProtectedAction/UseProtectedAction";
+import OwnershipVerificationWizard from "@/components/ownership/OwnershipVerificationWizard";
 
 const ccToFlag = (cc) => {
   if (!cc) return "";
@@ -30,6 +31,7 @@ export default function WhoisLookup() {
   const [result, setResult] = useState(null);
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
+  const [ownershipVerified, setOwnershipVerified] = useState(false);
   const cardRef = useRef(null);
 
   const protectedAction = useProtectedAction();
@@ -43,6 +45,9 @@ export default function WhoisLookup() {
     if (!v) return setError("Please enter a domain name.");
     if (v.includes("http://") || v.includes("https://"))
       return setError("Enter domain name only (no http/https).");
+    if (!ownershipVerified) {
+      return setError("Verify ownership of this domain before running a WHOIS scan.");
+    }
 
     setLoading(true);
 
@@ -147,6 +152,12 @@ export default function WhoisLookup() {
               </button>
             </form>
           </div>
+          <OwnershipVerificationWizard
+            targetValue={domain}
+            targetLabel="Domain"
+            onVerifiedChange={setOwnershipVerified}
+            className="mt-6"
+          />
 
           {error && <p className="text-red-500 mt-4">{error}</p>}
 

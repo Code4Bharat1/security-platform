@@ -4,6 +4,7 @@ import axios from "axios";
 import jsPDF from "jspdf";
 import autoTable from "jspdf-autotable";
 import useProtectedAction from "../UseProtectedAction/UseProtectedAction";
+import OwnershipVerificationWizard from "@/components/ownership/OwnershipVerificationWizard";
 
 export default function SubdomainScanner() {
   const protectedAction = useProtectedAction();
@@ -12,6 +13,7 @@ export default function SubdomainScanner() {
   const [stats, setStats] = useState(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+  const [ownershipVerified, setOwnershipVerified] = useState(false);
 
   const API_URL = process.env.NEXT_PUBLIC_PROD_API_URL;
 
@@ -45,6 +47,11 @@ export default function SubdomainScanner() {
       const cleanDomain = domain.trim().toLowerCase();
       if (!cleanDomain) {
         setError("Please enter a domain.");
+        setLoading(false);
+        return;
+      }
+      if (!ownershipVerified) {
+        setError("Verify ownership of this domain before scanning subdomains.");
         setLoading(false);
         return;
       }
@@ -180,6 +187,12 @@ export default function SubdomainScanner() {
           >
             {loading ? "Scanning..." : "Find Subdomains"}
           </button>
+          <OwnershipVerificationWizard
+            targetValue={domain}
+            targetLabel="Domain"
+            onVerifiedChange={setOwnershipVerified}
+            className="mt-4"
+          />
         </div>
 
         {/* Error Message */}

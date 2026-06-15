@@ -29,6 +29,7 @@ import {
 import { jsPDF } from "jspdf";
 import autoTable from "jspdf-autotable";
 import useProtectedAction from "../UseProtectedAction/UseProtectedAction";
+import OwnershipVerificationWizard from "@/components/ownership/OwnershipVerificationWizard";
 
 /**
  * Enhanced Vulnerability Scanner component
@@ -46,6 +47,7 @@ export default function Vulnscanner() {
   const [loading, setLoading] = useState(false);
   const [activeTab, setActiveTab] = useState("overview");
   const [history, setHistory] = useState(null);
+  const [ownershipVerified, setOwnershipVerified] = useState(false);
   const protectedAction = useProtectedAction();
 
   const API_BASE = useMemo(
@@ -99,6 +101,10 @@ export default function Vulnscanner() {
 
     if (!validateUrl(url)) {
       setError("Please enter a valid website URL.");
+      return;
+    }
+    if (!ownershipVerified) {
+      setError("Verify ownership of this website before starting a scan.");
       return;
     }
 
@@ -1240,6 +1246,12 @@ export default function Vulnscanner() {
                   </span>
                 </button>
               </div>
+
+              <OwnershipVerificationWizard
+                targetValue={url}
+                targetLabel="Website URL"
+                onVerifiedChange={setOwnershipVerified}
+              />
 
               {error && (
                 <p className="rounded-sm border border-red-500/25 bg-red-500/10 px-4 py-3 text-sm text-red-300 break-words">

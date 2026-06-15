@@ -5,6 +5,7 @@ import jsPDF from "jspdf";
 import autoTable from "jspdf-autotable";
 
 import useProtectedAction from "../UseProtectedAction/UseProtectedAction";
+import OwnershipVerificationWizard from "@/components/ownership/OwnershipVerificationWizard";
 
 const dnsTypeMap = { 1: "A", 28: "AAAA", 15: "MX", 16: "TXT", 2: "NS" };
 const RECORD_TYPES = ["A", "AAAA", "MX", "TXT", "NS"];
@@ -43,6 +44,7 @@ export default function Webrecon() {
   const [scan, setScan] = useState(null);
   const [scanLoading, setScanLoading] = useState(false);
   const [scanError, setScanError] = useState("");
+  const [ownershipVerified, setOwnershipVerified] = useState(false);
 
   const API_BASE = useMemo(
     () => process.env.NEXT_PUBLIC_PROD_API_URL?.replace(/\/+$/, "") || "",
@@ -87,6 +89,11 @@ export default function Webrecon() {
       const target = normalizeDomain(domain);
       if (!target) {
         setScanError("Please enter a domain");
+        setScanLoading(false);
+        return;
+      }
+      if (!ownershipVerified) {
+        setScanError("Verify ownership of this domain before running the deep scan.");
         setScanLoading(false);
         return;
       }
@@ -319,6 +326,12 @@ export default function Webrecon() {
               {scanLoading ? "Scanning..." : "Run Deep Scan"}
             </button>
           </div>
+          <OwnershipVerificationWizard
+            targetValue={domain}
+            targetLabel="Domain"
+            onVerifiedChange={setOwnershipVerified}
+            className="mt-4"
+          />
           {scanError && <p className="text-red-400 mb-4">{scanError}</p>}
         </div>
 

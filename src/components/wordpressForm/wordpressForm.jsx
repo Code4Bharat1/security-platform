@@ -3,12 +3,14 @@ import { useState } from "react";
 import axios from "axios";
 import { Loader2, Shield, ClipboardPaste } from "lucide-react";
 import useProtectedAction from "../UseProtectedAction/UseProtectedAction";
+import OwnershipVerificationWizard from "@/components/ownership/OwnershipVerificationWizard";
 
 const WordPressScanner = () => {
   const [url, setUrl] = useState("");
   const [error, setError] = useState("");
   const [scanData, setScanData] = useState(null);
   const [loading, setLoading] = useState(false);
+  const [ownershipVerified, setOwnershipVerified] = useState(false);
   
   const protectedAction = useProtectedAction();
   const API_URL = process.env.NEXT_PUBLIC_PROD_API_URL;
@@ -26,6 +28,10 @@ const WordPressScanner = () => {
 
     if (!validateUrl(url)) {
       setError("Please enter a valid website URL.");
+      return;
+    }
+    if (!ownershipVerified) {
+      setError("Verify ownership of this website before running the WordPress scan.");
       return;
     }
 
@@ -135,6 +141,11 @@ const WordPressScanner = () => {
                   {loading ? "Scanning..." : "Scan WordPress Site"}
                 </button>
               </div>
+              <OwnershipVerificationWizard
+                targetValue={url}
+                targetLabel="Website URL"
+                onVerifiedChange={setOwnershipVerified}
+              />
             </div>
             {/* Results Display */}
             {!loading && scanData && (

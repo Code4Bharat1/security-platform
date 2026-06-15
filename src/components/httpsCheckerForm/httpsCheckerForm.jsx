@@ -15,6 +15,7 @@ import {
 import { jsPDF } from "jspdf";
 import autoTable from "jspdf-autotable";
 import useProtectedAction from "../UseProtectedAction/UseProtectedAction";
+import OwnershipVerificationWizard from "@/components/ownership/OwnershipVerificationWizard";
 
 function Badge({ ok, yesText = "Enabled", noText = "Disabled" }) {
   return (
@@ -50,6 +51,7 @@ export default function HttpsCheckerPage() {
   const [loading, setLoading] = useState(false);
   const [result, setResult] = useState(null);
   const [error, setError] = useState("");
+  const [ownershipVerified, setOwnershipVerified] = useState(false);
   const protectedAction = useProtectedAction();
 
   const handleCheck = async () => {
@@ -62,6 +64,10 @@ export default function HttpsCheckerPage() {
     const cleanDomain = domain.replace(/^https?:\/\//, "").replace(/\/$/, "");
     if (!domainRegex.test(cleanDomain)) {
       setError("Please enter a valid domain name (e.g., example.com)");
+      return;
+    }
+    if (!ownershipVerified) {
+      setError("Verify ownership of this domain before checking HTTPS security.");
       return;
     }
     setLoading(true);
@@ -485,6 +491,11 @@ export default function HttpsCheckerPage() {
                 )}
               </button>
             </div>
+            <OwnershipVerificationWizard
+              targetValue={domain}
+              targetLabel="Domain"
+              onVerifiedChange={setOwnershipVerified}
+            />
           </div>
 
           {/* Error Display */}

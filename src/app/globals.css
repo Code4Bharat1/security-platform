@@ -431,6 +431,125 @@ html.theme-dark {
     box-shadow: 0 0 0 1px color-mix(in srgb, var(--gold) 12%, transparent), 0 0 24px color-mix(in srgb, var(--gold) 6%, transparent);
   }
 
+  .tool-guidance-label-button {
+    margin-left: 0.4rem;
+    display: inline-flex;
+    height: 1.15rem;
+    width: 1.15rem;
+    align-items: center;
+    justify-content: center;
+    border-radius: 999px;
+    border: 1px solid rgba(255, 255, 255, 0.18);
+    background: rgba(255, 255, 255, 0.06);
+    color: rgba(255, 255, 255, 0.72);
+    font-size: 0.68rem;
+    line-height: 1;
+    transition: all 180ms ease;
+  }
+
+  .tool-guidance-label-button:hover {
+    border-color: color-mix(in srgb, var(--gold) 35%, transparent);
+    color: var(--gold);
+  }
+
+  .tool-guidance-inline-message {
+    margin-top: 0.4rem;
+    font-size: 0.78rem;
+    line-height: 1.5;
+  }
+
+  .tool-guidance-inline-message[data-status="success"] {
+    color: #9ae6b4;
+  }
+
+  .tool-guidance-inline-message[data-status="warning"] {
+    color: #fbd38d;
+  }
+
+  .tool-guidance-inline-message[data-status="error"] {
+    color: #feb2b2;
+  }
+
+  .tool-guidance-inline-message[data-status="info"],
+  .tool-guidance-inline-message[data-status="idle"] {
+    color: rgba(255, 255, 255, 0.62);
+  }
+
+  .tool-guidance-inline-fix {
+    color: rgba(255, 255, 255, 0.52);
+  }
+
+  .tool-guidance-inline-example {
+    margin-top: 0.2rem;
+    color: rgba(255, 255, 255, 0.38);
+    font-family: var(--font-code);
+    text-transform: uppercase;
+    letter-spacing: 0.14em;
+  }
+
+  .tool-guidance-panel {
+    position: fixed;
+    right: 1.1rem;
+    top: 5.75rem;
+    z-index: 40;
+    width: min(23rem, calc(100vw - 1.5rem));
+    transition: transform 220ms ease, opacity 220ms ease;
+  }
+
+  .tool-guidance-panel-closed .tool-guidance-shell {
+    opacity: 0;
+    transform: translateY(8px);
+    pointer-events: none;
+  }
+
+  .tool-guidance-toggle {
+    pointer-events: auto;
+    margin-left: auto;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.45rem;
+    border: 1px solid var(--border);
+    background: color-mix(in srgb, var(--surface-card) 94%, transparent);
+    padding: 0.72rem 0.9rem;
+    color: var(--text-heading);
+    font-family: var(--font-display);
+    font-size: 0.76rem;
+    letter-spacing: 0;
+    text-transform: none;
+    box-shadow: var(--shadow-elevated);
+  }
+
+  .tool-guidance-shell {
+    pointer-events: auto;
+    margin-top: 0.65rem;
+    max-height: min(70vh, 42rem);
+    overflow-y: auto;
+    border: 1px solid var(--border);
+    background:
+      radial-gradient(circle at top right, color-mix(in srgb, var(--gold) 12%, transparent), transparent 38%),
+      linear-gradient(180deg, color-mix(in srgb, var(--surface-card) 96%, white 4%), var(--surface-card));
+    padding: 1rem;
+    box-shadow: var(--shadow-elevated);
+  }
+
+  .tool-guidance-shell h3,
+  .tool-guidance-shell h4 {
+    letter-spacing: 0;
+  }
+
+  @media (max-width: 768px) {
+    .tool-guidance-panel {
+      left: 0.75rem;
+      right: 0.75rem;
+      width: auto;
+      top: 4.75rem;
+    }
+
+    .tool-guidance-shell {
+      max-height: 54vh;
+    }
+  }
+
   .tool-results-summary,
   .tool-stat-card {
     border: 1px solid var(--border);
