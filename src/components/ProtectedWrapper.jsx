@@ -20,20 +20,18 @@ export default function ProtectedWrapper({ children }) {
 
       try {
         const res = await fetch(
-          `${process.env.NEXT_PUBLIC_PROD_API_URL}/auth/inspect-token`,
+          `${process.env.NEXT_PUBLIC_PROD_API_URL}/auth/verify-token`,
           {
-            method: "POST",
+            method: "GET",
             headers: {
-              "Content-Type": "application/json",
               Authorization: `Bearer ${token}`,
             },
-            body: JSON.stringify({ token }),
           }
         );
 
         const data = await res.json();
 
-        if (!res.ok || data.meta?.isExpired) {
+        if (!res.ok || !data.valid) {
           localStorage.setItem("redirectAfterLogin", currentPath);
           router.push("/gain-access");
           return;

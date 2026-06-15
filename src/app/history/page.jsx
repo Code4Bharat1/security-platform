@@ -48,9 +48,14 @@ export default function HistoryPage() {
   const [showRawDetails, setShowRawDetails] = useState(false);
 
   const fetchHistory = async () => {
+    const token = localStorage.getItem("token");
+    if (!token) {
+      setLoading(false);
+      return;
+    }
+
     setLoading(true);
     setError("");
-    const token = localStorage.getItem("token");
 
     try {
       const queryParams = new URLSearchParams({
@@ -71,6 +76,13 @@ export default function HistoryPage() {
           }
         }
       );
+
+      if (res.status === 401) {
+        localStorage.removeItem("token");
+        localStorage.removeItem("user");
+        window.location.href = "/gain-access";
+        return;
+      }
 
       const data = await res.json();
       if (!res.ok) {

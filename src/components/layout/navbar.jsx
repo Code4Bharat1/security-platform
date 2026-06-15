@@ -151,9 +151,23 @@ export default function Navbar() {
               </button>
               {showDropdown ? (
                 <div className="absolute right-0 top-full mt-3 min-w-44 border border-[color:var(--border)] bg-[color:var(--surface-raised)] p-2 shadow-2xl">
-                  <p className="px-3 py-2 text-xs uppercase tracking-[0.24em] text-[color:var(--text-muted)]">
-                    Signed in
+                  <p className="px-3 py-1.5 text-[10px] font-mono uppercase tracking-[0.24em] text-[color:var(--text-muted)] border-b border-[color:var(--border)] mb-1">
+                    Account Menu
                   </p>
+                  <Link
+                    href="/credits"
+                    onClick={() => setShowDropdown(false)}
+                    className="block px-3 py-2 text-left text-sm text-[color:var(--text-body)] transition hover:bg-[color:var(--surface-subtle)] hover:text-[color:var(--text-heading)]"
+                  >
+                    Credits
+                  </Link>
+                  <Link
+                    href="/subscription"
+                    onClick={() => setShowDropdown(false)}
+                    className="block px-3 py-2 text-left text-sm text-[color:var(--text-body)] transition hover:bg-[color:var(--surface-subtle)] hover:text-[color:var(--text-heading)] border-b border-[color:var(--border)] pb-2 mb-1"
+                  >
+                    Billing & Plan
+                  </Link>
                   <button
                     type="button"
                     onClick={handleLogout}
@@ -173,7 +187,7 @@ export default function Navbar() {
             Request Assessment
           </Link>
         </div>
-
+ 
         <button
           type="button"
           onClick={() => setMenuOpen((current) => !current)}
@@ -183,7 +197,7 @@ export default function Navbar() {
           {menuOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
         </button>
       </div>
-
+ 
       {menuOpen ? (
         <div className="border-t border-[color:var(--border)] md:hidden">
           <div className="mx-auto flex max-w-7xl flex-col gap-3 px-4 py-5 sm:px-6">
@@ -214,9 +228,27 @@ export default function Navbar() {
             ))}
             <div className="mt-2 flex flex-col gap-3 border-t border-[color:var(--border)] pt-4">
               {userName ? (
-                <button type="button" onClick={handleLogout} className="ghost-button justify-center">
-                  Sign out
-                </button>
+                <>
+                  <Link
+                    href="/credits"
+                    onClick={() => setMenuOpen(false)}
+                    className="flex h-11 items-center justify-center border border-[color:var(--border)] bg-[color:var(--surface-card)] text-xs uppercase tracking-[0.18em] text-[color:var(--text-body)] hover:text-[color:var(--text-heading)]"
+                    style={{ fontFamily: 'var(--font-display)' }}
+                  >
+                    Credits
+                  </Link>
+                  <Link
+                    href="/subscription"
+                    onClick={() => setMenuOpen(false)}
+                    className="flex h-11 items-center justify-center border border-[color:var(--border)] bg-[color:var(--surface-card)] text-xs uppercase tracking-[0.18em] text-[color:var(--text-body)] hover:text-[color:var(--text-heading)] mb-2"
+                    style={{ fontFamily: 'var(--font-display)' }}
+                  >
+                    Billing & Plan
+                  </Link>
+                  <button type="button" onClick={handleLogout} className="ghost-button justify-center">
+                    Sign out
+                  </button>
+                </>
               ) : (
                 <Link href="/gain-access" onClick={() => setMenuOpen(false)} className="ghost-button justify-center">
                   Sign in
