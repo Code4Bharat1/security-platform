@@ -11,18 +11,18 @@ function FieldStatusPill({ status }) {
     status === "success"
       ? "border-emerald-500/30 bg-emerald-500/10 text-emerald-200"
       : status === "warning"
-      ? "border-amber-500/30 bg-amber-500/10 text-amber-200"
-      : status === "error"
-      ? "border-rose-500/30 bg-rose-500/10 text-rose-200"
-      : "border-white/10 bg-white/5 text-white/55";
+        ? "border-amber-500/30 bg-amber-500/10 text-amber-200"
+        : status === "error"
+          ? "border-rose-500/30 bg-rose-500/10 text-rose-200"
+          : "border-white/10 bg-white/5 text-white/55";
   const label =
     status === "success"
       ? "Looks good"
       : status === "warning"
-      ? "Check"
-      : status === "error"
-      ? "Needs fix"
-      : "Help";
+        ? "Check"
+        : status === "error"
+          ? "Needs fix"
+          : "Help";
 
   return (
     <span className={`rounded-full border px-2.5 py-1 text-[0.68rem] font-medium ${tone}`}>
@@ -124,11 +124,10 @@ export default function ToolHelpPanel({
                   type="button"
                   key={fieldKey}
                   onClick={() => setActiveFieldKey(fieldKey)}
-                  className={`flex w-full items-center justify-between gap-3 rounded-lg border px-3 py-3 text-left transition ${
-                    activeFieldKey === fieldKey
+                  className={`flex w-full items-center justify-between gap-3 rounded-lg border px-3 py-3 text-left transition ${activeFieldKey === fieldKey
                       ? "border-[var(--gold)]/35 bg-[var(--gold)]/10"
                       : "border-white/8 bg-black/20 hover:border-white/16"
-                  }`}
+                    }`}
                 >
                   <div>
                     <p className="text-sm font-medium text-white">{field.label}</p>
@@ -145,7 +144,7 @@ export default function ToolHelpPanel({
           {issueFields.length ? (
             <section className="space-y-3 rounded-lg border border-amber-500/20 bg-amber-500/10 p-4">
               <div className="flex items-center gap-2">
-                <LifeBuoy className="h-4 w-4 text-amber-200" />
+                <LifeBuoy className="h-4 w-4 text-amber-10" />
                 <h4 className="font-medium text-amber-100">Fix before scanning</h4>
               </div>
               <div className="space-y-2">
@@ -188,10 +187,10 @@ export default function ToolHelpPanel({
           {tool.bestPractices?.length ? (
             <section className="space-y-3">
               <div className="flex items-center gap-2">
-                <ShieldCheck className="h-4 w-4 text-emerald-300" />
+                <ShieldCheck className="h-4 w-4 text-emerald-10" />
                 <h4 className="font-medium text-white">Good practice</h4>
               </div>
-              <ul className="space-y-2 text-sm text-white/70">
+              <ul className="space-y-2 text-sm text-white/20">
                 {tool.bestPractices.map((item) => (
                   <li key={item} className="rounded-lg border border-white/8 bg-black/20 px-3 py-2">
                     {item}

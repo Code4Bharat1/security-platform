@@ -17,15 +17,15 @@ export default function JoinNetwork() {
   // State to manage form validation errors and success/error messages
   const [errors, setErrors] = useState({});
   const [message, setMessage] = useState('');
-  
+
   // State to manage password visibility
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
-  
+
   // State for terms acceptance and loading status
   const [accepted, setAccepted] = useState(false);
   const [loading, setLoading] = useState(false);
-  
+
   const router = useRouter();
 
   // Handle changes to form inputs
@@ -39,63 +39,63 @@ export default function JoinNetwork() {
 
   // Handle form submission
   const handleSubmit = async (e) => {
-  e.preventDefault();
-  const newErrors = {};
+    e.preventDefault();
+    const newErrors = {};
 
-  // Basic form validation
-  if (!formData.fname) newErrors.fname = 'First name is required';
-  if (!formData.lname) newErrors.lname = 'Last name is required';
-  if (!formData.email) newErrors.email = 'Email is required';
-  if (!formData.password) newErrors.password = 'Password is required';
-  if (formData.password !== formData.confirmPassword) {
-    newErrors.confirmPassword = 'Passwords do not match';
-  }
-  if (!accepted) newErrors.accepted = 'Please accept the terms';
-
-  setErrors(newErrors);
-  setMessage('');
-
-  if (Object.keys(newErrors).length === 0) {
-    try {
-      setLoading(true);
-
-      const res = await axios.post(
-        `${process.env.NEXT_PUBLIC_PROD_API_URL}/auth/signup`,
-        {
-          name: `${formData.fname} ${formData.lname}`,
-          email: formData.email,
-          password: formData.password,
-        },
-        {
-          headers: {
-            'Content-Type': 'application/json',
-          },
-        }
-      );
-
-      const result = res.data;
-
-      if (res.status === 200 || res.status === 201) {
-        setMessage('Signup successful! Please login.');
-        // Optional: redirect to login page
-        // router.push('/login');
-      } else {
-        setMessage(result.message || 'Signup failed');
-      }
-    } catch (err) {
-      console.error('Signup error:', err);
-      setMessage(err.response?.data?.message || 'Something went wrong.');
-    } finally {
-      setLoading(false);
+    // Basic form validation
+    if (!formData.fname) newErrors.fname = 'First name is required';
+    if (!formData.lname) newErrors.lname = 'Last name is required';
+    if (!formData.email) newErrors.email = 'Email is required';
+    if (!formData.password) newErrors.password = 'Password is required';
+    if (formData.password !== formData.confirmPassword) {
+      newErrors.confirmPassword = 'Passwords do not match';
     }
-  }
-};
+    if (!accepted) newErrors.accepted = 'Please accept the terms';
+
+    setErrors(newErrors);
+    setMessage('');
+
+    if (Object.keys(newErrors).length === 0) {
+      try {
+        setLoading(true);
+
+        const res = await axios.post(
+          `${process.env.NEXT_PUBLIC_PROD_API_URL}/auth/signup`,
+          {
+            name: `${formData.fname} ${formData.lname}`,
+            email: formData.email,
+            password: formData.password,
+          },
+          {
+            headers: {
+              'Content-Type': 'application/json',
+            },
+          }
+        );
+
+        const result = res.data;
+
+        if (res.status === 200 || res.status === 201) {
+          setMessage('Signup successful! Please login.');
+          // Optional: redirect to login page
+          // router.push('/login');
+        } else {
+          setMessage(result.message || 'Signup failed');
+        }
+      } catch (err) {
+        console.error('Signup error:', err);
+        setMessage(err.response?.data?.message || 'Something went wrong.');
+      } finally {
+        setLoading(false);
+      }
+    }
+  };
 
 
   return (
     <div className="flex min-h-screen items-center justify-center bg-[var(--background)] p-4 text-[color:var(--text-body)]">
       <div className="relative w-full max-w-md rounded-2xl border border-[color:var(--border)] bg-[color:var(--surface-card)] p-8 text-[color:var(--text-body)] shadow-[var(--shadow-elevated)]">
-        
+
         {/* Close Button */}
         <button
           onClick={() => router.push('/gain-access')}
@@ -122,9 +122,8 @@ export default function JoinNetwork() {
                 placeholder="First Name"
                 value={formData.fname}
                 onChange={handleChange}
-                className={`w-full rounded-lg border px-4 py-2 ${
-                  errors.fname ? 'border-[color:var(--danger)]' : 'border-[color:var(--border)]'
-                } bg-[color:var(--surface-subtle)] text-[color:var(--text-body)] placeholder:text-[color:var(--text-muted)] focus:outline-none focus:ring-2 focus:ring-[color:var(--ring)]`}
+                className={`w-full rounded-lg border px-4 py-2 ${errors.fname ? 'border-[color:var(--danger)]' : 'border-[color:var(--border)]'
+                  } bg-[color:var(--surface-subtle)] text-[color:var(--text-body)] placeholder:text-[color:var(--text-muted)] focus:outline-none focus:ring-2 focus:ring-[color:var(--ring)]`}
                 autoComplete="given-name"
               />
               {errors.fname && <p className="mt-1 text-sm text-[color:var(--danger)]">{errors.fname}</p>}
@@ -137,9 +136,8 @@ export default function JoinNetwork() {
                 placeholder="Last Name"
                 value={formData.lname}
                 onChange={handleChange}
-                className={`w-full rounded-lg border px-4 py-2 ${
-                  errors.lname ? 'border-[color:var(--danger)]' : 'border-[color:var(--border)]'
-                } bg-[color:var(--surface-subtle)] text-[color:var(--text-body)] placeholder:text-[color:var(--text-muted)] focus:outline-none focus:ring-2 focus:ring-[color:var(--ring)]`}
+                className={`w-full rounded-lg border px-4 py-2 ${errors.lname ? 'border-[color:var(--danger)]' : 'border-[color:var(--border)]'
+                  } bg-[color:var(--surface-subtle)] text-[color:var(--text-body)] placeholder:text-[color:var(--text-muted)] focus:outline-none focus:ring-2 focus:ring-[color:var(--ring)]`}
                 autoComplete="family-name"
               />
               {errors.lname && <p className="mt-1 text-sm text-[color:var(--danger)]">{errors.lname}</p>}
@@ -155,9 +153,8 @@ export default function JoinNetwork() {
               placeholder="Enter your email"
               value={formData.email}
               onChange={handleChange}
-              className={`w-full rounded-lg border px-4 py-2 ${
-                errors.email ? 'border-[color:var(--danger)]' : 'border-[color:var(--border)]'
-              } bg-[color:var(--surface-subtle)] text-[color:var(--text-body)] placeholder:text-[color:var(--text-muted)] focus:outline-none focus:ring-2 focus:ring-[color:var(--ring)]`}
+              className={`w-full rounded-lg border px-4 py-2 ${errors.email ? 'border-[color:var(--danger)]' : 'border-[color:var(--border)]'
+                } bg-[color:var(--surface-subtle)] text-[color:var(--text-body)] placeholder:text-[color:var(--text-muted)] focus:outline-none focus:ring-2 focus:ring-[color:var(--ring)]`}
               autoComplete="email"
             />
             {errors.email && <p className="mt-1 text-sm text-[color:var(--danger)]">{errors.email}</p>}
@@ -172,9 +169,8 @@ export default function JoinNetwork() {
               placeholder="Enter your password"
               value={formData.password}
               onChange={handleChange}
-              className={`w-full rounded-lg border px-4 py-2 ${
-                errors.password ? 'border-[color:var(--danger)]' : 'border-[color:var(--border)]'
-              } bg-[color:var(--surface-subtle)] text-[color:var(--text-body)] placeholder:text-[color:var(--text-muted)] focus:outline-none focus:ring-2 focus:ring-[color:var(--ring)]`}
+              className={`w-full rounded-lg border px-4 py-2 ${errors.password ? 'border-[color:var(--danger)]' : 'border-[color:var(--border)]'
+                } bg-[color:var(--surface-subtle)] text-[color:var(--text-body)] placeholder:text-[color:var(--text-muted)] focus:outline-none focus:ring-2 focus:ring-[color:var(--ring)]`}
               autoComplete="new-password"
             />
             <button
@@ -197,9 +193,8 @@ export default function JoinNetwork() {
               placeholder="Confirm your password"
               value={formData.confirmPassword}
               onChange={handleChange}
-              className={`w-full rounded-lg border px-4 py-2 ${
-                errors.confirmPassword ? 'border-[color:var(--danger)]' : 'border-[color:var(--border)]'
-              } bg-[color:var(--surface-subtle)] text-[color:var(--text-body)] placeholder:text-[color:var(--text-muted)] focus:outline-none focus:ring-2 focus:ring-[color:var(--ring)]`}
+              className={`w-full rounded-lg border px-4 py-2 ${errors.confirmPassword ? 'border-[color:var(--danger)]' : 'border-[color:var(--border)]'
+                } bg-[color:var(--surface-subtle)] text-[color:var(--text-body)] placeholder:text-[color:var(--text-muted)] focus:outline-none focus:ring-2 focus:ring-[color:var(--ring)]`}
               autoComplete="new-password"
             />
             <button
@@ -242,9 +237,8 @@ export default function JoinNetwork() {
           <button
             type="submit"
             disabled={loading}
-            className={`mt-6 w-full rounded-lg border border-[color:var(--gold)] bg-[color:var(--gold)] py-3 text-center font-semibold text-[color:var(--text-inverse)] hover:bg-[color:var(--gold-strong)] ${
-              loading ? 'opacity-50 cursor-not-allowed' : ''
-            }`}
+            className={`mt-6 w-full rounded-lg border border-[color:var(--gold)] bg-[color:var(--gold)] py-3 text-center font-semibold text-[color:var(--text-inverse)] hover:bg-[color:var(--gold-strong)] ${loading ? 'opacity-50 cursor-not-allowed' : ''
+              }`}
           >
             {loading ? 'Adding to Whitelist...' : 'Join the Network'}
           </button>
@@ -253,9 +247,8 @@ export default function JoinNetwork() {
         {/* Message */}
         {message && (
           <p
-            className={`mt-4 text-center font-medium ${
-              message.includes('success') ? 'text-[color:var(--success)]' : 'text-[color:var(--danger)]'
-            }`}
+            className={`mt-4 text-center font-medium ${message.includes('success') ? 'text-[color:var(--success)]' : 'text-[color:var(--danger)]'
+              }`}
           >
             {message}
           </p>

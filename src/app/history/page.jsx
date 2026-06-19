@@ -1,17 +1,17 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { 
-  Search, 
-  Download, 
-  Trash2, 
-  Calendar, 
-  RefreshCw, 
-  ArrowUpDown, 
-  AlertCircle, 
-  CheckCircle2, 
-  ChevronLeft, 
-  ChevronRight, 
+import {
+  Search,
+  Download,
+  Trash2,
+  Calendar,
+  RefreshCw,
+  ArrowUpDown,
+  AlertCircle,
+  CheckCircle2,
+  ChevronLeft,
+  ChevronRight,
   FileText,
   Eye,
   X
@@ -29,7 +29,7 @@ export default function HistoryPage() {
   const [search, setSearch] = useState("");
   const [fileType, setFileType] = useState("");
   const [date, setDate] = useState("");
-  
+
   // Sorting & Pagination State
   const [sortBy, setSortBy] = useState("createdAt");
   const [sortOrder, setSortOrder] = useState("desc");
@@ -185,7 +185,7 @@ export default function HistoryPage() {
       setSuccessMsg("History record deleted successfully.");
       setDeleteConfirmId(null);
       setTimeout(() => setSuccessMsg(""), 3000);
-      
+
       // Reload page records
       if (records.length === 1 && page > 1) {
         setPage(page - 1);
@@ -288,10 +288,10 @@ export default function HistoryPage() {
                       value={search}
                       onChange={(e) => setSearch(e.target.value)}
                       placeholder="Tool Name, Tested Target..."
-                      className="contact-input pl-10"
+                      className="contact-input !pl-12"
                     />
-                    <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-white/30" />
-                  </div>
+
+                    <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-white/30 pointer-events-none" /> </div>
                 </div>
 
                 {/* File Type selector */}
@@ -324,9 +324,8 @@ export default function HistoryPage() {
                       type="date"
                       value={date}
                       onChange={(e) => setDate(e.target.value)}
-                      className="contact-input pr-10"
+                      className="contact-input"
                     />
-                    <Calendar className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 text-white/30 pointer-events-none" />
                   </div>
                 </div>
 
@@ -357,8 +356,8 @@ export default function HistoryPage() {
                 <table className="w-full text-left border-collapse">
                   <thead>
                     <tr className="border-b border-white/6 bg-[#0a0a0a] text-[0.68rem] font-mono uppercase tracking-[0.2em] text-white/40">
-                      <th 
-                        onClick={() => handleSort("toolName")} 
+                      <th
+                        onClick={() => handleSort("toolName")}
                         className="cursor-pointer px-6 py-5 select-none hover:text-white transition"
                       >
                         <div className="flex items-center gap-2">
@@ -367,8 +366,8 @@ export default function HistoryPage() {
                         </div>
                       </th>
                       <th className="px-6 py-5">Tested Target / Input</th>
-                      <th 
-                        onClick={() => handleSort("createdAt")} 
+                      <th
+                        onClick={() => handleSort("createdAt")}
                         className="cursor-pointer px-6 py-5 select-none hover:text-white transition"
                       >
                         <div className="flex items-center gap-2">
@@ -433,11 +432,10 @@ export default function HistoryPage() {
                                       key={idx}
                                       onClick={() => isAvail && handleDownload(record._id, idx, file.fileName)}
                                       disabled={!isAvail}
-                                      className={`inline-flex items-center gap-1.5 px-2.5 py-1 text-xs border transition ${
-                                        isAvail
-                                          ? "border-white/10 bg-[#0d0d0d] text-white/80 hover:border-[var(--gold)] hover:text-[var(--gold)]"
-                                          : "border-rose-500/20 bg-rose-500/5 text-rose-400/50 cursor-not-allowed line-through"
-                                      }`}
+                                      className={`inline-flex items-center gap-1.5 px-2.5 py-1 text-xs border transition ${isAvail
+                                        ? "border-white/10 bg-[#0d0d0d] text-white/80 hover:border-[var(--gold)] hover:text-[var(--gold)]"
+                                        : "border-rose-500/20 bg-rose-500/5 text-rose-400/50 cursor-not-allowed line-through"
+                                        }`}
                                       title={isAvail ? `Download ${file.fileName}` : "File has been deleted from disk"}
                                     >
                                       <Download className="h-3 w-3" />
@@ -518,7 +516,7 @@ export default function HistoryPage() {
             <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/85 backdrop-blur-sm p-4 overflow-y-auto">
               <div className="glow-panel max-w-3xl w-full bg-[#0a0a0a] border border-white/10 p-6 space-y-6 relative my-8">
                 {/* Close Button */}
-                <button 
+                <button
                   type="button"
                   onClick={() => setSelectedRecord(null)}
                   className="absolute right-4 top-4 text-white/40 hover:text-white transition p-1 cursor-pointer"
@@ -571,11 +569,10 @@ export default function HistoryPage() {
                               key={idx}
                               onClick={() => isAvail && handleDownload(selectedRecord._id, idx, file.fileName)}
                               disabled={!isAvail}
-                              className={`inline-flex items-center gap-1 px-2 py-0.5 text-[10px] border transition ${
-                                isAvail
-                                  ? "border-white/10 bg-[#0d0d0d] text-white/80 hover:border-[var(--gold)] hover:text-[var(--gold)]"
-                                  : "border-rose-500/20 bg-rose-500/5 text-rose-400/50 cursor-not-allowed line-through"
-                              }`}
+                              className={`inline-flex items-center gap-1 px-2 py-0.5 text-[10px] border transition ${isAvail
+                                ? "border-white/10 bg-[#0d0d0d] text-white/80 hover:border-[var(--gold)] hover:text-[var(--gold)]"
+                                : "border-rose-500/20 bg-rose-500/5 text-rose-400/50 cursor-not-allowed line-through"
+                                }`}
                               title={isAvail ? `Download ${file.fileName}` : "File deleted from disk"}
                             >
                               <Download className="h-2.5 w-2.5" />
