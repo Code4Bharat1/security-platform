@@ -61,8 +61,8 @@ function StepBadge({ active, complete, label }) {
   const classes = complete
     ? "border-emerald-500/40 bg-emerald-500/15 text-emerald-300"
     : active
-    ? "border-[var(--gold)]/40 bg-[var(--gold)]/10 text-[var(--gold)]"
-    : "border-white/10 bg-white/5 text-white/55";
+      ? "border-[var(--gold)]/40 bg-[var(--gold)]/10 text-[var(--gold)]"
+      : "border-white/10 bg-white/5 text-white/55";
 
   return (
     <span className={`inline-flex items-center rounded-full border px-3 py-1 text-[0.7rem] uppercase tracking-[0.16em] ${classes}`}>
@@ -397,7 +397,8 @@ export default function OwnershipVerificationWizard({
                 value={workEmail}
                 onChange={(event) => setWorkEmail(event.target.value)}
                 placeholder="security@company.com"
-                className="tool-scan-input pl-11"
+                className="tool-scan-input"
+                style={{ paddingLeft: "2.75rem" }}
               />
             </div>
             <p className="text-xs text-[var(--text-muted)]">

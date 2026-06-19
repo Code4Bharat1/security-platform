@@ -416,7 +416,8 @@ html.theme-dark {
     width: 100%;
     border: 1px solid var(--border);
     background: color-mix(in srgb, var(--surface-card) 92%, transparent);
-    padding: 0.95rem 1rem;
+    padding: 0.95rem 1rem 0.95rem 2.75rem;
+    /* ← was: 0.95rem 1rem */
     color: var(--text-body);
     outline: none;
     font-family: var(--font-code);
@@ -487,13 +488,19 @@ html.theme-dark {
     letter-spacing: 0.14em;
   }
 
+  /* ─── Need help? panel — scrolls with page, anchored top-right ─── */
   .tool-guidance-panel {
-    position: fixed;
-    right: 1.1rem;
-    top: 5.75rem;
+    position: absolute;
+    right: 0;
+    top: 0;
     z-index: 40;
     width: min(23rem, calc(100vw - 1.5rem));
     transition: transform 220ms ease, opacity 220ms ease;
+    pointer-events: none;
+  }
+
+  .tool-guidance-panel {
+    font-size: 0.875rem;
   }
 
   .tool-guidance-panel-closed .tool-guidance-shell {
@@ -504,8 +511,9 @@ html.theme-dark {
 
   .tool-guidance-toggle {
     pointer-events: auto;
+    /* push button to the right edge */
+    display: flex;
     margin-left: auto;
-    display: inline-flex;
     align-items: center;
     gap: 0.45rem;
     border: 1px solid var(--border);
@@ -537,12 +545,13 @@ html.theme-dark {
     letter-spacing: 0;
   }
 
+  /* ─── Mobile: full-width, still anchored to container ─── */
   @media (max-width: 768px) {
     .tool-guidance-panel {
-      left: 0.75rem;
-      right: 0.75rem;
-      width: auto;
-      top: 4.75rem;
+      left: 0;
+      right: 0;
+      width: 100%;
+      top: 0;
     }
 
     .tool-guidance-shell {
