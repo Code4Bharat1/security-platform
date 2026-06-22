@@ -137,7 +137,7 @@ export default function ServicePage() {
 
               return (
                 <section key={service.id} className="border-t border-white/6 pt-8">
-                  <div className="grid gap-8 lg:grid-cols-[1.1fr_1.4fr] lg:items-start">
+                  <div className="grid gap-8 lg:grid-cols-2 lg:items-start">
                     <div className={`${index % 2 === 1 ? "lg:order-2" : ""} space-y-5`}>
                       <p className="eyebrow">{service.id}</p>
                       <div className="inline-flex h-10 w-10 items-center justify-center border border-[var(--gold)]/25 text-[var(--gold)]">
@@ -163,10 +163,12 @@ export default function ServicePage() {
                       </InfoPanel>
                       <TextPanel title="Ideal For" text={service.idealFor} />
                       <TextPanel title="Deliverables" text={service.deliverables} />
-                      <div className="grid gap-4 sm:grid-cols-2">
+                      <div className="grid gap-4 grid-cols-2">
                         {service.metrics.map(([value, label]) => (
-                          <div key={label} className="surface-panel p-6">
-                            <p className="font-mono text-4xl font-semibold text-white">{value}</p>
+                          <div key={label} className="surface-panel p-5">
+                            <p className={`font-mono font-semibold text-white ${value.length > 5 ? 'text-2xl sm:text-3xl' : 'text-3xl sm:text-4xl'}`}>
+                              {value}
+                            </p>
                             <p className="mt-2 font-mono text-[0.62rem] uppercase tracking-[0.28em] text-white/28">
                               {label}
                             </p>

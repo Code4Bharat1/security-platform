@@ -101,7 +101,7 @@ export default function AboutUs() {
 
           <div className="mt-14 grid gap-px overflow-hidden border border-white/8 bg-white/8 sm:grid-cols-2 lg:grid-cols-4">
             {stats.map(([value, label]) => (
-              <div key={label} className="bg-[#0b0b0c] px-8 py-10">
+              <div key={label} className="bg-[#0b0b0c] px-8 py-10 transition-all duration-300 hover:bg-white/[0.04] cursor-pointer">
                 <div className="font-mono text-4xl font-semibold text-white">{value}</div>
                 <p className="mt-3 font-mono text-[0.62rem] uppercase tracking-[0.28em] text-white/28">
                   {label}
@@ -148,7 +148,7 @@ export default function AboutUs() {
                 <p className="eyebrow">{region}</p>
                 <div className="grid gap-4 sm:grid-cols-2">
                   {entries.map(([city, state]) => (
-                    <article key={`${region}-${city}`} className="surface-panel p-5">
+                    <article key={`${region}-${city}`} className="surface-panel p-5 transition-all duration-300 hover:border-[var(--gold)]/35 hover:-translate-y-1 hover:shadow-[0_10px_25px_rgba(212,166,74,0.05)] cursor-pointer">
                       <div className="mb-4 inline-flex h-10 w-10 items-center justify-center border border-[var(--gold)]/18 text-[var(--gold)]">
                         <MapPin className="h-4 w-4" />
                       </div>
@@ -175,10 +175,10 @@ export default function AboutUs() {
             {steps.map((step, index) => (
               <article
                 key={step.index}
-                className={`grid gap-4 border p-5 sm:grid-cols-[auto_1fr] sm:items-center ${
+                className={`grid gap-4 border p-5 sm:grid-cols-[auto_1fr] sm:items-center transition-all duration-300 cursor-pointer ${
                   index === 0
-                    ? "glow-panel"
-                    : "border-white/8 bg-white/[0.025]"
+                    ? "glow-panel hover:-translate-y-1"
+                    : "border-white/8 bg-white/[0.025] hover:border-[var(--gold)]/35 hover:-translate-y-1 hover:shadow-[0_10px_25px_rgba(212,166,74,0.05)]"
                 }`}
               >
                 <div className="flex items-center gap-4">
@@ -200,7 +200,7 @@ export default function AboutUs() {
         <div className="mx-auto max-w-7xl px-4 py-20 sm:px-6 lg:px-8">
           <div className="grid gap-5 lg:grid-cols-3">
             {pillars.map((pillar) => (
-              <article key={pillar.title} className="surface-panel p-8">
+              <article key={pillar.title} className="surface-panel p-8 transition-all duration-300 hover:border-[var(--gold)]/35 hover:-translate-y-1 hover:shadow-[0_10px_25px_rgba(212,166,74,0.05)] cursor-pointer">
                 <div className="mb-5 inline-flex h-10 w-10 items-center justify-center border border-[var(--gold)]/18 text-[var(--gold)]">
                   <MapPin className="h-4 w-4" />
                 </div>
