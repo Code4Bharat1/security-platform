@@ -14,7 +14,7 @@ export default function ProtectedWrapper({ children }) {
 
       if (!token) {
         localStorage.setItem("redirectAfterLogin", currentPath);
-        router.push("/gain-access");
+        router.replace("/gain-access");
         return;
       }
 
@@ -33,7 +33,7 @@ export default function ProtectedWrapper({ children }) {
 
         if (!res.ok || !data.valid) {
           localStorage.setItem("redirectAfterLogin", currentPath);
-          router.push("/gain-access");
+          router.replace("/gain-access");
           return;
         }
 
@@ -41,7 +41,7 @@ export default function ProtectedWrapper({ children }) {
       } catch (err) {
         console.error("💥 Token check failed:", err);
         localStorage.setItem("redirectAfterLogin", currentPath);
-        router.push("/gain-access");
+        router.replace("/gain-access");
       }
     };
 

@@ -15,7 +15,7 @@ function useProtectedAction() {
     if (!token) {
       console.warn("⚠️ No token found, redirecting to login...");
       localStorage.setItem("redirectAfterLogin", currentPath);
-      router.push("/gain-access");
+      router.replace("/gain-access");
       return;
     }
 
@@ -41,7 +41,7 @@ function useProtectedAction() {
         localStorage.removeItem("token");
         localStorage.removeItem("user");
         localStorage.setItem("redirectAfterLogin", currentPath);
-        router.push("/gain-access");
+        router.replace("/gain-access");
         return;
       }
 
@@ -56,7 +56,7 @@ function useProtectedAction() {
       localStorage.removeItem("token");
       localStorage.removeItem("user");
       localStorage.setItem("redirectAfterLogin", currentPath);
-      router.push("/gain-access");
+      router.replace("/gain-access");
     }
   };
 }

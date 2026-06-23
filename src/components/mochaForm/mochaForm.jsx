@@ -116,7 +116,6 @@ export default function MochaForm() {
             errText || ""
           }`.trim();
           showToastMessage(msg, "error");
-          if (res.status >= 500) alert(msg);
           setError(msg);
           setLoading(false);
           return;
@@ -132,7 +131,6 @@ export default function MochaForm() {
         ) {
           const msg = `API responded with ${result.statusCode}`;
           showToastMessage(msg, "error");
-          alert(msg);
         } else {
           showToastMessage("🎉 Test completed successfully!", "success");
         }
@@ -142,7 +140,6 @@ export default function MochaForm() {
         const msg = `Network error: ${e?.message || "Unknown error"}`;
         setError(msg);
         showToastMessage(msg, "error");
-        alert(msg);
         setLoading(false);
       }
     });

@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { toast } from "react-hot-toast";
 
 export default function FileScan() {
   const [file, setFile] = useState(null);
@@ -14,7 +15,7 @@ export default function FileScan() {
 
   const handleSubmit = async () => {
     if (!file) {
-      alert("Please select a file to scan.");
+      toast.error("Please select a file to scan.");
       return;
     }
 

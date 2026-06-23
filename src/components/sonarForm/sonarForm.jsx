@@ -1,7 +1,8 @@
 'use client';
 import { useState } from 'react';
-export default function SonarForm() {
+import { toast } from "react-hot-toast";
 
+export default function SonarForm() {
   const [code, setCode] = useState("");
   const [results, setResults] = useState([]);
 
@@ -15,17 +16,17 @@ export default function SonarForm() {
       body: JSON.stringify({ code }),
     });
 
-    if (!res.ok) {
       const errText = await res.text();
       console.error("Server error:", errText);
-      return alert("Analysis failed. See console for details.");
+      toast.error("Analysis failed. See console for details.");
+      return;
     }
 
     const data = await res.json();
     setResults(data.issues);
   } catch (err) {
     console.error("Error parsing response:", err);
-    alert("Something went wrong while analyzing the code.");
+    toast.error("Something went wrong while analyzing the code.");
   }
 };
 

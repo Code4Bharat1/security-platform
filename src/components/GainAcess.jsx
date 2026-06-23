@@ -1,16 +1,62 @@
 "use client";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Eye, EyeOff, X } from "lucide-react";
 import Link from "next/link";
 import axios from "axios";
 import { useRouter } from "next/navigation";
+import { toast } from 'react-hot-toast';
 
 export default function GainAccess() {
   const [formData, setFormData] = useState({ email: "", password: "" });
   const [errors, setErrors] = useState({});
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [checkingAuth, setCheckingAuth] = useState(true);
   const router = useRouter();
+
+  useEffect(() => {
+    const checkRedirect = async () => {
+      const token = localStorage.getItem("token");
+      if (!token) {
+        setCheckingAuth(false);
+        return;
+      }
+
+      if (token) {
+        try {
+          const res = await fetch(
+            `${process.env.NEXT_PUBLIC_PROD_API_URL}/auth/verify-token`,
+            {
+              method: "GET",
+              headers: {
+                Authorization: `Bearer ${token}`,
+              },
+            }
+          );
+          const data = await res.json();
+          if (res.ok && data.valid) {
+            router.push("/");
+          } else {
+            setCheckingAuth(false);
+          }
+        } catch (err) {
+          console.error("Token verification failed:", err);
+          setCheckingAuth(false);
+        }
+      }
+    };
+
+    checkRedirect();
+
+    const handlePageShow = () => {
+      checkRedirect();
+    };
+
+    window.addEventListener("pageshow", handlePageShow);
+    return () => {
+      window.removeEventListener("pageshow", handlePageShow);
+    };
+  }, [router]);
 
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
@@ -43,14 +89,14 @@ export default function GainAccess() {
         console.log("Login Response:", result);
 
         if (res.status === 200 && result.token) {
-          alert("Login successful!");
+          toast.success("Login successful!");
           localStorage.setItem("token", result.token);
           localStorage.setItem("user", JSON.stringify(result.user));
 
           const redirectPath = localStorage.getItem("redirectAfterLogin");
           console.log("Redirect Path from storage:", redirectPath);
 
-          if (redirectPath && redirectPath !== "/gain-access") {
+          if (redirectPath && redirectPath !== "/gain-access" && redirectPath !== "/login") {
             console.log("Redirecting to:", redirectPath);
             setTimeout(() => {
               localStorage.removeItem("redirectAfterLogin");
@@ -61,11 +107,11 @@ export default function GainAccess() {
             router.push("/");
           }
         } else {
-          alert(result.message || "Login failed");
+          toast.error(result.message || "Login failed");
         }
       } catch (err) {
         console.error("Login error:", err);
-        alert(
+        toast.error(
           err.response?.data?.message || "Something went wrong. Try again."
         );
       } finally {
@@ -73,6 +119,17 @@ export default function GainAccess() {
       }
     }
   };
+
+  if (checkingAuth) {
+    return (
+      <div className="flex min-h-screen items-center justify-center bg-[var(--background)] p-4 text-[color:var(--text-body)]">
+        <div className="text-center">
+           <div className="w-12 h-12 border-4 border-[color:var(--gold)] border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
+           <p className="text-sm text-[color:var(--text-muted)] tracking-wider">Verifying access...</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="flex min-h-screen items-center justify-center bg-[var(--background)] p-4 text-[color:var(--text-body)]">
