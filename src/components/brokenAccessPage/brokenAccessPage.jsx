@@ -1,6 +1,7 @@
 'use client';
 import { useState } from 'react';
 import { useEffect } from 'react';
+import { toast } from 'react-hot-toast';
 
 export default function BrokenAccessControlPage() {
   const [targetUrl, setTargetUrl] = useState('');
@@ -69,21 +70,21 @@ const handleDelete = async (id) => {
     if (!contentType || !contentType.includes('application/json')) {
       const text = await res.text();
       console.error('Expected JSON but got:', text);
-      alert('Unexpected response from server');
+      toast.error('Unexpected response from server');
       return;
     }
 
     const data = await res.json();
 
     if (res.ok) {
-      alert('Scan deleted successfully');
+      toast.success('Scan deleted successfully');
       setScanHistory((prev) => prev.filter((scan) => scan._id !== id));
     } else {
-      alert(data.error || 'Failed to delete scan');
+      toast.error(data.error || 'Failed to delete scan');
     }
   } catch (err) {
     console.error('Error deleting scan:', err);
-    alert('Something went wrong while deleting');
+    toast.error('Something went wrong while deleting');
   }
 };
 

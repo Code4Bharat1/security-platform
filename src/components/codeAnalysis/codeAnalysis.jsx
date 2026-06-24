@@ -4,7 +4,7 @@ import axios from 'axios';
 import useProtectedAction from '../UseProtectedAction/UseProtectedAction';
 import { jsPDF } from 'jspdf';
 import autoTable from 'jspdf-autotable';
-// import { headers } from 'next/headers';
+import { toast } from 'react-hot-toast';
 
 // Build a sane API base: prefer env, else /api, trim trailing slashes
 const API_BASE = (process.env.NEXT_PUBLIC_PROD_API_URL || 'http://localhost:4180/api').replace(/\/+$/, '');
@@ -290,9 +290,9 @@ el.textContent = someUserInput; // safe
   const copySnippet = async (text) => {
     try {
       await navigator.clipboard.writeText(text);
-      alert('Copied to clipboard');
+      toast.success('Copied to clipboard');
     } catch {
-      alert('Copy failed');
+      toast.error('Copy failed');
     }
   };
 
@@ -308,7 +308,7 @@ el.textContent = someUserInput; // safe
       setFeedback('');
       setTimeout(() => setFeedbackSubmitted(false), 3000);
     } catch (e) {
-      alert('Failed to submit feedback');
+      toast.error('Failed to submit feedback');
     }
   };
 

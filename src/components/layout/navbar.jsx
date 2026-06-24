@@ -14,7 +14,7 @@ const navItems = [
   { href: '/connect', label: 'Contact' },
   { href: '/history', label: 'History' },
   { href: '/integrity-scanner', label: 'Integrity Scanner',}, 
-  { href: '/admin', label: 'Admin Dashboard'}
+  // { href: '/admin', label: 'Admin Dashboard'}
 ];
 
 const telemetryItems = [

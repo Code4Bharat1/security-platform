@@ -10,6 +10,7 @@ import {
   Video,
   Mail,
 } from "lucide-react";
+import { toast } from "react-hot-toast";
 
 export default function ScheduleMeeting() {
   const [meetingData, setMeetingData] = useState({
@@ -72,11 +73,11 @@ export default function ScheduleMeeting() {
   // Submit meeting - POST to /api/schedule (emails handled in backend)
   const submitMeeting = async () => {
     if (!meetingData.hostEmail) {
-      alert("Please enter your registered email.");
+      toast.error("Please enter your registered email.");
       return;
     }
     if (!meetingData.selectedDate || !meetingData.selectedTime) {
-      alert("Please select a date and time.");
+      toast.error("Please select a date and time.");
       return;
     }
 
@@ -124,7 +125,7 @@ export default function ScheduleMeeting() {
       setTimeout(() => setIsSubmitted(false), 4000);
     } catch (err) {
       console.error("Schedule error:", err);
-      alert("Could not schedule meeting: " + err.message);
+      toast.error("Could not schedule meeting: " + err.message);
     } finally {
       setIsSubmitting(false);
     }

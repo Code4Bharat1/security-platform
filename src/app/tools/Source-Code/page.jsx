@@ -2,6 +2,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import useProtectedAction from "@/components/UseProtectedAction/UseProtectedAction";
+import { toast } from "react-hot-toast";
 
 export default function SourceCodeAnalyzer() {
   const router = useRouter();
@@ -31,7 +32,7 @@ export default function SourceCodeAnalyzer() {
         // 1️⃣ Prepare code
         let finalCode = code.trim();
         if (!file && finalCode === "") {
-          alert("Please paste code or upload a file.");
+          toast.error("Please paste code or upload a file.");
           setLoading(false);
           return;
         }
@@ -60,7 +61,7 @@ export default function SourceCodeAnalyzer() {
         setResult(data);
       } catch (err) {
         console.error("Error:", err);
-        alert(err.message || "An error occurred while analyzing the code.");
+        toast.error(err.message || "An error occurred while analyzing the code.");
         setResult({
           results: ["❌ An error occurred while analyzing the code."],
           passed: 0,

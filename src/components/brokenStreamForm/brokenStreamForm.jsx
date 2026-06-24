@@ -3,6 +3,7 @@ import { useMemo, useRef, useState } from "react";
 import { jsPDF } from "jspdf";
 import autoTable from "jspdf-autotable";
 import useProtectedAction from "../UseProtectedAction/UseProtectedAction";
+import { toast } from "react-hot-toast";
 
 export default function BrokenStreamPage() {
   const [url, setUrl] = useState("");
@@ -34,8 +35,7 @@ export default function BrokenStreamPage() {
         document.execCommand("copy");
         document.body.removeChild(ta);
       }
-    } catch (e) {
-      alert("Copy failed. You can copy manually.");
+      toast.error("Copy failed. You can copy manually.");
     }
   }
 
@@ -79,20 +79,20 @@ export default function BrokenStreamPage() {
             setLoading(false);
             es.close();
           } else if (data.type === "error") {
-            alert(data.message || "Error occurred");
+            toast.error(data.message || "Error occurred");
             setLoading(false);
             es.close();
           }
         };
 
         es.onerror = () => {
-          alert("Connection error.");
+          toast.error("Connection error.");
           setLoading(false);
           es.close();
         };
       } catch (err) {
         console.error("Stream error:", err);
-        alert("Something went wrong while streaming.");
+        toast.error("Something went wrong while streaming.");
         setLoading(false);
       }
     });

@@ -4,6 +4,7 @@ import axios from "axios";
 import { Loader2, Shield, ClipboardPaste } from "lucide-react";
 import useProtectedAction from "../UseProtectedAction/UseProtectedAction";
 import OwnershipVerificationWizard from "@/components/ownership/OwnershipVerificationWizard";
+import { toast } from "react-hot-toast";
 
 const WordPressScanner = () => {
   const [url, setUrl] = useState("");
@@ -66,11 +67,10 @@ const WordPressScanner = () => {
   };
 
   const handlePaste = async () => {
-    try {
       const text = await navigator.clipboard.readText();
       setUrl(text);
     } catch {
-      alert("Failed to paste from clipboard");
+      toast.error("Failed to paste from clipboard");
     }
   };
 
