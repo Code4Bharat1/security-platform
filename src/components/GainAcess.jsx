@@ -35,7 +35,7 @@ export default function GainAccess() {
           );
           const data = await res.json();
           if (res.ok && data.valid) {
-            router.push("/");
+            router.push("/tools");
           } else {
             setCheckingAuth(false);
           }

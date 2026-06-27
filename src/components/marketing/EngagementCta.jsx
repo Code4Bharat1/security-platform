@@ -8,7 +8,7 @@ export default function EngagementCta({
   description = "Talk to a senior consultant. Scoping in one business day, NDA on request.",
   primaryHref = "/connect",
   primaryLabel = "Request Assessment",
-  secondaryHref = "/gain-access",
+  secondaryHref = "/connect",
   secondaryLabel = "Talk To A Consultant",
 }) {
   return (

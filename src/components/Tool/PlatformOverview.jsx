@@ -57,7 +57,7 @@ export default function PlatformOverview() {
                     key={group.key}
                     type="button"
                     onClick={() => setActiveGroup(group.key)}
-                    className={`inline-flex items-center gap-3 rounded-sm border px-4 py-2 font-mono text-xs uppercase tracking-[0.2em] transition ${isActive
+                    className={`inline-flex items-center gap-3 rounded-sm border px-4 py-2 font-mono text-xs uppercase tracking-[0.2em] transition cursor-pointer ${isActive
                         ? "border-[var(--gold)] bg-[var(--gold)] text-black"
                         : "border-white/8 bg-white/[0.03] text-white/72 hover:border-[var(--gold)]/40 hover:text-white"
                       }`}
