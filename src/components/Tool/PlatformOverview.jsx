@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { ArrowRight, ExternalLink, Search } from "lucide-react";
 
 import SectionIntro from "@/components/marketing/SectionIntro";
@@ -17,6 +17,18 @@ const badgeTone = {
 export default function PlatformOverview() {
   const [activeGroup, setActiveGroup] = useState("red");
   const [query, setQuery] = useState("");
+
+  useEffect(() => {
+    const savedGroup = localStorage.getItem("platformActiveGroup");
+    if (savedGroup) {
+      setActiveGroup(savedGroup);
+    }
+  }, []);
+
+  const handleGroupChange = (groupKey) => {
+    setActiveGroup(groupKey);
+    localStorage.setItem("platformActiveGroup", groupKey);
+  };
 
   const currentGroup = useMemo(
     () => toolGroups.find((group) => group.key === activeGroup) ?? toolGroups[0],
@@ -56,7 +68,7 @@ export default function PlatformOverview() {
                   <button
                     key={group.key}
                     type="button"
-                    onClick={() => setActiveGroup(group.key)}
+                    onClick={() => handleGroupChange(group.key)}
                     className={`inline-flex items-center gap-3 rounded-sm border px-4 py-2 font-mono text-xs uppercase tracking-[0.2em] transition cursor-pointer ${isActive
                         ? "border-[var(--gold)] bg-[var(--gold)] text-black"
                         : "border-white/8 bg-white/[0.03] text-white/72 hover:border-[var(--gold)]/40 hover:text-white"

@@ -16,6 +16,7 @@ export default function SonarForm() {
       body: JSON.stringify({ code }),
     });
 
+    if (!res.ok) {
       const errText = await res.text();
       console.error("Server error:", errText);
       toast.error("Analysis failed. See console for details.");

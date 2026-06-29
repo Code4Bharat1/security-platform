@@ -35,6 +35,8 @@ export default function BrokenStreamPage() {
         document.execCommand("copy");
         document.body.removeChild(ta);
       }
+      toast.success("Copied to clipboard!");
+    } catch (err) {
       toast.error("Copy failed. You can copy manually.");
     }
   }

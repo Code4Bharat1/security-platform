@@ -63,14 +63,14 @@ export const tools = [
     buttonLabel: "bruteForce",
     type: "red-team"
   },
-  {
-    name: "Mocha Testing",
-    image: "/tools/card-images/mocha-logo.png",
-    description: "Displays all available Mocha commands, options, and usage details.",
-    slug: "mochaForm",
-    buttonLabel: "Mocha Testing",
-    type: "red-team"
-  },
+  // {
+  //   name: "Mocha Testing",
+  //   image: "/tools/card-images/mocha-logo.png",
+  //   description: "Displays all available Mocha commands, options, and usage details.",
+  //   slug: "mochaForm",
+  //   buttonLabel: "Mocha Testing",
+  //   type: "red-team"
+  // },
   {
     name: "Broken link Checker",
     image: "/tools/card-images/brokenlink1.png",

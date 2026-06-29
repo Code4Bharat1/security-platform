@@ -36,7 +36,7 @@ export default function ContactPage() {
 
   return (
     <main className="site-page-shell bg-[#050505] text-white">
-      <section className="border-b border-white/6">
+      <section id="contact-section" className="border-b border-white/6">
         <div className="mx-auto max-w-7xl px-4 py-20 sm:px-6 lg:px-8">
           <SectionIntro
             eyebrow="Contact"
@@ -131,7 +131,7 @@ export default function ContactPage() {
 
       <EngagementCta
         title="Ready to harden your security perimeter?"
-        primaryHref="/connect"
+        primaryHref="#contact-section"
         primaryLabel="Request Assessment"
         secondaryHref="/gain-access"
         secondaryLabel="Talk To A Consultant"

@@ -172,14 +172,10 @@ export default function AboutUs() {
           />
 
           <div className="space-y-4">
-            {steps.map((step, index) => (
+            {steps.map((step) => (
               <article
                 key={step.index}
-                className={`grid gap-4 border p-5 sm:grid-cols-[auto_1fr] sm:items-center transition-all duration-300 cursor-pointer ${
-                  index === 0
-                    ? "glow-panel hover:-translate-y-1"
-                    : "border-white/8 bg-white/[0.025] hover:border-[var(--gold)]/35 hover:-translate-y-1 hover:shadow-[0_10px_25px_rgba(212,166,74,0.05)]"
-                }`}
+                className="grid gap-4 border border-white/8 bg-white/[0.025] p-5 sm:grid-cols-[auto_1fr] sm:items-center transition-all duration-300 cursor-pointer hover:glow-panel hover:-translate-y-1"
               >
                 <div className="flex items-center gap-4">
                   <span className="inline-flex h-10 w-10 items-center justify-center rounded-full border border-[var(--gold)]/35 font-mono text-xs text-[var(--gold)] shadow-[0_0_24px_rgba(212,166,74,0.18)]">

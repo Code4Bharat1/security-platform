@@ -67,6 +67,7 @@ const WordPressScanner = () => {
   };
 
   const handlePaste = async () => {
+    try {
       const text = await navigator.clipboard.readText();
       setUrl(text);
     } catch {

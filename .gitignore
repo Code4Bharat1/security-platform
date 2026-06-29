@@ -43,3 +43,21 @@ next-env.d.ts
 
 .env.local/
 node_modules/
+# Added by code-review-graph
+.code-review-graph/
+
+# AI Assistants & Local IDE settings
+.claude/
+.gemini/
+.kiro/
+.qoder/
+.vscode/
+.cursorrules
+.windsurfrules
+.mcp.json
+.opencode.json
+AGENTS.md
+CLAUDE.md
+GEMINI.md
+QODER.md
+

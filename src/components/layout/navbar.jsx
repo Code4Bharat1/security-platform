@@ -13,7 +13,6 @@ const navItems = [
   { href: '/about', label: 'Company' },
   { href: '/connect', label: 'Contact' },
   { href: '/history', label: 'History' },
-  { href: '/integrity-scanner', label: 'Integrity Scanner',}, 
   // { href: '/admin', label: 'Admin Dashboard'}
 ];
 
