@@ -40,6 +40,9 @@ import OwnershipVerificationWizard from "@/components/ownership/OwnershipVerific
  */
 
 export default function Vulnscanner() {
+  // TEMPORARY TESTING FLAG: Set to true to bypass domain ownership verification checks
+  const BYPASS_OWNERSHIP_VERIFICATION = true;
+
   const router = useRouter();
   const [url, setUrl] = useState("");
   const [error, setError] = useState("");
@@ -103,7 +106,8 @@ export default function Vulnscanner() {
       setError("Please enter a valid website URL.");
       return;
     }
-    if (!ownershipVerified) {
+    // TEMPORARY BYPASS (FOR TESTING/DEBUGGING): Check flag instead of requiring wizard verification
+    if (!BYPASS_OWNERSHIP_VERIFICATION && !ownershipVerified) {
       setError("Verify ownership of this website before starting a scan.");
       return;
     }
