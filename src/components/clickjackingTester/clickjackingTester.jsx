@@ -297,12 +297,12 @@ def frame_headers(get_response):
   /* ============================== Render ============================== */
 
   return (
-    <div className="tool-detail-page min-h-screen bg-black via-emerald-50 to-teal-50 p-6 text-white">
-      <div className="tool-detail-shell max-w-4xl mx-auto" ref={reportRef}>
+    <div className="tool-detail-page">
+      <div className="tool-detail-shell" ref={reportRef}>
         {/* Header */}
-        <div className="tool-detail-hero flex items-center gap-4 mb-8">
+        <div className="tool-detail-hero">
           {/* Logo */}
-          <div className="w-30 h-30 rounded-full overflow-hidden">
+          <div className="tool-detail-icon">
             <img
               src="/Redteam/lickjacking.png" // <-- apni image ka path dijiye
               alt="Logo"
@@ -311,11 +311,9 @@ def frame_headers(get_response):
           </div>
 
           {/* Title + Description */}
-          <div className="flex flex-col">
-            <h1 className="text-2xl font-bold text-white mb-1">
-              Clickjacking Security Tester
-            </h1>
-            <p className="text-gray-400 text-lg max-w-2xl mt-1">
+          <div className="tool-detail-copy">
+            <h1>Clickjacking Security Tester</h1>
+            <p>
               Test websites for clickjacking by checking frame-busting
               protections (X-Frame-Options and CSP <code>frame-ancestors</code>
               ).

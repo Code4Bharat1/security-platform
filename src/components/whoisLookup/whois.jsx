@@ -27,6 +27,13 @@ const ccToFlag = (cc) => {
 const formatDate = (iso) => (iso ? new Date(iso).toLocaleString() : "—");
 
 export default function WhoisLookup() {
+  // ====================================================
+  // TEMPORARILY DISABLED FOR LOCAL TESTING
+  // Purpose: Skip domain ownership verification.
+  // Re-enable before production deployment.
+  // ====================================================
+  const SKIP_DOMAIN_VERIFICATION_FOR_TESTING = true;
+
   const [domain, setDomain] = useState("");
   const [result, setResult] = useState(null);
   const [error, setError] = useState("");
@@ -45,7 +52,7 @@ export default function WhoisLookup() {
     if (!v) return setError("Please enter a domain name.");
     if (v.includes("http://") || v.includes("https://"))
       return setError("Enter domain name only (no http/https).");
-    if (!ownershipVerified) {
+    if (!ownershipVerified && !SKIP_DOMAIN_VERIFICATION_FOR_TESTING) {
       return setError("Verify ownership of this domain before running a WHOIS scan.");
     }
 

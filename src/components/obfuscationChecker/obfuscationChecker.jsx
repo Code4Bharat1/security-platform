@@ -234,21 +234,21 @@ export default function CodeObfuscationChecker() {
   };
 
   return (
-    <div className="min-h-screen bg-black text-white p-6">
-      <div className="max-w-4xl mx-auto">
+    <div className="tool-detail-page">
+      <div className="tool-detail-shell">
         {/* Header */}
-        <div className="flex items-center gap-4 mb-8 mt-15">
-          <img
-            src="/BlueTeam/Obfuscation Detector.png"
-            alt="Obfuscation Icon"
-            className="w-30 h-30 rounded-full border-4 border-blue-500 object-cover"
-          />
+        <div className="tool-detail-hero">
+          <div className="tool-detail-icon">
+            <img
+              src="/BlueTeam/Obfuscation Detector.png"
+              alt="Obfuscation Icon"
+              className="w-full h-full object-cover"
+            />
+          </div>
 
-          <div>
-            <h1 className="text-3xl font-bold text-white">
-              Code Obfuscation Checker
-            </h1>
-            <p className="text-gray-400 mt-1">
+          <div className="tool-detail-copy">
+            <h1>Code Obfuscation Checker</h1>
+            <p>
               Paste code, or upload multiple files to scan. Heatmap highlights
               suspicious lines.
             </p>

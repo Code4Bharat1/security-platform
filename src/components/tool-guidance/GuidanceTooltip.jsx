@@ -1,19 +1,65 @@
 "use client";
-
+import { useEffect, useState } from "react";
 import InlineValidationMessage from "./InlineValidationMessage";
 
 export default function GuidanceTooltip({ tooltip, onClose }) {
-  if (!tooltip) return null;
+  const [rect, setRect] = useState(tooltip?.rect || null);
+
+  // Re-measure the anchor on every scroll event
+  useEffect(() => {
+    if (!tooltip?.anchorEl) return undefined;
+
+    const handleScroll = () => {
+      const newRect = tooltip.anchorEl.getBoundingClientRect();
+      setRect(newRect);
+    };
+
+    window.addEventListener("scroll", handleScroll, true);
+    return () => {
+      window.removeEventListener("scroll", handleScroll, true);
+    };
+  }, [tooltip?.anchorEl]);
+
+  // Sync rect whenever the tooltip prop itself changes
+  useEffect(() => {
+    if (tooltip?.rect) {
+      setRect(tooltip.rect);
+    } else {
+      setRect(null);
+    }
+  }, [tooltip]);
+
+  if (!tooltip || !rect) return null;
 
   const viewportHeight =
     typeof window !== "undefined" ? window.innerHeight : 900;
   const viewportWidth =
     typeof window !== "undefined" ? window.innerWidth : 1440;
-  const top = Math.min(tooltip.rect.bottom + 10, viewportHeight - 240);
-  const left = Math.min(
-    Math.max(tooltip.rect.left - 12, 12),
-    viewportWidth - 340
-  );
+
+  // If the anchor has scrolled completely out of the visible viewport
+  // (above the top edge or below the bottom edge), hide the popover entirely
+  // instead of clamping it to an arbitrary screen position.
+  const anchorVisible = rect.bottom > 0 && rect.top < viewportHeight;
+  if (!anchorVisible) return null;
+
+  // Position the popover just below the anchor, clamped inside the viewport.
+  // Allow going above the anchor if it is too close to the bottom edge.
+  const POPOVER_HEIGHT = 240;
+  const POPOVER_WIDTH  = 320;
+  const GAP            = 10;
+
+  let top  = rect.bottom + GAP;
+  let left = Math.max(rect.left - 12, 12);
+
+  // Flip upward if there isn't enough space below
+  if (top + POPOVER_HEIGHT > viewportHeight - 8) {
+    top = Math.max(rect.top - POPOVER_HEIGHT - GAP, 8);
+  }
+
+  // Keep within horizontal viewport bounds
+  if (left + POPOVER_WIDTH > viewportWidth - 8) {
+    left = viewportWidth - POPOVER_WIDTH - 8;
+  }
 
   return (
     <>

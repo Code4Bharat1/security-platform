@@ -214,6 +214,7 @@ export default function SecurityToolGuidanceFrame({ toolSlug, children }) {
           setTooltip({
             rect,
             field,
+            anchorEl: button,
             validation:
               fieldStatesRef.current[fieldKey] ||
               validateGuidanceField(
@@ -227,7 +228,6 @@ export default function SecurityToolGuidanceFrame({ toolSlug, children }) {
                 )
               ),
           });
-          setOpen(true);
         });
       }
 

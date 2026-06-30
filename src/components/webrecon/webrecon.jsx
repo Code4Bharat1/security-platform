@@ -34,6 +34,13 @@ const getPortTone = (state) => {
 };
 
 export default function Webrecon() {
+  // ====================================================
+  // TEMPORARILY DISABLED FOR LOCAL TESTING
+  // Purpose: Skip domain ownership verification.
+  // Re-enable before production deployment.
+  // ====================================================
+  const SKIP_DOMAIN_VERIFICATION_FOR_TESTING = true;
+
   const protectedAction = useProtectedAction();
   const [domain, setDomain] = useState("");
   const [recordType, setRecordType] = useState("A");
@@ -92,7 +99,7 @@ export default function Webrecon() {
         setScanLoading(false);
         return;
       }
-      if (!ownershipVerified) {
+      if (!ownershipVerified && !SKIP_DOMAIN_VERIFICATION_FOR_TESTING) {
         setScanError("Verify ownership of this domain before running the deep scan.");
         setScanLoading(false);
         return;

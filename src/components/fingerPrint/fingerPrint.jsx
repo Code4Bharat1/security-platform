@@ -4,6 +4,13 @@ import useProtectedAction from '../UseProtectedAction/UseProtectedAction';
 import OwnershipVerificationWizard from '@/components/ownership/OwnershipVerificationWizard';
 
 export default function TechnologyFingerprinter() {
+  // ====================================================
+  // TEMPORARILY DISABLED FOR LOCAL TESTING
+  // Purpose: Skip domain ownership verification.
+  // Re-enable before production deployment.
+  // ====================================================
+  const SKIP_DOMAIN_VERIFICATION_FOR_TESTING = true;
+
   const protectedAction = useProtectedAction();
   const [url, setUrl] = useState('');
   const [results, setResults] = useState([]);    // array of strings
@@ -34,7 +41,7 @@ export default function TechnologyFingerprinter() {
       setError('Please enter a website URL.');
       return;
     }
-    if (!ownershipVerified) {
+    if (!ownershipVerified && !SKIP_DOMAIN_VERIFICATION_FOR_TESTING) {
       setError('Verify ownership of this website before fingerprinting it.');
       return;
     }

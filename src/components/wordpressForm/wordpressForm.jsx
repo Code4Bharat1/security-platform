@@ -7,6 +7,13 @@ import OwnershipVerificationWizard from "@/components/ownership/OwnershipVerific
 import { toast } from "react-hot-toast";
 
 const WordPressScanner = () => {
+  // ====================================================
+  // TEMPORARILY DISABLED FOR LOCAL TESTING
+  // Purpose: Skip domain ownership verification.
+  // Re-enable before production deployment.
+  // ====================================================
+  const SKIP_DOMAIN_VERIFICATION_FOR_TESTING = true;
+
   const [url, setUrl] = useState("");
   const [error, setError] = useState("");
   const [scanData, setScanData] = useState(null);
@@ -31,7 +38,7 @@ const WordPressScanner = () => {
       setError("Please enter a valid website URL.");
       return;
     }
-    if (!ownershipVerified) {
+    if (!ownershipVerified && !SKIP_DOMAIN_VERIFICATION_FOR_TESTING) {
       setError("Verify ownership of this website before running the WordPress scan.");
       return;
     }

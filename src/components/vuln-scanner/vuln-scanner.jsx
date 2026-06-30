@@ -49,6 +49,7 @@ export default function Vulnscanner() {
   const [scanData, setScanData] = useState(null);
   const [loading, setLoading] = useState(false);
   const [activeTab, setActiveTab] = useState("overview");
+  const [pdfProgress, setPdfProgress] = useState(null);
   const [history, setHistory] = useState(null);
   const [ownershipVerified, setOwnershipVerified] = useState(false);
   const protectedAction = useProtectedAction();
@@ -352,709 +353,1228 @@ export default function Vulnscanner() {
 
     return result;
   };
-
-  const generatePDF = () => {
+  // ─────────────────────────────────────────────────────────────────────────────
+  // PDF GENERATION — True document-based approach using jsPDF + jsPDF-AutoTable
+  // No screenshots. All content rendered programmatically from scanData.
+  // ─────────────────────────────────────────────────────────────────────────────
+  const generatePDF = async () => {
     if (!scanData) return;
+    setPdfProgress("Initializing PDF document...");
 
-    // ==================== GET USER EMAIL FROM LOCALSTORAGE ====================
-    let userEmail = "";
-    try {
-      const userData = localStorage.getItem("user");
-      if (userData) {
-        const user = JSON.parse(userData);
-        userEmail = user.email || "user@example.com";
-      }
-    } catch (error) {
-      console.error("Failed to get user from localStorage:", error);
-    }
-
-    const doc = new jsPDF();
-    let yPos = 20;
-
-    // ==================== LOGO CONFIGURATION ====================
-    const logoPath = "/logo.png";
-    const logoWidth = 15;
-    const logoHeight = 15;
-
-    // Helper: Add simple logo + text header for pages 2+
-    const addSimpleHeader = () => {
-      try {
-        doc.addImage(logoPath, "PNG", 10, 5, logoWidth, logoHeight);
-      } catch (error) {
-        console.error("Failed to load logo:", error);
-      }
-      doc.setFontSize(12);
-      doc.setFont(undefined, "bold");
-      doc.setTextColor(153, 0, 153);
+    // ── Shared style tokens ──────────────────────────────────────────────────
+    const C = {
+      bg:       [10, 10, 11],
+      bgAlt:    [18, 18, 20],
+      bgHeader: [22, 22, 26],
+      gold:     [212, 166, 74],
+      white:    [230, 230, 235],
+      gray:     [140, 140, 148],
+      grayDim:  [90, 90, 98],
+      red:      [239, 68, 68],
+      orange:   [245, 140, 50],
+      amber:    [245, 158, 11],
+      green:    [52, 211, 153],
+      blue:     [96, 165, 250],
+      purple:   [168, 85, 247],
+      cyan:     [34, 211, 238],
     };
 
-    // Helper: Check if new page needed
-    const checkPage = (space = 40) => {
-      if (yPos + space > 270) {
-        doc.addPage();
-        addSimpleHeader();
-        yPos = 30;
-        return true;
+    // Severity → color
+    const sevColor = (sev) => {
+      switch ((sev || "").toLowerCase()) {
+        case "critical": return C.purple;
+        case "high":     return C.red;
+        case "medium":   return C.amber;
+        case "low":      return C.blue;
+        default:         return C.gray;
       }
-      return false;
     };
 
-    // Helper: Purple arrow section header
-    const addPurpleHeader = (title) => {
-      doc.setFontSize(18);
-      doc.setFont(undefined, "bold");
-      doc.setTextColor(153, 0, 153);
-      doc.text(`> ${title}`, 20, yPos);
-      yPos += 12;
-    };
-
-    // ==================== PAGE 1: COVER PAGE ====================
-    try {
-      doc.addImage("/pdf_banner.jpg", "JPEG", 0, 0, 210, 297);
-    } catch (error) {
-      console.error("Failed to load banner image:", error);
-    }
-
-    doc.setFontSize(18);
-    doc.setFont(undefined, "normal");
-    doc.setTextColor(255, 255, 255);
-    doc.text(scanData.domain || "", 105, 208, { align: "center" });
-
-    const reportDate = scanData.timestamp
-      ? new Date(scanData.timestamp).toLocaleDateString("en-US", {
-          day: "2-digit",
-          month: "short",
-          year: "numeric",
-        })
-      : new Date().toLocaleDateString("en-US", {
-          day: "2-digit",
-          month: "short",
-          year: "numeric",
-        });
-
-    doc.setFontSize(16);
-    doc.setFont(undefined, "normal");
-    doc.setTextColor(255, 255, 255);
-    doc.text(reportDate, 105, 245, { align: "center" });
-
-    // ==================== PAGE 2: ASSESSMENT PERFORMED ====================
-    doc.addPage();
-    addSimpleHeader();
-    yPos = 35;
-
-    addPurpleHeader("Assessment Performed :");
-
-    doc.setFontSize(10);
-    doc.setFont(undefined, "normal");
-    doc.setTextColor(0, 0, 0);
-    doc.text(`> ${userEmail}`, 20, yPos);
-    yPos += 20;
-
-    addPurpleHeader("About Security platform :");
-
-    doc.setFontSize(12);
-    doc.setFont(undefined, "normal");
-    doc.setTextColor(0, 0, 0);
-
-    const aboutText = `Our Security Platform is a cutting-edge cybersecurity solution designed to protect individuals and organizations from digital threats.\n\nIt combines multiple security tools into a single, easy-to-use platform, providing comprehensive protection for web applications, networks, and sensitive data.\n\nWith an intuitive interface and advanced features, it empowers users to proactively manage their cybersecurity, detect vulnerabilities, and maintain compliance with industry standards.`;
-
-    const splitAbout = doc.splitTextToSize(aboutText, 170);
-    doc.text(splitAbout, 20, yPos);
-    yPos += splitAbout.length * 5.5 + 15;
-
-    doc.setFontSize(12);
-    doc.setFont(undefined, "bold");
-    doc.setTextColor(0, 0, 0);
-    doc.text("Vulnerability Assessment & Penetration Testing (VAPT)", 20, yPos);
-    yPos += 12;
-
-    doc.setFontSize(12);
-    doc.setFont(undefined, "normal");
-    doc.setTextColor(0, 0, 0);
-
-    const vaptText = `The platform offers full-fledged Vulnerability Assessment and Penetration Testing (VAPT) services to identify and fix security weaknesses before they can be exploited.\n\nOur VAPT approach includes manual and automated testing of web applications, networks, and systems, providing detailed reports on vulnerabilities categorized by severity.\n\nBy leveraging industry-standard methodologies and real-world attack simulations, users gain actionable insights to strengthen their security posture, mitigate risks, and ensure a safe digital environment.`;
-
-    const splitVapt = doc.splitTextToSize(vaptText, 170);
-    doc.text(splitVapt, 20, yPos);
-
-    // ==================== PAGE 3: DOCUMENT CONTROL ====================
-    doc.addPage();
-    addSimpleHeader();
-    yPos = 35;
-
-    addPurpleHeader("Document Control");
-
-    autoTable(doc, {
-      startY: yPos,
-      body: [
-        ["Document Type", `VAPT report of URL: ${scanData.domain}`],
-        ["Document Owner", `https://${scanData.domain}/`],
-      ],
-      theme: "grid",
-      bodyStyles: { fontSize: 10 },
-      columnStyles: {
-        0: {
-          cellWidth: 50,
-          fillColor: [0, 51, 102],
-          textColor: [255, 255, 255],
-          fontStyle: "bold",
-        },
-        1: { cellWidth: 140 },
-      },
-    });
-
-    yPos = doc.lastAutoTable.finalY + 20;
-
-    autoTable(doc, {
-      startY: yPos,
-      head: [["Assessment Information - Auditee"]],
-      body: [
-        ["Client", `https://${scanData.domain}`],
-        ["Assessment Type", "Vulnerability assessment and penetration testing"],
-        [
-          "Report Date",
-          reportDate,
-          "Assessment period",
-          `${reportDate} to ${reportDate}`,
-        ],
-      ],
-      theme: "grid",
-      headStyles: {
-        fillColor: [0, 51, 102],
-        textColor: [255, 255, 255],
-        halign: "center",
-        fontSize: 11,
-        fontStyle: "bold",
-      },
-      bodyStyles: { fontSize: 10 },
-      columnStyles: {
-        0: {
-          cellWidth: 50,
-          fontStyle: "bold",
-        },
-      },
-    });
-
-    yPos = doc.lastAutoTable.finalY + 20;
-
-    addPurpleHeader("Overview :");
-
-    doc.setFontSize(14);
-    doc.setFont(undefined, "bold");
-    doc.setTextColor(153, 0, 153);
-    doc.text("Executive Summary", 20, yPos);
-    yPos += 12;
-
-    doc.setFontSize(11);
-    doc.setFont(undefined, "normal");
-    doc.setTextColor(0, 0, 0);
-
-    const execText = `Security Platform was engaged by ${
-      scanData.domain
-    } Website to perform a security assessment of 1 target during the period 1st oct 2025 to 2nd oct 2025. A manual penetration test was performed on 1 target.\n\nThe testing was conducted from a remote attacker's perspective with the following goals:\n\nTo identify security loopholes, business logic errors, and evaluate the effectiveness of existing security controls in the application that pose a risk to systems, infrastructure, or data.\n\nRecommend technical security best practices to improve the security posture of the target applications audited.\n\nExplain the potential impact of the identified vulnerabilities, including data exposure, potential financial losses, or reputational damage that could occur if exploited by malicious actors.\n\nProvide clear and actionable recommendations for addressing the identified vulnerabilities.\n\nA total of ${
-      scanData.vulnerabilityCount || 29
-    } vulnerabilities/recommendations were reported. Out of a score of 10, the highest risk score assigned to a vulnerability was 9.2, the lowest was 2.5, and the average score was 5.9. The Demo Client verified fixes for all 15 vulnerabilities and confirmed they were resolved at the time of the rescan.`;
-
-    const splitExec = doc.splitTextToSize(execText, 170);
-    doc.text(splitExec, 20, yPos);
-
-    // ==================== PAGE 4: TABLE OF CONTENTS ====================
-    doc.addPage();
-    addSimpleHeader();
-    yPos = 35;
-
-    addPurpleHeader("TABLE OF CONTENTS");
-
-    const tocItems = [
-      { title: "Assessment Performed", page: 2 },
-      { title: "Document Control", page: 3 },
-      { title: "Overview", page: 3 },
-      { title: "Scope of the Assessment", page: 5 },
-      { title: "Risk Level Description", page: 5 },
-      { title: "Tools Used During Assessment", page: 6 },
-      { title: "Assessment Details", page: 7 },
-      { title: "Vulnerabilities Summary", page: 8 },
-      { title: "Details of Vulnerabilities Found", page: 9 },
-      { title: "OWASP Top 10", page: 10 },
-    ];
-
-    doc.setFontSize(12);
-    doc.setTextColor(0, 0, 0);
-
-    tocItems.forEach((item) => {
-      checkPage(10);
-      doc.setFont(undefined, "normal");
-      doc.text(item.title, 20, yPos);
-
-      const dots = ".".repeat(85);
-      doc.setTextColor(150, 150, 150);
-      doc.text(dots, 20, yPos);
-      doc.setTextColor(0, 0, 0);
-
-      doc.text(item.page > 0 ? String(item.page) : "", 180, yPos, {
-        align: "right",
-      });
-      yPos += 10;
-    });
-
-    // ==================== PAGE 5: SCOPE & RISK LEVELS ====================
-    doc.addPage();
-    addSimpleHeader();
-    yPos = 35;
-
-    addPurpleHeader("SCOPE OF THE ASSESSMENT");
-
-    autoTable(doc, {
-      startY: yPos,
-      head: [["Type", "Name", "Scope", "Start Grade", "Final Grade"]],
-      body: [
-        [
-          "Web Application",
-          scanData.domain,
-          `https://${scanData.domain}`,
-          scanData.securityGrade || "N/A",
-          scanData.securityGrade || "N/A",
-        ],
-      ],
-      theme: "grid",
-      headStyles: { fillColor: [0, 51, 102], fontSize: 10 },
-      styles: { fontSize: 9 },
-    });
-
-    yPos = doc.lastAutoTable.finalY + 20;
-    checkPage();
-
-    doc.setFontSize(12);
-    doc.setFont(undefined, "bold");
-    doc.setTextColor(0, 0, 0);
-    doc.text("Risk Level Description:", 20, yPos);
-    yPos += 12;
-
-    autoTable(doc, {
-      startY: yPos,
-      head: [["Vulnerability Levels", "Description"]],
-      body: [
-        [
-          "Critical",
-          "Exploitation of the vulnerability may result in complete compromise of the Database server or Application server. It can have a major impact on business. (CVSS Score 9.0-10.0)",
-        ],
-        [
-          "High",
-          "Exploitation of the vulnerability may result in complete compromise of the Application / disclosure of sensitive information. Vulnerability is easily exploitable. (CVSS Score 7.0-8.9)",
-        ],
-        [
-          "Medium",
-          "Exploitation of the vulnerability may result in some control on the Application / disclosure of semi-sensitive information. Exploitation of this vulnerability is possible but difficult. (CVSS Score 4.0-6.9)",
-        ],
-        [
-          "Low",
-          "Exploitation of the vulnerability may result in little or no impact on the application/ disclosure of less sensitive information. Exploitation of this vulnerability is extremely difficult. (CVSS Score 0.1-3.9)",
-        ],
-        [
-          "Informational",
-          "The informational risk level indicates that some functionality or component is missing best practices implementation in the application. Such vulnerability may not have a risk associated with it currently, but it may become vulnerability in future due to change in application or due to exploiting techniques evolution or policy/legal requirements.",
-        ],
-      ],
-      theme: "grid",
-      headStyles: { fillColor: [0, 51, 102], fontSize: 12 },
-      styles: { fontSize: 8 },
-      columnStyles: {
-        0: { cellWidth: 35, fontStyle: "bold" },
-        1: { cellWidth: 155 },
-      },
-    });
-
-    // ==================== PAGE 6: TOOLS USED ====================
-    doc.addPage();
-    addSimpleHeader();
-    yPos = 35;
-
-    addPurpleHeader("TOOLS USED DURING ASSESSMENT");
-
-    doc.setFontSize(14);
-    doc.setFont(undefined, "bold");
-    doc.setTextColor(0, 0, 0);
-    doc.text("We Used These Tools During Security Scan:", 20, yPos);
-    yPos += 18;
-
-    const tools = [
-      {
-        name: "SSL/TLS Certificate Scanner",
-        desc: "Validates SSL/TLS certificates, checks expiration dates, certificate chains, supported protocols, and cipher suites. Identifies self-signed certificates, expired certificates, and weak encryption algorithms.",
-      },
-      {
-        name: "HTTP Header Analyzer",
-        desc: "Examines HTTP security headers including HSTS, CSP, X-Frame-Options, X-Content-Type-Options, and X-XSS-Protection. Detects missing security headers and identifies information disclosure through Server headers.",
-      },
-      {
-        name: "Service Detection Engine",
-        desc: "Identifies web server software, application frameworks, CMS platforms, and technologies. Detects version numbers and Common Platform Enumeration (CPE) for vulnerability correlation. Includes device type detection and operating system fingerprinting.",
-      },
-      {
-        name: "Web Crawler & Mirror",
-        desc: "Maps website structure by crawling pages up to specified depth. Discovers hidden directories, admin panels, and sensitive endpoints. Extracts all assets including images, scripts, and stylesheets. Identifies broken links and 404 errors.",
-      },
-      {
-        name: "Port Scanner & Network Analysis",
-        desc: "Scans for open ports and services on target server. Performs traceroute to map network path. Measures network timings including DNS lookup, TCP connection, TLS handshake, and Time to First Byte (TTFB).",
-      },
-      {
-        name: "HTML Form Analyzer",
-        desc: "Analyzes HTML forms for security issues including password autocomplete, cleartext credentials submission over HTTP, insecure form actions, and missing CSRF tokens. Identifies forms vulnerable to clickjacking.",
-      },
-      {
-        name: "Cookie Security Scanner",
-        desc: "Examines cookies for security flags including Secure, HttpOnly, and SameSite attributes. Detects cookies transmitted over HTTPS without Secure flag. Identifies session fixation vulnerabilities and weak cookie configurations.",
-      },
-      {
-        name: "Content Security Policy (CSP) Analyzer",
-        desc: "Parses and validates Content Security Policy headers. Identifies unsafe directives like unsafe-inline and unsafe-eval. Checks for missing directives and weak CSP configurations that may allow XSS attacks.",
-      },
-    ];
-
-    tools.forEach((tool, idx) => {
-      checkPage(28);
-
-      doc.setFontSize(11);
-      doc.setFont(undefined, "bold");
-      doc.setTextColor(0, 0, 0);
-      doc.text(`${idx + 1}. ${tool.name}`, 20, yPos);
-      yPos += 8;
-
-      doc.setFontSize(11);
-      doc.setFont(undefined, "normal");
-      const descLines = doc.splitTextToSize(tool.desc, 170);
-      doc.text(descLines, 20, yPos);
-
-      yPos += descLines.length * 4.5 + 12;
-    });
-
-    // ==================== PAGE 7: ASSESSMENT METHODOLOGY ====================
-    doc.addPage();
-    addSimpleHeader();
-    yPos = 35;
-
-    addPurpleHeader("ASSESSMENT DETAILS");
-
-    doc.setFontSize(12);
-    doc.setFont(undefined, "bold");
-    doc.setTextColor(0, 0, 0);
-    doc.text("Assessment Methodology", 20, yPos);
-    yPos += 12;
-
-    doc.setFontSize(11);
-    doc.setFont(undefined, "normal");
-    doc.setTextColor(0, 0, 0);
-
-    const methodText = `An in-depth automated vulnerability scan was conducted using industry-standard tools, consisting of comprehensive tests across multiple security domains including SSL/TLS configuration, HTTP headers, service detection, web application structure, and network analysis.\n\nThe assessment follows industry standards such as OWASP Web Security Testing Guide (WSTG), OWASP Top 10, OWASP Application Security Verification Standard (ASVS), and NIST 800-115.\n\nUsing the same techniques as sophisticated real-world attackers, the applications have been tested thoroughly for security misconfigurations, vulnerable components, and application-specific vulnerabilities.`;
-
-    const splitMethod = doc.splitTextToSize(methodText, 170);
-    doc.text(splitMethod, 20, yPos);
-    yPos += splitMethod.length * 5 + 15;
-
-    checkPage();
-
-    doc.setFontSize(12);
-    doc.setFont(undefined, "bold");
-    doc.setTextColor(0, 0, 0);
-    doc.text("Assessment Duration and Date:", 20, yPos);
-    yPos += 12;
-
-    autoTable(doc, {
-      startY: yPos,
-      head: [["Scan Mode", "Target Name", "Started", "Completed"]],
-      body: [["Automated VAPT", scanData.domain, reportDate, reportDate]],
-      theme: "grid",
-      headStyles: { fillColor: [0, 51, 102], fontSize: 10 },
-      styles: { fontSize: 9 },
-    });
-
-    // ==================== PAGE 8: VULNERABILITIES SUMMARY ====================
-    doc.addPage();
-    addSimpleHeader();
-    yPos = 35;
-
-    addPurpleHeader("VULNERABILITIES SUMMARY");
-
-    doc.setFontSize(12);
-    doc.setFont(undefined, "bold");
-    doc.setTextColor(0, 0, 0);
-    doc.text("Vulnerability Distribution:", 20, yPos);
-    yPos += 12;
-
-    const vulnBreakdown = scanData.vulnerabilityBreakdown || {};
-    const breakdownData = [
-      [
-        "Critical",
-        String(vulnBreakdown.critical || 0),
-        `${(
-          ((vulnBreakdown.critical || 0) / (scanData.vulnerabilityCount || 1)) *
-          100
-        ).toFixed(1)}%`,
-      ],
-      [
-        "High",
-        String(vulnBreakdown.high || 0),
-        `${(
-          ((vulnBreakdown.high || 0) / (scanData.vulnerabilityCount || 1)) *
-          100
-        ).toFixed(1)}%`,
-      ],
-      [
-        "Medium",
-        String(vulnBreakdown.medium || 0),
-        `${(
-          ((vulnBreakdown.medium || 0) / (scanData.vulnerabilityCount || 1)) *
-          100
-        ).toFixed(1)}%`,
-      ],
-      [
-        "Low",
-        String(vulnBreakdown.low || 0),
-        `${(
-          ((vulnBreakdown.low || 0) / (scanData.vulnerabilityCount || 1)) *
-          100
-        ).toFixed(1)}%`,
-      ],
-      [
-        "Info",
-        String(vulnBreakdown.info || 0),
-        `${(
-          ((vulnBreakdown.info || 0) / (scanData.vulnerabilityCount || 1)) *
-          100
-        ).toFixed(1)}%`,
-      ],
-    ];
-
-    autoTable(doc, {
-      startY: yPos,
-      head: [["Severity", "Count", "Percentage"]],
-      body: breakdownData,
-      theme: "striped",
-      headStyles: { fillColor: [0, 51, 102], fontSize: 10 },
-      styles: { fontSize: 9 },
-      columnStyles: {
-        0: { cellWidth: 60, fontStyle: "bold" },
-        1: { cellWidth: 60, halign: "center" },
-        2: { cellWidth: 60, halign: "center" },
-      },
-    });
-
-    yPos = doc.lastAutoTable.finalY + 15;
-    checkPage();
-
-    doc.setFontSize(12);
-    doc.setFont(undefined, "bold");
-    doc.setTextColor(0, 0, 0);
-    doc.text("Result (Vulnerable / Not Vulnerable):", 20, yPos);
-    yPos += 12;
-
-    if (scanData.vulnerabilities?.length > 0) {
-      const vulnListData = scanData.vulnerabilities.map((v, idx) => [
-        String(idx + 1),
-        getVulnerabilityTypeLabel(v.type),
-        v.severity.toUpperCase(),
-        "Pending",
-      ]);
-
+    const safe = (v, fallback = "—") =>
+      v !== undefined && v !== null && v !== "" ? String(v) : fallback;
+
+    // ── Base autoTable theme ─────────────────────────────────────────────────
+    const baseTable = (doc, opts) => {
       autoTable(doc, {
-        startY: yPos,
-        head: [["Sr No", "Vulnerability Name", "Risk Type", "Status"]],
-        body: vulnListData,
-        theme: "grid",
-        headStyles: { fillColor: [0, 51, 102], fontSize: 9 },
-        styles: { fontSize: 8 },
+        styles: {
+          fontSize: 8.5,
+          cellPadding: { top: 3, right: 4, bottom: 3, left: 4 },
+          fillColor: C.bg,
+          textColor: C.white,
+          lineColor: [40, 40, 48],
+          lineWidth: 0.25,
+          font: "helvetica",
+          overflow: "linebreak",
+        },
+        headStyles: {
+          fillColor: C.bgHeader,
+          textColor: C.gold,
+          fontStyle: "bold",
+          fontSize: 8,
+          lineColor: C.gold,
+          lineWidth: 0.4,
+        },
+        alternateRowStyles: { fillColor: C.bgAlt },
+        columnStyles: {},
+        margin: { left: 10, right: 10 },
+        ...opts,
+      });
+    };
+
+    // ── Section header helper ────────────────────────────────────────────────
+    const addSectionHeader = (doc, title, subtitle = "") => {
+      const pageW = doc.internal.pageSize.getWidth();
+      doc.setFillColor(...C.bgHeader);
+      doc.rect(0, 0, pageW, 20, "F");
+      doc.setFillColor(...C.gold);
+      doc.rect(0, 19.5, pageW, 0.5, "F");
+
+      doc.setFont("helvetica", "bold");
+      doc.setFontSize(13);
+      doc.setTextColor(...C.gold);
+      doc.text(title, 10, 13);
+
+      if (subtitle) {
+        doc.setFont("helvetica", "normal");
+        doc.setFontSize(8);
+        doc.setTextColor(...C.gray);
+        doc.text(subtitle, pageW - 10, 13, { align: "right" });
+      }
+      return 26; // Y position after header
+    };
+
+    // ── Key-value block helper ───────────────────────────────────────────────
+    const kvTable = (doc, rows, startY) => {
+      baseTable(doc, {
+        startY,
+        head: [],
+        body: rows.map(([k, v]) => [k, v]),
         columnStyles: {
-          0: { cellWidth: 15, halign: "center" },
-          1: { cellWidth: 110 },
-          2: { cellWidth: 30, halign: "center" },
-          3: { cellWidth: 30, halign: "center" },
+          0: { fontStyle: "bold", cellWidth: 52, textColor: C.gold },
+          1: { textColor: C.white },
         },
       });
-    }
+      return doc.lastAutoTable.finalY + 4;
+    };
 
-    // ==================== DETAILED VULNERABILITY PAGES - USING HELPER ====================
-    if (scanData.vulnerabilities?.length > 0) {
+    // ── Sub-heading helper ───────────────────────────────────────────────────
+    const subHead = (doc, text, y) => {
+      doc.setFont("helvetica", "bold");
+      doc.setFontSize(9);
+      doc.setTextColor(...C.gold);
+      doc.text(text, 10, y);
+      doc.setDrawColor(...C.gold);
+      doc.setLineWidth(0.3);
+      doc.line(10, y + 1, 200, y + 1);
+      return y + 6;
+    };
+
+    // ── Footer on every page ─────────────────────────────────────────────────
+    const addFooters = (doc, domain) => {
+      const total = doc.internal.getNumberOfPages();
+      for (let i = 2; i <= total; i++) {
+        doc.setPage(i);
+        const pageW = doc.internal.pageSize.getWidth();
+        doc.setFillColor(...C.bgHeader);
+        doc.rect(0, 289, pageW, 8, "F");
+        doc.setFont("helvetica", "normal");
+        doc.setFontSize(7);
+        doc.setTextColor(...C.gray);
+        doc.text("Nexcore Alliance — VAPT Assessment Report", 10, 293.5);
+        doc.text(`${domain}`, pageW / 2, 293.5, { align: "center" });
+        doc.text(`Page ${i} of ${total}`, pageW - 10, 293.5, { align: "right" });
+      }
+    };
+
+    try {
+      const doc = new jsPDF("p", "mm", "a4");
+      const domain = safe(scanData.domain, "Unknown Domain");
+      const scanDate = scanData.timestamp
+        ? new Date(scanData.timestamp).toLocaleString()
+        : new Date().toLocaleString();
+
+      // ══════════════════════════════════════════════════════════════════════
+      // PAGE 1 — COVER PAGE
+      // ══════════════════════════════════════════════════════════════════════
+      setPdfProgress("Building cover page...");
+      try {
+        doc.addImage("/pdf_banner.jpg", "JPEG", 0, 0, 210, 297);
+      } catch (_) {
+        // Fallback: programmatic cover
+        doc.setFillColor(...C.bg);
+        doc.rect(0, 0, 210, 297, "F");
+        doc.setFillColor(...C.gold);
+        doc.rect(0, 0, 6, 297, "F");
+        doc.setFont("helvetica", "bold");
+        doc.setFontSize(28);
+        doc.setTextColor(...C.gold);
+        doc.text("NEXCORE // ALLIANCE", 105, 100, { align: "center" });
+        doc.setFont("helvetica", "normal");
+        doc.setFontSize(16);
+        doc.setTextColor(...C.white);
+        doc.text("VAPT Assessment Report", 105, 120, { align: "center" });
+      }
+
+      doc.setFont("helvetica", "bold");
+      doc.setFontSize(18);
+      doc.setTextColor(255, 255, 255);
+      doc.text(domain, 105, 208, { align: "center" });
+      doc.setFont("helvetica", "normal");
+      doc.setFontSize(13);
+      doc.setTextColor(200, 200, 200);
+      doc.text(scanDate, 105, 220, { align: "center" });
+      doc.setFontSize(10);
+      doc.setTextColor(170, 130, 50);
+      doc.text(`Generated: ${new Date().toLocaleString()}`, 105, 232, { align: "center" });
+
+      // ══════════════════════════════════════════════════════════════════════
+      // PAGE 2 — REPORT OVERVIEW (Table of Contents + Scan Snapshot)
+      // ══════════════════════════════════════════════════════════════════════
+      setPdfProgress("Building report overview...");
       doc.addPage();
-      addSimpleHeader();
-      yPos = 35;
+      const pageW = doc.internal.pageSize.getWidth();
 
-      addPurpleHeader("DETAILS OF VULNERABILITIES FOUND");
+      // ── Background ──────────────────────────────────────────────────────────
+      doc.setFillColor(...C.bg);
+      doc.rect(0, 0, pageW, 297, "F");
 
-      ["critical", "high", "medium", "low", "info"].forEach((severity) => {
-        const vulns = scanData.vulnerabilities.filter(
-          (v) => v.severity === severity,
-        );
+      // ── Gold accent bar (left) ──────────────────────────────────────────────
+      doc.setFillColor(...C.gold);
+      doc.rect(0, 0, 4, 297, "F");
 
-        vulns.forEach((vuln) => {
-          checkPage(70);
+      // ── Page heading ────────────────────────────────────────────────────────
+      doc.setFont("helvetica", "bold");
+      doc.setFontSize(20);
+      doc.setTextColor(...C.gold);
+      doc.text("Report Overview", 14, 18);
 
-          doc.setFillColor(220, 220, 220);
-          doc.rect(15, yPos - 5, 180, 10, "F");
+      doc.setFont("helvetica", "normal");
+      doc.setFontSize(8.5);
+      doc.setTextColor(...C.gray);
+      doc.text(`VAPT Assessment · ${domain} · ${new Date().toLocaleString()}`, 14, 25);
 
-          doc.setFontSize(11);
-          doc.setFont(undefined, "bold");
-          doc.setTextColor(0, 0, 0);
-          doc.text(
-            `Vulnerability name: ${getVulnerabilityTypeLabel(vuln.type)}`,
-            20,
-            yPos,
-          );
+      // Gold divider
+      doc.setFillColor(...C.gold);
+      doc.rect(14, 27.5, pageW - 24, 0.4, "F");
 
-          const severityColors = {
-            critical: [153, 0, 0],
-            high: [255, 102, 0],
-            medium: [255, 193, 7],
-            low: [76, 175, 80],
-            info: [33, 150, 243],
-          };
-          doc.setFillColor(...(severityColors[severity] || [0, 0, 0]));
-          doc.rect(170, yPos - 4, 22, 6, "F");
-          doc.setTextColor(255, 255, 255);
-          doc.setFontSize(9);
-          doc.text(severity.toUpperCase(), 181, yPos, { align: "center" });
+      // ── Quick-stats bar ─────────────────────────────────────────────────────
+      const _vulns = scanData.vulnerabilities || [];
+      const _counts = { critical: 0, high: 0, medium: 0, low: 0, info: 0 };
+      _vulns.forEach((v) => {
+        const s = (v.severity || "info").toLowerCase();
+        if (_counts[s] !== undefined) _counts[s]++;
+        else _counts.info++;
+      });
 
-          yPos += 15;
-          doc.setTextColor(0, 0, 0);
+      const statBoxes = [
+        { label: "Critical", value: _counts.critical, color: C.purple },
+        { label: "High",     value: _counts.high,     color: C.red    },
+        { label: "Medium",   value: _counts.medium,   color: C.amber  },
+        { label: "Low",      value: _counts.low,       color: C.blue   },
+        { label: "Info",     value: _counts.info,      color: C.gray   },
+        { label: "Grade",    value: safe(scanData.securityGrade, "—"), color: C.gold },
+      ];
 
-          autoTable(doc, {
-            startY: yPos,
-            body: [
-              ["Severity", severity.toUpperCase()],
-              ["CVSS", "Calculated based on CVSS v3.1"],
-              ["CVE", "N/A"],
-              [
-                "CWE",
-                vuln.type
-                  ? `CWE-${Math.floor(Math.random() * 900) + 100}`
-                  : "N/A",
-              ],
-            ],
-            theme: "plain",
-            styles: { fontSize: 9 },
+      const boxW = (pageW - 28) / statBoxes.length;
+      statBoxes.forEach((b, i) => {
+        const bx = 14 + i * boxW;
+        const by = 32;
+        // Box background
+        doc.setFillColor(...C.bgHeader);
+        doc.roundedRect(bx, by, boxW - 2, 20, 2, 2, "F");
+        // Coloured top accent bar
+        doc.setFillColor(...b.color);
+        doc.roundedRect(bx, by, boxW - 2, 2, 1, 1, "F");
+        // Value
+        doc.setFont("helvetica", "bold");
+        doc.setFontSize(13);
+        doc.setTextColor(...b.color);
+        doc.text(String(b.value), bx + (boxW - 2) / 2, by + 11, { align: "center" });
+        // Label
+        doc.setFont("helvetica", "normal");
+        doc.setFontSize(7);
+        doc.setTextColor(...C.gray);
+        doc.text(b.label, bx + (boxW - 2) / 2, by + 17, { align: "center" });
+      });
+
+      // ── Key scan metadata ───────────────────────────────────────────────────
+      const metaY = 58;
+      doc.setFillColor(...C.bgHeader);
+      doc.rect(14, metaY, pageW - 28, 28, "F");
+
+      const metaItems = [
+        ["Target",       domain],
+        ["Scan Date",    scanDate],
+        ["Risk Level",   safe(scanData.riskLevel, "Unknown").toUpperCase()],
+        ["SSL",          scanData.ssl?.valid ? "✓ Valid" : "✗ Not Valid"],
+        ["Response",     scanData.timespan ? `${scanData.timespan} ms` : "—"],
+        ["WAF",          scanData.firewall?.detected ? `✓ ${safe(scanData.firewall.wafType, "Detected")}` : "✗ None"],
+      ];
+
+      const colW = (pageW - 28) / 3;
+      metaItems.forEach(([k, v], i) => {
+        const col = i % 3;
+        const row = Math.floor(i / 3);
+        const mx = 14 + col * colW + 4;
+        const my = metaY + 7 + row * 13;
+        doc.setFont("helvetica", "bold");
+        doc.setFontSize(7);
+        doc.setTextColor(...C.gold);
+        doc.text(k.toUpperCase(), mx, my);
+        doc.setFont("helvetica", "normal");
+        doc.setFontSize(8.5);
+        doc.setTextColor(...C.white);
+        const sslColor = v.startsWith("✓") ? C.green : v.startsWith("✗") ? C.red : C.white;
+        doc.setTextColor(...sslColor);
+        doc.text(v, mx, my + 5);
+      });
+
+      // ── Table of Contents ───────────────────────────────────────────────────
+      const tocY = 92;
+      doc.setFont("helvetica", "bold");
+      doc.setFontSize(11);
+      doc.setTextColor(...C.gold);
+      doc.text("Table of Contents", 14, tocY);
+      doc.setFillColor(...C.gold);
+      doc.rect(14, tocY + 2, pageW - 28, 0.4, "F");
+
+      const tocSections = [
+        { num: "01", title: "Executive Summary",            desc: "Risk overview, vulnerability counts, security posture" },
+        { num: "02", title: "Vulnerability Details",         desc: "Full list of findings with severity, type, and remediations" },
+        { num: "03", title: "SSL / TLS Security Audit",      desc: "Certificate validity, protocol support, cipher suites" },
+        { num: "04", title: "HTTP Headers Security",         desc: "Response headers, security header checklist, error handling" },
+        { num: "05", title: "Cookie Integrity Analysis",     desc: "Cookie flags, security attributes, and issues per cookie" },
+        { num: "06", title: "Session Security Audit",        desc: "Session cookies, HttpOnly, Secure, SameSite analysis" },
+        { num: "07", title: "Content Security Policy (CSP)", desc: "Policy string, directives, and CSP misconfigurations" },
+        { num: "08", title: "Web Application Inspection",    desc: "HTML forms, directory enumeration, sitemap, external URLs" },
+        { num: "09", title: "Security Benchmarking",         desc: "Security grade, response performance, historical deltas" },
+        { num: "10", title: "Server & Service Inspection",   desc: "Web server, CMS, frameworks, technologies, CPE strings" },
+        { num: "11", title: "DNS & Network Analysis",        desc: "FQDN, IP addresses, reverse DNS, traceroute, timings" },
+        { num: "12", title: "WAF & Firewall Status",         desc: "WAF detection, fingerprints, security test results" },
+        { num: "13", title: "Port Scanner Logs",             desc: "Host status, open/closed/filtered ports with risk ratings" },
+        { num: "14", title: "Historical Records",            desc: "Past scan comparison: vulnerabilities, grade, SSL, timing" },
+      ];
+
+      const rowH = 12.2;
+      tocSections.forEach((s, i) => {
+        const ty = tocY + 7 + i * rowH;
+        const isEven = i % 2 === 0;
+
+        // Row background
+        doc.setFillColor(...(isEven ? C.bgHeader : C.bg));
+        doc.rect(14, ty - 3.5, pageW - 28, rowH, "F");
+
+        // Section number badge
+        doc.setFillColor(...C.gold);
+        doc.roundedRect(15, ty - 2.8, 9, 7, 1, 1, "F");
+        doc.setFont("helvetica", "bold");
+        doc.setFontSize(6.5);
+        doc.setTextColor(...C.bg);
+        doc.text(s.num, 19.5, ty + 1.8, { align: "center" });
+
+        // Title
+        doc.setFont("helvetica", "bold");
+        doc.setFontSize(8.5);
+        doc.setTextColor(...C.white);
+        doc.text(s.title, 27, ty + 1.6);
+
+        // Description
+        doc.setFont("helvetica", "normal");
+        doc.setFontSize(7);
+        doc.setTextColor(...C.gray);
+        doc.text(s.desc, 27, ty + 6.5);
+
+        // Dotted connector line
+        doc.setDrawColor(...C.grayDim);
+        doc.setLineDashPattern([0.5, 1.5], 0);
+        doc.setLineWidth(0.2);
+        doc.line(27, ty + 8, pageW - 16, ty + 8);
+        doc.setLineDashPattern([], 0);
+      });
+
+      // ── Confidentiality notice at bottom ────────────────────────────────────
+      const noticeY = 282;
+      doc.setFillColor(...C.bgHeader);
+      doc.rect(14, noticeY, pageW - 28, 10, "F");
+      doc.setFillColor(...C.amber);
+      doc.rect(14, noticeY, 1.5, 10, "F");
+      doc.setFont("helvetica", "bold");
+      doc.setFontSize(6.5);
+      doc.setTextColor(...C.amber);
+      doc.text("CONFIDENTIAL", 18, noticeY + 4);
+      doc.setFont("helvetica", "normal");
+      doc.setFontSize(6.5);
+      doc.setTextColor(...C.gray);
+      doc.text(
+        "This report contains sensitive security findings. Distribution should be restricted to authorized personnel only.",
+        18, noticeY + 8
+      );
+
+      // ══════════════════════════════════════════════════════════════════════
+      // PAGE 3 — EXECUTIVE SUMMARY
+      // ══════════════════════════════════════════════════════════════════════
+      setPdfProgress("Building executive summary...");
+      doc.addPage();
+      let y = addSectionHeader(doc, "Executive Summary", domain);
+
+      const vulns = scanData.vulnerabilities || [];
+      const counts = { critical: 0, high: 0, medium: 0, low: 0, info: 0 };
+      vulns.forEach((v) => {
+        const s = (v.severity || "info").toLowerCase();
+        if (counts[s] !== undefined) counts[s]++;
+        else counts.info++;
+      });
+
+      // Summary KV
+      y = kvTable(doc, [
+        ["Target Domain",     domain],
+        ["Scan Date",         scanDate],
+        ["Risk Level",        safe(scanData.riskLevel, "Unknown").toUpperCase()],
+        ["Security Grade",    safe(scanData.securityGrade, "—")],
+        ["Response Time",     scanData.timespan ? `${scanData.timespan} ms` : "—"],
+        ["SSL Certificate",   scanData.ssl?.valid ? "Valid" : "Not Valid / Not Present"],
+        ["Total Vulnerabilities", String(vulns.length)],
+      ], y);
+
+      y = subHead(doc, "Vulnerability Breakdown by Severity", y);
+      baseTable(doc, {
+        startY: y,
+        head: [["Severity", "Count", "Risk Impact"]],
+        body: [
+          ["CRITICAL", counts.critical, "Immediate exploitation likely; full system compromise"],
+          ["HIGH",     counts.high,     "Easy to exploit; significant data or access impact"],
+          ["MEDIUM",   counts.medium,   "Exploitable under specific conditions; moderate impact"],
+          ["LOW",      counts.low,      "Difficult to exploit; limited impact"],
+          ["INFO",     counts.info,     "Informational; no direct security risk"],
+        ],
+        columnStyles: {
+          0: { fontStyle: "bold", cellWidth: 32 },
+          1: { cellWidth: 20, halign: "center" },
+          2: {},
+        },
+        didParseCell: (data) => {
+          if (data.column.index === 0 && data.row.index >= 0) {
+            const colors = [C.purple, C.red, C.amber, C.blue, C.gray];
+            data.cell.styles.textColor = colors[data.row.index] || C.gray;
+          }
+          if (data.column.index === 1 && data.row.index >= 0) {
+            data.cell.styles.fontStyle = "bold";
+          }
+        },
+      });
+      y = doc.lastAutoTable.finalY + 4;
+
+      // ══════════════════════════════════════════════════════════════════════
+      // PAGE 3 — VULNERABILITY DETAILS
+      // ══════════════════════════════════════════════════════════════════════
+      setPdfProgress("Building vulnerability details...");
+      doc.addPage();
+      y = addSectionHeader(doc, "Vulnerability Details", `${vulns.length} findings`);
+
+      if (vulns.length === 0) {
+        doc.setFont("helvetica", "normal");
+        doc.setFontSize(10);
+        doc.setTextColor(...C.green);
+        doc.text("✓ No vulnerabilities detected.", 10, y + 6);
+      } else {
+        baseTable(doc, {
+          startY: y,
+          head: [["#", "Severity", "Type", "Description", "Recommendation"]],
+          body: vulns.map((v, i) => [
+            String(i + 1),
+            safe(v.severity, "info").toUpperCase(),
+            safe(v.type),
+            safe(v.description),
+            safe(v.recommendation),
+          ]),
+          columnStyles: {
+            0: { cellWidth: 8, halign: "center" },
+            1: { cellWidth: 22, fontStyle: "bold" },
+            2: { cellWidth: 30 },
+            3: { cellWidth: 65 },
+            4: {},
+          },
+          didParseCell: (data) => {
+            if (data.column.index === 1 && data.section === "body") {
+              data.cell.styles.textColor = sevColor(data.cell.raw);
+            }
+          },
+        });
+      }
+
+      // ══════════════════════════════════════════════════════════════════════
+      // PAGE — SSL / TLS SECURITY AUDIT
+      // ══════════════════════════════════════════════════════════════════════
+      setPdfProgress("Building SSL/TLS section...");
+      doc.addPage();
+      y = addSectionHeader(doc, "SSL / TLS Security Audit", domain);
+
+      if (scanData.ssl) {
+        const ssl = scanData.ssl;
+        y = subHead(doc, "Certificate Information", y);
+        y = kvTable(doc, [
+          ["Status",         ssl.valid ? "Valid" : "Invalid"],
+          ["Issuer",         safe(ssl.issuer)],
+          ["Valid From",     ssl.validFrom ? new Date(ssl.validFrom).toLocaleString() : "—"],
+          ["Valid To",       ssl.validTo ? new Date(ssl.validTo).toLocaleString() : "—"],
+          ["Days Remaining", ssl.daysRemaining != null ? `${ssl.daysRemaining} days` : "—"],
+          ["PFS Supported",  ssl.perfectForwardSecrecy ? "Yes" : "No"],
+          ["ALPN Protocols", ssl.alpnProtocols?.length ? ssl.alpnProtocols.join(", ") : "None"],
+        ], y);
+
+        if (ssl.tlsProtocols) {
+          y = subHead(doc, "TLS Protocol Support", y);
+          baseTable(doc, {
+            startY: y,
+            head: [["Protocol", "Supported", "Status"]],
+            body: Object.entries(ssl.tlsProtocols).map(([ver, sup]) => {
+              const deprecated = ver === "TLSv1" || ver === "TLSv1_1";
+              return [
+                ver.replace("_", "."),
+                sup ? "Yes" : "No",
+                sup && deprecated ? "⚠ DEPRECATED" : sup ? "✓ OK" : "Not Supported",
+              ];
+            }),
             columnStyles: {
-              0: { cellWidth: 30, fontStyle: "bold" },
-              1: { cellWidth: 160 },
+              0: { cellWidth: 40 },
+              1: { cellWidth: 30, halign: "center" },
+            },
+            didParseCell: (data) => {
+              if (data.column.index === 2 && data.section === "body") {
+                if (data.cell.raw.includes("DEPRECATED")) data.cell.styles.textColor = C.red;
+                else if (data.cell.raw.includes("OK"))    data.cell.styles.textColor = C.green;
+                else                                       data.cell.styles.textColor = C.gray;
+              }
             },
           });
+          y = doc.lastAutoTable.finalY + 4;
+        }
 
-          yPos = doc.lastAutoTable.finalY + 8;
+        if (ssl.cipherSuites?.length > 0) {
+          y = subHead(doc, "Cipher Suites", y);
+          baseTable(doc, {
+            startY: y,
+            head: [["Cipher Name", "Protocol", "Bit Strength"]],
+            body: ssl.cipherSuites.map((c) => [
+              safe(c.name),
+              safe(c.version),
+              c.bits ? `${c.bits} bits` : "—",
+            ]),
+            columnStyles: {
+              2: { halign: "center", cellWidth: 30 },
+            },
+          });
+          y = doc.lastAutoTable.finalY + 4;
+        }
 
-          // ✅ GET HELPER DATA - ALWAYS USE FOR PDF (ignore backend)
-          const vulnDetails = getDetailedVulnerabilityInfo(
-            vuln.type,
-            vuln.severity,
-          );
+        // TLS Vulnerabilities
+        const tlsVulns = (scanData.vulnerabilities || []).filter((v) =>
+          ["tls_deprecated_protocol","tls_version_weak","tls_weak_cipher","tls_cbc_cipher","tls_no_pfs"].includes(v.type)
+        );
+        if (tlsVulns.length > 0) {
+          y = subHead(doc, "TLS / Cipher Vulnerabilities", y);
+          baseTable(doc, {
+            startY: y,
+            head: [["Severity", "Description", "Recommendation"]],
+            body: tlsVulns.map((v) => [
+              safe(v.severity).toUpperCase(),
+              safe(v.description),
+              safe(v.recommendation),
+            ]),
+            columnStyles: { 0: { cellWidth: 24, fontStyle: "bold" } },
+            didParseCell: (data) => {
+              if (data.column.index === 0 && data.section === "body")
+                data.cell.styles.textColor = sevColor(data.cell.raw);
+            },
+          });
+        }
+      } else {
+        doc.setFont("helvetica", "normal");
+        doc.setFontSize(10);
+        doc.setTextColor(...C.gray);
+        doc.text("SSL/TLS data not available for this scan.", 10, y + 6);
+      }
 
-          // ✅ Impact Section - FORCE USE HELPER
-          doc.setFontSize(10);
-          doc.setFont(undefined, "bold");
-          doc.setTextColor(0, 0, 0);
-          doc.text("Impact:", 20, yPos);
-          yPos += 7;
+      // ══════════════════════════════════════════════════════════════════════
+      // PAGE — HTTP HEADERS SECURITY
+      // ══════════════════════════════════════════════════════════════════════
+      setPdfProgress("Building HTTP headers section...");
+      doc.addPage();
+      y = addSectionHeader(doc, "HTTP Headers Security", domain);
 
-          doc.setFont(undefined, "normal");
-          const impactText = vulnDetails.impact; // ✅ ALWAYS USE HELPER
-          const impactLines = doc.splitTextToSize(impactText, 170);
-          doc.text(impactLines, 20, yPos);
-          yPos += impactLines.length * 5.5 + 10;
+      if (scanData.headers) {
+        const headers = scanData.headers;
+        const skippedKeys = ["rawHeaders","httpVersion","statusCode","statusMessage","cookieFindings","csp","_benchmark"];
+        const headerRows = Object.entries(headers)
+          .filter(([k]) => !skippedKeys.includes(k))
+          .map(([k, v]) => [k, typeof v === "string" ? v : JSON.stringify(v)]);
 
-          checkPage(35);
+        if (headerRows.length > 0) {
+          y = subHead(doc, "All HTTP Response Headers", y);
+          baseTable(doc, {
+            startY: y,
+            head: [["Header Name", "Value"]],
+            body: headerRows,
+            columnStyles: {
+              0: { cellWidth: 55, fontStyle: "bold", textColor: C.cyan },
+            },
+          });
+          y = doc.lastAutoTable.finalY + 4;
+        }
 
-          // ✅ Description Section - FORCE USE HELPER
-          doc.setFont(undefined, "bold");
-          doc.setTextColor(0, 0, 0);
-          doc.text("Description:", 20, yPos);
-          yPos += 7;
-
-          doc.setFont(undefined, "normal");
-          const descText = vulnDetails.description; // ✅ ALWAYS USE HELPER
-          const descLines = doc.splitTextToSize(descText, 170);
-          doc.text(descLines, 20, yPos);
-          yPos += descLines.length * 5.5 + 10;
-
-          checkPage(35);
-
-          // ✅ Remediation Section - FORCE USE HELPER
-          doc.setFont(undefined, "bold");
-          doc.setTextColor(0, 0, 0);
-          doc.text("Remediation:", 20, yPos);
-          yPos += 7;
-
-          doc.setFont(undefined, "normal");
-          const remText = vulnDetails.remediation; // ✅ ALWAYS USE HELPER
-          const recLines = doc.splitTextToSize(remText, 170);
-          doc.text(recLines, 20, yPos);
-          yPos += recLines.length * 5.5 + 12;
-
-          doc.setFont(undefined, "bold");
-          doc.setTextColor(0, 0, 0);
-          doc.text("Closer remark:", 20, yPos);
-          doc.setFont(undefined, "normal");
-          doc.text("Not Fixed", 60, yPos);
-
-          yPos += 20;
+        // Security header checklist
+        y = subHead(doc, "Security Header Analysis", y);
+        const secHeaders = [
+          ["strict-transport-security", "HSTS", "Add HSTS with max-age=31536000; includeSubDomains; preload"],
+          ["x-frame-options",           "X-Frame-Options", "Set DENY or SAMEORIGIN to prevent clickjacking"],
+          ["content-security-policy",   "CSP", "Add CSP with default-src 'self', frame-ancestors 'self'"],
+          ["x-content-type-options",    "X-Content-Type-Options", "Set nosniff"],
+          ["x-xss-protection",          "X-XSS-Protection", "Set 1; mode=block"],
+          ["referrer-policy",           "Referrer-Policy", "Set strict-origin-when-cross-origin"],
+          ["permissions-policy",        "Permissions-Policy", "Restrict camera, microphone, geolocation"],
+        ];
+        baseTable(doc, {
+          startY: y,
+          head: [["Header", "Status", "Value / Recommendation"]],
+          body: secHeaders.map(([key, name, rec]) => {
+            const val = headers[key];
+            return [name, val ? "✓ Present" : "✗ Missing", val || rec];
+          }),
+          columnStyles: {
+            0: { cellWidth: 52, fontStyle: "bold" },
+            1: { cellWidth: 26, halign: "center", fontStyle: "bold" },
+          },
+          didParseCell: (data) => {
+            if (data.column.index === 1 && data.section === "body") {
+              data.cell.styles.textColor = data.cell.raw.startsWith("✓") ? C.green : C.red;
+            }
+          },
         });
-      });
+        y = doc.lastAutoTable.finalY + 4;
+
+        // 404 error handling
+        if (scanData.errorHandling?.check404) {
+          y = subHead(doc, "404 Error Handling", y);
+          const e4 = scanData.errorHandling.check404;
+          y = kvTable(doc, [
+            ["Properly Configured", e4.properlyConfigured ? "Yes" : "No"],
+            ["Status Code Returned", safe(e4.statusCode)],
+          ], y);
+        }
+      } else {
+        doc.setFont("helvetica", "normal");
+        doc.setFontSize(10);
+        doc.setTextColor(...C.gray);
+        doc.text("HTTP headers data not available.", 10, y + 6);
+      }
+
+      // ══════════════════════════════════════════════════════════════════════
+      // PAGE — COOKIE INTEGRITY ANALYSIS
+      // ══════════════════════════════════════════════════════════════════════
+      setPdfProgress("Building cookies section...");
+      doc.addPage();
+      y = addSectionHeader(doc, "Cookie Integrity Analysis", domain);
+
+      const cookies = scanData.headers?.cookieFindings || [];
+      if (cookies.length > 0) {
+        baseTable(doc, {
+          startY: y,
+          head: [["Cookie Name", "Flags", "Security Issues"]],
+          body: cookies.map((c) => [
+            safe(c.name),
+            Array.isArray(c.flags) ? c.flags.join(", ") : "—",
+            c.issues?.length > 0 ? c.issues.join("; ") : "✓ No issues",
+          ]),
+          columnStyles: {
+            0: { cellWidth: 45, fontStyle: "bold" },
+            1: { cellWidth: 55 },
+          },
+          didParseCell: (data) => {
+            if (data.column.index === 2 && data.section === "body") {
+              data.cell.styles.textColor = data.cell.raw.startsWith("✓") ? C.green : C.orange;
+            }
+          },
+        });
+      } else {
+        doc.setFont("helvetica", "normal");
+        doc.setFontSize(10);
+        doc.setTextColor(...C.gray);
+        doc.text("No cookies detected in this scan.", 10, y + 6);
+      }
+
+      // ══════════════════════════════════════════════════════════════════════
+      // PAGE — SESSION SECURITY AUDIT
+      // ══════════════════════════════════════════════════════════════════════
+      setPdfProgress("Building sessions section...");
+      doc.addPage();
+      y = addSectionHeader(doc, "Session Security Audit", domain);
+
+      if (scanData.sessionManagement) {
+        const sm = scanData.sessionManagement;
+        y = kvTable(doc, [
+          ["Sessions Detected",    sm.sessionCreated ? "Yes" : "No"],
+          ["Total Session Cookies", safe(sm.sessionDetails?.totalSessionCookies, "0")],
+          ["Secure Cookies",       safe(sm.sessionDetails?.secureCount, "0")],
+          ["HttpOnly Cookies",     safe(sm.sessionDetails?.httpOnlyCount, "0")],
+          ["SameSite Cookies",     safe(sm.sessionDetails?.sameSiteCount, "0")],
+        ], y);
+
+        if (sm.sessionCookies?.length > 0) {
+          y = subHead(doc, "Session Cookie Details", y);
+          baseTable(doc, {
+            startY: y,
+            head: [["Cookie Name", "Secure", "HttpOnly", "SameSite"]],
+            body: sm.sessionCookies.map((c) => [
+              safe(c.name),
+              c.attributes?.secure ? "✓" : "✗",
+              c.attributes?.httponly ? "✓" : "✗",
+              c.attributes?.samesite ? "✓" : "✗",
+            ]),
+            columnStyles: {
+              0: { cellWidth: 60, fontStyle: "bold" },
+              1: { cellWidth: 30, halign: "center" },
+              2: { cellWidth: 30, halign: "center" },
+              3: { halign: "center" },
+            },
+            didParseCell: (data) => {
+              if ([1, 2, 3].includes(data.column.index) && data.section === "body") {
+                data.cell.styles.textColor = data.cell.raw === "✓" ? C.green : C.red;
+                data.cell.styles.fontStyle = "bold";
+              }
+            },
+          });
+          y = doc.lastAutoTable.finalY + 4;
+        }
+
+        if (sm.securityIssues?.length > 0) {
+          y = subHead(doc, "Session Security Issues", y);
+          baseTable(doc, {
+            startY: y,
+            head: [["Issue", "Affected Cookie", "Description", "Recommendation"]],
+            body: sm.securityIssues.map((i) => [
+              safe(i.issue),
+              safe(i.cookie),
+              safe(i.description),
+              safe(i.recommendation),
+            ]),
+            columnStyles: {
+              0: { cellWidth: 35, fontStyle: "bold", textColor: C.red },
+              1: { cellWidth: 35 },
+            },
+          });
+        }
+      } else {
+        doc.setFont("helvetica", "normal");
+        doc.setFontSize(10);
+        doc.setTextColor(...C.gray);
+        doc.text("Session management data not available.", 10, y + 6);
+      }
+
+      // ══════════════════════════════════════════════════════════════════════
+      // PAGE — CONTENT SECURITY POLICY
+      // ══════════════════════════════════════════════════════════════════════
+      setPdfProgress("Building CSP section...");
+      doc.addPage();
+      y = addSectionHeader(doc, "Content Security Policy (CSP)", domain);
+
+      const csp = scanData.headers?.csp;
+      if (csp) {
+        y = kvTable(doc, [
+          ["CSP Present", csp.present ? "Yes" : "No"],
+          ["Status",      csp.issues?.length > 0 ? "Issues Found" : csp.present ? "Properly Configured" : "Missing"],
+        ], y);
+
+        if (csp.policy) {
+          y = subHead(doc, "Policy String", y);
+          doc.setFont("helvetica", "normal");
+          doc.setFontSize(8);
+          doc.setTextColor(...C.white);
+          const policyLines = doc.splitTextToSize(csp.policy, 185);
+          doc.text(policyLines, 10, y);
+          y += policyLines.length * 4 + 4;
+        }
+
+        if (csp.directives && Object.keys(csp.directives).length > 0) {
+          y = subHead(doc, "CSP Directives", y);
+          baseTable(doc, {
+            startY: y,
+            head: [["Directive", "Values"]],
+            body: Object.entries(csp.directives).map(([k, vals]) => [
+              k,
+              Array.isArray(vals) ? vals.join(" ") : String(vals),
+            ]),
+            columnStyles: {
+              0: { cellWidth: 55, fontStyle: "bold", textColor: C.cyan },
+            },
+          });
+          y = doc.lastAutoTable.finalY + 4;
+        }
+
+        if (csp.issues?.length > 0) {
+          y = subHead(doc, "CSP Issues", y);
+          baseTable(doc, {
+            startY: y,
+            head: [["Issue"]],
+            body: csp.issues.map((i) => [i]),
+            didParseCell: (data) => {
+              if (data.section === "body") data.cell.styles.textColor = C.red;
+            },
+          });
+        }
+      } else {
+        doc.setFont("helvetica", "normal");
+        doc.setFontSize(10);
+        doc.setTextColor(...C.red);
+        doc.text("✗ CSP header not present. Recommend adding a Content-Security-Policy header.", 10, y + 6);
+      }
+
+      // ══════════════════════════════════════════════════════════════════════
+      // PAGE — WEB APPLICATION INSPECTION
+      // ══════════════════════════════════════════════════════════════════════
+      setPdfProgress("Building web application section...");
+      doc.addPage();
+      y = addSectionHeader(doc, "Web Application Inspection", domain);
+
+      // HTML Analysis
+      if (scanData.htmlAnalysis) {
+        const h = scanData.htmlAnalysis;
+        y = subHead(doc, "HTML Form Security", y);
+        y = kvTable(doc, [
+          ["Forms Found",          safe(h.formsFound, "0")],
+          ["Password Fields",      safe(h.passwordFields, "0")],
+          ["Insecure Form Actions", h.insecureActions?.length ? String(h.insecureActions.length) : "None"],
+          ["Autocomplete Issues",  h.autoCompleteIssues?.length ? String(h.autoCompleteIssues.length) : "None"],
+          ["Cleartext Credentials", h.cleartextCredentials ? "⚠ DETECTED" : "None"],
+        ], y);
+
+        if (h.insecureActions?.length > 0) {
+          y = subHead(doc, "Insecure Form Actions (HTTP endpoints)", y);
+          baseTable(doc, {
+            startY: y,
+            head: [["URL"]],
+            body: h.insecureActions.map((a) => [a]),
+            didParseCell: (data) => {
+              if (data.section === "body") data.cell.styles.textColor = C.red;
+            },
+          });
+          y = doc.lastAutoTable.finalY + 4;
+        }
+      }
+
+      // Directory Enumeration
+      if (scanData.directoryEnumeration?.tested && scanData.directoryEnumeration.foundPaths?.length > 0) {
+        y = subHead(doc, "Directory & File Enumeration — Exposed Paths", y);
+        baseTable(doc, {
+          startY: y,
+          head: [["Path", "Status", "Content Type", "URL"]],
+          body: scanData.directoryEnumeration.foundPaths.map((p) => [
+            safe(p.path),
+            `${safe(p.statusCode)} ${safe(p.statusText)}`,
+            safe(p.contentType, "unknown"),
+            safe(p.url),
+          ]),
+          columnStyles: {
+            0: { cellWidth: 40, fontStyle: "bold", textColor: C.blue },
+            1: { cellWidth: 26, halign: "center" },
+            2: { cellWidth: 34 },
+          },
+        });
+        y = doc.lastAutoTable.finalY + 4;
+      }
+
+      // Sitemap
+      if (scanData.sitemap?.type) {
+        y = subHead(doc, "Web Sitemap", y);
+        y = kvTable(doc, [
+          ["Sitemap Type",  safe(scanData.sitemap.type)],
+          ["Sitemap URL",   safe(scanData.sitemap.url)],
+          ["Total URLs",    safe(scanData.sitemap.totalUrls, "—")],
+        ], y);
+      }
+
+      // External URLs
+      const extUrls = scanData.serviceDetection?.externalUrls || [];
+      if (extUrls.length > 0) {
+        y = subHead(doc, `External URLs & Dependencies (${extUrls.length})`, y);
+        baseTable(doc, {
+          startY: y,
+          head: [["#", "URL"]],
+          body: extUrls.slice(0, 50).map((u, i) => [String(i + 1), u]),
+          columnStyles: { 0: { cellWidth: 12, halign: "center" } },
+        });
+      }
+
+      // ══════════════════════════════════════════════════════════════════════
+      // PAGE — SECURITY BENCHMARKING
+      // ══════════════════════════════════════════════════════════════════════
+      setPdfProgress("Building benchmark section...");
+      doc.addPage();
+      y = addSectionHeader(doc, "Security Benchmarking", domain);
+
+      const benchmark = scanData.headers?._benchmark;
+      const grade = scanData.securityGrade || benchmark?.grade || "—";
+
+      y = kvTable(doc, [
+        ["Security Grade",   grade],
+        ["Risk Level",       safe(scanData.riskLevel, "—").toUpperCase()],
+        ["Response Time",    scanData.timespan ? `${scanData.timespan} ms` : "—"],
+        ["Compared Against", benchmark?.comparedTo ? `${benchmark.comparedTo} past scans` : "First scan"],
+      ], y);
+
+      if (benchmark?.deltas && Object.keys(benchmark.deltas).length > 0) {
+        y = subHead(doc, "Performance Deltas vs Previous Scans", y);
+        baseTable(doc, {
+          startY: y,
+          head: [["Metric", "Delta", "Trend"]],
+          body: Object.entries(benchmark.deltas).map(([k, delta]) => [
+            k.replace(/([A-Z])/g, " $1").replace(/^./, (s) => s.toUpperCase()).replace("Delta", ""),
+            `${delta > 0 ? "+" : ""}${delta}`,
+            delta < 0 ? "↓ Improved" : delta > 0 ? "↑ Degraded" : "→ No change",
+          ]),
+          columnStyles: {
+            1: { cellWidth: 25, halign: "center", fontStyle: "bold" },
+            2: { cellWidth: 35, halign: "center" },
+          },
+          didParseCell: (data) => {
+            if (data.column.index === 2 && data.section === "body") {
+              data.cell.styles.textColor = data.cell.raw.includes("Improved") ? C.green
+                : data.cell.raw.includes("Degraded") ? C.red : C.gray;
+            }
+          },
+        });
+      }
+
+      // ══════════════════════════════════════════════════════════════════════
+      // PAGE — SERVER & SERVICE INSPECTION
+      // ══════════════════════════════════════════════════════════════════════
+      setPdfProgress("Building server service section...");
+      doc.addPage();
+      y = addSectionHeader(doc, "Server & Service Inspection", domain);
+
+      const sd = scanData.serviceDetection;
+      if (sd) {
+        if (sd.serverInfo?.type) {
+          y = subHead(doc, "HTTP Server Information", y);
+          y = kvTable(doc, [
+            ["Server Type",      safe(sd.serverInfo.type)],
+            ["Server Version",   safe(sd.serverInfo.version)],
+            ["Operating System", safe(sd.serverInfo.os)],
+          ].filter(([, v]) => v !== "—"), y);
+        }
+
+        if (sd.httpInfo) {
+          y = subHead(doc, "HTTP Protocol", y);
+          y = kvTable(doc, [
+            ["HTTP Version", `HTTP/${safe(sd.httpInfo.version)}`],
+            ["Status Code",  `${safe(sd.httpInfo.statusCode)} ${safe(sd.httpInfo.statusMessage)}`],
+          ], y);
+        }
+
+        if (sd.cms) {
+          y = subHead(doc, "CMS Detection", y);
+          y = kvTable(doc, [
+            ["CMS Name",       safe(sd.cms.name)],
+            ["Version",        safe(sd.cms.version)],
+            ["Confidence",     safe(sd.cms.confidence)],
+            ["Detected Via",   safe(sd.cms.detected)],
+          ].filter(([, v]) => v !== "—"), y);
+        }
+
+        if (sd.frameworks?.length > 0) {
+          y = subHead(doc, "Detected Frameworks & Libraries", y);
+          baseTable(doc, {
+            startY: y,
+            head: [["Name", "Version", "Confidence", "Detected Via"]],
+            body: sd.frameworks.map((f) => [safe(f.name), safe(f.version), safe(f.confidence), safe(f.detected)]),
+          });
+          y = doc.lastAutoTable.finalY + 4;
+        }
+
+        if (sd.technologies?.length > 0) {
+          y = subHead(doc, "Technologies & Tools", y);
+          baseTable(doc, {
+            startY: y,
+            head: [["Technology", "Type", "Confidence"]],
+            body: sd.technologies.map((t) => [safe(t.name), safe(t.type), safe(t.confidence)]),
+          });
+          y = doc.lastAutoTable.finalY + 4;
+        }
+
+        if (sd.cpe?.length > 0) {
+          y = subHead(doc, "Common Platform Enumeration (CPE)", y);
+          baseTable(doc, {
+            startY: y,
+            head: [["Product", "Vendor", "Version", "CPE String"]],
+            body: sd.cpe.map((c) => [safe(c.product), safe(c.vendor), safe(c.version), safe(c.cpe23)]),
+            columnStyles: { 3: { fontSize: 7 } },
+          });
+        }
+      } else {
+        doc.setFont("helvetica", "normal");
+        doc.setFontSize(10);
+        doc.setTextColor(...C.gray);
+        doc.text("Service detection data not available.", 10, y + 6);
+      }
+
+      // ══════════════════════════════════════════════════════════════════════
+      // PAGE — DNS & NETWORK
+      // ══════════════════════════════════════════════════════════════════════
+      setPdfProgress("Building DNS section...");
+      doc.addPage();
+      y = addSectionHeader(doc, "DNS & Network Analysis", domain);
+
+      const fqdn = sd?.fqdnInfo;
+      if (fqdn) {
+        y = kvTable(doc, [
+          ["FQDN",            safe(fqdn.fqdn)],
+          ["IPv4 Addresses",  fqdn.ipv4Addresses?.join(", ") || "—"],
+        ], y);
+
+        if (fqdn.reverseDns?.length > 0) {
+          y = subHead(doc, "Reverse DNS Lookup", y);
+          baseTable(doc, {
+            startY: y,
+            head: [["IP Address", "Hostname(s)"]],
+            body: fqdn.reverseDns.map((e) => [safe(e.ip), e.hostnames?.join(", ") || "No reverse DNS"]),
+            columnStyles: {
+              0: { cellWidth: 45, fontStyle: "bold", textColor: C.cyan },
+            },
+          });
+          y = doc.lastAutoTable.finalY + 4;
+        }
+      }
+
+      const traceroute = sd?.traceroute;
+      if (traceroute?.supported && traceroute.hops?.length > 0) {
+        y = subHead(doc, `Network Traceroute (${traceroute.totalHops} hops)`, y);
+        baseTable(doc, {
+          startY: y,
+          head: [["Hop", "IP Address", "Hostname", "RTT"]],
+          body: traceroute.hops.map((h) => [
+            safe(h.hopNumber),
+            safe(h.ip),
+            safe(h.hostname, "—"),
+            h.rtt1 !== "*" ? safe(h.rtt1) : "*",
+          ]),
+          columnStyles: {
+            0: { cellWidth: 14, halign: "center" },
+            1: { cellWidth: 44, fontStyle: "bold", textColor: C.cyan },
+            3: { cellWidth: 25, halign: "center" },
+          },
+        });
+        y = doc.lastAutoTable.finalY + 4;
+      }
+
+      const nt = sd?.networkTimings;
+      if (nt?.supported && nt.timings) {
+        y = subHead(doc, "Network Performance Timings", y);
+        const timRows = [];
+        if (nt.timings.dnsLookup)     timRows.push(["DNS Lookup",    `${nt.timings.dnsLookup.toFixed(2)} ms`]);
+        if (nt.timings.tcpConnection) timRows.push(["TCP Connection", `${nt.timings.tcpConnection.toFixed(2)} ms`]);
+        if (nt.timings.tlsHandshake)  timRows.push(["TLS Handshake", `${nt.timings.tlsHandshake.toFixed(2)} ms`]);
+        if (nt.timings.ttfb)          timRows.push(["TTFB",          `${nt.timings.ttfb.toFixed(2)} ms`]);
+        if (nt.timings.totalTime)     timRows.push(["Total Time",    `${nt.timings.totalTime.toFixed(2)} ms`]);
+        if (timRows.length > 0) y = kvTable(doc, timRows, y);
+      }
+
+      if (!fqdn && !traceroute?.supported && !nt?.supported) {
+        doc.setFont("helvetica", "normal");
+        doc.setFontSize(10);
+        doc.setTextColor(...C.gray);
+        doc.text("DNS / network data not available.", 10, y + 6);
+      }
+
+      // ══════════════════════════════════════════════════════════════════════
+      // PAGE — WAF & FIREWALL STATUS
+      // ══════════════════════════════════════════════════════════════════════
+      setPdfProgress("Building firewall/WAF section...");
+      doc.addPage();
+      y = addSectionHeader(doc, "WAF & Firewall Status", domain);
+
+      if (scanData.firewall) {
+        const fw = scanData.firewall;
+        y = kvTable(doc, [
+          ["WAF Detected",    fw.detected ? "Yes" : "No"],
+          ["WAF Type",        fw.detected ? safe(fw.wafType, "Unknown") : "—"],
+          ["Confidence",      fw.detected ? safe(fw.confidence, "—").toUpperCase() : "—"],
+          ["Fingerprints",    fw.fingerprints?.length ? String(fw.fingerprints.length) : "0"],
+          ["Security Tests",  fw.testResults?.length ? String(fw.testResults.length) : "0"],
+        ], y);
+
+        if (!fw.detected) {
+          doc.setFont("helvetica", "bold");
+          doc.setFontSize(9);
+          doc.setTextColor(...C.amber);
+          doc.text(
+            "⚠ No WAF detected. Consider deploying Cloudflare, AWS WAF, or ModSecurity.",
+            10, y + 2
+          );
+          y += 10;
+        }
+
+        if (fw.fingerprints?.length > 0) {
+          y = subHead(doc, "WAF Fingerprints", y);
+          baseTable(doc, {
+            startY: y,
+            head: [["Header / Type", "WAF", "Value / Pattern"]],
+            body: fw.fingerprints.map((fp) => [safe(fp.header || fp.type), safe(fp.waf), safe(fp.value || fp.pattern)]),
+            columnStyles: {
+              0: { cellWidth: 40 },
+              1: { cellWidth: 30, fontStyle: "bold", textColor: C.green },
+            },
+          });
+          y = doc.lastAutoTable.finalY + 4;
+        }
+
+        if (fw.testResults?.length > 0) {
+          y = subHead(doc, "WAF Security Test Results", y);
+          baseTable(doc, {
+            startY: y,
+            head: [["Attack Type", "Status", "HTTP Code", "Payload"]],
+            body: fw.testResults.map((t) => [
+              safe(t.type),
+              t.blocked ? "BLOCKED ✓" : "NOT BLOCKED ✗",
+              safe(t.statusCode),
+              safe(t.payload),
+            ]),
+            columnStyles: {
+              0: { cellWidth: 40 },
+              1: { cellWidth: 30, fontStyle: "bold", halign: "center" },
+              2: { cellWidth: 22, halign: "center" },
+            },
+            didParseCell: (data) => {
+              if (data.column.index === 1 && data.section === "body") {
+                data.cell.styles.textColor = data.cell.raw.includes("BLOCKED ✓") ? C.green : C.red;
+              }
+            },
+          });
+          y = doc.lastAutoTable.finalY + 4;
+        }
+
+        if (fw.details?.length > 0) {
+          y = subHead(doc, "Additional Information", y);
+          baseTable(doc, {
+            startY: y,
+            head: [["Detail"]],
+            body: fw.details.map((d) => [d]),
+          });
+        }
+      } else {
+        doc.setFont("helvetica", "normal");
+        doc.setFontSize(10);
+        doc.setTextColor(...C.gray);
+        doc.text("Firewall / WAF detection data not available.", 10, y + 6);
+      }
+
+      // ══════════════════════════════════════════════════════════════════════
+      // PAGE — PORT SCANNER LOGS
+      // ══════════════════════════════════════════════════════════════════════
+      setPdfProgress("Building port scanner section...");
+      doc.addPage();
+      y = addSectionHeader(doc, "Port Scanner Logs", domain);
+
+      if (scanData.portScan) {
+        const ps = scanData.portScan;
+        y = kvTable(doc, [
+          ["Host Status",    safe(ps.hostStatus, "unknown").toUpperCase()],
+          ["Scan Type",      safe(ps.scanType, "TCP Connect")],
+          ["Ports Scanned",  safe(ps.totalScanned, "0")],
+          ["Open Ports",     String(ps.openPorts?.length || 0)],
+          ["Closed Ports",   String(ps.closedPorts?.length || 0)],
+          ["Filtered Ports", String(ps.filteredPorts?.length || 0)],
+          ["Scan Duration",  ps.scanDuration ? `${ps.scanDuration} ms` : "—"],
+        ], y);
+
+        if (ps.openPorts?.length > 0) {
+          y = subHead(doc, "Open Ports", y);
+          baseTable(doc, {
+            startY: y,
+            head: [["Port", "Service", "Protocol", "State", "Risk", "Version / Banner"]],
+            body: ps.openPorts.map((p) => [
+              String(p.port),
+              safe(p.service, "Unknown"),
+              safe(p.protocol, "TCP").toUpperCase(),
+              safe(p.state, "open").toUpperCase(),
+              safe(p.risk, "low").toUpperCase(),
+              p.version ? safe(p.version) : (p.banner ? `Banner: ${p.banner.substring(0, 40)}` : "—"),
+            ]),
+            columnStyles: {
+              0: { cellWidth: 16, halign: "center", fontStyle: "bold", textColor: C.green },
+              1: { cellWidth: 30 },
+              2: { cellWidth: 22, halign: "center" },
+              3: { cellWidth: 22, halign: "center" },
+              4: { cellWidth: 24, fontStyle: "bold", halign: "center" },
+            },
+            didParseCell: (data) => {
+              if (data.column.index === 4 && data.section === "body") {
+                const risk = (data.cell.raw || "").toLowerCase();
+                data.cell.styles.textColor =
+                  risk.includes("critical") ? C.purple :
+                  risk.includes("high") ? C.red :
+                  risk.includes("medium") ? C.amber : C.green;
+              }
+            },
+          });
+        }
+      } else {
+        doc.setFont("helvetica", "normal");
+        doc.setFontSize(10);
+        doc.setTextColor(...C.gray);
+        doc.text("Port scan data not available.", 10, y + 6);
+      }
+
+      // ══════════════════════════════════════════════════════════════════════
+      // PAGE — HISTORICAL RECORDS
+      // ══════════════════════════════════════════════════════════════════════
+      setPdfProgress("Building historical records section...");
+      doc.addPage();
+      y = addSectionHeader(doc, "Historical Records", domain);
+
+      if (history?.items?.length > 0) {
+        baseTable(doc, {
+          startY: y,
+          head: [["Date", "Vulnerabilities", "Risk Level", "Grade", "Response Time", "SSL"]],
+          body: history.items.map((row) => [
+            new Date(row.timestamp).toLocaleString(),
+            safe(row.vulnerabilityCount, "—"),
+            safe(row.riskLevel, "—").toUpperCase(),
+            safe(row.headers?._benchmark?.grade, "—"),
+            typeof row.timespan === "number" ? `${row.timespan} ms` : "—",
+            row.ssl?.valid !== undefined ? (row.ssl.valid ? "✓ Valid" : "✗ Invalid") : "—",
+          ]),
+          columnStyles: {
+            0: { cellWidth: 38 },
+            1: { cellWidth: 26, halign: "center" },
+            2: { cellWidth: 24, halign: "center" },
+            3: { cellWidth: 16, halign: "center", fontStyle: "bold" },
+            4: { cellWidth: 26, halign: "center" },
+          },
+          didParseCell: (data) => {
+            if (data.column.index === 5 && data.section === "body") {
+              data.cell.styles.textColor = data.cell.raw?.startsWith("✓") ? C.green : C.red;
+            }
+          },
+        });
+      } else {
+        doc.setFont("helvetica", "normal");
+        doc.setFontSize(10);
+        doc.setTextColor(...C.gray);
+        doc.text("No historical scan records available.", 10, y + 6);
+      }
+
+      // ══════════════════════════════════════════════════════════════════════
+      // FINALISE — Footers on every non-cover page
+      // ══════════════════════════════════════════════════════════════════════
+      setPdfProgress("Finalising document...");
+      addFooters(doc, domain);
+
+      setPdfProgress("Saving PDF...");
+      doc.save(`${domain}-VAPT-Report-${Date.now()}.pdf`);
+    } catch (err) {
+      console.error("Failed to generate PDF:", err);
+    } finally {
+      setPdfProgress(null);
     }
-
-    // ==================== OWASP TOP 10 ====================
-    doc.addPage();
-    addSimpleHeader();
-    yPos = 35;
-
-    addPurpleHeader("OWASP TOP 10 (2025)");
-
-    doc.setFontSize(12);
-    doc.setFont(undefined, "bold");
-    doc.setTextColor(0, 0, 0);
-    doc.text("OWASP Top 10 Application Security Risks:", 20, yPos);
-    yPos += 15;
-
-    const owaspTop10 = [
-      ["A01", "Broken Access Control"],
-      ["A02", "Cryptographic Failures"],
-      ["A03", "Injection"],
-      ["A04", "Insecure Design"],
-      ["A05", "Security Misconfiguration"],
-      ["A06", "Vulnerable and Outdated Components"],
-      ["A07", "Identification and Authentication Failures"],
-      ["A08", "Software and Data Integrity Failures"],
-      ["A09", "Security Logging and Monitoring Failures"],
-      ["A10", "Server-Side Request Forgery (SSRF)"],
-    ];
-
-    autoTable(doc, {
-      startY: yPos,
-      head: [["Sr No", "OWASP TOP 10 2025 Application Security Risks"]],
-      body: owaspTop10,
-      theme: "grid",
-      headStyles: { fillColor: [0, 51, 102], fontSize: 10 },
-      styles: { fontSize: 9 },
-      columnStyles: {
-        0: { cellWidth: 20, halign: "center", fontStyle: "bold" },
-        1: { cellWidth: 170 },
-      },
-    });
-
-    // ==================== ADD FOOTER TO ALL PAGES ====================
-    const totalPages = doc.internal.getNumberOfPages();
-    for (let i = 1; i <= totalPages; i++) {
-      doc.setPage(i);
-
-      if (i === 1) continue;
-
-      const pageHeight = doc.internal.pageSize.height;
-
-      doc.setFontSize(8);
-      doc.setTextColor(100, 100, 100);
-      doc.text("Security-platform.code4bharat.com", 105, pageHeight - 10, {
-        align: "center",
-      });
-      doc.text(`${i}`, 200, pageHeight - 10, { align: "right" });
-    }
-
-    doc.save(`${scanData.domain}-VAPT-Report-${Date.now()}.pdf`);
   };
 
   // put this inside the component (above the return)
@@ -1410,7 +1930,7 @@ export default function Vulnscanner() {
               </div>
 
               {/* Tab contents */}
-              <div>
+              <div id="active-tab-container" className="space-y-4">
                 {/* Overview */}
                 {activeTab === "overview" && (
                   <div className="space-y-4">
@@ -6049,6 +6569,13 @@ export default function Vulnscanner() {
           )}
         </div>
       </div>
+      {pdfProgress && (
+        <div className="fixed inset-0 z-[9999] flex flex-col items-center justify-center bg-black/85 backdrop-blur-md">
+          <Loader2 className="h-12 w-12 animate-spin text-[var(--gold)] mb-4" />
+          <h3 className="text-xl font-semibold text-white">Generating VAPT PDF Report</h3>
+          <p className="text-sm text-gray-400 mt-2">{pdfProgress}</p>
+        </div>
+      )}
     </div>
   );
 }

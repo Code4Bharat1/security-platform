@@ -102,28 +102,22 @@ export default function DirectoryBruteForcer() {
 
   return (
     <div className="tool-detail-page">
-      <div className="tool-detail-shell p-6 max-w-5xl mx-auto bg-black text-white min-h-screen">
+      <div className="tool-detail-shell">
     {/* Header */}
-<div className="tool-detail-hero flex flex-row items-center gap-4 mb-6">
-  {/* Image always left */}
-  <div className="w-30 h-30 rounded-full border-4 border-red-600 flex items-center justify-center overflow-hidden flex-shrink-0 bg-white/5">
-    <img
-      src="/RedTeam/brute-force.png"
-      alt="brute-force"
-      className="w-30 h-30 object-contain"
-    />
-  </div>
+    <div className="tool-detail-hero">
+      <div className="tool-detail-icon">
+        <img
+          src="/RedTeam/brute-force.png"
+          alt="brute-force"
+          className="w-full h-full object-cover"
+        />
+      </div>
 
-  {/* Text */}
-  <div>
-    <h2 className="text-3xl font-extrabold leading-tight">
-      Directory / File Brute Forcer
-    </h2>
-    <p className="text-sm text-gray-300 mt-1">
-      Scan a target host for common files and directories.
-    </p>
-  </div>
-</div>
+      <div className="tool-detail-copy">
+        <h1>Directory / File Brute Forcer</h1>
+        <p>Scan a target host for common files and directories.</p>
+      </div>
+    </div>
 
 
       {/* Control box */}

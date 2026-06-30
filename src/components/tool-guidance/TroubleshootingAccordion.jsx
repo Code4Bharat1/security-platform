@@ -28,7 +28,7 @@ export default function TroubleshootingAccordion({ items = [] }) {
               />
             </button>
             {open ? (
-              <div className="border-t border-white/8 px-4 py-3 text-sm leading-6 text-white/72">
+              <div className="border-t border-white/8 px-4 py-3 text-sm leading-relaxed text-white/80">
                 {item.body}
               </div>
             ) : null}
