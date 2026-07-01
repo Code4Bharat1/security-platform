@@ -23,14 +23,14 @@ export const tools = [
     buttonLabel: "Check Your Code's",
     type: "red-team"
   },
-  {
-    name: "Checkmarx Scanner",
-    image: "/tools/card-images/tools/card-images/heckmarx.png",
-    description: "Scan websites for security weaknesses like XSS or SQL injection.",
-    slug: "codeAnalysis",
-    buttonLabel: "Scan your codes",
-    type: "red-team"
-  },
+  // {
+  //   name: "Checkmarx Scanner",
+  //   image: "/tools/card-images/tools/card-images/heckmarx.png",
+  //   description: "Scan websites for security weaknesses like XSS or SQL injection.",
+  //   slug: "codeAnalysis",
+  //   buttonLabel: "Scan your codes",
+  //   type: "red-team"
+  // },
   {
     name: "Subdomain Scanner",
     image: "/tools/card-images/subdomain.png",
