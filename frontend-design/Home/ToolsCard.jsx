@@ -16,14 +16,14 @@ export default function ToolsCard() {
     buttonLabel: "Check Your Code's",
     type: "red-team"
   },
-  {
-    name: "Checkmarx Scanner",
-    image: "/tools/card-images/tools/card-images/heckmarx.png",
-    description: "Scan websites for security weaknesses like XSS or SQL injection.",
-    slug: "codeAnalysis",
-    buttonLabel: "Scan your codes",
-    type: "red-team"
-  },
+  // {
+  //   name: "Checkmarx Scanner",
+  //   image: "/tools/card-images/tools/card-images/heckmarx.png",
+  //   description: "Scan websites for security weaknesses like XSS or SQL injection.",
+  //   slug: "codeAnalysis",
+  //   buttonLabel: "Scan your codes",
+  //   type: "red-team"
+  // },
   {
     name: "Subdomain Scanner",
     image: "/tools/card-images/subdomain.png",
@@ -196,7 +196,7 @@ export default function ToolsCard() {
           typeTemp["title"].includes("Blue") ? 1 :
             typeTemp["title"].includes("Green") ? 2 :
               typeTemp["title"].includes("Purple") ? 3 : "team is unknown";
-      const temp = newCategories[1]; 
+      const temp = newCategories[1];
       newCategories[1] = newCategories[index];
       newCategories[index] = temp;
       setActiveIndex(1);
@@ -230,7 +230,7 @@ export default function ToolsCard() {
               hover:scale-105
               
               ${cat.bgColorClass} ${cat.bgImageClass} ${cat.textColorClass}
-              ${isActive ? ' opacity-100': 'opacity-80'}
+              ${isActive ? ' opacity-100' : 'opacity-80'}
               transition
             `}
                   onClick={() => handleCardClick(index)}

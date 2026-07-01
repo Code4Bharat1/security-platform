@@ -26,15 +26,15 @@ export default function ToolsCard() {
         buttonLabel: "Check Your Code's",
         type: "red-team",
       },
-      {
-        name: "Checkmarx Scanner",
-        image: "/RedTeam/heckmarx.png",
-        description:
-          "Enterprise-grade code security review and static analysis workflow.",
-        slug: "codeAnalysis",
-        buttonLabel: "Scan your codes",
-        type: "red-team",
-      },
+      // {
+      //   name: "Checkmarx Scanner",
+      //   image: "/RedTeam/heckmarx.png",
+      //   description:
+      //     "Enterprise-grade code security review and static analysis workflow.",
+      //   slug: "codeAnalysis",
+      //   buttonLabel: "Scan your codes",
+      //   type: "red-team",
+      // },
       {
         name: "Subdomain Scanner",
         image: "/RedTeam/subdomain.png",
@@ -237,7 +237,7 @@ export default function ToolsCard() {
       const parsedCategories = JSON.parse(savedCategories);
       const idx = savedIndex ? parseInt(savedIndex) : 1;
       const buttonIndex = getButtonListIndex(parsedCategories[idx].title);
-      
+
       return {
         categories: parsedCategories,
         activeIndex: idx,
@@ -249,7 +249,7 @@ export default function ToolsCard() {
     } else if (savedIndex) {
       const idx = parseInt(savedIndex);
       const buttonIndex = getButtonListIndex(initialCategories[idx].title);
-      
+
       return {
         categories: initialCategories,
         activeIndex: idx,
@@ -339,7 +339,7 @@ export default function ToolsCard() {
         {categories.map((cat, index) => {
           const isActive = activeIndex === index;
           const isCenter = index === 1;
-          
+
           return (
             <div
               key={index}
@@ -349,8 +349,8 @@ export default function ToolsCard() {
                 ${isActive && isCenter
                   ? "ring-4 ring-white ring-opacity-90 shadow-2xl scale-110 lg:scale-125 z-20 flex-[0.9]"
                   : isCenter
-                  ? "shadow-xl scale-105 lg:scale-110 z-10 flex-[0.80]"
-                  : "opacity-80 hover:opacity-90 scale-95 lg:scale-90 hover:scale-100 flex-1"
+                    ? "shadow-xl scale-105 lg:scale-110 z-10 flex-[0.80]"
+                    : "opacity-80 hover:opacity-90 scale-95 lg:scale-90 hover:scale-100 flex-1"
                 }
                 relative overflow-hidden flex flex-col justify-between
                 ${cat.bgImageClass}
@@ -359,11 +359,11 @@ export default function ToolsCard() {
               `}
               onClick={() => handleCardClick(index)}
               style={{
-                boxShadow: isActive && isCenter 
+                boxShadow: isActive && isCenter
                   ? `0 20px 40px ${cat.glowColor}40, 0 0 30px ${cat.glowColor}30`
-                  : isCenter 
-                  ? `0 10px 25px rgba(0,0,0,0.3)`
-                  : `0 5px 15px rgba(0,0,0,0.2)`
+                  : isCenter
+                    ? `0 10px 25px rgba(0,0,0,0.3)`
+                    : `0 5px 15px rgba(0,0,0,0.2)`
               }}
             >
               <div className="z-10">
@@ -371,7 +371,7 @@ export default function ToolsCard() {
                   <h3 className={`${isActive && isCenter ? 'text-3xl md:text-4xl' : 'text-xl md:text-2xl'} font-bold ${cat.textColorClass} transition-all duration-300`}>
                     {cat.title}
                   </h3>
-              
+
                 </div>
                 <p className={`${isActive && isCenter ? 'text-lg md:text-xl' : 'text-sm md:text-base'} ${cat.textColorClass} whitespace-pre-line leading-relaxed transition-all duration-300 opacity-90`}>
                   {cat.description}
@@ -391,7 +391,7 @@ export default function ToolsCard() {
                   className={`absolute top-0 right-0 ${isActive && isCenter ? 'h-32 md:h-40' : 'h-24 md:h-32'} pointer-events-none opacity-70 transition-all duration-300`}
                 />
               )}
-              
+
               {/* Gradient overlay for better text readability */}
               <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent pointer-events-none"></div>
             </div>
@@ -402,7 +402,7 @@ export default function ToolsCard() {
       {/* Active Team Indicator */}
       <div className="text-center mb-8">
         <div className="inline-flex items-center gap-3 bg-white/10 backdrop-blur-md px-6 py-3 rounded-full border border-white/20">
-          <div 
+          <div
             className="w-4 h-4 rounded-full animate-pulse"
             style={{ backgroundColor: activeGlow }}
           ></div>

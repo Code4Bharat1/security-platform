@@ -372,10 +372,10 @@ export default function MochaForm() {
             {/* Error Display */}
             {error && (
               <div className="bg-red-900 border border-red-700 rounded p-4 flex items-start gap-3">
-                <AlertCircle className="h-6 w-6 text-red-400 flex-shrink-0 mt-0.5" />
+                <AlertCircle className="h-6 w-6 text-black flex-shrink-0 mt-0.5" />
                 <div>
-                  <p className="text-red-300 font-medium">{error}</p>
-                  <p className="text-red-400 text-sm mt-1">
+                  <p className="text-black font-medium">{error}</p>
+                  <p className="text-black text-sm mt-1">
                     Check the console for detailed error information
                   </p>
                 </div>
