@@ -6,6 +6,13 @@ import useProtectedAction from "@/components/UseProtectedAction/UseProtectedActi
 import OwnershipVerificationWizard from "@/components/ownership/OwnershipVerificationWizard";
 
 export default function DashboardPage() {
+  // ====================================================
+  // TEMPORARILY DISABLED FOR LOCAL TESTING
+  // Purpose: Skip domain ownership verification.
+  // Re-enable before production deployment.
+  // ====================================================
+  const SKIP_DOMAIN_VERIFICATION_FOR_TESTING = true;
+
   const [url, setUrl] = useState("");
   const [data, setData] = useState(null);
   const [loading, setLoading] = useState(false);
@@ -15,7 +22,7 @@ export default function DashboardPage() {
   const protectedAction = useProtectedAction();
   async function handleScan(e) {
     e.preventDefault();
-    if (!ownershipVerified) {
+    if (!ownershipVerified && !SKIP_DOMAIN_VERIFICATION_FOR_TESTING) {
       setError("Verify ownership of this website before running the WAF scan.");
       return;
     }

@@ -47,6 +47,13 @@ function KV({ k, v }) {
 }
 
 export default function HttpsCheckerPage() {
+  // ====================================================
+  // TEMPORARILY DISABLED FOR LOCAL TESTING
+  // Purpose: Skip domain ownership verification.
+  // Re-enable before production deployment.
+  // ====================================================
+  const SKIP_DOMAIN_VERIFICATION_FOR_TESTING = true;
+
   const [domain, setDomain] = useState("");
   const [loading, setLoading] = useState(false);
   const [result, setResult] = useState(null);
@@ -66,7 +73,7 @@ export default function HttpsCheckerPage() {
       setError("Please enter a valid domain name (e.g., example.com)");
       return;
     }
-    if (!ownershipVerified) {
+    if (!ownershipVerified && !SKIP_DOMAIN_VERIFICATION_FOR_TESTING) {
       setError("Verify ownership of this domain before checking HTTPS security.");
       return;
     }
