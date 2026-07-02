@@ -21,6 +21,9 @@ export default function DirectoryBruteForcer() {
   const [meta, setMeta] = useState(null);
   const [loading, setLoading] = useState(false);
 
+  const [currentPage, setCurrentPage] = useState(1);
+  const [itemsPerPage, setItemsPerPage] = useState(15);
+
   const startScan = async () => {
     await protectedAction(async(token) =>{
     const cleanTarget = target.trim();
@@ -28,6 +31,7 @@ export default function DirectoryBruteForcer() {
     setLoading(true);
     setResults([]);
     setMeta(null);
+    setCurrentPage(1);
 
     try {
       const res = await fetch(        
@@ -99,6 +103,12 @@ export default function DirectoryBruteForcer() {
       console.error('Failed to open URL', e);
     }
   };
+
+  // Pagination helper calculations
+  const totalPages = Math.max(1, Math.ceil(results.length / itemsPerPage));
+  const indexOfLastItem = currentPage * itemsPerPage;
+  const indexOfFirstItem = indexOfLastItem - itemsPerPage;
+  const currentItems = results.slice(indexOfFirstItem, indexOfLastItem);
 
   return (
     <div className="tool-detail-page">
@@ -174,41 +184,62 @@ export default function DirectoryBruteForcer() {
 
       {/* Results */}
       {results.length > 0 ? (
-        <div>
-          <button
-            onClick={downloadPDF}
-            className="mt-2 w-full sm:w-48 bg-red-600 hover:bg-red-700 text-white py-2 rounded"
-          >
-            Download PDF
-          </button>
+        <div className="mt-6">
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+            <button
+              onClick={downloadPDF}
+              className="w-full sm:w-48 bg-red-600 hover:bg-red-700 text-white py-2 rounded font-medium transition-colors"
+            >
+              Download PDF
+            </button>
 
-          <div className="overflow-x-auto mt-4">
-            <table className="min-w-full text-sm mt-4 border border-white/10 divide-y divide-white/5">
-              <thead className="bg-zinc-800">
+            <div className="flex items-center gap-2 text-sm text-gray-300">
+              <span>Show</span>
+              <select
+                value={itemsPerPage}
+                onChange={(e) => {
+                  setItemsPerPage(Number(e.target.value));
+                  setCurrentPage(1);
+                }}
+                className="bg-zinc-900 border border-white/10 rounded px-3 py-1.5 text-white focus:outline-none focus:ring-2 focus:ring-red-600 cursor-pointer"
+              >
+                {[10, 15, 25, 50, 100].map((num) => (
+                  <option key={num} value={num}>
+                    {num}
+                  </option>
+                ))}
+              </select>
+              <span>entries</span>
+            </div>
+          </div>
+
+          <div className="overflow-x-auto mt-4 border border-white/10 rounded-lg">
+            <table className="w-full text-sm divide-y divide-white/5 table-auto">
+              <thead className="bg-zinc-900 text-gray-200">
                 <tr>
-                  <th className="px-4 py-2 text-left text-gray-200">Path</th>
-                  <th className="px-4 py-2 text-left text-gray-200">Status</th>
-                  <th className="px-4 py-2 text-left text-gray-200">Result</th>
-                  <th className="px-4 py-2 text-left text-gray-200">View Site</th>
+                  <th className="w-5/12 px-4 py-3 text-left font-semibold">Path</th>
+                  <th className="w-2/12 px-4 py-3 text-left font-semibold">Status</th>
+                  <th className="w-3/12 px-4 py-3 text-left font-semibold">Result</th>
+                  <th className="w-2/12 px-4 py-3 text-left font-semibold">View Site</th>
                 </tr>
               </thead>
-              <tbody className="bg-black/60">
-                {results.map((item, i) => (
+              <tbody className="bg-black/40 divide-y divide-white/5">
+                {currentItems.map((item, i) => (
                   <tr
                     key={i}
-                    className={i % 2 === 0 ? 'bg-white/2' : 'bg-white/4'}
+                    className="hover:bg-white/5 transition-colors"
                   >
-                    <td className="px-4 py-3 text-white break-all">
+                    <td className="px-4 py-3 text-white break-all font-mono">
                       {item.path ?? '-'}
                     </td>
-                    <td className="px-4 py-3 text-white">{item.status ?? '-'}</td>
+                    <td className="px-4 py-3 text-white font-mono">{item.status ?? '-'}</td>
                     <td className="px-4 py-3 text-white">
                       {typeof item.result === 'string' ? item.result : JSON.stringify(item.result)}
                     </td>
                     <td className="px-4 py-3">
                       <button
                         onClick={() => viewFoundSite(item.path)}
-                        className="text-blue-400 hover:underline"
+                        className="text-blue-400 hover:text-blue-300 hover:underline font-medium"
                       >
                         View
                       </button>
@@ -218,6 +249,59 @@ export default function DirectoryBruteForcer() {
               </tbody>
             </table>
           </div>
+
+          {/* Pagination Footer */}
+          {totalPages > 1 && (
+            <div className="flex flex-col sm:flex-row items-center justify-between gap-4 mt-6 px-1 py-3">
+              <div className="text-sm text-gray-400">
+                Showing <span className="font-semibold text-white">{indexOfFirstItem + 1}</span> to{' '}
+                <span className="font-semibold text-white">
+                  {Math.min(indexOfLastItem, results.length)}
+                </span>{' '}
+                of <span className="font-semibold text-white">{results.length}</span> results
+              </div>
+              <div className="flex items-center gap-2">
+                <button
+                  onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))}
+                  disabled={currentPage === 1}
+                  className="bg-zinc-900 hover:bg-zinc-800 disabled:opacity-50 disabled:hover:bg-zinc-900 text-white px-3 py-1.5 rounded text-sm transition-colors border border-white/10 cursor-pointer disabled:cursor-not-allowed"
+                >
+                  Previous
+                </button>
+                {Array.from({ length: Math.min(5, totalPages) }, (_, idx) => {
+                  let pageNum = idx + 1;
+                  if (totalPages > 5) {
+                    if (currentPage > 3) {
+                      pageNum = currentPage - 3 + idx;
+                      if (pageNum + (5 - idx - 1) > totalPages) {
+                        pageNum = totalPages - 5 + idx + 1;
+                      }
+                    }
+                  }
+                  return (
+                    <button
+                      key={pageNum}
+                      onClick={() => setCurrentPage(pageNum)}
+                      className={`px-3 py-1.5 rounded text-sm transition-colors border border-white/10 cursor-pointer ${
+                        currentPage === pageNum
+                          ? 'bg-red-600 border-red-600 text-white font-semibold'
+                          : 'bg-zinc-900 hover:bg-zinc-800 text-gray-300'
+                      }`}
+                    >
+                      {pageNum}
+                    </button>
+                  );
+                })}
+                <button
+                  onClick={() => setCurrentPage((prev) => Math.min(prev + 1, totalPages))}
+                  disabled={currentPage === totalPages}
+                  className="bg-zinc-900 hover:bg-zinc-800 disabled:opacity-50 disabled:hover:bg-zinc-900 text-white px-3 py-1.5 rounded text-sm transition-colors border border-white/10 cursor-pointer disabled:cursor-not-allowed"
+                >
+                  Next
+                </button>
+              </div>
+            </div>
+          )}
         </div>
       ) : (
         <div className="mt-6 text-gray-400">No results yet. Start a scan to see results here.</div>
