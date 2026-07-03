@@ -26,8 +26,7 @@ import {
   Lock,
   Menu,
 } from "lucide-react";
-import { jsPDF } from "jspdf";
-import autoTable from "jspdf-autotable";
+import { generatePDF } from "./generatePDF";
 import useProtectedAction from "../UseProtectedAction/UseProtectedAction";
 import OwnershipVerificationWizard from "@/components/ownership/OwnershipVerificationWizard";
 
@@ -353,34 +352,36 @@ export default function Vulnscanner() {
 
     return result;
   };
-  // ─────────────────────────────────────────────────────────────────────────────
-  // PDF GENERATION — True document-based approach using jsPDF + jsPDF-AutoTable
-  // No screenshots. All content rendered programmatically from scanData.
-  // ─────────────────────────────────────────────────────────────────────────────
-  const generatePDF = async () => {
-    if (!scanData) return;
-    setPdfProgress("Initializing PDF document...");
 
-    // ── Shared style tokens ──────────────────────────────────────────────────
+  const generatePDF = async () => {
+    const { generatePDF: runGeneratePDF } = await import("./generatePDF");
+    await runGeneratePDF(scanData, setPdfProgress);
+  };
+
+  /*
+  const generatePDF_old = async () => {
+
     const C = {
-      bg:       [10, 10, 11],
-      bgAlt:    [18, 18, 20],
-      bgHeader: [22, 22, 26],
-      gold:     [212, 166, 74],
-      white:    [230, 230, 235],
-      gray:     [140, 140, 148],
-      grayDim:  [90, 90, 98],
-      red:      [239, 68, 68],
-      orange:   [245, 140, 50],
-      amber:    [245, 158, 11],
-      green:    [52, 211, 153],
-      blue:     [96, 165, 250],
-      purple:   [168, 85, 247],
-      cyan:     [34, 211, 238],
+      bg:          [255, 255, 255],
+      bgAlt:       [248, 249, 250],
+      bgHeader:    [13, 56, 115],
+      bluePrimary: [13, 56, 115],
+      white:       [255, 255, 255],
+      black:       [0, 0, 0],
+      textMain:    [40, 40, 40],
+      textMuted:   [110, 110, 110],
+      lineColor:   [210, 210, 210],
+      red:         [220, 53, 69],
+      amber:       [253, 126, 20],
+      blue:        [13, 110, 253],
+      purple:      [111, 66, 193],
+      gray:        [110, 110, 110],
     };
 
-    // Severity → color
-    const sevColor = (sev) => {
+    const safe = (v, fallback = "—") =>
+      v !== undefined && v !== null && v !== "" ? String(v) : fallback;
+
+    const getSeverityColor = (sev) => {
       switch ((sev || "").toLowerCase()) {
         case "critical": return C.purple;
         case "high":     return C.red;
@@ -390,377 +391,197 @@ export default function Vulnscanner() {
       }
     };
 
-    const safe = (v, fallback = "—") =>
-      v !== undefined && v !== null && v !== "" ? String(v) : fallback;
+    const drawSectionHeader = (doc, title, y) => {
+      doc.setFillColor(...C.bluePrimary);
+      doc.rect(14, y, 182, 8, "F");
+      doc.setFont("helvetica", "bold");
+      doc.setFontSize(10);
+      doc.setTextColor(...C.white);
+      doc.text(title, 18, y + 5.5);
+      return y + 14;
+    };
 
-    // ── Base autoTable theme ─────────────────────────────────────────────────
-    const baseTable = (doc, opts) => {
+    const renderTable = (doc, opts) => {
       autoTable(doc, {
         styles: {
-          fontSize: 8.5,
-          cellPadding: { top: 3, right: 4, bottom: 3, left: 4 },
+          fontSize: 8,
+          cellPadding: { top: 3.5, right: 4, bottom: 3.5, left: 4 },
           fillColor: C.bg,
-          textColor: C.white,
-          lineColor: [40, 40, 48],
-          lineWidth: 0.25,
+          textColor: C.textMain,
+          lineColor: C.lineColor,
+          lineWidth: 0.15,
           font: "helvetica",
           overflow: "linebreak",
         },
         headStyles: {
           fillColor: C.bgHeader,
-          textColor: C.gold,
+          textColor: C.white,
           fontStyle: "bold",
           fontSize: 8,
-          lineColor: C.gold,
-          lineWidth: 0.4,
+          lineColor: C.bluePrimary,
+          lineWidth: 0.15,
         },
         alternateRowStyles: { fillColor: C.bgAlt },
-        columnStyles: {},
-        margin: { left: 10, right: 10 },
+        margin: { left: 14, right: 14 },
         ...opts,
       });
     };
 
-    // ── Section header helper ────────────────────────────────────────────────
-    const addSectionHeader = (doc, title, subtitle = "") => {
-      const pageW = doc.internal.pageSize.getWidth();
-      doc.setFillColor(...C.bgHeader);
-      doc.rect(0, 0, pageW, 20, "F");
-      doc.setFillColor(...C.gold);
-      doc.rect(0, 19.5, pageW, 0.5, "F");
-
-      doc.setFont("helvetica", "bold");
-      doc.setFontSize(13);
-      doc.setTextColor(...C.gold);
-      doc.text(title, 10, 13);
-
-      if (subtitle) {
-        doc.setFont("helvetica", "normal");
-        doc.setFontSize(8);
-        doc.setTextColor(...C.gray);
-        doc.text(subtitle, pageW - 10, 13, { align: "right" });
+    let employeeName = "Security Auditor";
+    let employeeMail = "auditor@nexcorealliance.com";
+    try {
+      const storedUser = localStorage.getItem("user");
+      if (storedUser) {
+        const parsed = JSON.parse(storedUser);
+        if (parsed.name) employeeName = parsed.name;
+        if (parsed.email) employeeMail = parsed.email;
       }
-      return 26; // Y position after header
-    };
-
-    // ── Key-value block helper ───────────────────────────────────────────────
-    const kvTable = (doc, rows, startY) => {
-      baseTable(doc, {
-        startY,
-        head: [],
-        body: rows.map(([k, v]) => [k, v]),
-        columnStyles: {
-          0: { fontStyle: "bold", cellWidth: 52, textColor: C.gold },
-          1: { textColor: C.white },
-        },
-      });
-      return doc.lastAutoTable.finalY + 4;
-    };
-
-    // ── Sub-heading helper ───────────────────────────────────────────────────
-    const subHead = (doc, text, y) => {
-      doc.setFont("helvetica", "bold");
-      doc.setFontSize(9);
-      doc.setTextColor(...C.gold);
-      doc.text(text, 10, y);
-      doc.setDrawColor(...C.gold);
-      doc.setLineWidth(0.3);
-      doc.line(10, y + 1, 200, y + 1);
-      return y + 6;
-    };
-
-    // ── Footer on every page ─────────────────────────────────────────────────
-    const addFooters = (doc, domain) => {
-      const total = doc.internal.getNumberOfPages();
-      for (let i = 2; i <= total; i++) {
-        doc.setPage(i);
-        const pageW = doc.internal.pageSize.getWidth();
-        doc.setFillColor(...C.bgHeader);
-        doc.rect(0, 289, pageW, 8, "F");
-        doc.setFont("helvetica", "normal");
-        doc.setFontSize(7);
-        doc.setTextColor(...C.gray);
-        doc.text("Nexcore Alliance — VAPT Assessment Report", 10, 293.5);
-        doc.text(`${domain}`, pageW / 2, 293.5, { align: "center" });
-        doc.text(`Page ${i} of ${total}`, pageW - 10, 293.5, { align: "right" });
-      }
-    };
+    } catch (_) {}
 
     try {
       const doc = new jsPDF("p", "mm", "a4");
       const domain = safe(scanData.domain, "Unknown Domain");
       const scanDate = scanData.timestamp
-        ? new Date(scanData.timestamp).toLocaleString()
-        : new Date().toLocaleString();
+        ? new Date(scanData.timestamp).toLocaleDateString("en-GB", { day: "2-digit", month: "short", year: "numeric" }).toUpperCase()
+        : new Date().toLocaleDateString("en-GB", { day: "2-digit", month: "short", year: "numeric" }).toUpperCase();
+      const scanTime = scanData.timestamp
+        ? new Date(scanData.timestamp).toLocaleTimeString("en-GB", { hour: "2-digit", minute: "2-digit", second: "2-digit" })
+        : new Date().toLocaleTimeString("en-GB", { hour: "2-digit", minute: "2-digit", second: "2-digit" });
 
-      // ══════════════════════════════════════════════════════════════════════
-      // PAGE 1 — COVER PAGE
-      // ══════════════════════════════════════════════════════════════════════
-      setPdfProgress("Building cover page...");
-      try {
-        doc.addImage("/pdf_banner.jpg", "JPEG", 0, 0, 210, 297);
-      } catch (_) {
-        // Fallback: programmatic cover
-        doc.setFillColor(...C.bg);
-        doc.rect(0, 0, 210, 297, "F");
-        doc.setFillColor(...C.gold);
-        doc.rect(0, 0, 6, 297, "F");
-        doc.setFont("helvetica", "bold");
-        doc.setFontSize(28);
-        doc.setTextColor(...C.gold);
-        doc.text("NEXCORE // ALLIANCE", 105, 100, { align: "center" });
-        doc.setFont("helvetica", "normal");
-        doc.setFontSize(16);
-        doc.setTextColor(...C.white);
-        doc.text("VAPT Assessment Report", 105, 120, { align: "center" });
-      }
+      doc.setFillColor(...C.bluePrimary);
+      doc.rect(0, 0, 210, 3.5, "F");
+
+      doc.setFont("helvetica", "normal");
+      doc.setFontSize(7.5);
+      doc.setTextColor(...C.textMuted);
+      doc.text("NEXCORE ALLIANCE | Individual Tool Report – Vulnerability Scanner", 14, 12);
 
       doc.setFont("helvetica", "bold");
-      doc.setFontSize(18);
-      doc.setTextColor(255, 255, 255);
-      doc.text(domain, 105, 208, { align: "center" });
-      doc.setFont("helvetica", "normal");
-      doc.setFontSize(13);
-      doc.setTextColor(200, 200, 200);
-      doc.text(scanDate, 105, 220, { align: "center" });
+      doc.setFontSize(24);
+      doc.setTextColor(...C.bluePrimary);
+      doc.text("NEXCORE ALLIANCE", 14, 30);
+
+      doc.setFont("helvetica", "oblique");
       doc.setFontSize(10);
-      doc.setTextColor(170, 130, 50);
-      doc.text(`Generated: ${new Date().toLocaleString()}`, 105, 232, { align: "center" });
+      doc.text("AI-Powered Cybersecurity & Information Security Solutions", 14, 36);
 
-      // ══════════════════════════════════════════════════════════════════════
-      // PAGE 2 — REPORT OVERVIEW (Table of Contents + Scan Snapshot)
-      // ══════════════════════════════════════════════════════════════════════
-      setPdfProgress("Building report overview...");
-      doc.addPage();
-      const pageW = doc.internal.pageSize.getWidth();
+      doc.setDrawColor(...C.bluePrimary);
+      doc.setLineWidth(0.4);
+      doc.line(14, 40, 196, 40);
 
-      // ── Background ──────────────────────────────────────────────────────────
-      doc.setFillColor(...C.bg);
-      doc.rect(0, 0, pageW, 297, "F");
-
-      // ── Gold accent bar (left) ──────────────────────────────────────────────
-      doc.setFillColor(...C.gold);
-      doc.rect(0, 0, 4, 297, "F");
-
-      // ── Page heading ────────────────────────────────────────────────────────
       doc.setFont("helvetica", "bold");
-      doc.setFontSize(20);
-      doc.setTextColor(...C.gold);
-      doc.text("Report Overview", 14, 18);
+      doc.setFontSize(22);
+      doc.setTextColor(...C.bluePrimary);
+      doc.text("VULNERABILITY SCANNER", 105, 58, { align: "center" });
+
+      doc.setFont("helvetica", "bold");
+      doc.setFontSize(13);
+      doc.text("SECURITY ASSESSMENT REPORT", 105, 65, { align: "center" });
+
+      doc.setDrawColor(...C.bluePrimary);
+      doc.setLineWidth(0.25);
+      doc.line(14, 70, 196, 70);
+      doc.line(14, 71, 196, 71);
+
+      renderTable(doc, {
+        startY: 78,
+        head: [],
+        body: [
+          ["Assessment Performed by", employeeMail],
+          ["Employee Name",           employeeName],
+          ["Employee Mail ID",        employeeMail],
+          ["Scanned Target",         domain],
+          ["Assessment Date",        scanDate],
+          ["Assessment Time",        scanTime],
+          ["Classification",         "Confidential"],
+          ["Assessment Status",       "Completed"]
+        ],
+        columnStyles: {
+          0: { fontStyle: "bold", cellWidth: 55, fillColor: [245, 245, 245] },
+          1: { cellWidth: 127 }
+        },
+      });
+
+      doc.setDrawColor(...C.lineColor);
+      doc.setLineWidth(0.25);
+      doc.line(14, 260, 196, 260);
 
       doc.setFont("helvetica", "normal");
-      doc.setFontSize(8.5);
-      doc.setTextColor(...C.gray);
-      doc.text(`VAPT Assessment · ${domain} · ${new Date().toLocaleString()}`, 14, 25);
+      doc.setFontSize(7.5);
+      doc.setTextColor(...C.textMuted);
+      doc.text("www.nexcorealliance.com | ISO/IEC 27001 Certified | AICPA SOC Compliant", 105, 267, { align: "center" });
 
-      // Gold divider
-      doc.setFillColor(...C.gold);
-      doc.rect(14, 27.5, pageW - 24, 0.4, "F");
+      doc.addPage();
 
-      // ── Quick-stats bar ─────────────────────────────────────────────────────
-      const _vulns = scanData.vulnerabilities || [];
-      const _counts = { critical: 0, high: 0, medium: 0, low: 0, info: 0 };
-      _vulns.forEach((v) => {
-        const s = (v.severity || "info").toLowerCase();
-        if (_counts[s] !== undefined) _counts[s]++;
-        else _counts.info++;
+      let y = drawSectionHeader(doc, "1. ASSESSMENT INFORMATION", 25);
+
+      renderTable(doc, {
+        startY: y,
+        head: [],
+        body: [
+          ["Tool Name",             "Vulnerability Scanner"],
+          ["Tool Category",         "Vulnerability Assessment / Web Application Security Scanning"],
+          ["Methodology Alignment", "OWASP WSTG / CVE / CVSS v3.1 / NIST NVD / PTES"],
+          ["Compliance Alignment",  "ISO/IEC 27001 | AICPA SOC Frameworks"],
+          ["Scanned Target",        domain],
+          ["Assessment Mode",       "Non-Intrusive / Automated Vulnerability Scan"]
+        ],
+        columnStyles: {
+          0: { fontStyle: "bold", cellWidth: 55, fillColor: [245, 245, 245] },
+          1: { cellWidth: 127 }
+        }
       });
 
-      const statBoxes = [
-        { label: "Critical", value: _counts.critical, color: C.purple },
-        { label: "High",     value: _counts.high,     color: C.red    },
-        { label: "Medium",   value: _counts.medium,   color: C.amber  },
-        { label: "Low",      value: _counts.low,       color: C.blue   },
-        { label: "Info",     value: _counts.info,      color: C.gray   },
-        { label: "Grade",    value: safe(scanData.securityGrade, "—"), color: C.gold },
-      ];
+      y = doc.lastAutoTable.finalY + 12;
 
-      const boxW = (pageW - 28) / statBoxes.length;
-      statBoxes.forEach((b, i) => {
-        const bx = 14 + i * boxW;
-        const by = 32;
-        // Box background
-        doc.setFillColor(...C.bgHeader);
-        doc.roundedRect(bx, by, boxW - 2, 20, 2, 2, "F");
-        // Coloured top accent bar
-        doc.setFillColor(...b.color);
-        doc.roundedRect(bx, by, boxW - 2, 2, 1, 1, "F");
-        // Value
-        doc.setFont("helvetica", "bold");
-        doc.setFontSize(13);
-        doc.setTextColor(...b.color);
-        doc.text(String(b.value), bx + (boxW - 2) / 2, by + 11, { align: "center" });
-        // Label
-        doc.setFont("helvetica", "normal");
-        doc.setFontSize(7);
-        doc.setTextColor(...C.gray);
-        doc.text(b.label, bx + (boxW - 2) / 2, by + 17, { align: "center" });
-      });
-
-      // ── Key scan metadata ───────────────────────────────────────────────────
-      const metaY = 58;
-      doc.setFillColor(...C.bgHeader);
-      doc.rect(14, metaY, pageW - 28, 28, "F");
-
-      const metaItems = [
-        ["Target",       domain],
-        ["Scan Date",    scanDate],
-        ["Risk Level",   safe(scanData.riskLevel, "Unknown").toUpperCase()],
-        ["SSL",          scanData.ssl?.valid ? "✓ Valid" : "✗ Not Valid"],
-        ["Response",     scanData.timespan ? `${scanData.timespan} ms` : "—"],
-        ["WAF",          scanData.firewall?.detected ? `✓ ${safe(scanData.firewall.wafType, "Detected")}` : "✗ None"],
-      ];
-
-      const colW = (pageW - 28) / 3;
-      metaItems.forEach(([k, v], i) => {
-        const col = i % 3;
-        const row = Math.floor(i / 3);
-        const mx = 14 + col * colW + 4;
-        const my = metaY + 7 + row * 13;
-        doc.setFont("helvetica", "bold");
-        doc.setFontSize(7);
-        doc.setTextColor(...C.gold);
-        doc.text(k.toUpperCase(), mx, my);
-        doc.setFont("helvetica", "normal");
-        doc.setFontSize(8.5);
-        doc.setTextColor(...C.white);
-        const sslColor = v.startsWith("✓") ? C.green : v.startsWith("✗") ? C.red : C.white;
-        doc.setTextColor(...sslColor);
-        doc.text(v, mx, my + 5);
-      });
-
-      // ── Table of Contents ───────────────────────────────────────────────────
-      const tocY = 92;
       doc.setFont("helvetica", "bold");
       doc.setFontSize(11);
-      doc.setTextColor(...C.gold);
-      doc.text("Table of Contents", 14, tocY);
-      doc.setFillColor(...C.gold);
-      doc.rect(14, tocY + 2, pageW - 28, 0.4, "F");
+      doc.setTextColor(...C.bluePrimary);
+      doc.text("Tool Overview", 14, y);
 
-      const tocSections = [
-        { num: "01", title: "Executive Summary",            desc: "Risk overview, vulnerability counts, security posture" },
-        { num: "02", title: "Vulnerability Details",         desc: "Full list of findings with severity, type, and remediations" },
-        { num: "03", title: "SSL / TLS Security Audit",      desc: "Certificate validity, protocol support, cipher suites" },
-        { num: "04", title: "HTTP Headers Security",         desc: "Response headers, security header checklist, error handling" },
-        { num: "05", title: "Cookie Integrity Analysis",     desc: "Cookie flags, security attributes, and issues per cookie" },
-        { num: "06", title: "Session Security Audit",        desc: "Session cookies, HttpOnly, Secure, SameSite analysis" },
-        { num: "07", title: "Content Security Policy (CSP)", desc: "Policy string, directives, and CSP misconfigurations" },
-        { num: "08", title: "Web Application Inspection",    desc: "HTML forms, directory enumeration, sitemap, external URLs" },
-        { num: "09", title: "Security Benchmarking",         desc: "Security grade, response performance, historical deltas" },
-        { num: "10", title: "Server & Service Inspection",   desc: "Web server, CMS, frameworks, technologies, CPE strings" },
-        { num: "11", title: "DNS & Network Analysis",        desc: "FQDN, IP addresses, reverse DNS, traceroute, timings" },
-        { num: "12", title: "WAF & Firewall Status",         desc: "WAF detection, fingerprints, security test results" },
-        { num: "13", title: "Port Scanner Logs",             desc: "Host status, open/closed/filtered ports with risk ratings" },
-        { num: "14", title: "Historical Records",            desc: "Past scan comparison: vulnerabilities, grade, SSL, timing" },
-      ];
-
-      const rowH = 12.2;
-      tocSections.forEach((s, i) => {
-        const ty = tocY + 7 + i * rowH;
-        const isEven = i % 2 === 0;
-
-        // Row background
-        doc.setFillColor(...(isEven ? C.bgHeader : C.bg));
-        doc.rect(14, ty - 3.5, pageW - 28, rowH, "F");
-
-        // Section number badge
-        doc.setFillColor(...C.gold);
-        doc.roundedRect(15, ty - 2.8, 9, 7, 1, 1, "F");
-        doc.setFont("helvetica", "bold");
-        doc.setFontSize(6.5);
-        doc.setTextColor(...C.bg);
-        doc.text(s.num, 19.5, ty + 1.8, { align: "center" });
-
-        // Title
-        doc.setFont("helvetica", "bold");
-        doc.setFontSize(8.5);
-        doc.setTextColor(...C.white);
-        doc.text(s.title, 27, ty + 1.6);
-
-        // Description
-        doc.setFont("helvetica", "normal");
-        doc.setFontSize(7);
-        doc.setTextColor(...C.gray);
-        doc.text(s.desc, 27, ty + 6.5);
-
-        // Dotted connector line
-        doc.setDrawColor(...C.grayDim);
-        doc.setLineDashPattern([0.5, 1.5], 0);
-        doc.setLineWidth(0.2);
-        doc.line(27, ty + 8, pageW - 16, ty + 8);
-        doc.setLineDashPattern([], 0);
-      });
-
-      // ── Confidentiality notice at bottom ────────────────────────────────────
-      const noticeY = 282;
-      doc.setFillColor(...C.bgHeader);
-      doc.rect(14, noticeY, pageW - 28, 10, "F");
-      doc.setFillColor(...C.amber);
-      doc.rect(14, noticeY, 1.5, 10, "F");
-      doc.setFont("helvetica", "bold");
-      doc.setFontSize(6.5);
-      doc.setTextColor(...C.amber);
-      doc.text("CONFIDENTIAL", 18, noticeY + 4);
       doc.setFont("helvetica", "normal");
-      doc.setFontSize(6.5);
-      doc.setTextColor(...C.gray);
-      doc.text(
-        "This report contains sensitive security findings. Distribution should be restricted to authorized personnel only.",
-        18, noticeY + 8
-      );
+      doc.setFontSize(9);
+      doc.setTextColor(...C.textMain);
+      const overviewText = "The Vulnerability Scanner performs automated security assessments against target web applications and network endpoints to identify known vulnerabilities, misconfigurations, and exploitable weaknesses. The tool correlates detected indicators against established vulnerability databases including CVE and NIST NVD, and assigns CVSS v3.1 base scores to each finding. Each finding is reported with supporting evidence, a CVSS score, affected component details, and specific remediation guidance. Generic impact paragraphs, placeholder descriptions, unsupported critical findings, and duplicate open-port findings are excluded to ensure all reported vulnerabilities are accurate, evidence-backed, and actionable.";
+      
+      doc.text(overviewText, 14, y + 6, { maxWidth: 182, align: "justify", lineHeightFactor: 1.4 });
 
-      // ══════════════════════════════════════════════════════════════════════
-      // PAGE 3 — EXECUTIVE SUMMARY
-      // ══════════════════════════════════════════════════════════════════════
-      setPdfProgress("Building executive summary...");
       doc.addPage();
-      let y = addSectionHeader(doc, "Executive Summary", domain);
+
+      y = drawSectionHeader(doc, "2. SCAN SUMMARY", 25);
 
       const vulns = scanData.vulnerabilities || [];
       const counts = { critical: 0, high: 0, medium: 0, low: 0, info: 0 };
-      vulns.forEach((v) => {
-        const s = (v.severity || "info").toLowerCase();
-        if (counts[s] !== undefined) counts[s]++;
-        else counts.info++;
       });
 
-      // Summary KV
-      y = kvTable(doc, [
-        ["Target Domain",     domain],
-        ["Scan Date",         scanDate],
-        ["Risk Level",        safe(scanData.riskLevel, "Unknown").toUpperCase()],
-        ["Security Grade",    safe(scanData.securityGrade, "—")],
-        ["Response Time",     scanData.timespan ? `${scanData.timespan} ms` : "—"],
-        ["SSL Certificate",   scanData.ssl?.valid ? "Valid" : "Not Valid / Not Present"],
-        ["Total Vulnerabilities", String(vulns.length)],
-      ], y);
-
-      y = subHead(doc, "Vulnerability Breakdown by Severity", y);
-      baseTable(doc, {
+      // Render Scan Summary table
+      renderTable(doc, {
         startY: y,
-        head: [["Severity", "Count", "Risk Impact"]],
-        body: [
-          ["CRITICAL", counts.critical, "Immediate exploitation likely; full system compromise"],
-          ["HIGH",     counts.high,     "Easy to exploit; significant data or access impact"],
-          ["MEDIUM",   counts.medium,   "Exploitable under specific conditions; moderate impact"],
-          ["LOW",      counts.low,      "Difficult to exploit; limited impact"],
-          ["INFO",     counts.info,     "Informational; no direct security risk"],
-        ],
+        head: [["Critical", "High", "Medium", "Low", "Informational"]],
+        body: [[
+          String(counts.critical),
+          String(counts.high),
+          String(counts.medium),
+          String(counts.low),
+          String(counts.info)
+        ]],
+        headStyles: {
+          fillColor: C.bgHeader,
+          textColor: C.white,
+          halign: "center",
+        },
+        bodyStyles: {
+          halign: "center",
+          fontStyle: "bold",
+          fontSize: 10,
+        },
         columnStyles: {
-          0: { fontStyle: "bold", cellWidth: 32 },
-          1: { cellWidth: 20, halign: "center" },
-          2: {},
-        },
-        didParseCell: (data) => {
-          if (data.column.index === 0 && data.row.index >= 0) {
-            const colors = [C.purple, C.red, C.amber, C.blue, C.gray];
-            data.cell.styles.textColor = colors[data.row.index] || C.gray;
-          }
-          if (data.column.index === 1 && data.row.index >= 0) {
-            data.cell.styles.fontStyle = "bold";
-          }
-        },
+          0: { textColor: C.purple },
+          1: { textColor: C.red },
+          2: { textColor: C.amber },
+          3: { textColor: C.blue },
+          4: { textColor: C.gray }
+        }
       });
       y = doc.lastAutoTable.finalY + 4;
 
@@ -1576,6 +1397,7 @@ export default function Vulnscanner() {
       setPdfProgress(null);
     }
   };
+  */
 
   // put this inside the component (above the return)
   const getCookieArray = (h) => {
