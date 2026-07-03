@@ -91,6 +91,9 @@ export default function GainAccess() {
         if (res.status === 200 && result.token) {
           toast.success("Login successful!");
           localStorage.setItem("token", result.token);
+          if (result.refreshToken) {
+            localStorage.setItem("refreshToken", result.refreshToken);
+          }
           localStorage.setItem("user", JSON.stringify(result.user));
 
           const redirectPath = localStorage.getItem("redirectAfterLogin");

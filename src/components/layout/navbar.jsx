@@ -4,6 +4,7 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { Home, Menu, UserRound, X } from 'lucide-react';
 import { useEffect, useMemo, useRef, useState } from 'react';
+import { useAuth } from '@/context/AuthContext';
 
 import BrandMark from '@/components/marketing/BrandMark';
 
@@ -26,24 +27,13 @@ export default function Navbar() {
   const pathname = usePathname();
   const dropdownRef = useRef(null);
 
-  const [userName, setUserName] = useState('');
+  const { user, logout: contextLogout } = useAuth();
   const [menuOpen, setMenuOpen] = useState(false);
   const [showDropdown, setShowDropdown] = useState(false);
 
-  useEffect(() => {
-    if (typeof window === 'undefined') {
-      return;
-    }
-
-    const storedUser = localStorage.getItem('user');
-    if (storedUser) {
-      const parsed = JSON.parse(storedUser);
-      setUserName(parsed.name || parsed.email || 'User');
-    } else {
-      setUserName('');
-    }
-  }, [pathname]);
-
+  const userName = useMemo(() => {
+    return user ? (user.name || user.email || 'User') : '';
+  }, [user]);
 
   useEffect(() => {
     const handleClickOutside = (event) => {
@@ -79,11 +69,8 @@ export default function Navbar() {
   }, [userName]);
 
   const handleLogout = () => {
-    localStorage.removeItem('token');
-    localStorage.removeItem('user');
-    setUserName('');
+    contextLogout();
     setShowDropdown(false);
-    window.location.href = '/';
   };
 
 

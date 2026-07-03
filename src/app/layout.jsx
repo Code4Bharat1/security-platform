@@ -7,6 +7,7 @@ import Footer from "@/components/layout/footer";
 import WhatsApp from '@/components/WhatsApp/WhatsApp';
 import Chatbot from '@/components/Chatbot/chatbot';
 import { Toaster } from 'react-hot-toast';
+import { AuthProvider } from "@/context/AuthContext";
 
 const themeInitScript = `
   (() => {
@@ -70,6 +71,7 @@ export default function RootLayout({ children }) {
         suppressHydrationWarning
         className={`${spaceGrotesk.variable} ${geist.variable} ${jetBrainsMono.variable} antialiased`}
       >
+        <AuthProvider>
           <Navbar />
           {children}
           <Toaster position="top-right" toastOptions={{
@@ -81,6 +83,7 @@ export default function RootLayout({ children }) {
           < WhatsApp />
           < Chatbot />
           <Footer />
+        </AuthProvider>
       </body>
     </html>
   );

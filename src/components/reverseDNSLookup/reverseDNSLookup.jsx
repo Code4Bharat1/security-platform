@@ -54,6 +54,51 @@ export default function ReverseDNSLookup() {
     }
   }, [ip]);
 
+  const blacklistSummary = useMemo(() => {
+    if (data?.blacklistSummary) return data.blacklistSummary;
+    const zones = data?.blacklist?.results || [];
+    const listed = zones.filter((z) => z.listed).length;
+    const checked = zones.length;
+    let score = listed * 20; // fallback calculation
+    let risk = "Clean";
+    let action = "No action required. IP appears reputable.";
+    if (score >= 80) {
+      risk = "Critical";
+      action = "Block IP immediately; execute standard incident response procedures.";
+    } else if (score >= 40) {
+      risk = "High";
+      action = "Restrict traffic from this IP address; initiate active security monitoring.";
+    } else if (score >= 20) {
+      risk = "Medium";
+      action = "Investigate for potential false positive or temporary SMTP/network issue.";
+    }
+    return {
+      flagged: listed,
+      checked,
+      reputationScore: score,
+      riskLevel: risk,
+      recommendedAction: action
+    };
+  }, [data]);
+
+  const blacklists = useMemo(() => {
+    if (data?.blacklists) return data.blacklists;
+    const zones = data?.blacklist?.results || [];
+    return zones.map((z) => {
+      const namePart = z.zone.split(".")[0];
+      const displayName = namePart === "zen" ? "Spamhaus Zen" : namePart === "bl" ? "SpamCop" : namePart === "b" ? "Barracuda BRBL" : namePart === "dnsbl" ? "SORBS" : namePart === "cbl" ? "CBL" : z.zone;
+      return {
+        name: displayName,
+        status: z.listed ? "Listed" : "Clear",
+        severity: z.listed ? "High" : "Low",
+        reason: z.listed ? `IP listed on zone ${z.zone}` : "No active listing found.",
+        confidence: "High",
+        sourceType: "DNSBL",
+        lastSeen: z.listed ? new Date().toLocaleDateString("en-GB", { day: "2-digit", month: "short", year: "numeric" }) : "—"
+      };
+    });
+  }, [data]);
+
   const blacklistCount = useMemo(() => {
     const zones = data?.blacklist?.results || [];
     const listed = zones.filter((z) => z.listed).length;
@@ -125,7 +170,6 @@ export default function ReverseDNSLookup() {
   // ---- Export TXT / PDF ----
   function downloadTXT() {
     if (!data) return;
-    const zones = data.blacklist?.results || [];
     const forward = data.forwardValidation || [];
 
     const lines = [
@@ -138,6 +182,12 @@ export default function ReverseDNSLookup() {
       `TTL: ${human(data.ttlHuman)}`,
       `Result: ${human(data.result)}`,
       `Test: ${human(data.test, "public")}`,
+      "",
+      "--- IP Reputation Assessment ---",
+      `Reputation Score: ${blacklistSummary.reputationScore} / 100`,
+      `Blacklist Detection Rate: ${blacklistSummary.flagged} / ${blacklistSummary.checked} Blacklists Flagged`,
+      `Risk Level: ${blacklistSummary.riskLevel}`,
+      `Recommended Action: ${blacklistSummary.recommendedAction}`,
       "",
       "--- Geolocation ---",
       data.geo
@@ -155,15 +205,11 @@ export default function ReverseDNSLookup() {
           )}  ISP: ${human(data.asn.isp)}  CIDR: ${human(data.asn.cidr)}`
         : "(not available)",
       "",
-      "--- DNSBL (Blacklist) ---",
-      `Listed on ${blacklistCount.listed}/${blacklistCount.total} lists`,
-      ...zones.map(
-        (z) =>
-          `  - ${z.zone}: ${
-            z.listed
-              ? "LISTED (" + (z.addresses || []).join(",") + ")"
-              : "clear"
-          }`
+      "--- Blacklists Checked ---",
+      ...blacklists.map(
+        (bl) =>
+          `  - ${bl.name}: ${bl.status} [Severity: ${bl.severity}, Confidence: ${bl.confidence}]` + 
+          `    Details: ${bl.reason} (Last Seen: ${bl.lastSeen})`
       ),
       "",
       "--- Forward Validation ---",
@@ -251,17 +297,47 @@ export default function ReverseDNSLookup() {
       margin: { left: M, right: M },
     });
 
-    // Blacklist
-    const blRows = (data.blacklist?.results || []).map((z) => [
-      z.zone,
-      z.listed ? "LISTED" : "clear",
-      (z.addresses || []).join(", "),
+    // Blacklist / Reputation
+    autoTable(doc, {
+      startY: doc.lastAutoTable.finalY + 16,
+      head: [["IP Reputation Assessment Summary", "Value"]],
+      body: [
+        ["Reputation Score", `${blacklistSummary.reputationScore} / 100`],
+        ["Detection Rate", `${blacklistSummary.flagged} / ${blacklistSummary.checked} Blacklists Flagged`],
+        ["Risk Level", blacklistSummary.riskLevel],
+        ["Recommended Action", blacklistSummary.recommendedAction]
+      ],
+      headStyles: { fillColor: [30, 41, 59] }, // Slate gray header
+      styles: { fontSize: 10 },
+      margin: { left: M, right: M },
+    });
+
+    const blRows = blacklists.map((bl) => [
+      bl.name,
+      bl.status,
+      bl.severity,
+      bl.confidence,
+      bl.reason,
+      bl.lastSeen
     ]);
     autoTable(doc, {
       startY: doc.lastAutoTable.finalY + 12,
-      head: [["DNSBL Zone", "Status", "Answer"]],
-      body: blRows.length ? blRows : [["(none)", "", ""]],
-      styles: { fontSize: 9 },
+      head: [["Blacklist Feed", "Status", "Severity", "Confidence", "Observed Threat Intel", "Last Seen"]],
+      body: blRows.length ? blRows : [["(none)", "", "", "", "", ""]],
+      styles: { fontSize: 8.5 },
+      columnStyles: {
+        4: { cellWidth: 180 }
+      },
+      didParseCell: (data) => {
+        if (data.column.index === 1 && data.section === "body") {
+          if (data.cell.raw === "Listed") {
+            data.cell.styles.textColor = [220, 53, 69]; // red
+            data.cell.styles.fontStyle = "bold";
+          } else if (data.cell.raw === "Clear") {
+            data.cell.styles.textColor = [16, 185, 129]; // green
+          }
+        }
+      },
       margin: { left: M, right: M },
     });
 
@@ -416,6 +492,70 @@ export default function ReverseDNSLookup() {
               </div>
             </div>
 
+            {/* IP Reputation Assessment Summary Card */}
+            <div className="bg-black/45 border border-blue-500/20 rounded-xl p-5 shadow-lg space-y-4">
+              <div className="flex items-center justify-between border-b border-blue-500/10 pb-3">
+                <h3 className="text-base font-semibold text-white flex items-center gap-2">
+                  <Shield className="w-5 h-5 text-blue-500 animate-pulse" />
+                  IP Reputation & Threat Assessment
+                </h3>
+                <span className={`px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider ${
+                  blacklistSummary.riskLevel === "Critical"
+                    ? "bg-red-500/20 text-red-400 border border-red-500/30"
+                    : blacklistSummary.riskLevel === "High"
+                    ? "bg-orange-500/20 text-orange-400 border border-orange-500/30"
+                    : blacklistSummary.riskLevel === "Medium"
+                    ? "bg-yellow-500/20 text-yellow-400 border border-yellow-500/30"
+                    : "bg-emerald-500/20 text-emerald-450 border border-emerald-500/30"
+                }`}>
+                  {blacklistSummary.riskLevel} Risk
+                </span>
+              </div>
+              <div className="grid md:grid-cols-3 gap-6 items-center">
+                {/* Reputation Score Meter */}
+                <div className="flex flex-col items-center justify-center p-3 bg-blue-955/10 border border-blue-500/5 rounded-lg text-center">
+                  <div className="text-xs text-gray-400 uppercase tracking-wider mb-1">Reputation Score</div>
+                  <div className="relative flex items-center justify-center">
+                    <svg className="w-20 h-20 transform -rotate-90">
+                      <circle cx="40" cy="40" r="34" className="stroke-current text-blue-950" strokeWidth="6" fill="transparent" />
+                      <circle cx="40" cy="40" r="34" className={`stroke-current ${
+                        blacklistSummary.reputationScore >= 75 ? "text-red-500" : blacklistSummary.reputationScore >= 40 ? "text-orange-500" : blacklistSummary.reputationScore >= 11 ? "text-yellow-500" : "text-emerald-500"
+                      }`} strokeWidth="6" fill="transparent"
+                      strokeDasharray={213.6}
+                      strokeDashoffset={213.6 - (213.6 * blacklistSummary.reputationScore) / 100}
+                      strokeLinecap="round" />
+                    </svg>
+                    <div className="absolute text-lg font-bold text-white">
+                      {blacklistSummary.reputationScore}
+                    </div>
+                  </div>
+                  <div className="text-[10px] text-gray-500 mt-1">out of 100 max</div>
+                </div>
+
+                {/* Match Counter */}
+                <div className="space-y-1 text-center md:text-left">
+                  <div className="text-xs text-gray-400 uppercase tracking-wider">Blacklist Match Count</div>
+                  <div className="text-3xl font-extrabold text-white">
+                    {blacklistSummary.flagged} <span className="text-sm font-normal text-gray-500">/ {blacklistSummary.checked} Flagged</span>
+                  </div>
+                  <div className="text-xs text-gray-400">
+                    Queried from active reputation lists.
+                  </div>
+                </div>
+
+                {/* Recommendations */}
+                <div className="p-3.5 bg-blue-955/15 border border-blue-500/10 rounded-lg space-y-1 text-left">
+                  <div className="text-xs font-semibold text-blue-450 flex items-center gap-1.5">
+                    <CheckCircle className="w-3.5 h-3.5" />
+                    Security Guidance:
+                  </div>
+                  <p className="text-xs text-gray-300 leading-relaxed font-medium">
+                    {blacklistSummary.recommendedAction}
+                  </p>
+                </div>
+              </div>
+            </div>
+
             {/* Cards row */}
             <div className="grid md:grid-cols-3 gap-4">
               <div className="rounded-lg border border-blue-200 bg-gray-50 p-4">
@@ -524,46 +664,66 @@ export default function ReverseDNSLookup() {
               </div>
             </div>
 
-            {/* DNSBL */}
-            <div className="rounded-lg border border-blue-200 p-4">
-              <div className="font-semibold mb-2 text-white">
-                DNSBL / Blacklist
+            {/* IP Reputation & Blacklist Details Table */}
+            <div className="bg-black/45 border border-blue-500/20 rounded-xl p-5 shadow-lg space-y-4">
+              <div className="font-semibold text-base text-white flex items-center gap-2 border-b border-blue-500/10 pb-3">
+                <Globe className="w-5 h-5 text-blue-500" />
+                IP Reputation & Blacklist Details
               </div>
-              <div className="text-sm text-gray-700 mb-2">
-                Listed on{" "}
-                <span className="font-semibold">
-                  {blacklistCount.listed}/{blacklistCount.total}
-                </span>{" "}
-                lists
-              </div>
-              <div className="grid md:grid-cols-2 gap-2">
-                {(data.blacklist?.results || []).map((z) => (
-                  <div
-                    key={z.zone}
-                    className={`p-3 rounded border text-sm ${
-                      z.listed
-                        ? "bg-red-50 border-red-200 text-red-700"
-                        : "bg-blackborder-white text-white"
-                    }`}
-                  >
-                    <div className="flex items-center justify-between">
-                      <div className="font-medium">{z.zone}</div>
-                      {z.listed ? (
-                        <CircleSlash className="w-4 h-4" />
-                      ) : (
-                        <Check className="w-4 h-4" />
-                      )}
-                    </div>
-                    {z.listed && z.addresses?.length ? (
-                      <div className="mt-1 text-xs">
-                        Answer: {z.addresses.join(", ")}
-                      </div>
-                    ) : null}
-                  </div>
-                ))}
-                {!data.blacklist?.results?.length && (
-                  <div className="text-sm text-gray-500">No DNSBL results.</div>
-                )}
+              <div className="overflow-x-auto">
+                <table className="w-full text-left border-collapse">
+                  <thead>
+                    <tr className="border-b border-blue-500/10 text-gray-400 text-xs font-semibold uppercase">
+                      <th className="py-2.5 px-3">Blacklist Feed</th>
+                      <th className="py-2.5 px-3">Status</th>
+                      <th className="py-2.5 px-3">Severity</th>
+                      <th className="py-2.5 px-3">Confidence</th>
+                      <th className="py-2.5 px-3">Observed Threat Intel</th>
+                      <th className="py-2.5 px-3">Last Seen</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-blue-500/10 text-sm">
+                    {blacklists.map((bl) => (
+                      <tr key={bl.name} className="hover:bg-blue-950/10 transition-colors">
+                        <td className="py-3 px-3 font-semibold text-white">{bl.name}</td>
+                        <td className="py-3 px-3">
+                          <span className={`px-2 py-0.5 text-xs font-bold rounded-full ${
+                            bl.status === "Listed"
+                              ? "bg-red-500/10 text-red-400 border border-red-500/20"
+                              : "bg-emerald-500/10 text-emerald-400 border border-emerald-500/20"
+                          }`}>
+                            {bl.status}
+                          </span>
+                        </td>
+                        <td className="py-3 px-3">
+                          <span className={`font-semibold ${
+                            bl.severity === "High"
+                              ? "text-red-400"
+                              : bl.severity === "Medium"
+                              ? "text-orange-400"
+                              : bl.severity === "Low"
+                              ? "text-blue-400"
+                              : "text-gray-400"
+                          }`}>
+                            {bl.severity}
+                          </span>
+                        </td>
+                        <td className="py-3 px-3 text-gray-300">{bl.confidence}</td>
+                        <td className="py-3 px-3 text-xs text-gray-400 max-w-xs truncate" title={bl.reason}>
+                          {bl.reason}
+                        </td>
+                        <td className="py-3 px-3 text-xs text-gray-500">{bl.lastSeen}</td>
+                      </tr>
+                    ))}
+                    {!blacklists.length && (
+                      <tr>
+                        <td colSpan="6" className="py-4 text-center text-sm text-gray-500">
+                          No blacklists checked.
+                        </td>
+                      </tr>
+                    )}
+                  </tbody>
+                </table>
               </div>
             </div>
 
