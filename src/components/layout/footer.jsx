@@ -1,4 +1,7 @@
+'use client';
+
 import Link from 'next/link';
+import { usePathname } from 'next/navigation';
 import { Facebook, Instagram, Linkedin, Twitter } from 'lucide-react';
 
 import BrandMark from '@/components/marketing/BrandMark';
@@ -43,6 +46,10 @@ const columns = [
 ];
 
 export default function Footer() {
+  const pathname = usePathname();
+  const isAuthPage = pathname === '/gain-access' || pathname === '/join-the-network';
+  if (isAuthPage) return null;
+
   return (
     <footer className="border-t border-[color:var(--border)] bg-[color:var(--nav-bg)]">
       <div className="mx-auto grid max-w-7xl gap-16 px-4 py-16 sm:px-6 lg:grid-cols-[1.1fr_repeat(4,minmax(0,1fr))] lg:px-8">

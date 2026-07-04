@@ -82,6 +82,9 @@ export default function Navbar() {
     return pathname === href || pathname.startsWith(`${href}/`);
   };
 
+  const isAuthPage = pathname === '/gain-access' || pathname === '/join-the-network';
+  if (isAuthPage) return null;
+
   return (
     <header className="sticky top-0 z-50 border-b border-[color:var(--border)] bg-[color:var(--nav-bg)] backdrop-blur-xl">
       <div className="hidden border-b border-[color:var(--border)] md:block">
