@@ -48,8 +48,38 @@ export default function SOCPage() {
         const keyaspectsData = {
         title: "SOC Process",
         desc: "Our key aspects :-",
-        image:"/services/SOC1.png",
-
+        steps: [
+          {
+            title: "Scoping & Planning",
+            desc: "Define operational baselines, check regulatory scope, and map critical security monitoring interfaces.",
+            icon: "ShieldAlert",
+          },
+          {
+            title: "Documentation & Evidence Collection",
+            desc: "Gather security procedures, log architecture metrics, system configs, and access rules to build an evidence map.",
+            icon: "Layers",
+          },
+          {
+            title: "Control Assessment",
+            desc: "Analyze SIEM configuration setups, firewall logs, alert correlation criteria, and endpoint detection limits.",
+            icon: "Code",
+          },
+          {
+            title: "Gap Analysis & Remediation Guidance",
+            desc: "Identify gaps in threat coverage, alert false positives, and deliver actionable hardening strategies.",
+            icon: "Wrench",
+          },
+          {
+            title: "Effectiveness Testing",
+            desc: "Run purple-team fire drills, threat emulation tests, and playbook runs to validate active SOC alert triggers.",
+            icon: "Activity",
+          },
+          {
+            title: "Final Audit & Reporting",
+            desc: "Deliver verified posture summaries, SLA indicators, and compliance-ready reports for security stakeholders.",
+            icon: "FileCheck",
+          }
+        ]
     };
 
     // // Approach Section

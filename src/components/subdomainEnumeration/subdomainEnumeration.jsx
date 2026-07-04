@@ -83,8 +83,8 @@ export default function SubdomainScanner() {
         console.error("Error fetching subdomains:", err);
         setError(
           err.response?.data?.error ||
-            err.response?.data?.message ||
-            "Failed to fetch subdomains from server."
+          err.response?.data?.message ||
+          "Failed to fetch subdomains from server."
         );
       } finally {
         setLoading(false);
@@ -108,7 +108,7 @@ export default function SubdomainScanner() {
     doc.setFontSize(20);
     doc.setTextColor(220, 38, 38); // Red-600
     doc.text("Security Platform", 14, 22);
-    
+
     doc.setFontSize(16);
     doc.setTextColor(0, 0, 0);
     doc.text("Subdomain Enumeration Report", 14, 32);

@@ -32,7 +32,38 @@ export default function PTPage() {
     const keyAspectsData = {
         title: "Penetration Testing Process",
         desc: "Our key aspects:",
-        image: "/services/PT1.png"
+        steps: [
+          {
+            title: "Scoping & Rules of Engagement",
+            desc: "Define testing parameters, declare targets, establish rules of engagement, and obtain legal authorizations.",
+            icon: "ShieldAlert",
+          },
+          {
+            title: "Reconnaissance & Information Gathering",
+            desc: "Map target networks, harvest publicly available metadata (OSINT), and footprint network interfaces.",
+            icon: "Layers",
+          },
+          {
+            title: "Vulnerability Identification",
+            desc: "Identify open ports, running services, and unpatched application vulnerabilities using scans and analysis.",
+            icon: "Code",
+          },
+          {
+            title: "Exploitation & Attack Simulation",
+            desc: "Safely execute attack vectors to penetrate defenses, bypass restrictions, and prove vulnerability impact.",
+            icon: "Activity",
+          },
+          {
+            title: "Post-Exploitation & Lateral Movement",
+            desc: "Assess target environment value, simulate lateral expansion, and evaluate configuration privileges.",
+            icon: "Globe",
+          },
+          {
+            title: "Reporting & Remediation Support",
+            desc: "Create a prioritized vulnerability checklist with remediation playbooks and run re-test checks.",
+            icon: "FileCheck",
+          }
+        ]
     };
 
     return (

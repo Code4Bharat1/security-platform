@@ -43,7 +43,38 @@ export default function NSPage() {
   const keyaspectsData = {
     title: "Network Security Process",
     desc: "Our key aspects :-",
-    image: "/Services/NS1.png",
+    steps: [
+      {
+        title: "Scoping & Authorization",
+        desc: "Define test boundaries, establish rules of engagement, and obtain formal legal authorizations before scanning.",
+        icon: "ShieldAlert",
+      },
+      {
+        title: "Architecture Review",
+        desc: "Evaluate network maps, segmentation rules, firewall policies, and trust boundaries across infrastructures.",
+        icon: "Layers",
+      },
+      {
+        title: "Vulnerability Scanning",
+        desc: "Run deep automated and heuristic sweeps to identify open ports, active services, and unpatched configuration flaws.",
+        icon: "Code",
+      },
+      {
+        title: "Exploitation & Threat Simulation",
+        desc: "Simulate safe, real-world attack vectors to assess if identified vulnerabilities can be leveraged to compromise controls.",
+        icon: "Activity",
+      },
+      {
+        title: "Internal & External Testing",
+        desc: "Perform credentialed scans from inside trust zones and simulate external black-box threat origins.",
+        icon: "Globe",
+      },
+      {
+        title: "Reporting & Remediation Guidance",
+        desc: "Compile prioritized findings checklists alongside actionable remediation playbooks for security engineering teams.",
+        icon: "FileCheck",
+      }
+    ]
   };
 
   return (

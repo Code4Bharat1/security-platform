@@ -1,5 +1,16 @@
 import EngagementCta from "@/components/marketing/EngagementCta";
 import SectionIntro from "@/components/marketing/SectionIntro";
+import { 
+  ShieldAlert, 
+  Layers, 
+  Code, 
+  FileCheck, 
+  Wrench, 
+  Activity, 
+  ChevronRight, 
+  ShieldCheck,
+  Globe
+} from "lucide-react";
 
 export default function ServicesLayout({
   heroData,
@@ -89,13 +100,65 @@ export default function ServicesLayout({
             className="mb-10"
           />
 
-          <div className="surface-panel overflow-hidden p-4 sm:p-6">
-            <img
-              src={keyImage}
-              alt={keyAspectsData?.title || `${heroData?.title ?? "Service"} visual`}
-              className="w-full rounded-sm object-contain"
-            />
-          </div>
+          {keyAspectsData?.steps ? (
+            <div className="relative mt-8">
+              {/* Desktop Horizontal Line Indicator track */}
+              <div className="hidden lg:block absolute top-[44px] left-8 right-8 h-0.5 bg-gradient-to-r from-[var(--gold)]/20 via-white/5 to-[var(--gold)]/20 z-0" />
+              
+              <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-6 relative z-10">
+                {keyAspectsData.steps.map((step, index) => {
+                  const IconComponent = {
+                    ShieldAlert: ShieldAlert,
+                    Layers: Layers,
+                    Code: Code,
+                    FileCheck: FileCheck,
+                    Wrench: Wrench,
+                    Activity: Activity,
+                    Globe: Globe
+                  }[step.icon] || ShieldCheck;
+
+                  return (
+                    <div key={index} className="group relative">
+                      {/* Step Progress Container Card */}
+                      <div className="surface-panel p-6 rounded-2xl border border-white/5 bg-black/40 hover:bg-black/60 transition duration-300 flex flex-col justify-between h-full hover:border-[var(--gold)]/30 hover:shadow-[0_0_24px_rgba(212,166,74,0.06)]">
+                        <div>
+                          <div className="flex items-center justify-between mb-4">
+                            <span className="font-mono text-[10px] text-[var(--gold)] font-bold tracking-widest">
+                              STEP {String(index + 1).padStart(2, "0")}
+                            </span>
+                            <div className="p-2 rounded-xl bg-white/5 border border-white/10 group-hover:border-[var(--gold)]/20 transition duration-300">
+                              <IconComponent className="w-4 h-4 text-[var(--gold)] group-hover:scale-110 transition duration-300" />
+                            </div>
+                          </div>
+                          <h3 className="font-mono text-base font-bold text-white mb-2 leading-snug">
+                            {step.title}
+                          </h3>
+                          <p className="text-xs text-[var(--muted)] leading-relaxed">
+                            {step.desc}
+                          </p>
+                        </div>
+                      </div>
+                      
+                      {/* Desktop direction arrow */}
+                      {index < keyAspectsData.steps.length - 1 && (
+                        <div className="hidden lg:flex absolute top-[44px] -right-4 -translate-y-1/2 items-center justify-center text-white/15 group-hover:text-[var(--gold)]/40 transition z-20">
+                          <ChevronRight className="w-4 h-4" />
+                        </div>
+                      )}
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+          ) : (
+            <div className="surface-panel overflow-hidden p-4 sm:p-6">
+              <img
+                src={keyImage}
+                alt={keyAspectsData?.title || `${heroData?.title ?? "Service"} visual`}
+                className="w-full rounded-sm object-contain"
+              />
+            </div>
+          )}
         </div>
       </section>
 

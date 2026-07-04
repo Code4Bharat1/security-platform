@@ -43,7 +43,38 @@ export default function VAPage() {
   const keyAspectsData = {
     title: "Vulnerability Assessment Process",
     desc: "Key aspects",
-    image: "/Services/VA1.png",
+    steps: [
+      {
+        title: "Asset Discovery & Scoping",
+        desc: "Identify, catalog, and scope all hardware, software, and cloud assets across the organization's perimeter.",
+        icon: "ShieldAlert",
+      },
+      {
+        title: "Vulnerability Detection",
+        desc: "Run active automated security scans and manual correlation to locate unpatched services and misconfigurations.",
+        icon: "Layers",
+      },
+      {
+        title: "Risk Prioritization",
+        desc: "Score findings using the CVSS framework and assess business impact to highlight critical vulnerabilities.",
+        icon: "Code",
+      },
+      {
+        title: "Reporting",
+        desc: "Compile comprehensive risk scores, details, and vulnerability profiles into structured dashboards.",
+        icon: "FileCheck",
+      },
+      {
+        title: "Remediation Planning",
+        desc: "Provide technical details and remediation checklists to support rapid patching and configuration hardening.",
+        icon: "Wrench",
+      },
+      {
+        title: "Validation & Monitoring",
+        desc: "Perform delta re-scans to verify patches and maintain continuous security visibility.",
+        icon: "Activity",
+      }
+    ]
   };
 
   return (

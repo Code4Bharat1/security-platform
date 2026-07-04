@@ -49,8 +49,38 @@ export default function SOCPage() {
     const keyaspectsData = {
         title: "Cloud Security Process",
         desc: "Our key aspects :-",
-        image:"/Services/CS1.png",
-
+        steps: [
+          {
+            title: "Scoping & Asset Inventory",
+            desc: "Map all active cloud assets, storage buckets, container registries, and serverless entities across multi-cloud subscriptions.",
+            icon: "ShieldAlert",
+          },
+          {
+            title: "Configuration & Architecture Review",
+            desc: "Evaluate network topologies, access control lists, IAM roles, and security policies against cloud security benchmarks.",
+            icon: "Layers",
+          },
+          {
+            title: "Vulnerability & Threat Analysis",
+            desc: "Perform credentialed container scans, identify host operating system flaws, and check database and API endpoints for vulnerabilities.",
+            icon: "Code",
+          },
+          {
+            title: "Compliance & Governance Review",
+            desc: "Check alignment with regulatory cloud guidelines (SOC 2, ISO 27017, PCI DSS, GDPR) and ensure configuration compliance.",
+            icon: "FileCheck",
+          },
+          {
+            title: "Remediation Planning",
+            desc: "Develop step-by-step remediation plans to patch serverless configurations, harden IAM rules, and fix storage settings.",
+            icon: "Wrench",
+          },
+          {
+            title: "Continuous Monitoring & Validation",
+            desc: "Deploy active posture monitoring (CSPM) and real-time security scanning pipelines to enforce baseline configurations.",
+            icon: "Activity",
+          }
+        ]
     };
     // const approchData = {
     //     firstRow: [

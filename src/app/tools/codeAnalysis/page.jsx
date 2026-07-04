@@ -1,9 +1,3 @@
-import AnalysisForm from "@/components/codeAnalysis/codeAnalysis";
-
 export default function Home() {
- 
-  return (
-    <AnalysisForm/>
-  );
+  return null;
 }
-// <AnalysisResult issues={issues} />

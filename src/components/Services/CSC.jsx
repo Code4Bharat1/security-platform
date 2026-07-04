@@ -44,8 +44,38 @@ export default function SOCPage() {
     const keyaspectsData = {
         title: "Cyber Security Consultancy Process",
         desc: "Our key aspects :-",
-        imgPath:"/services/CSC1.png",
-
+        steps: [
+          {
+            title: "Scoping & Asset Inventory",
+            desc: "Define the engagement boundaries and compile a comprehensive inventory of all organizational digital and physical assets.",
+            icon: "ShieldAlert",
+          },
+          {
+            title: "Configuration & Architecture Review",
+            desc: "Analyze platform architectures, infrastructure layouts, security group controls, and identity settings against hardened benchmarks.",
+            icon: "Layers",
+          },
+          {
+            title: "Vulnerability & Threat Analysis",
+            desc: "Conduct automated and manual vulnerability scans, identify security gaps, and perform deep threat modeling across workstreams.",
+            icon: "Code",
+          },
+          {
+            title: "Compliance & Governance Review",
+            desc: "Evaluate alignment with global regulatory frameworks (ISO 27001, SOC 2, NIST, GDPR) and check policies and procedural controls.",
+            icon: "FileCheck",
+          },
+          {
+            title: "Remediation Planning",
+            desc: "Develop prioritized, risk-based remediation checklists and action items with clear step-by-step remediation strategies.",
+            icon: "Wrench",
+          },
+          {
+            title: "Continuous Monitoring & Validation",
+            desc: "Deploy validation pipelines, active threat tracking, and continuous posture monitoring to ensure lasting resilience.",
+            icon: "Activity",
+          }
+        ]
     };
     // const approchData = {
     //     firstRow: [
