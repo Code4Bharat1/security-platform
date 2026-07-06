@@ -101,7 +101,7 @@ const modules = [
     title: "Cloud Posture Audit",
     description:
       "Drift detection, IAM blast-radius checks, and benchmark scoring.",
-    href: "/tools/VulnerabilityAssessment",
+    href: "/tools",
   },
   {
     title: "SIEM & Log Analytics",

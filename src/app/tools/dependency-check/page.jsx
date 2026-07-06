@@ -10,7 +10,6 @@ import {
   Award, 
   FileText, 
   Loader2, 
-  ArrowLeft,
   Server,
   FileCode,
   AlertTriangle,
@@ -94,7 +93,7 @@ export default function DependencyCheckPage() {
     setScanStep(0);
     setConsoleLogs([]);
 
-    const API_BASE = process.env.NEXT_PUBLIC_PROD_API_URL.replace(/\/+$/, "");
+    const API_BASE = (process.env.NEXT_PUBLIC_PROD_API_URL || "").replace(/\/+$/, "");
     await protectedAction(async (token) => {
       try {
         const res = await fetch(`${API_BASE}/dependency-check/analyze`, {
@@ -186,28 +185,20 @@ export default function DependencyCheckPage() {
   };
 
   return (
-    <main className="bg-[#050505] text-white min-h-screen p-6 sm:p-10">
-      <div className="max-w-6xl mx-auto">
+    <div className="tool-detail-page min-h-screen">
+      <div className="tool-detail-shell">
         {/* Navigation & Header */}
-        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-10">
-          <button 
-            onClick={() => router.push("/tools/VulnerabilityAssessment")}
-            className="inline-flex items-center gap-2 font-mono text-sm text-[var(--gold)] hover:text-white transition"
-          >
-            <ArrowLeft className="h-4 w-4" />
-            Back to Toolkit
-          </button>
-          
-          <span className="rounded-full border border-[var(--gold)]/30 px-3 py-1 font-mono text-[0.62rem] uppercase tracking-[0.28em] text-[var(--gold)] bg-[var(--gold)]/10">
+        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-end gap-4 mb-8">
+          <span className="rounded-full border border-[color:var(--border)] px-3 py-1 font-mono text-[0.62rem] uppercase tracking-[0.28em] text-[color:var(--text-muted)] bg-white/[0.02]">
             Vulnerability Assessment
           </span>
         </div>
 
         <div className="mb-10">
-          <h1 className="text-4xl sm:text-5xl font-mono font-bold">
-            MALWAVE <span className="text-[var(--gold)]">SCAN</span>
+          <h1 className="text-4xl sm:text-5xl font-mono font-bold text-[color:var(--text-heading)]">
+            MALWAVE <span className="text-[color:var(--gold)]">SCAN</span>
           </h1>
-          <p className="mt-2 text-white/60 max-w-2xl text-base">
+          <p className="mt-2 text-[color:var(--text-muted)] max-w-2xl text-base">
             Review dependencies, third-party packages, and libraries for CVE vulnerabilities, typosquatting risks, and malicious packages.
           </p>
         </div>
@@ -215,30 +206,30 @@ export default function DependencyCheckPage() {
         <div className="grid gap-8 lg:grid-cols-[1fr_400px]">
           {/* Main Controls */}
           <div className="space-y-6">
-            <div className="border border-white/8 bg-white/[0.025] rounded-xl p-6">
-              <h2 className="text-lg font-mono font-semibold text-white mb-4 flex items-center gap-2">
-                <FileCode className="h-5 w-5 text-[var(--gold)]" />
+            <div className="bg-[color:var(--surface-card)] border border-[color:var(--border)] rounded-2xl p-6 shadow-[var(--shadow-soft)]">
+              <h2 className="text-lg font-mono font-semibold text-[color:var(--text-heading)] mb-4 flex items-center gap-2">
+                <FileCode className="h-5 w-5 text-[color:var(--gold)]" />
                 Select Manifest File
               </h2>
               
               <form onSubmit={handleStartScan} className="space-y-4">
                 <div className="flex flex-col sm:flex-row gap-4 items-center">
                   <div className="w-full">
-                    <label className="block text-xs uppercase tracking-wider font-mono text-white/50 mb-2">Paste package.json</label>
+                    <label className="block text-xs uppercase tracking-wider font-mono text-[color:var(--text-muted)] mb-2 font-semibold">Paste package.json</label>
                     <textarea 
                       value={packageJsonText}
                       onChange={(e) => setPackageJsonText(e.target.value)}
                       disabled={scanning}
                       rows={6}
-                      className="w-full bg-black/60 border border-white/10 rounded-lg p-3 text-xs text-white focus:border-[var(--gold)]/40 focus:outline-none font-mono"
+                      className="w-full bg-[color:var(--surface-subtle)] border border-[color:var(--border)] rounded-xl p-3.5 text-xs text-[color:var(--text-heading)] focus:ring-1 focus:ring-[color:var(--gold)] focus:border-[color:var(--gold)] focus:outline-none font-mono placeholder:text-[color:var(--text-muted)]"
                     />
                   </div>
                 </div>
 
                 <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
                   <div className="flex items-center gap-2">
-                    <label className="cursor-pointer bg-white/[0.05] border border-white/10 px-4 py-2.5 rounded-lg text-sm hover:bg-white/[0.1] transition flex items-center gap-2">
-                      <Upload className="h-4 w-4 text-[var(--gold)]" />
+                    <label className="cursor-pointer bg-white/[0.03] border border-[color:var(--border)] px-4 py-2.5 rounded-xl text-xs hover:bg-white/[0.08] hover:text-white transition flex items-center gap-2 font-semibold">
+                      <Upload className="h-4 w-4 text-[color:var(--gold)]" />
                       Upload package.json
                       <input 
                         type="file" 
@@ -248,13 +239,13 @@ export default function DependencyCheckPage() {
                         disabled={scanning}
                       />
                     </label>
-                    <span className="text-xs text-white/40 font-mono">Current: {fileName}</span>
+                    <span className="text-xs text-[color:var(--text-muted)] font-mono">Current: {fileName}</span>
                   </div>
 
                   <button 
                     type="submit"
                     disabled={scanning}
-                    className="w-full sm:w-auto bg-[var(--gold)] hover:bg-[var(--gold)]/90 text-black font-mono font-bold text-sm uppercase px-8 py-3 rounded-lg transition duration-200 flex items-center justify-center gap-2"
+                    className="w-full sm:w-auto bg-[color:var(--gold)] hover:bg-[color:var(--gold-strong)] text-black font-mono font-bold text-sm uppercase px-8 py-3.5 rounded-xl transition duration-200 flex items-center justify-center gap-2 cursor-pointer shadow-lg"
                   >
                     {scanning ? (
                       <>
@@ -274,13 +265,13 @@ export default function DependencyCheckPage() {
 
             {/* Console Output */}
             {(scanning || consoleLogs.length > 0) && (
-              <div className="border border-white/8 bg-black rounded-xl p-5 font-mono text-xs text-white/80 space-y-4">
-                <div className="flex items-center justify-between border-b border-white/10 pb-3">
-                  <span className="flex items-center gap-2 font-bold text-[var(--gold)]">
+              <div className="border border-[color:var(--border)] bg-black/45 rounded-2xl p-6 font-mono text-xs text-white/80 space-y-4 shadow-inner">
+                <div className="flex items-center justify-between border-b border-[color:var(--border)]/60 pb-3">
+                  <span className="flex items-center gap-2 font-bold text-[color:var(--gold)]">
                     <Terminal className="h-4 w-4" />
                     AUDIT CONSOLE OUTPUT
                   </span>
-                  {scanning && <span className="text-[var(--gold)] animate-pulse">● RUNNING</span>}
+                  {scanning && <span className="text-[color:var(--gold)] animate-pulse">● RUNNING</span>}
                 </div>
                 
                 <div 
@@ -307,26 +298,26 @@ export default function DependencyCheckPage() {
           {/* Sidebar results card */}
           <div className="space-y-6">
             {reportReady ? (
-              <div className="border border-[var(--gold)]/30 bg-[linear-gradient(180deg,rgba(212,166,74,0.08),rgba(12,12,13,0.92))] rounded-xl p-6 space-y-6">
+              <div className="border border-[color:var(--gold)]/30 bg-black/35 backdrop-blur-xl rounded-2xl p-6 space-y-6 shadow-[var(--shadow-elevated)]">
                 <div className="text-center space-y-2">
-                  <div className="inline-flex h-12 w-12 items-center justify-center border border-[var(--gold)]/25 text-[var(--gold)] rounded-full bg-[var(--gold)]/10 mb-2">
+                  <div className="inline-flex h-12 w-12 items-center justify-center border border-[color:var(--gold)]/25 text-[color:var(--gold)] rounded-full bg-[color:var(--gold)]/10 mb-2">
                     <Award className="h-6 w-6" />
                   </div>
-                  <h3 className="text-xl font-mono font-bold text-white">Scan Complete</h3>
-                  <p className="text-xs text-white/50">Risks found in {fileName}</p>
+                  <h3 className="text-xl font-mono font-bold text-[color:var(--text-heading)]">Scan Complete</h3>
+                  <p className="text-xs text-[color:var(--text-muted)]">Risks found in {fileName}</p>
                 </div>
 
-                <div className="border-t border-white/10 pt-4 space-y-3 font-mono text-xs">
+                <div className="border-t border-[color:var(--border)]/50 pt-4 space-y-3 font-mono text-xs">
                   <div className="flex justify-between">
-                    <span className="text-white/50">Vulnerabilities:</span>
-                    <span className="text-[var(--gold)] font-bold">3 Packages</span>
+                    <span className="text-[color:var(--text-muted)]">Vulnerabilities:</span>
+                    <span className="text-[color:var(--gold)] font-bold">3 Packages</span>
                   </div>
                   <div className="flex justify-between">
-                    <span className="text-white/50">Typosquatting Risk:</span>
+                    <span className="text-[color:var(--text-muted)]">Typosquatting Risk:</span>
                     <span className="text-red-500 font-bold">1 Flagged</span>
                   </div>
                   <div className="flex justify-between">
-                    <span className="text-white/50">Risk Band:</span>
+                    <span className="text-[color:var(--text-muted)]">Risk Band:</span>
                     <span className="text-red-500 font-bold">Critical</span>
                   </div>
                 </div>
@@ -334,7 +325,7 @@ export default function DependencyCheckPage() {
                 <div className="space-y-2">
                   <button 
                     onClick={handleDownloadPDF}
-                    className="w-full bg-[var(--gold)] hover:bg-[var(--gold)]/90 text-black font-mono font-bold text-xs uppercase py-3 rounded-lg transition duration-200 flex items-center justify-center gap-2"
+                    className="w-full bg-[color:var(--gold)] hover:bg-[color:var(--gold-strong)] text-black font-mono font-bold text-xs uppercase py-3 rounded-xl transition duration-200 flex items-center justify-center gap-2 cursor-pointer shadow-md"
                   >
                     <Download className="h-4 w-4" />
                     Download PDF Report
@@ -342,9 +333,9 @@ export default function DependencyCheckPage() {
                 </div>
               </div>
             ) : (
-              <div className="border border-white/8 bg-white/[0.025] rounded-xl p-6 text-center py-16 text-white/40 space-y-3">
-                <FileText className="h-12 w-12 mx-auto text-white/20" />
-                <p className="text-sm font-mono uppercase tracking-wider">No Scan Executed</p>
+              <div className="border border-[color:var(--border)] bg-[color:var(--surface-subtle)] rounded-2xl p-6 text-center py-16 text-[color:var(--text-muted)] space-y-3 shadow-sm">
+                <FileText className="h-12 w-12 mx-auto text-[color:var(--border)]/60" />
+                <p className="text-sm font-mono uppercase tracking-wider font-semibold text-[color:var(--text-heading)]">No Scan Executed</p>
                 <p className="text-xs max-w-[240px] mx-auto leading-relaxed">
                   Provide package specifications and start the audit to retrieve vulnerability metrics.
                 </p>
@@ -352,9 +343,9 @@ export default function DependencyCheckPage() {
             )}
 
             {/* Quick Tips */}
-            <div className="border border-white/8 bg-white/[0.01] rounded-xl p-5 space-y-4">
-              <h4 className="text-xs font-mono font-bold uppercase tracking-wider text-white/70">Scan Scope</h4>
-              <ul className="space-y-2 text-xs text-white/50 list-disc pl-4">
+            <div className="border border-[color:var(--border)] bg-black/20 rounded-2xl p-5 space-y-4">
+              <h4 className="text-xs font-mono font-bold uppercase tracking-wider text-[color:var(--text-heading)]">Scan Scope</h4>
+              <ul className="space-y-2 text-xs text-[color:var(--text-muted)] list-disc pl-4 leading-relaxed">
                 <li>Typosquatting checks flag packages matching known typosquat libraries designed to steal tokens.</li>
                 <li>Transitive dependencies are analyzed down to 5 sub-levels for nested vulnerabilities.</li>
                 <li>Scans verify compliance with license criteria (e.g. GPL exposure risks).</li>
@@ -363,6 +354,6 @@ export default function DependencyCheckPage() {
           </div>
         </div>
       </div>
-    </main>
+    </div>
   );
 }

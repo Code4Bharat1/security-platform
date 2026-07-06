@@ -9,7 +9,6 @@ import {
   Award, 
   FileText, 
   Loader2, 
-  ArrowLeft,
   Cloud,
   Key,
   CheckCircle2,
@@ -169,28 +168,20 @@ export default function CloudSecurityPage() {
   };
 
   return (
-    <main className="bg-[#050505] text-white min-h-screen p-6 sm:p-10">
-      <div className="max-w-6xl mx-auto">
+    <div className="tool-detail-page min-h-screen">
+      <div className="tool-detail-shell">
         {/* Navigation & Header */}
-        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-10">
-          <button 
-            onClick={() => router.push("/tools/VulnerabilityAssessment")}
-            className="inline-flex items-center gap-2 font-mono text-sm text-[var(--gold)] hover:text-white transition"
-          >
-            <ArrowLeft className="h-4 w-4" />
-            Back to Toolkit
-          </button>
-          
-          <span className="rounded-full border border-[var(--gold)]/30 px-3 py-1 font-mono text-[0.62rem] uppercase tracking-[0.28em] text-[var(--gold)] bg-[var(--gold)]/10">
+        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-end gap-4 mb-8">
+          <span className="rounded-full border border-[color:var(--border)] px-3 py-1 font-mono text-[0.62rem] uppercase tracking-[0.28em] text-[color:var(--text-muted)] bg-white/[0.02]">
             Vulnerability Assessment
           </span>
         </div>
 
         <div className="mb-10">
-          <h1 className="text-4xl sm:text-5xl font-mono font-bold">
-            CREDENTIAL <span className="text-[var(--gold)]">VALIDATION</span>
+          <h1 className="text-4xl sm:text-5xl font-mono font-bold text-[color:var(--text-heading)]">
+            CREDENTIAL <span className="text-[color:var(--gold)]">VALIDATION</span>
           </h1>
-          <p className="mt-2 text-white/60 max-w-2xl text-base">
+          <p className="mt-2 text-[color:var(--text-muted)] max-w-2xl text-base">
             Audit cloud access keys, user profiles, MFA policies, and IAM configurations to verify compliance with cloud security baselines.
           </p>
         </div>
@@ -198,22 +189,22 @@ export default function CloudSecurityPage() {
         <div className="grid gap-8 lg:grid-cols-[1fr_400px]">
           {/* Main Controls */}
           <div className="space-y-6">
-            <div className="border border-white/8 bg-white/[0.025] rounded-xl p-6">
-              <h2 className="text-lg font-mono font-semibold text-white mb-4 flex items-center gap-2">
-                <Cloud className="h-5 w-5 text-[var(--gold)]" />
+            <div className="bg-[color:var(--surface-card)] border border-[color:var(--border)] rounded-2xl p-6 shadow-[var(--shadow-soft)]">
+              <h2 className="text-lg font-mono font-semibold text-[color:var(--text-heading)] mb-4 flex items-center gap-2">
+                <Cloud className="h-5 w-5 text-[color:var(--gold)]" />
                 Target Environment Details
               </h2>
               
               <form onSubmit={handleStartScan} className="space-y-4">
                 <div>
-                  <label className="block text-xs uppercase tracking-wider font-mono text-white/50 mb-2">Target Profile, Account ID, or AWS Access Key</label>
+                  <label className="block text-xs uppercase tracking-wider font-mono text-[color:var(--text-muted)] mb-2 font-semibold">Target Profile, Account ID, or AWS Access Key</label>
                   <input 
                     type="text" 
                     value={target}
                     onChange={(e) => setTarget(e.target.value)}
                     disabled={scanning}
                     placeholder="e.g. AWS-Production-Profile or Account ID"
-                    className="w-full bg-black/60 border border-white/10 rounded-lg p-3 text-sm text-white focus:border-[var(--gold)]/40 focus:outline-none font-mono"
+                    className="w-full bg-[color:var(--surface-subtle)] text-[color:var(--text-heading)] border border-[color:var(--border)] rounded-xl p-3 text-sm focus:ring-1 focus:ring-[color:var(--gold)] focus:border-[color:var(--gold)] focus:outline-none transition-all placeholder:text-[color:var(--text-muted)] font-mono"
                     required
                   />
                 </div>
@@ -222,7 +213,7 @@ export default function CloudSecurityPage() {
                   <button 
                     type="submit"
                     disabled={scanning}
-                    className="w-full bg-[var(--gold)] hover:bg-[var(--gold)]/90 text-black font-mono font-bold text-sm uppercase py-3 rounded-lg transition duration-200 flex items-center justify-center gap-2"
+                    className="w-full bg-[color:var(--gold)] hover:bg-[color:var(--gold-strong)] text-black rounded-xl font-mono font-bold text-xs uppercase py-3.5 transition-all duration-200 hover:scale-[1.01] active:scale-[0.99] flex items-center justify-center gap-2 cursor-pointer shadow-lg"
                   >
                     {scanning ? (
                       <>
@@ -242,13 +233,13 @@ export default function CloudSecurityPage() {
 
             {/* Console Output */}
             {(scanning || consoleLogs.length > 0) && (
-              <div className="border border-white/8 bg-black rounded-xl p-5 font-mono text-xs text-white/80 space-y-4">
-                <div className="flex items-center justify-between border-b border-white/10 pb-3">
-                  <span className="flex items-center gap-2 font-bold text-[var(--gold)]">
+              <div className="border border-[color:var(--border)] bg-black/45 rounded-2xl p-6 font-mono text-xs text-white/80 space-y-4 shadow-inner">
+                <div className="flex items-center justify-between border-b border-[color:var(--border)]/60 pb-3">
+                  <span className="flex items-center gap-2 font-bold text-[color:var(--gold)]">
                     <Terminal className="h-4 w-4" />
                     AUDIT CONSOLE OUTPUT
                   </span>
-                  {scanning && <span className="text-[var(--gold)] animate-pulse">● RUNNING</span>}
+                  {scanning && <span className="text-[color:var(--gold)] animate-pulse">● RUNNING</span>}
                 </div>
                 
                 <div 
@@ -275,26 +266,26 @@ export default function CloudSecurityPage() {
           {/* Sidebar results card */}
           <div className="space-y-6">
             {reportReady ? (
-              <div className="border border-[var(--gold)]/30 bg-[linear-gradient(180deg,rgba(212,166,74,0.08),rgba(12,12,13,0.92))] rounded-xl p-6 space-y-6">
+              <div className="border border-[color:var(--gold)]/30 bg-black/35 backdrop-blur-xl rounded-2xl p-6 space-y-6 shadow-[var(--shadow-elevated)]">
                 <div className="text-center space-y-2">
-                  <div className="inline-flex h-12 w-12 items-center justify-center border border-[var(--gold)]/25 text-[var(--gold)] rounded-full bg-[var(--gold)]/10 mb-2">
+                  <div className="inline-flex h-12 w-12 items-center justify-center border border-[color:var(--gold)]/25 text-[color:var(--gold)] rounded-full bg-[color:var(--gold)]/10 mb-2">
                     <Award className="h-6 w-6" />
                   </div>
-                  <h3 className="text-xl font-mono font-bold text-white">Audit Complete</h3>
-                  <p className="text-xs text-white/50">Findings compiled for {target}</p>
+                  <h3 className="text-xl font-mono font-bold text-[color:var(--text-heading)]">Audit Complete</h3>
+                  <p className="text-xs text-[color:var(--text-muted)]">Findings compiled for {target}</p>
                 </div>
 
-                <div className="border-t border-white/10 pt-4 space-y-3 font-mono text-xs">
+                <div className="border-t border-[color:var(--border)]/50 pt-4 space-y-3 font-mono text-xs">
                   <div className="flex justify-between">
-                    <span className="text-white/50">Checks Failed:</span>
-                    <span className="text-[var(--gold)] font-bold">4 Policies</span>
+                    <span className="text-[color:var(--text-muted)]">Checks Failed:</span>
+                    <span className="text-[color:var(--gold)] font-bold">4 Policies</span>
                   </div>
                   <div className="flex justify-between">
-                    <span className="text-white/50">Checks Passed:</span>
+                    <span className="text-[color:var(--text-muted)]">Checks Passed:</span>
                     <span className="text-green-400 font-bold font-mono">1 Policy</span>
                   </div>
                   <div className="flex justify-between">
-                    <span className="text-white/50">Risk Band:</span>
+                    <span className="text-[color:var(--text-muted)]">Risk Band:</span>
                     <span className="text-red-500 font-bold">High Risk</span>
                   </div>
                 </div>
@@ -302,7 +293,7 @@ export default function CloudSecurityPage() {
                 <div className="space-y-2">
                   <button 
                     onClick={handleDownloadPDF}
-                    className="w-full bg-[var(--gold)] hover:bg-[var(--gold)]/90 text-black font-mono font-bold text-xs uppercase py-3 rounded-lg transition duration-200 flex items-center justify-center gap-2"
+                    className="w-full bg-[color:var(--gold)] hover:bg-[color:var(--gold-strong)] text-black font-mono font-bold text-xs uppercase py-3 rounded-xl transition duration-200 flex items-center justify-center gap-2 cursor-pointer shadow-md"
                   >
                     <Download className="h-4 w-4" />
                     Download PDF Report
@@ -310,9 +301,9 @@ export default function CloudSecurityPage() {
                 </div>
               </div>
             ) : (
-              <div className="border border-white/8 bg-white/[0.025] rounded-xl p-6 text-center py-16 text-white/40 space-y-3">
-                <FileText className="h-12 w-12 mx-auto text-white/20" />
-                <p className="text-sm font-mono uppercase tracking-wider">No Audit Executed</p>
+              <div className="border border-[color:var(--border)] bg-[color:var(--surface-subtle)] rounded-2xl p-6 text-center py-16 text-[color:var(--text-muted)] space-y-3 shadow-sm">
+                <FileText className="h-12 w-12 mx-auto text-[color:var(--border)]/60" />
+                <p className="text-sm font-mono uppercase tracking-wider font-semibold text-[color:var(--text-heading)]">No Audit Executed</p>
                 <p className="text-xs max-w-[240px] mx-auto leading-relaxed">
                   Specify target cloud environment and run the validation audit to generate consolidated credentials assessment.
                 </p>
@@ -320,9 +311,9 @@ export default function CloudSecurityPage() {
             )}
 
             {/* Quick Tips */}
-            <div className="border border-white/8 bg-white/[0.01] rounded-xl p-5 space-y-4">
-              <h4 className="text-xs font-mono font-bold uppercase tracking-wider text-white/70">Audit Specs</h4>
-              <ul className="space-y-2 text-xs text-white/50 list-disc pl-4">
+            <div className="border border-[color:var(--border)] bg-black/20 rounded-2xl p-5 space-y-4">
+              <h4 className="text-xs font-mono font-bold uppercase tracking-wider text-[color:var(--text-heading)]">Audit Specs</h4>
+              <ul className="space-y-2 text-xs text-[color:var(--text-muted)] list-disc pl-4 leading-relaxed">
                 <li>Validates MFA enforcement policies on administrative user groups.</li>
                 <li>Audits password policies, credentials rotation intervals, and access key ages.</li>
                 <li>Identifies unused, stale IAM credentials to reduce attack vector.</li>
@@ -331,6 +322,6 @@ export default function CloudSecurityPage() {
           </div>
         </div>
       </div>
-    </main>
+    </div>
   );
 }

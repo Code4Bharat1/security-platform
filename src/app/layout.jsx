@@ -59,7 +59,7 @@ export default function RootLayout({ children }) {
 
   // console.log(pathname, bgColor)
   return (
-    <html lang="en" suppressHydrationWarning>
+    <html lang="en" suppressHydrationWarning data-scroll-behavior="smooth">
       <head>
         <Script
           id="theme-init"

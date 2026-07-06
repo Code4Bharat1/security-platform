@@ -9,10 +9,10 @@ import {
   ShieldAlert, 
   Award, 
   FileText, 
-  ChevronRight, 
+  ChevronRight,
+  ChevronDown, 
   CheckCircle2, 
   Loader2, 
-  ArrowLeft,
   Server,
   Key,
   Users,
@@ -103,7 +103,7 @@ export default function ReportGeneratorPage() {
     setScanStep(0);
     setConsoleLogs([]);
 
-    const API_BASE = process.env.NEXT_PUBLIC_PROD_API_URL.replace(/\/+$/, "");
+    const API_BASE = (process.env.NEXT_PUBLIC_PROD_API_URL || "").replace(/\/+$/, "");
     await protectedAction(async (token) => {
       try {
         await fetch(`${API_BASE}/report-generator/generate`, {
@@ -196,30 +196,22 @@ export default function ReportGeneratorPage() {
   };
 
   return (
-    <main className="bg-[#050505] text-white min-h-screen p-6 sm:p-10">
-      <div className="max-w-6xl mx-auto">
+    <div className="tool-detail-page min-h-screen">
+      <div className="tool-detail-shell">
         {/* Navigation & Header */}
-        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-10">
-          <button 
-            onClick={() => router.push("/tools/VulnerabilityAssessment")}
-            className="inline-flex items-center gap-2 font-mono text-sm text-[var(--gold)] hover:text-white transition"
-          >
-            <ArrowLeft className="h-4 w-4" />
-            Back to Toolkit
-          </button>
-          
+        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-end gap-4 mb-8">
           <div className="flex items-center gap-4">
-            <span className="rounded-full border border-[var(--gold)]/30 px-3 py-1 font-mono text-[0.62rem] uppercase tracking-[0.28em] text-[var(--gold)] bg-[var(--gold)]/10">
+            <span className="rounded-full border border-[color:var(--border)] px-3 py-1 font-mono text-[0.62rem] uppercase tracking-[0.28em] text-[color:var(--text-muted)] bg-white/[0.02]">
               Vulnerability Assessment
             </span>
           </div>
         </div>
 
         <div className="mb-10">
-          <h1 className="text-4xl sm:text-5xl font-mono font-bold">
-            REPORT <span className="text-[var(--gold)]">GENERATOR</span>
+          <h1 className="text-4xl sm:text-5xl font-mono font-bold text-[color:var(--text-heading)]">
+            REPORT <span className="text-[color:var(--gold)]">GENERATOR</span>
           </h1>
-          <p className="mt-2 text-white/60 max-w-2xl text-base">
+          <p className="mt-2 text-[color:var(--text-muted)] max-w-2xl text-base">
             Perform in-depth Active Directory posture reviews and map credential theft paths. Generate client-ready PDF reports with detailed findings and mitigation strategies.
           </p>
         </div>
@@ -227,44 +219,49 @@ export default function ReportGeneratorPage() {
         <div className="grid gap-8 lg:grid-cols-[1fr_400px]">
           {/* Main Console & Inputs */}
           <div className="space-y-6">
-            <div className="border border-white/8 bg-white/[0.025] rounded-xl p-6">
-              <h2 className="text-lg font-mono font-semibold text-white mb-4 flex items-center gap-2">
-                <Server className="h-5 w-5 text-[var(--gold)]" />
+            <div className="bg-[color:var(--surface-card)] border border-[color:var(--border)] rounded-2xl p-6 shadow-[var(--shadow-soft)]">
+              <h2 className="text-lg font-mono font-semibold text-[color:var(--text-heading)] mb-4 flex items-center gap-2">
+                <Server className="h-5 w-5 text-[color:var(--gold)]" />
                 Scan Configuration
               </h2>
               
               <form onSubmit={handleStartScan} className="space-y-4">
                 <div className="grid gap-4 sm:grid-cols-2">
                   <div>
-                    <label className="block text-xs uppercase tracking-wider font-mono text-white/50 mb-2">Report Type</label>
-                    <select 
-                      value={reportType}
-                      onChange={(e) => setReportType(e.target.value)}
-                      disabled={scanning}
-                      className="w-full bg-black/60 border border-white/10 rounded-lg p-3 text-sm text-white focus:border-[var(--gold)]/40 focus:outline-none"
-                    >
-                      <option value="active-directory">Active Directory Security Scan</option>
-                      <option value="credential-path">Credential Path Audit</option>
-                    </select>
+                    <label className="block text-xs uppercase tracking-wider font-mono text-[color:var(--text-muted)] mb-2 font-semibold">Report Type</label>
+                    <div className="relative">
+                      <select 
+                        value={reportType}
+                        onChange={(e) => setReportType(e.target.value)}
+                        disabled={scanning}
+                        className="w-full bg-[color:var(--surface-subtle)] text-[color:var(--text-heading)] border border-[color:var(--border)] rounded-xl p-3 text-sm focus:ring-1 focus:ring-[color:var(--gold)] focus:border-[color:var(--gold)] focus:outline-none transition-all appearance-none cursor-pointer"
+                      >
+                        <option value="active-directory">Active Directory Security Scan</option>
+                        <option value="credential-path">Credential Path Audit</option>
+                      </select>
+                      <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-3 text-[color:var(--text-muted)]">
+                        <ChevronDown className="h-4 w-4" />
+                      </div>
+                    </div>
                   </div>
                   
                   <div>
-                    <label className="block text-xs uppercase tracking-wider font-mono text-white/50 mb-2">Target Domain / Controller</label>
+                    <label className="block text-xs uppercase tracking-wider font-mono text-[color:var(--text-muted)] mb-2 font-semibold">Target Domain / Controller</label>
                     <input 
                       type="text" 
                       value={domain}
                       onChange={(e) => setDomain(e.target.value)}
                       disabled={scanning}
                       placeholder="e.g. corp.local"
-                      className="w-full bg-black/60 border border-white/10 rounded-lg p-3 text-sm text-white focus:border-[var(--gold)]/40 focus:outline-none font-mono"
+                      className="w-full bg-[color:var(--surface-subtle)] text-[color:var(--text-heading)] border border-[color:var(--border)] rounded-xl p-3 text-sm focus:ring-1 focus:ring-[color:var(--gold)] focus:border-[color:var(--gold)] focus:outline-none transition-all placeholder:text-[color:var(--text-muted)] font-mono"
                     />
                   </div>
                 </div>
 
                 <div>
-                  <label className="block text-xs uppercase tracking-wider font-mono text-white/50 mb-2">Audit Scope</label>
-                  <div className="flex gap-4">
-                    <label className="flex items-center gap-2 text-sm text-white/70 cursor-pointer">
+                  <label className="block text-xs uppercase tracking-wider font-mono text-[color:var(--text-muted)] mb-2 font-semibold">Audit Scope</label>
+                  <div className="flex gap-6">
+                    <label className="flex items-center gap-2 text-sm text-[color:var(--text-heading)] cursor-pointer group">
                       <input 
                         type="radio" 
                         name="scope" 
@@ -272,11 +269,11 @@ export default function ReportGeneratorPage() {
                         checked={scope === "full"}
                         onChange={() => setScope("full")}
                         disabled={scanning}
-                        className="text-[var(--gold)] focus:ring-[var(--gold)] bg-transparent border-white/20"
+                        className="w-4 h-4 text-[color:var(--gold)] focus:ring-[color:var(--gold)] bg-transparent border-[color:var(--border)]"
                       />
-                      Full Domain Audit
+                      <span className="group-hover:text-white transition">Full Domain Audit</span>
                     </label>
-                    <label className="flex items-center gap-2 text-sm text-white/70 cursor-pointer">
+                    <label className="flex items-center gap-2 text-sm text-[color:var(--text-heading)] cursor-pointer group">
                       <input 
                         type="radio" 
                         name="scope" 
@@ -284,9 +281,9 @@ export default function ReportGeneratorPage() {
                         checked={scope === "quick"}
                         onChange={() => setScope("quick")}
                         disabled={scanning}
-                        className="text-[var(--gold)] focus:ring-[var(--gold)] bg-transparent border-white/20"
+                        className="w-4 h-4 text-[color:var(--gold)] focus:ring-[color:var(--gold)] bg-transparent border-[color:var(--border)]"
                       />
-                      Quick Configuration Audit
+                      <span className="group-hover:text-white transition">Quick Configuration Audit</span>
                     </label>
                   </div>
                 </div>
@@ -295,7 +292,7 @@ export default function ReportGeneratorPage() {
                   <button 
                     type="submit"
                     disabled={scanning}
-                    className="w-full bg-[var(--gold)] hover:bg-[var(--gold)]/90 text-black font-mono font-bold text-sm uppercase py-3 rounded-lg transition duration-200 flex items-center justify-center gap-2"
+                    className="w-full bg-[color:var(--gold)] hover:bg-[color:var(--gold-strong)] text-black rounded-xl font-mono font-bold text-xs uppercase py-3.5 transition-all duration-200 hover:scale-[1.01] active:scale-[0.99] flex items-center justify-center gap-2 cursor-pointer shadow-lg"
                   >
                     {scanning ? (
                       <>
@@ -315,13 +312,13 @@ export default function ReportGeneratorPage() {
 
             {/* Console Output */}
             {(scanning || consoleLogs.length > 0) && (
-              <div className="border border-white/8 bg-black rounded-xl p-5 font-mono text-xs text-white/80 space-y-4">
-                <div className="flex items-center justify-between border-b border-white/10 pb-3">
-                  <span className="flex items-center gap-2 font-bold text-[var(--gold)]">
+              <div className="border border-[color:var(--border)] bg-black/45 rounded-2xl p-6 font-mono text-xs text-white/80 space-y-4 shadow-inner">
+                <div className="flex items-center justify-between border-b border-[color:var(--border)]/60 pb-3">
+                  <span className="flex items-center gap-2 font-bold text-[color:var(--gold)]">
                     <Terminal className="h-4 w-4" />
                     AUDIT CONSOLE OUTPUT
                   </span>
-                  {scanning && <span className="text-[var(--gold)] animate-pulse">● RUNNING</span>}
+                  {scanning && <span className="text-[color:var(--gold)] animate-pulse">● RUNNING</span>}
                 </div>
                 
                 <div 
@@ -348,30 +345,30 @@ export default function ReportGeneratorPage() {
           {/* Results Sidebar / Report Card */}
           <div className="space-y-6">
             {reportReady ? (
-              <div className="border border-[var(--gold)]/30 bg-[linear-gradient(180deg,rgba(212,166,74,0.08),rgba(12,12,13,0.92))] rounded-xl p-6 space-y-6">
+              <div className="border border-[color:var(--gold)]/30 bg-black/35 backdrop-blur-xl rounded-2xl p-6 space-y-6 shadow-[var(--shadow-elevated)]">
                 <div className="text-center space-y-2">
-                  <div className="inline-flex h-12 w-12 items-center justify-center border border-[var(--gold)]/25 text-[var(--gold)] rounded-full bg-[var(--gold)]/10 mb-2">
+                  <div className="inline-flex h-12 w-12 items-center justify-center border border-[color:var(--gold)]/25 text-[color:var(--gold)] rounded-full bg-[color:var(--gold)]/10 mb-2">
                     <Award className="h-6 w-6" />
                   </div>
-                  <h3 className="text-xl font-mono font-bold text-white">Report Generated</h3>
-                  <p className="text-xs text-white/50">Audit completed for {domain}</p>
+                  <h3 className="text-xl font-mono font-bold text-[color:var(--text-heading)]">Report Generated</h3>
+                  <p className="text-xs text-[color:var(--text-muted)]">Audit completed for {domain}</p>
                 </div>
 
-                <div className="border-t border-white/10 pt-4 space-y-3 font-mono text-xs">
+                <div className="border-t border-[color:var(--border)]/50 pt-4 space-y-3 font-mono text-xs">
                   <div className="flex justify-between">
-                    <span className="text-white/50">Report Type:</span>
-                    <span className="text-white font-semibold">
+                    <span className="text-[color:var(--text-muted)]">Report Type:</span>
+                    <span className="text-[color:var(--text-heading)] font-semibold">
                       {reportType === "active-directory" ? "AD Security Scan" : "Path Audit"}
                     </span>
                   </div>
                   <div className="flex justify-between">
-                    <span className="text-white/50">Total Findings:</span>
-                    <span className="text-[var(--gold)] font-bold">
+                    <span className="text-[color:var(--text-muted)]">Total Findings:</span>
+                    <span className="text-[color:var(--gold)] font-bold">
                       {reportType === "active-directory" ? "4 Warnings" : "3 Alerts"}
                     </span>
                   </div>
                   <div className="flex justify-between">
-                    <span className="text-white/50">Risk Band:</span>
+                    <span className="text-[color:var(--text-muted)]">Risk Band:</span>
                     <span className="text-red-500 font-bold">High Risk</span>
                   </div>
                 </div>
@@ -379,7 +376,7 @@ export default function ReportGeneratorPage() {
                 <div className="space-y-2">
                   <button 
                     onClick={handleDownloadPDF}
-                    className="w-full bg-[var(--gold)] hover:bg-[var(--gold)]/90 text-black font-mono font-bold text-xs uppercase py-3 rounded-lg transition duration-200 flex items-center justify-center gap-2"
+                    className="w-full bg-[color:var(--gold)] hover:bg-[color:var(--gold-strong)] text-black font-mono font-bold text-xs uppercase py-3 rounded-xl transition duration-200 flex items-center justify-center gap-2 cursor-pointer shadow-md"
                   >
                     <Download className="h-4 w-4" />
                     Download PDF Report
@@ -387,9 +384,9 @@ export default function ReportGeneratorPage() {
                 </div>
               </div>
             ) : (
-              <div className="border border-white/8 bg-white/[0.025] rounded-xl p-6 text-center py-16 text-white/40 space-y-3">
-                <FileText className="h-12 w-12 mx-auto text-white/20" />
-                <p className="text-sm font-mono uppercase tracking-wider">No Report Generated</p>
+              <div className="border border-[color:var(--border)] bg-[color:var(--surface-subtle)] rounded-2xl p-6 text-center py-16 text-[color:var(--text-muted)] space-y-3 shadow-sm">
+                <FileText className="h-12 w-12 mx-auto text-[color:var(--border)]/60" />
+                <p className="text-sm font-mono uppercase tracking-wider font-semibold text-[color:var(--text-heading)]">No Report Generated</p>
                 <p className="text-xs max-w-[240px] mx-auto leading-relaxed">
                   Configure the target domain and run the audit to generate consolidated reports.
                 </p>
@@ -397,9 +394,9 @@ export default function ReportGeneratorPage() {
             )}
 
             {/* Quick Tips/Reference Info */}
-            <div className="border border-white/8 bg-white/[0.01] rounded-xl p-5 space-y-4">
-              <h4 className="text-xs font-mono font-bold uppercase tracking-wider text-white/70">Audit Methodology</h4>
-              <ul className="space-y-2 text-xs text-white/50 list-disc pl-4">
+            <div className="border border-[color:var(--border)] bg-black/20 rounded-2xl p-5 space-y-4">
+              <h4 className="text-xs font-mono font-bold uppercase tracking-wider text-[color:var(--text-heading)]">Audit Methodology</h4>
+              <ul className="space-y-2 text-xs text-[color:var(--text-muted)] list-disc pl-4 leading-relaxed">
                 <li>Active Directory scans review LDAP parameters, SPNs, password configurations, and trust flags.</li>
                 <li>Credential path mapping resolves Dijkstra traversal over Nested Administrators, GPO Write privileges, and delegated sessions.</li>
                 <li>Reports generated comply with CIS Benchmarks for Active Directory security.</li>
@@ -408,6 +405,6 @@ export default function ReportGeneratorPage() {
           </div>
         </div>
       </div>
-    </main>
+    </div>
   );
 }

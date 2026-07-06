@@ -11,10 +11,10 @@ export const AuthProvider = ({ children }) => {
   const [loading, setLoading] = useState(true);
   const router = useRouter();
   
-  // Keep track of idle timer
+  // Keep track of idle timer (increased for developer testing)
   const idleTimerRef = useRef(null);
-  const WARNING_TIMEOUT = 14 * 60 * 1000; // Show extend warning at 14m
-  const LOGOUT_TIMEOUT = 15 * 60 * 1000;  // Log out at 15m
+  const WARNING_TIMEOUT = 23 * 60 * 60 * 1000; // Show extend warning at 23 hours
+  const LOGOUT_TIMEOUT = 24 * 60 * 60 * 1000;  // Log out at 24 hours
 
   // Local JWT claims decoding helper
   const decodeJWT = useCallback((tokenStr) => {
