@@ -135,12 +135,12 @@ export default function XssTester() {
       startY: 110,
       head: [],
       body: [
-        ["Assessment Performed by", `(${empMail})`],
-        ["Employee Name", `(${empName})`],
-        ["Employee Mail ID", `(${empMail})`],
-        ["Scanned URL", `(${url || "Target URL"})`],
-        ["Assessment Date", `(${assessmentDate})`],
-        ["Assessment Time", `(${assessmentTime})`],
+        ["Assessment Performed by", empMail],
+        ["Employee Name", empName],
+        ["Employee Mail ID", empMail],
+        ["Scanned URL", url || "Target URL"],
+        ["Assessment Date", assessmentDate],
+        ["Assessment Time", assessmentTime],
         ["Classification", "Confidential"],
         ["Assessment Status", "Completed"],
       ],
@@ -178,7 +178,7 @@ export default function XssTester() {
         ["Tool Category", "Web Application Security / Injection Testing"],
         ["Methodology Alignment", "OWASP WSTG – OTG-INPVAL-001 / OTG-INPVAL-002\n(Reflected & Stored XSS Testing)"],
         ["Compliance Alignment", "ISO/IEC 27001  |  AICPA SOC Frameworks"],
-        ["Scanned URL", `(${url || "Target URL"})`],
+        ["Scanned URL", url || "Target URL"],
         ["Assessment Mode", "Non-Intrusive / Automated Payload Injection"],
       ],
       theme: "grid",
@@ -288,7 +288,8 @@ export default function XssTester() {
       return "No execution or reflection";
     };
 
-    const detailedRows = runsList.map((r, idx) => [
+    const vulnerableDetailedRuns = runsList.filter((r) => r.risk !== "None");
+    const detailedRows = vulnerableDetailedRuns.map((r, idx) => [
       r.risk || "None",
       r.param || "—",
       idx + 1,
@@ -298,6 +299,19 @@ export default function XssTester() {
       getCalc(r),
       getRec(r.context),
     ]);
+
+    if (detailedRows.length === 0) {
+      detailedRows.push([
+        "Secure",
+        detectedParamStr || "All",
+        "—",
+        "No XSS vulnerability detected for the tested parameters.",
+        "Not Reflected",
+        "None",
+        "No execution or reflection",
+        "Implement standard input sanitization and CSP headers."
+      ]);
+    }
 
     autoTable(doc, {
       startY: findingsY + 6,

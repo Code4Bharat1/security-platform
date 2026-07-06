@@ -208,12 +208,6 @@ export default function JWTSignatureValidator() {
 
         {/* Card */}
         <div className="bg-[#1c1c1e] rounded-xl shadow-lg border border-blue-700 p-6 space-y-6">
-          <div className="bg-blue-600 p-4 rounded-lg ">
-            <h1 className="text-2xl font-bold text-white">
-              JWT Signature Validator
-            </h1>
-          </div>
-
           {/* JWT Token */}
           <div>
             <label className="block text-sm font-semibold text-blue-400 mb-2">
@@ -278,7 +272,7 @@ export default function JWTSignatureValidator() {
             <button
               onClick={handleValidate}
               disabled={loading || !token.trim() || !secret.trim()}
-              className="flex-1 bg-blue text-white py-3 px-6 rounded-lg hover:bg-blue-600 disabled:bg-blue-600 transition"
+              className="flex-1 bg-blue text-black py-3 px-6 rounded-lg hover:bg-blue-600 disabled:bg-blue-600 transition"
             >
               {loading ? "Validating..." : "Validate JWT Token"}
             </button>
@@ -287,8 +281,8 @@ export default function JWTSignatureValidator() {
               disabled={!result}
               className={`px-4 py-3 rounded-lg border transition ${
                 result
-                  ? "bg-blue-600 text-white border-blue-600 hover:bg-blue-700"
-                  : "bg-blue-600 text-gray-100 border-blue-300 cursor-not-allowed"
+                  ? "bg-blue-600 text-black border-blue-600 hover:bg-blue-700"
+                  : "bg-blue-600 text-black border-blue-300 cursor-not-allowed"
               }`}
             >
               Download PDF
@@ -299,8 +293,8 @@ export default function JWTSignatureValidator() {
               disabled={!result}
               className={`px-4 py-3 rounded-lg border transition ${
                 result
-                  ? "bg-blue-600 text-white border-blue-600 hover:bg-blue-700"
-                  : "bg-blue-600 text-gray-100 border-blue-300 cursor-not-allowed"
+                  ? "bg-blue-600 text-black border-blue-600 hover:bg-blue-700"
+                  : "bg-blue-600 text-black border-blue-300 cursor-not-allowed"
               }`}
             >
               Download TXT
