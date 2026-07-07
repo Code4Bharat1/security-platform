@@ -9,10 +9,10 @@ import {
   Loader2,
   FileText,
   FileDown,
+  Info,
 } from "lucide-react";
 import { jsPDF } from "jspdf";
 import autoTable from "jspdf-autotable";
-import GreenLayout from "../GreenTeam/layout";
 import useProtectedAction from "../UseProtectedAction/UseProtectedAction";
 
 export default function KeywordPage() {
@@ -70,29 +70,46 @@ export default function KeywordPage() {
   };
 
   /* ---------- Exports ---------- */
+  /* ---------- Exports ---------- */
   const exportPDF = () => {
     if (!report) return;
     const doc = new jsPDF({ unit: "pt", format: "a4" });
 
-    // Header
-    doc.setFontSize(16);
-    doc.text("Keyword Density Report", 40, 40);
+    // Header Banner
+    doc.setFillColor(18, 18, 18);
+    doc.rect(0, 0, doc.internal.pageSize.width, 40, "F");
+
+    doc.setTextColor(16, 185, 129); // Emerald Green
+    doc.setFont("Helvetica", "bold");
+    doc.setFontSize(20);
+    doc.text("NEXCORE SECURITY PLATFORM", 15, 20);
+
+    doc.setTextColor(255, 255, 255);
+    doc.setFontSize(11);
+    doc.text("KEYWORD DENSITY AUDIT REPORT", 15, 30);
+
+    // Scan Meta Info
+    doc.setTextColor(50, 50, 50);
     doc.setFontSize(10);
-    doc.text(`Target: ${url}`, 40, 58);
-    if (report.title) doc.text(`Title: ${report.title}`, 40, 72);
+    doc.text(`Target: ${url}`, 15, 52);
+    if (report.title) doc.text(`Title: ${report.title}`, 15, 62);
     if (report.metaDescription)
       doc.text(
         `Meta Description: ${trim(report.metaDescription, 120)}`,
-        40,
-        86
+        15,
+        72
       );
-    doc.text(`Timestamp: ${new Date().toISOString()}`, 40, 100);
+    doc.text(`Date: ${new Date().toLocaleString()}`, 15, 82);
+
+    doc.setDrawColor(16, 185, 129);
+    doc.setLineWidth(0.5);
+    doc.line(15, 90, doc.internal.pageSize.width - 15, 90);
 
     // Summary
     doc.setFontSize(12);
-    doc.text("Summary", 40, 122);
+    doc.text("Summary Metrics", 15, 105);
     autoTable(doc, {
-      startY: 130,
+      startY: 112,
       head: [["Metric", "Value"]],
       body: [
         ["Total Words", String(report.totalWords ?? 0)],
@@ -100,6 +117,7 @@ export default function KeywordPage() {
         ["Top Phrases (count)", String(report.phrases?.length ?? 0)],
       ],
       styles: { fontSize: 9 },
+      headStyles: { fillColor: [16, 185, 129], textColor: [255, 255, 255] },
       columnStyles: { 0: { cellWidth: 180 }, 1: { cellWidth: 340 } },
       theme: "grid",
     });
@@ -119,7 +137,7 @@ export default function KeywordPage() {
         1: { cellWidth: 100 },
         2: { cellWidth: 140 },
       },
-      headStyles: { fillColor: [34, 197, 94] },
+      headStyles: { fillColor: [16, 185, 129], textColor: [255, 255, 255] },
       theme: "striped",
     });
 
@@ -138,7 +156,7 @@ export default function KeywordPage() {
         1: { cellWidth: 100 },
         2: { cellWidth: 140 },
       },
-      headStyles: { fillColor: [16, 185, 129] },
+      headStyles: { fillColor: [16, 185, 129], textColor: [255, 255, 255] },
       theme: "striped",
     });
 
@@ -148,35 +166,38 @@ export default function KeywordPage() {
   const exportInsightPDF = () => {
     const i = report?.insights;
     if (!i) return;
-
     const doc = new jsPDF({ unit: "pt", format: "a4" });
 
-    // Title
-    doc.setFontSize(16);
-    doc.text("Enhanced Industry-Level Output Structure", 40, 40);
+    // Header Banner
+    doc.setFillColor(18, 18, 18);
+    doc.rect(0, 0, doc.internal.pageSize.width, 40, "F");
+
+    doc.setTextColor(16, 185, 129); // Emerald Green
+    doc.setFont("Helvetica", "bold");
+    doc.setFontSize(20);
+    doc.text("NEXCORE SECURITY PLATFORM", 15, 20);
+
+    doc.setTextColor(255, 255, 255);
+    doc.setFontSize(11);
+    doc.text("KEYWORD INTELLIGENCE INSIGHT REPORT", 15, 30);
+
+    // Scan Meta Info
+    doc.setTextColor(50, 50, 50);
     doc.setFontSize(10);
-    doc.text(
-      `Keyword Intelligence Report — ${new Date().toLocaleDateString()}`,
-      40,
-      58
-    );
-    doc.text(`Website: ${i.header?.website || safeHostname(url)}`, 40, 72);
-    doc.text(
-      `Total Keywords Extracted: ${i.totals?.totalExtracted ?? 0}`,
-      40,
-      86
-    );
-    doc.text(
-      `Filtered SEO Keywords: ${i.totals?.filteredSEOKeywords ?? 0}`,
-      40,
-      100
-    );
+    doc.text(`Website: ${i.header?.website || safeHostname(url)}`, 15, 52);
+    doc.text(`Total Keywords Extracted: ${i.totals?.totalExtracted ?? 0}`, 15, 62);
+    doc.text(`Filtered SEO Keywords: ${i.totals?.filteredSEOKeywords ?? 0}`, 15, 72);
+    doc.text(`Date: ${new Date().toLocaleString()}`, 15, 82);
+
+    doc.setDrawColor(16, 185, 129);
+    doc.setLineWidth(0.5);
+    doc.line(15, 90, doc.internal.pageSize.width - 15, 90);
 
     // High Priority
     doc.setFontSize(12);
-    doc.text("🔥 High-Priority Keywords", 40, 122);
+    doc.text("High-Priority Keywords", 15, 105);
     autoTable(doc, {
-      startY: 130,
+      startY: 112,
       head: [
         [
           "Keyword",
@@ -196,7 +217,7 @@ export default function KeywordPage() {
         row.intent ?? "-",
       ]),
       styles: { fontSize: 9, cellPadding: 4 },
-      headStyles: { fillColor: [255, 102, 0], textColor: [255, 255, 255] },
+      headStyles: { fillColor: [16, 185, 129], textColor: [255, 255, 255] },
       theme: "striped",
     });
 
@@ -211,7 +232,7 @@ export default function KeywordPage() {
         row.ctrPotential ?? "-",
       ]),
       styles: { fontSize: 9 },
-      headStyles: { fillColor: [255, 204, 0] },
+      headStyles: { fillColor: [52, 211, 153], textColor: [255, 255, 255] },
       theme: "striped",
     });
 
@@ -228,7 +249,7 @@ export default function KeywordPage() {
         row.competitorUrl ? row.competitorUrl.replace(/^https?:\/\//, "") : "-",
       ]),
       styles: { fontSize: 9 },
-      headStyles: { fillColor: [99, 102, 241], textColor: [255, 255, 255] },
+      headStyles: { fillColor: [4, 120, 87], textColor: [255, 255, 255] },
       theme: "grid",
     });
 
@@ -238,10 +259,10 @@ export default function KeywordPage() {
       .join("\n");
     const startY = doc.lastAutoTable.finalY + 24;
     doc.setFontSize(12);
-    doc.text("✍️ Suggested Actions", 40, startY);
+    doc.text("Suggested Actions", 15, startY);
     doc.setFontSize(10);
     const lines = doc.splitTextToSize(actions || "—", 515);
-    doc.text(lines, 40, startY + 16);
+    doc.text(lines, 15, startY + 16);
 
     doc.save(`insight-report-${safeHostname(url)}.pdf`);
   };
@@ -281,139 +302,215 @@ export default function KeywordPage() {
   };
 
   return (
-    <div className="min-h-screen bg-black">
-      {/* Header */}
-      <GreenLayout
-        heroData={{
-          title: "Keyword Density Analyzer",
-          desc: "Get detailed insights into keyword density and phrase frequency to optimize your content for better SEO performance.",
-          imgPath: "/GreenTeam/keyword_checker.png",
-        }}
-      />
-
-      <div className="max-w-6xl mx-auto px-6 py-8">
-        {/* Hero */}
-        <div className="text-center mb-12">
-          <h2 className="text-4xl font-bold text-green-600 mb-4">
-            Analyze Your Website's Keywords
-          </h2>
+    <div className="tool-detail-page min-h-screen" style={{
+      '--hero-ambient-a': 'rgba(16, 185, 129, 0.08)',
+      '--hero-ambient-b': 'rgba(16, 185, 129, 0.03)',
+      '--glow-primary': '0 0 34px rgba(16, 185, 129, 0.16)',
+      '--gold': '#10b981',
+      '--gold-strong': '#34d399',
+      '--gold-dark': '#047857',
+      '--ring': 'rgba(16, 185, 129, 0.34)',
+      '--surface-glow': 'rgba(16, 185, 129, 0.14)',
+    }}>
+      <style>{`
+        .tool-detail-page ::-webkit-scrollbar-thumb {
+          background: rgba(16, 185, 129, 0.35) !important;
+        }
+        .tool-detail-page ::-webkit-scrollbar-thumb:hover {
+          background: rgba(16, 185, 129, 0.55) !important;
+        }
+        .tool-detail-page ::selection {
+          background: rgba(16, 185, 129, 0.22) !important;
+          color: #e6fffa !important;
+        }
+        .tool-detail-page .tool-detail-panel,
+        .tool-detail-page .bg-gray-900,
+        .tool-detail-page .bg-zinc-900\/70,
+        .tool-detail-page .bg-black\/60,
+        .tool-detail-page .bg-gray-850,
+        .tool-detail-page .bg-gray-800,
+        .tool-detail-page .bg-gray-800\/60,
+        .tool-detail-page .bg-black\/50,
+        .tool-detail-page .bg-black\/30,
+        .tool-detail-page .bg-gray-50,
+        .tool-detail-page .bg-white {
+          background:
+            radial-gradient(circle at center, rgba(16, 185, 129, 0.04), transparent 55%),
+            linear-gradient(180deg, rgba(255, 255, 255, 0.02), rgba(255, 255, 255, 0.01)) !important;
+          box-shadow:
+            inset 0 0 0 1px rgba(255, 255, 255, 0.01),
+            0 0 40px rgba(16, 185, 129, 0.04) !important;
+          border-color: rgba(16, 185, 129, 0.12) !important;
+        }
+      `}</style>
+      <div className="tool-detail-shell">
+        {/* Navigation & Header */}
+        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-end gap-4 mb-8">
+          <span className="rounded-full border border-emerald-500/30 px-3 py-1 font-mono text-[0.62rem] uppercase tracking-[0.28em] text-emerald-400">
+            Green Team
+          </span>
         </div>
 
-        {/* Form */}
-        <div className="bg-black rounded-2xl shadow-xl border border-gray-200 p-8 mb-8">
+        {/* Title Section */}
+        <div className="mb-10 flex flex-col md:flex-row items-start md:items-center gap-6">
+          <div className="w-16 h-16 rounded-2xl border border-emerald-500/30 overflow-hidden shadow-lg flex-shrink-0 flex items-center justify-center">
+            <BarChart3 className="h-8 w-8 text-emerald-400" />
+          </div>
+          <div>
+            <h1 className="text-4xl sm:text-5xl font-mono font-bold text-zinc-100">
+              KEYWORD <span className="text-emerald-400">DENSITY</span>
+            </h1>
+            <p className="mt-2 text-zinc-400 max-w-2xl text-base font-normal">
+              Analyze keyword density, extract single/phrase frequencies, and access keyword intelligence metrics.
+            </p>
+          </div>
+        </div>
+
+        {/* 2-Column Grid Layout */}
+        <div className="grid gap-8 lg:grid-cols-[1fr_400px]">
+          {/* Left Column: Input Form & Progress */}
           <div className="space-y-6">
-            <div className="relative">
-              <label
-                htmlFor="url"
-                className="block text-sm font-semibold text-gray-200 mb-2"
-              >
-                Website URL
-              </label>
-              <div className="relative">
-                <Globe className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-200 w-5 h-5" />
-                <input
-                  id="url"
-                  type="text"
-                  className="w-full pl-12 pr-4 py-4 border-2 text-white border-gray-200 rounded-xl focus:border-green-500 focus:ring-4 focus:ring-green-500/20 transition-all duration-200 text-lg"
-                  placeholder="https://example.com"
-                  value={url}
-                  onChange={(e) => setUrl(e.target.value)}
-                  disabled={loading}
-                  onKeyDown={(e) => {
-                    if (e.key === "Enter" && !loading && url.trim())
-                      handleSubmit(e);
-                  }}
-                />
+            <div className="bg-zinc-950/20 backdrop-blur-md border border-zinc-800/80 rounded-2xl p-6 shadow-[0_8px_30px_rgb(0,0,0,0.2)] hover:border-emerald-500/10 transition-all duration-300">
+              <h2 className="text-lg font-mono font-medium text-zinc-100 mb-6 flex items-center gap-2">
+                <Search className="h-5 w-5 text-emerald-400" />
+                Analyze Web Content
+              </h2>
+
+              <div className="space-y-4">
+                <div>
+                  <label htmlFor="url" className="block text-xs uppercase tracking-widest font-mono text-zinc-400 mb-2 font-semibold">Target Website URL</label>
+                  <div className="relative">
+                    <Globe className="absolute left-4 top-1/2 -translate-y-1/2 text-zinc-500 w-4 h-4" />
+                    <input
+                      id="url"
+                      type="text"
+                      placeholder="https://example.com"
+                      value={url}
+                      onChange={(e) => setUrl(e.target.value.trim())}
+                      disabled={loading}
+                      onKeyDown={(e) => {
+                        if (e.key === "Enter" && !loading && url.trim())
+                          handleSubmit(e);
+                      }}
+                      className="w-full pl-11 bg-zinc-900/40 text-zinc-100 border border-zinc-800/80 rounded-xl p-3.5 pr-10 text-sm focus:border-emerald-500/50 focus:ring-1 focus:ring-emerald-500/30 focus:shadow-[0_0_12px_rgba(16,185,129,0.08)] focus:outline-none transition-all placeholder:text-zinc-650 font-mono"
+                      required
+                    />
+                  </div>
+                </div>
+
+                <div className="pt-2">
+                  <button
+                    onClick={handleSubmit}
+                    disabled={loading || !url.trim()}
+                    className="w-full bg-emerald-500/5 hover:bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 hover:border-emerald-500/50 rounded-xl font-mono font-bold text-xs uppercase py-4 transition-all duration-300 hover:scale-[1.01] active:scale-[0.99] flex items-center justify-center gap-2 cursor-pointer hover:shadow-[0_0_20px_rgba(16,185,129,0.15)] focus:outline-none focus:ring-2 focus:ring-emerald-500/40 focus:ring-offset-2 focus:ring-offset-black/20 disabled:opacity-40 disabled:pointer-events-none"
+                  >
+                    {loading ? (
+                      <>
+                        <Loader2 className="w-4 h-4 animate-spin text-emerald-400" />
+                        Analyzing...
+                      </>
+                    ) : (
+                      <>
+                        <Search className="w-4 h-4" />
+                        Analyze Keyword Density
+                      </>
+                    )}
+                  </button>
+                </div>
               </div>
             </div>
 
-            <button
-              onClick={handleSubmit}
-              disabled={loading || !url.trim()}
-              className="w-full bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 text-white font-semibold py-4 px-8 rounded-xl transition-all duration-200 transform hover:scale-[1.02] disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100 shadow-lg"
-            >
-              <div className="flex items-center justify-center gap-3">
-                {loading ? (
-                  <>
-                    <Loader2 className="w-5 h-5 animate-spin" />
-                    Analyzing...
-                  </>
-                ) : (
-                  <>
-                    <Search className="w-5 h-5" />
-                    Analyze Keyword Density
-                  </>
-                )}
+            {loading && (
+              <div className="flex flex-col items-center justify-center p-10 bg-zinc-950/20 backdrop-blur-md border border-zinc-800/80 rounded-2xl shadow-[0_8px_30px_rgb(0,0,0,0.15)] animate-[pulse_2s_infinite]">
+                <Loader2 className="w-8 h-8 text-emerald-400 animate-spin mb-4" />
+                <p className="text-emerald-400 font-mono font-bold text-xs uppercase tracking-widest text-center">
+                  Analyzing keyword density...
+                </p>
+                <span className="text-[10px] text-zinc-500 font-mono mt-2 text-center">
+                  This may take a few moments while we crawl and index the target website.
+                </span>
               </div>
-            </button>
+            )}
+
+            {error && (
+              <div className="rounded-xl border border-rose-500/25 bg-rose-500/5 p-4 text-rose-450">
+                <div className="flex items-start gap-3">
+                  <AlertCircle className="w-5 h-5 text-rose-455 mt-0.5 shrink-0" />
+                  <div>
+                    <h3 className="text-xs font-semibold uppercase tracking-wider mb-1">
+                      Analysis Failed
+                    </h3>
+                    <p className="text-xs text-rose-300">{error}</p>
+                  </div>
+                </div>
+              </div>
+            )}
+          </div>
+
+          {/* Right Column: Specs & Guide */}
+          <div className="space-y-6">
+            <div className="border border-zinc-800/80 bg-zinc-950/20 backdrop-blur-md rounded-2xl p-6 space-y-4 shadow-[0_8px_30px_rgb(0,0,0,0.12)]">
+              <h4 className="text-xs font-mono font-bold uppercase tracking-wider text-zinc-100 flex items-center gap-2">
+                <Info className="h-4 w-4 text-emerald-400" />
+                Audit Scope & Guidance
+              </h4>
+              <ul className="space-y-3.5 text-xs text-zinc-400 list-none pl-0 leading-relaxed">
+                <li className="flex items-start gap-2">
+                  <span className="inline-block w-1.5 h-1.5 rounded-full bg-emerald-500/60 mt-1.5 flex-shrink-0" />
+                  <span>Crawls the target site content, ignoring standard stopwords.</span>
+                </li>
+                <li className="flex items-start gap-2">
+                  <span className="inline-block w-1.5 h-1.5 rounded-full bg-emerald-500/60 mt-1.5 flex-shrink-0" />
+                  <span>Calculates keyword density percentages for single and two-word combinations.</span>
+                </li>
+                <li className="flex items-start gap-2">
+                  <span className="inline-block w-1.5 h-1.5 rounded-full bg-emerald-500/60 mt-1.5 flex-shrink-0" />
+                  <span>Estimates SEO keyword intelligence, CPC rates, search volumes, and difficulty.</span>
+                </li>
+                <li className="flex items-start gap-2">
+                  <span className="inline-block w-1.5 h-1.5 rounded-full bg-emerald-500/60 mt-1.5 flex-shrink-0" />
+                  <span>Extracts competitor overlap data and rank information.</span>
+                </li>
+              </ul>
+            </div>
           </div>
         </div>
 
-        {/* States */}
-        {loading && (
-          <div className="bg-green-50 border-2 border-green-200 rounded-2xl p-6 mb-8">
-            <div className="flex items-center gap-4">
-              <Loader2 className="w-8 h-8 text-green-600 animate-spin" />
-              <div>
-                <h3 className="text-lg font-semibold text-green-800">
-                  Analyzing keyword density...
-                </h3>
-                <p className="text-green-600">
-                  This may take a few moments while we process your website.
-                </p>
-              </div>
-            </div>
-          </div>
-        )}
-
-        {error && (
-          <div className="bg-red-50 border-2 border-red-200 rounded-2xl p-6 mb-8">
-            <div className="flex items-start gap-4">
-              <AlertCircle className="w-6 h-6 text-red-600 mt-1 shrink-0" />
-              <div>
-                <h3 className="text-lg font-semibold text-red-800 mb-1">
-                  Analysis Failed
-                </h3>
-                <p className="text-red-700">{error}</p>
-              </div>
-            </div>
-          </div>
-        )}
-
-        {/* Report */}
+        {/* Report Section */}
         {report && !loading && !error && (
-          <div className="space-y-8">
+          <div className="mt-8 space-y-8">
             {/* Success + Exports */}
-            <div className="bg-green-50 border-2 border-green-200 rounded-2xl p-6 flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
+            <div className="bg-zinc-950/20 backdrop-blur-md border border-zinc-800/80 rounded-2xl p-6 flex flex-col gap-4 md:flex-row md:items-center md:justify-between shadow-[0_8px_30px_rgb(0,0,0,0.15)] hover:border-emerald-500/10 transition-all animate-fade-in">
               <div className="flex items-center gap-4">
-                <CheckCircle className="w-8 h-8 text-green-600" />
+                <CheckCircle className="w-8 h-8 text-emerald-400" />
                 <div>
-                  <h3 className="text-lg font-semibold text-green-800">
+                  <h3 className="text-sm font-semibold text-zinc-200">
                     Analysis Complete!
                   </h3>
-                  <p className="text-green-700">
+                  <p className="text-xs text-zinc-400 mt-1">
                     Found{" "}
-                    <span className="font-semibold">{report.totalWords}</span>{" "}
-                    total words to analyze.
+                    <span className="font-mono text-emerald-400 font-bold">{report.totalWords}</span>{" "}
+                    total words analyzed.
                   </p>
                 </div>
               </div>
-              <div className="flex gap-2">
+              
+              <div className="flex flex-wrap gap-2">
                 <button
                   onClick={exportPDF}
-                  className="inline-flex items-center gap-2 px-4 py-2 rounded border border-green-300 text-green-800 hover:bg-green-50"
+                  className="bg-emerald-500/5 hover:bg-emerald-500/10 text-emerald-400 border border-emerald-500/25 hover:border-emerald-500/50 px-3.5 py-2 rounded-xl transition-all duration-300 font-mono font-bold text-[11px] uppercase tracking-wider flex items-center gap-2 cursor-pointer hover:scale-[1.01] active:scale-[0.99] hover:shadow-[0_0_15px_rgba(16,185,129,0.1)] focus:outline-none"
                 >
                   <FileText className="w-4 h-4" /> Export PDF
                 </button>
                 <button
                   onClick={exportInsightPDF}
-                  className="inline-flex items-center gap-2 px-4 py-2 rounded border border-indigo-300 text-indigo-800 hover:bg-indigo-50"
+                  className="bg-emerald-500/5 hover:bg-emerald-500/10 text-emerald-400 border border-emerald-500/25 hover:border-emerald-500/50 px-3.5 py-2 rounded-xl transition-all duration-300 font-mono font-bold text-[11px] uppercase tracking-wider flex items-center gap-2 cursor-pointer hover:scale-[1.01] active:scale-[0.99] hover:shadow-[0_0_15px_rgba(16,185,129,0.1)] focus:outline-none"
                 >
                   <FileText className="w-4 h-4" /> Insight PDF
                 </button>
                 <button
                   onClick={exportTXT}
-                  className="inline-flex items-center gap-2 px-4 py-2 rounded border border-emerald-300 text-emerald-800 hover:bg-emerald-50"
+                  className="bg-emerald-500/5 hover:bg-emerald-500/10 text-emerald-400 border border-emerald-500/25 hover:border-emerald-500/50 px-3.5 py-2 rounded-xl transition-all duration-300 font-mono font-bold text-[11px] uppercase tracking-wider flex items-center gap-2 cursor-pointer hover:scale-[1.01] active:scale-[0.99] hover:shadow-[0_0_15px_rgba(16,185,129,0.1)] focus:outline-none"
                 >
                   <FileDown className="w-4 h-4" /> Export TXT
                 </button>
@@ -425,45 +522,39 @@ export default function KeywordPage() {
               <StatCard
                 value={report.totalWords}
                 label="Total Words"
-                accent="text-green-600"
               />
               <StatCard
                 value={report.singleWords?.length || 0}
                 label="Top Keywords"
-                accent="text-emerald-600"
               />
               <StatCard
                 value={report.phrases?.length || 0}
                 label="Key Phrases"
-                accent="text-teal-600"
               />
             </div>
 
             {/* Single Keywords */}
-            <TableBlock
-              title="Top Single Keywords"
-              grad="from-green-600 to-emerald-600"
-            >
+            <TableBlock title="Top Single Keywords">
               <Table header={["Keyword", "Count", "Density (%)"]}>
                 {(report.singleWords || []).map(
                   ({ phrase, count, percentage }) => (
                     <tr
                       key={phrase}
-                      className="hover:bg-gray-50 transition-colors"
+                      className="border-b last:border-0 border-zinc-850 hover:bg-zinc-900/10 transition-colors"
                     >
-                      <td className="px-6 py-4 font-medium text-gray-900">
+                      <td className="px-6 py-4 font-mono text-sm text-zinc-300 font-semibold">
                         {phrase}
                       </td>
-                      <td className="px-6 py-4 text-center">
-                        <span className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-green-100 text-green-800">
+                      <td className="px-6 py-4 text-center font-mono">
+                        <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold bg-emerald-950/30 text-emerald-400 border border-emerald-500/20">
                           {count}
                         </span>
                       </td>
-                      <td className="px-6 py-4 text-center">
+                      <td className="px-6 py-4 text-center font-mono">
                         <div className="flex items-center justify-center gap-2">
-                          <div className="w-16 bg-gray-200 rounded-full h-2">
+                          <div className="w-16 bg-zinc-800/40 rounded-full h-1.5">
                             <div
-                              className="bg-gradient-to-r from-green-500 to-emerald-500 h-2 rounded-full transition-all"
+                              className="bg-gradient-to-r from-emerald-500 to-teal-500 h-1.5 rounded-full transition-all"
                               style={{
                                 width: `${Math.min(
                                   Number(percentage) * 4,
@@ -472,7 +563,7 @@ export default function KeywordPage() {
                               }}
                             />
                           </div>
-                          <span className="text-sm font-medium text-gray-700">
+                          <span className="text-xs text-zinc-400">
                             {percentage}%
                           </span>
                         </div>
@@ -484,38 +575,35 @@ export default function KeywordPage() {
             </TableBlock>
 
             {/* Two-word Phrases */}
-            <TableBlock
-              title="Top Two-word Phrases"
-              grad="from-emerald-600 to-teal-600"
-            >
+            <TableBlock title="Top Two-word Phrases">
               <Table header={["Phrase", "Count", "Density (%)"]}>
                 {(report.phrases || []).map(({ phrase, count, percentage }) => (
                   <tr
                     key={phrase}
-                    className="hover:bg-gray-50 transition-colors"
+                    className="border-b last:border-0 border-zinc-850 hover:bg-zinc-900/10 transition-colors"
                   >
-                    <td className="px-6 py-4 font-medium text-gray-900">
+                    <td className="px-6 py-4 font-mono text-sm text-zinc-300 font-semibold">
                       {phrase}
                     </td>
-                    <td className="px-6 py-4 text-center">
-                      <span className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-emerald-100 text-emerald-800">
+                    <td className="px-6 py-4 text-center font-mono">
+                      <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold bg-emerald-950/30 text-emerald-400 border border-emerald-500/20">
                         {count}
                       </span>
                     </td>
-                    <td className="px-6 py-4 text-center">
+                    <td className="px-6 py-4 text-center font-mono">
                       <div className="flex items-center justify-center gap-2">
-                        <div className="w-16 bg-gray-200 rounded-full h-2">
+                        <div className="w-16 bg-zinc-800/40 rounded-full h-1.5">
                           <div
-                            className="bg-gradient-to-r from-emerald-500 to-teal-500 h-2 rounded-full transition-all"
+                            className="bg-gradient-to-r from-emerald-500 to-teal-500 h-1.5 rounded-full transition-all"
                             style={{
                               width: `${Math.min(
                                 Number(percentage) * 4,
-                                100
+                                105
                               )}%`,
                             }}
                           />
                         </div>
-                        <span className="text-sm font-medium text-gray-700">
+                        <span className="text-xs text-zinc-400">
                           {percentage}%
                         </span>
                       </div>
@@ -532,22 +620,20 @@ export default function KeywordPage() {
 }
 
 /* ---------- UI bits ---------- */
-function StatCard({ value, label, accent }) {
+function StatCard({ value, label }) {
   return (
-    <div className="bg-black rounded-xl shadow-lg border border-gray-200 p-6">
-      <div className="text-center">
-        <div className={`text-3xl font-bold ${accent} mb-2`}>{value}</div>
-        <div className="text-gray-600 font-medium">{label}</div>
-      </div>
+    <div className="p-4.5 rounded-xl border border-emerald-500/20 bg-emerald-950/10 text-emerald-400 shadow-[inset_0_0_12px_rgba(16,185,129,0.02)] transition-all duration-300 hover:scale-[1.01]">
+      <div className="text-[10px] uppercase tracking-widest text-zinc-400 mb-1.5 font-medium">{label}</div>
+      <div className="text-2xl font-bold tracking-tight">{value}</div>
     </div>
   );
 }
 
-function TableBlock({ title, grad, children }) {
+function TableBlock({ title, children }) {
   return (
-    <div className="bg-white rounded-2xl shadow-xl border border-gray-200 overflow-hidden">
-      <div className={`bg-gradient-to-r ${grad} px-6 py-4`}>
-        <h3 className="text-xl font-bold text-black">{title}</h3>
+    <div className="border border-zinc-800/85 bg-zinc-950/20 backdrop-blur-md rounded-2xl overflow-hidden shadow-[0_8px_30px_rgb(0,0,0,0.15)] hover:border-emerald-500/10 transition-all duration-300">
+      <div className="border-b border-zinc-850 bg-zinc-900/10 px-6 py-4.5">
+        <h3 className="text-sm font-mono font-semibold uppercase tracking-wider text-zinc-200">{title}</h3>
       </div>
       <div className="overflow-x-auto">{children}</div>
     </div>
@@ -557,19 +643,19 @@ function TableBlock({ title, grad, children }) {
 function Table({ header, children }) {
   return (
     <table className="w-full">
-      <thead className="bg-gray-50">
+      <thead className="bg-zinc-900/40 text-zinc-400 font-mono text-[10px] uppercase tracking-wider border-b border-zinc-800/50">
         <tr>
-          {header.map((h) => (
+          {header.map((h, i) => (
             <th
               key={h}
-              className="px-6 py-4 text-left text-sm font-semibold text-gray-700 border-b"
+              className={`px-6 py-4.5 font-medium ${i > 0 ? "text-center" : "text-left"}`}
             >
               {h}
             </th>
           ))}
         </tr>
       </thead>
-      <tbody className="divide-y divide-gray-200">{children}</tbody>
+      <tbody className="divide-y divide-zinc-850/40 text-xs">{children}</tbody>
     </table>
   );
 }

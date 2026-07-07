@@ -11,10 +11,10 @@ export const AuthProvider = ({ children }) => {
   const [loading, setLoading] = useState(true);
   const router = useRouter();
   
-  // Keep track of idle timer (increased for developer testing)
+  // Centralized Environment-driven Session Inactivity Timers
   const idleTimerRef = useRef(null);
-  const WARNING_TIMEOUT = 23 * 60 * 60 * 1000; // Show extend warning at 23 hours
-  const LOGOUT_TIMEOUT = 24 * 60 * 60 * 1000;  // Log out at 24 hours
+  const WARNING_TIMEOUT = Number(process.env.NEXT_PUBLIC_WARNING_TIMEOUT) || (14 * 60 * 1000); // 14m default
+  const LOGOUT_TIMEOUT = Number(process.env.NEXT_PUBLIC_LOGOUT_TIMEOUT) || (15 * 60 * 1000);   // 15m default
 
   // Local JWT claims decoding helper
   const decodeJWT = useCallback((tokenStr) => {
