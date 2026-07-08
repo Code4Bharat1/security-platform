@@ -1,8 +1,7 @@
 "use client";
 
 import React, { useMemo, useState } from "react";
-import { jsPDF } from "jspdf";
-import autoTable from "jspdf-autotable";
+import { generateJWTPDF } from "./generateJWTPDF";
 import { 
   Shield, 
   Download, 
@@ -36,9 +35,26 @@ export default function JWTSignatureValidator() {
   const [result, setResult] = useState(null);
   const [error, setError] = useState(null);
   const [loading, setLoading] = useState(false);
+  const [pdfProgress, setPdfProgress] = useState(null);
 
   const protectedAction = useProtectedAction();
-  const isAsymmetric = useMemo(() => /^(RS|ES)/.test(algorithm), [algorithm]);
+  const isAsymmetric = useMemo(() => {
+    if (algorithm === "auto") {
+      try {
+        const parts = token.trim().split(".");
+        if (parts.length >= 1) {
+          let base64 = parts[0].replace(/-/g, "+").replace(/_/g, "/");
+          while (base64.length % 4) {
+            base64 += "=";
+          }
+          const decodedHeader = JSON.parse(atob(base64));
+          const declared = String(decodedHeader.alg || "").toUpperCase();
+          return /^(RS|ES)/.test(declared);
+        }
+      } catch (_) {}
+    }
+    return /^(RS|ES)/.test(algorithm);
+  }, [algorithm, token]);
 
   const handleValidate = async () => {
     const t = token.trim();
@@ -99,84 +115,9 @@ export default function JWTSignatureValidator() {
       .replace(/[^a-z0-9.-]/gi, "_")
       .toLowerCase();
 
-  const handleDownloadPDF = () => {
+  const handleDownloadPDF = async () => {
     if (!result) return;
-    const doc = new jsPDF({ unit: "pt", format: "a4" });
-    const M = 40;
-    let y = 56;
-    const H = (txt) => {
-      doc.setFont("helvetica", "bold");
-      doc.setFontSize(14);
-      doc.text(txt, M, y);
-      y += 18;
-    };
-    const sub = (txt) => {
-      doc.setFont("helvetica", "normal");
-      doc.setFontSize(11);
-      doc.text(txt, M, y);
-      y += 16;
-    };
-    
-    // Header Banner
-    doc.setFillColor(18, 18, 18);
-    doc.rect(0, 0, doc.internal.pageSize.width, 80, "F");
-    
-    doc.setTextColor(59, 130, 246); // Blue Accent
-    doc.setFont("helvetica", "bold");
-    doc.setFontSize(20);
-    doc.text("NEXCORE SECURITY PLATFORM", M, 35);
-    
-    doc.setTextColor(255, 255, 255);
-    doc.setFontSize(12);
-    doc.text("JWT SIGNATURE VALIDATION REPORT", M, 55);
-    y = 110;
-
-    sub(`Generated: ${new Date().toLocaleString()}`);
-    H("Summary");
-    
-    autoTable(doc, {
-      startY: y,
-      head: [["Field", "Value"]],
-      body: [
-        ["Chosen Algorithm", algorithm],
-        ["Header alg", result.header?.alg ?? "—"],
-        ["Header typ", result.header?.typ ?? "—"],
-        ["Validation Status", "Valid"],
-      ],
-      styles: { font: "helvetica", fontSize: 10 },
-      headStyles: { fillColor: [59, 130, 246], textColor: [255, 255, 255] },
-      margin: { left: M, right: M },
-    });
-    
-    y = doc.lastAutoTable.finalY + 20;
-    H("Header JSON");
-    autoTable(doc, {
-      startY: y,
-      head: [["Key", "Value"]],
-      body: Object.entries(result.header || {}).map(([k, v]) => [
-        k,
-        JSON.stringify(v),
-      ]),
-      styles: { fontSize: 10 },
-      headStyles: { fillColor: [59, 130, 246], textColor: [255, 255, 255] },
-      margin: { left: M, right: M },
-    });
-    
-    y = doc.lastAutoTable.finalY + 20;
-    H("Payload JSON");
-    autoTable(doc, {
-      startY: y,
-      head: [["Key", "Value"]],
-      body: Object.entries(result.payload || {}).map(([k, v]) => [
-        k,
-        JSON.stringify(v),
-      ]),
-      styles: { fontSize: 10 },
-      headStyles: { fillColor: [59, 130, 246], textColor: [255, 255, 255] },
-      margin: { left: M, right: M },
-    });
-    
-    doc.save(`JWT_Report_${safeName(result.header?.typ || "JWT")}.pdf`);
+    await generateJWTPDF(result, algorithm, token, secret, setPdfProgress);
   };
 
   const handleDownloadTXT = () => {
@@ -401,10 +342,20 @@ export default function JWTSignatureValidator() {
                 <div className="flex flex-wrap gap-3">
                   <button
                     onClick={handleDownloadPDF}
-                    className="flex-1 bg-zinc-900/40 hover:bg-blue-500/5 text-zinc-300 hover:text-blue-400 border border-zinc-800/80 hover:border-blue-500/30 rounded-xl font-mono font-bold text-xs uppercase py-3.5 transition-all duration-300 hover:scale-[1.01] active:scale-[0.99] flex items-center justify-center gap-2 cursor-pointer"
+                    disabled={pdfProgress !== null}
+                    className="flex-1 bg-zinc-900/40 hover:bg-blue-500/5 text-zinc-300 hover:text-blue-400 border border-zinc-800/80 hover:border-blue-500/30 rounded-xl font-mono font-bold text-xs uppercase py-3.5 transition-all duration-300 hover:scale-[1.01] active:scale-[0.99] flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50"
                   >
-                    <Download className="w-4 h-4" />
-                    Download PDF Report
+                    {pdfProgress ? (
+                      <>
+                        <Loader2 className="h-4 w-4 animate-spin text-blue-400" />
+                        <span>{pdfProgress}</span>
+                      </>
+                    ) : (
+                      <>
+                        <Download className="w-4 h-4" />
+                        <span>Download PDF Report</span>
+                      </>
+                    )}
                   </button>
 
                   <button

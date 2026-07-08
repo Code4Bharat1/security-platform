@@ -175,7 +175,7 @@ export default function UrlShortener() {
         {/* 2-Column Grid Layout */}
         <div className="grid gap-8 lg:grid-cols-[1fr_400px]">
           {/* Left Column */}
-          <div className="space-y-6">
+          <div className="space-y-6 min-w-0">
             {/* Form card */}
             <div className="bg-zinc-950/20 backdrop-blur-md border border-zinc-800/80 rounded-2xl p-6 shadow-[0_8px_30px_rgb(0,0,0,0.2)] hover:border-emerald-500/10 transition-all duration-300">
               <h2 className="text-lg font-mono font-medium text-zinc-100 mb-6 flex items-center gap-2">
@@ -278,12 +278,12 @@ export default function UrlShortener() {
                 {/* Dashboard Stats */}
                 <div className="grid grid-cols-2 gap-4">
                   <div className="p-4.5 rounded-xl border border-emerald-500/20 bg-emerald-950/10 text-emerald-400 shadow-[inset_0_0_12px_rgba(16,185,129,0.02)] transition-all duration-300 hover:scale-[1.01] flex flex-col justify-between gap-1">
-                    <span className="text-[10px] uppercase font-mono tracking-widest text-zinc-550 font-semibold">Total Shortened</span>
-                    <span className="text-2xl font-bold font-mono">{history.length}</span>
+                    <span className="text-[10px] uppercase font-mono tracking-widest !text-black font-semibold">Total Shortened</span>
+                    <span className="text-2xl font-bold font-mono !text-black">{history.length}</span>
                   </div>
                   <div className="p-4.5 rounded-xl border border-emerald-500/20 bg-emerald-950/10 text-emerald-400 shadow-[inset_0_0_12px_rgba(16,185,129,0.02)] transition-all duration-300 hover:scale-[1.01] flex flex-col justify-between gap-1">
-                    <span className="text-[10px] uppercase font-mono tracking-widest text-zinc-550 font-semibold">Redirect Hops</span>
-                    <span className="text-xs font-bold font-mono mt-2">301 Permanent</span>
+                    <span className="text-[10px] uppercase font-mono tracking-widest !text-black font-semibold">Redirect Hops</span>
+                    <span className="text-xs font-bold font-mono mt-2 !text-black">301 Permanent</span>
                   </div>
                 </div>
 
@@ -304,7 +304,7 @@ export default function UrlShortener() {
                               {item.short}
                             </a>
                           </div>
-                          <div className="text-[10px] text-zinc-500 truncate">
+                          <div className="text-[10px] text-zinc-500 break-all whitespace-normal">
                             → {item.original}
                           </div>
                         </div>

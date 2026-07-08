@@ -1,8 +1,7 @@
 "use client";
 
 import React, { useEffect, useMemo, useState } from "react";
-import { jsPDF } from "jspdf";
-import autoTable from "jspdf-autotable";
+import { generateOAuthPDF } from "./generateOAuthPDF";
 import { 
   Shield, 
   Download, 
@@ -25,10 +24,22 @@ const safeName = (str) =>
     .slice(0, 60);
 
 const fmtDateTime = (epoch) =>
-  epoch == null ? "—" : new Date(epoch * 1000).toLocaleString();
+  epoch == null ? "Not Present" : new Date(epoch * 1000).toLocaleString();
+
+const getExpiredMessage = (epoch) => {
+  if (epoch == null) return "Cannot be calculated";
+  const secAgo = Math.floor(Date.now() / 1000) - epoch;
+  if (secAgo <= 0) return "Not Expired";
+  const daysAgo = Math.floor(secAgo / 86400);
+  const dateStr = new Date(epoch * 1000).toLocaleString();
+  if (daysAgo >= 1) {
+    return `Expired ${daysAgo} day${daysAgo > 1 ? "s" : ""} ago`;
+  }
+  return `Expired on ${dateStr}`;
+};
 
 function fmtDuration(s) {
-  if (s == null) return "—";
+  if (s == null) return "Cannot be calculated";
   const neg = s < 0;
   s = Math.abs(s);
   const d = Math.floor(s / 86400);
@@ -80,6 +91,7 @@ export default function OAuthTokenInspector() {
   const [result, setResult] = useState(null);
   const [toast, setToast] = useState(null);
   const [now, setNow] = useState(() => Math.floor(Date.now() / 1000));
+  const [pdfProgress, setPdfProgress] = useState(null);
 
   const protection = useProtectedAction();
 
@@ -134,6 +146,15 @@ export default function OAuthTokenInspector() {
   const expEpoch = result?.meta?.expEpoch ?? payload?.exp ?? null;
   const iatEpoch = result?.meta?.iatEpoch ?? payload?.iat ?? null;
 
+  const cleanIssues = useMemo(() => {
+    return issues.map((issue) => {
+      if (issue.startsWith("Token expired ") && expEpoch) {
+        return getExpiredMessage(expEpoch);
+      }
+      return issue;
+    });
+  }, [issues, expEpoch]);
+
   const isExpired = result?.meta?.isExpired ?? (expEpoch ? now >= expEpoch : null);
 
   const lifetimePercentUsed = useMemo(() => {
@@ -164,6 +185,7 @@ export default function OAuthTokenInspector() {
   const score = scoreObj.score;
   const scoreBarColor = score >= 80 ? "bg-blue-500" : score >= 60 ? "bg-orange-500" : "bg-red-500";
   const progressColor = timeRemaining == null ? "bg-zinc-700" : isExpired ? "bg-red-500" : (lifetimePercentUsed ?? 0) >= 80 ? "bg-orange-500" : "bg-blue-500";
+  const riskLevel = score >= 80 ? "Low" : score >= 60 ? "Medium" : "High";
 
   const handleDownloadTxt = () => {
     if (!result || result.error) return;
@@ -174,11 +196,14 @@ export default function OAuthTokenInspector() {
       "== Summary ==",
       `Issued At: ${fmtDateTime(iatEpoch)}`,
       `Expires At: ${fmtDateTime(expEpoch)}`,
-      `Time Remaining: ${expEpoch == null ? "—" : timeRemaining <= 0 ? "Expired" : fmtDuration(timeRemaining)}`,
-      `Security Score: ${score}/100`,
+      `Time Remaining: ${expEpoch == null ? "Cannot be calculated" : timeRemaining <= 0 ? getExpiredMessage(expEpoch) : fmtDuration(timeRemaining)}`,
+      `Algorithm: ${result?.header?.alg ?? "Not Present"}`,
+      `Token Type: ${result?.header?.typ ?? "JWT"}`,
+      `Audience (aud): ${payload.aud ? (Array.isArray(payload.aud) ? payload.aud.join(", ") : String(payload.aud)) : "Not Present"}`,
+      `Security Score: ${score}/100 (${riskLevel} Risk)`,
       "",
       "== Issues ==",
-      ...(issues.length ? issues : ["None"]),
+      ...(cleanIssues.length ? cleanIssues : ["None"]),
       "",
       "== Payload ==",
       JSON.stringify(payload, null, 2),
@@ -186,7 +211,7 @@ export default function OAuthTokenInspector() {
       "== Score Breakdown ==",
       ...(scoreObj.breakdown.length
         ? scoreObj.breakdown.map((b) => `- ${b.label}${b.delta ? ` (${b.delta})` : ""}`)
-        : ["—"]),
+        : ["Not Present"]),
       "",
     ].join("\n");
 
@@ -202,92 +227,9 @@ export default function OAuthTokenInspector() {
     URL.revokeObjectURL(urlObj);
   };
 
-  const handleDownloadPdf = () => {
+  const handleDownloadPdf = async () => {
     if (!result || result.error) return;
-
-    const doc = new jsPDF({ unit: "pt", format: "a4" });
-    const M = 40;
-    let y = 56;
-
-    const add = (t, size = 12, style = "normal") => {
-      doc.setFont("helvetica", style);
-      doc.setFontSize(size);
-      doc.text(String(t), M, y);
-      y += 18;
-    };
-
-    // Header Banner
-    doc.setFillColor(18, 18, 18);
-    doc.rect(0, 0, doc.internal.pageSize.width, 80, "F");
-    
-    doc.setTextColor(59, 130, 246); // Blue Accent
-    doc.setFont("helvetica", "bold");
-    doc.setFontSize(20);
-    doc.text("NEXCORE SECURITY PLATFORM", M, 35);
-    
-    doc.setTextColor(255, 255, 255);
-    doc.setFontSize(12);
-    doc.text("OAUTH TOKEN INSPECTION REPORT", M, 55);
-    y = 110;
-
-    add(`Generated: ${new Date().toLocaleString()}`);
-
-    // Summary Table
-    autoTable(doc, {
-      startY: y,
-      head: [["Field", "Value"]],
-      body: [
-        ["Issued At", fmtDateTime(iatEpoch)],
-        ["Expires At", fmtDateTime(expEpoch)],
-        ["Time Remaining", expEpoch == null ? "—" : timeRemaining <= 0 ? "Expired" : fmtDuration(timeRemaining)],
-        ["Security Score", `${score}/100`],
-      ],
-      styles: { font: "helvetica", fontSize: 10 },
-      headStyles: { fillColor: [59, 130, 246], textColor: [255, 255, 255] },
-      margin: { left: M, right: M },
-    });
-    y = doc.lastAutoTable.finalY + 18;
-
-    // Issues Table
-    autoTable(doc, {
-      startY: y,
-      head: [["Issues Detected"]],
-      body: (issues.length ? issues : ["None"]).map((i) => [i]),
-      styles: { fontSize: 10 },
-      headStyles: { fillColor: [59, 130, 246], textColor: [255, 255, 255] },
-      margin: { left: M, right: M },
-    });
-    y = doc.lastAutoTable.finalY + 18;
-
-    // Score Breakdown Table
-    if (scoreObj.breakdown.length) {
-      autoTable(doc, {
-        startY: y,
-        head: [["Item", "Delta"]],
-        body: scoreObj.breakdown.map((b) => [b.label, String(b.delta ?? "")]),
-        styles: { fontSize: 10 },
-        headStyles: { fillColor: [59, 130, 246], textColor: [255, 255, 255] },
-        margin: { left: M, right: M },
-      });
-      y = doc.lastAutoTable.finalY + 18;
-    }
-
-    // Payload Details
-    add("Payload", 13, "bold");
-    const payloadStr = JSON.stringify(payload ?? {}, null, 2);
-    const splitLines = doc.splitTextToSize(payloadStr, 515);
-    splitLines.forEach((ln) => {
-      if (y > 780) {
-        doc.addPage();
-        y = 56;
-      }
-      doc.text(ln, M, y);
-      y += 14;
-    });
-
-    const nameFrom = payload.iss || payload.sub || payload.jti;
-    const filename = `OAuth_Report_${safeName(nameFrom)}.pdf`;
-    doc.save(filename);
+    await generateOAuthPDF(result, token, setPdfProgress);
   };
 
   return (
@@ -443,10 +385,20 @@ export default function OAuthTokenInspector() {
                     <div className="flex flex-wrap gap-3">
                       <button
                         onClick={handleDownloadPdf}
-                        className="flex-1 bg-zinc-900/40 hover:bg-blue-500/5 text-zinc-300 hover:text-blue-400 border border-zinc-800/80 hover:border-blue-500/30 rounded-xl font-mono font-bold text-xs uppercase py-3.5 transition-all duration-300 hover:scale-[1.01] active:scale-[0.99] flex items-center justify-center gap-2 cursor-pointer"
+                        disabled={pdfProgress !== null}
+                        className="flex-1 bg-zinc-900/40 hover:bg-blue-500/5 text-zinc-300 hover:text-blue-400 border border-zinc-800/80 hover:border-blue-500/30 rounded-xl font-mono font-bold text-xs uppercase py-3.5 transition-all duration-300 hover:scale-[1.01] active:scale-[0.99] flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50"
                       >
-                        <Download className="w-4 h-4" />
-                        Download PDF Report
+                        {pdfProgress ? (
+                          <>
+                            <Loader2 className="h-4 w-4 animate-spin text-blue-400" />
+                            <span>{pdfProgress}</span>
+                          </>
+                        ) : (
+                          <>
+                            <Download className="w-4 h-4" />
+                            <span>Download PDF Report</span>
+                          </>
+                        )}
                       </button>
 
                       <button
@@ -474,7 +426,7 @@ export default function OAuthTokenInspector() {
                           Expires At
                         </span>
                         <span className="font-semibold text-zinc-100">
-                          {fmtDateTime(expEpoch)}
+                          {expEpoch == null ? "Not Present" : fmtDateTime(expEpoch)}
                         </span>
                       </div>
 
@@ -484,7 +436,7 @@ export default function OAuthTokenInspector() {
                           Time Remaining
                         </span>
                         <span className="font-semibold text-zinc-100">
-                          {expEpoch == null ? "—" : timeRemaining <= 0 ? "Expired" : fmtDuration(timeRemaining)}
+                          {expEpoch == null ? "Cannot be calculated" : timeRemaining <= 0 ? getExpiredMessage(expEpoch) : fmtDuration(timeRemaining)}
                         </span>
                         {lifetimePercentUsed != null && (
                           <div className="mt-3 h-1.5 w-full bg-zinc-850 rounded-full overflow-hidden">
@@ -499,21 +451,33 @@ export default function OAuthTokenInspector() {
                       </div>
 
                       {/* Security Score */}
-                      <div className="bg-zinc-900/40 border border-zinc-800/80 p-4 rounded-xl font-mono text-xs">
-                        <div className="flex items-center justify-between mb-1">
-                          <span className="text-[10px] uppercase font-mono tracking-widest text-zinc-400 font-semibold">
-                            Token Security Score
-                          </span>
-                          <span className="text-[10px] text-zinc-500 font-bold">{score}/100</span>
+                      <div className="bg-zinc-900/40 border border-zinc-800/80 p-4 rounded-xl font-mono text-xs flex flex-col justify-between">
+                        <div>
+                          <div className="flex items-center justify-between mb-1">
+                            <span className="text-[10px] uppercase font-mono tracking-widest text-zinc-400 font-semibold">
+                              Token Security Score
+                            </span>
+                            <span className="text-[10px] text-zinc-100 font-bold">{score}/100</span>
+                          </div>
+                          <div className="h-1.5 w-full bg-zinc-850 rounded-full overflow-hidden mb-2.5">
+                            <div
+                              className={`${scoreBarColor} h-1.5`}
+                              style={{ width: `${score}%` }}
+                            />
+                          </div>
                         </div>
-                        <div className="h-1.5 w-full bg-zinc-850 rounded-full overflow-hidden">
-                          <div
-                            className={`${scoreBarColor} h-1.5`}
-                            style={{ width: `${score}%` }}
-                          />
+                        <div className="flex items-center justify-between border-t border-zinc-800/60 pt-2">
+                          <span className="text-[10px] uppercase font-mono tracking-widest text-zinc-400 font-semibold">
+                            Risk Level
+                          </span>
+                          <span className={`text-[10px] font-bold uppercase ${
+                            riskLevel === "Low" ? "text-blue-400" : riskLevel === "Medium" ? "text-orange-400" : "text-red-400"
+                          }`}>
+                            {riskLevel} Risk
+                          </span>
                         </div>
                         {!!scoreObj.breakdown.length && (
-                          <ul className="mt-2.5 text-[10px] text-zinc-400 list-none pl-0 space-y-1">
+                          <ul className="mt-2 text-[10px] text-zinc-400 list-none pl-0 space-y-1">
                             {scoreObj.breakdown.map((b, i) => (
                               <li key={i} className="flex items-center gap-1">
                                 <span className="inline-block w-1 h-1 rounded-full bg-zinc-500" />
@@ -523,17 +487,47 @@ export default function OAuthTokenInspector() {
                           </ul>
                         )}
                       </div>
+
+                      {/* Token Header Metadata (Algorithm, Type & Audience) */}
+                      <div className="bg-zinc-900/40 border border-zinc-800/80 p-4 rounded-xl font-mono text-xs col-span-1 sm:col-span-2">
+                        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                          <div>
+                            <span className="text-[10px] uppercase font-mono tracking-widest text-zinc-400 font-semibold mb-1 block">
+                              Algorithm
+                            </span>
+                            <span className="font-semibold text-zinc-100 uppercase">
+                              {result?.header?.alg ?? "Not Present"}
+                            </span>
+                          </div>
+                          <div>
+                            <span className="text-[10px] uppercase font-mono tracking-widest text-zinc-400 font-semibold mb-1 block">
+                              Token Type
+                            </span>
+                            <span className="font-semibold text-zinc-100 uppercase">
+                              {result?.header?.typ ?? "JWT"}
+                            </span>
+                          </div>
+                          <div>
+                            <span className="text-[10px] uppercase font-mono tracking-widest text-zinc-400 font-semibold mb-1 block">
+                              Audience (aud)
+                            </span>
+                            <span className="font-semibold text-zinc-100 break-all">
+                              {payload.aud ? (Array.isArray(payload.aud) ? payload.aud.join(", ") : String(payload.aud)) : "Not Present"}
+                            </span>
+                          </div>
+                        </div>
+                      </div>
                     </div>
 
                     {/* Security Issues Panel */}
-                    {issues.length > 0 ? (
+                    {cleanIssues.length > 0 ? (
                       <div className="bg-orange-950/20 border border-orange-500/30 rounded-xl p-4 space-y-3">
                         <h3 className="text-sm font-mono font-bold text-orange-400 flex items-center gap-1.5">
                           <AlertTriangle className="w-4 h-4" />
                           Security Issues Detected
                         </h3>
                         <div className="space-y-2">
-                          {issues.map((issue, idx) => (
+                          {cleanIssues.map((issue, idx) => (
                             <div
                               key={idx}
                               className="bg-zinc-900/40 border border-zinc-800/80 text-zinc-300 p-2.5 rounded-lg text-xs font-mono"

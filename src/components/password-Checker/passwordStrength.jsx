@@ -365,9 +365,9 @@ export default function PasswordCheckerPage() {
                       <div className="h-2.5 w-full rounded-full bg-zinc-900 overflow-hidden p-[1px] border border-zinc-800/40">
                         <div
                           className={`h-full rounded-full transition-all duration-500 ${pct < 35 ? "bg-rose-500 shadow-[0_0_10px_rgba(244,63,94,0.4)]" :
-                              pct < 60 ? "bg-amber-500 shadow-[0_0_10px_rgba(245,158,11,0.4)]" :
-                                pct < 80 ? "bg-emerald-500 shadow-[0_0_10px_rgba(16,185,129,0.4)]" :
-                                  "bg-green-500 shadow-[0_0_10px_rgba(34,197,94,0.4)]"
+                            pct < 60 ? "bg-amber-500 shadow-[0_0_10px_rgba(245,158,11,0.4)]" :
+                              pct < 80 ? "bg-emerald-500 shadow-[0_0_10px_rgba(16,185,129,0.4)]" :
+                                "bg-green-500 shadow-[0_0_10px_rgba(34,197,94,0.4)]"
                             }`}
                           style={{ width: `${Math.max(4, pct)}%` }}
                         />
@@ -393,8 +393,8 @@ export default function PasswordCheckerPage() {
                     {/* Score Card */}
                     <div className={
                       pct < 35 ? "p-5 rounded-xl border border-rose-500/20 bg-rose-950/10 text-rose-400 shadow-[inset_0_0_12px_rgba(244,63,94,0.02)] transition-all duration-300 hover:scale-[1.01] flex flex-col justify-between gap-3" :
-                      pct < 60 ? "p-5 rounded-xl border border-amber-500/20 bg-amber-950/10 text-amber-400 shadow-[inset_0_0_12px_rgba(245,158,11,0.02)] transition-all duration-300 hover:scale-[1.01] flex flex-col justify-between gap-3" :
-                      "p-5 rounded-xl border border-emerald-500/20 bg-emerald-950/10 text-emerald-400 shadow-[inset_0_0_12px_rgba(16,185,129,0.02)] transition-all duration-300 hover:scale-[1.01] flex flex-col justify-between gap-3"
+                        pct < 60 ? "p-5 rounded-xl border border-amber-500/20 bg-amber-950/10 text-amber-400 shadow-[inset_0_0_12px_rgba(245,158,11,0.02)] transition-all duration-300 hover:scale-[1.01] flex flex-col justify-between gap-3" :
+                          "p-5 rounded-xl border border-emerald-500/20 bg-emerald-950/10 text-emerald-400 shadow-[inset_0_0_12px_rgba(16,185,129,0.02)] transition-all duration-300 hover:scale-[1.01] flex flex-col justify-between gap-3"
                     }>
                       <div className="flex justify-between items-start">
                         <span className="text-[11px] uppercase font-mono tracking-widest text-zinc-400 font-semibold">Security Score</span>
@@ -409,8 +409,8 @@ export default function PasswordCheckerPage() {
                     {/* Entropy Card */}
                     <div className={
                       (data?.entropyBits || 0) < 35 ? "p-5 rounded-xl border border-rose-500/20 bg-rose-950/10 text-rose-400 shadow-[inset_0_0_12px_rgba(244,63,94,0.02)] transition-all duration-300 hover:scale-[1.01] flex flex-col justify-between gap-3" :
-                      (data?.entropyBits || 0) < 60 ? "p-5 rounded-xl border border-amber-500/20 bg-amber-950/10 text-amber-400 shadow-[inset_0_0_12px_rgba(245,158,11,0.02)] transition-all duration-300 hover:scale-[1.01] flex flex-col justify-between gap-3" :
-                      "p-5 rounded-xl border border-emerald-500/20 bg-emerald-950/10 text-emerald-400 shadow-[inset_0_0_12px_rgba(16,185,129,0.02)] transition-all duration-300 hover:scale-[1.01] flex flex-col justify-between gap-3"
+                        (data?.entropyBits || 0) < 60 ? "p-5 rounded-xl border border-amber-500/20 bg-amber-950/10 text-amber-400 shadow-[inset_0_0_12px_rgba(245,158,11,0.02)] transition-all duration-300 hover:scale-[1.01] flex flex-col justify-between gap-3" :
+                          "p-5 rounded-xl border border-emerald-500/20 bg-emerald-950/10 text-emerald-400 shadow-[inset_0_0_12px_rgba(16,185,129,0.02)] transition-all duration-300 hover:scale-[1.01] flex flex-col justify-between gap-3"
                     }>
                       <div className="flex justify-between items-start">
                         <span className="text-[11px] uppercase font-mono tracking-widest text-zinc-400 font-semibold">Entropy</span>
@@ -427,8 +427,8 @@ export default function PasswordCheckerPage() {
                     {/* Crack Time Card */}
                     <div className={
                       pct < 35 ? "p-5 rounded-xl border border-rose-500/20 bg-rose-955/10 text-rose-400 shadow-[inset_0_0_12px_rgba(244,63,94,0.02)] transition-all duration-300 hover:scale-[1.01] flex flex-col justify-between gap-3" :
-                      pct < 60 ? "p-5 rounded-xl border border-amber-500/20 bg-amber-955/10 text-amber-450 shadow-[inset_0_0_12px_rgba(245,158,11,0.02)] transition-all duration-300 hover:scale-[1.01] flex flex-col justify-between gap-3" :
-                      "p-5 rounded-xl border border-emerald-500/20 bg-emerald-955/10 text-emerald-455 shadow-[inset_0_0_12px_rgba(16,185,129,0.02)] transition-all duration-300 hover:scale-[1.01] flex flex-col justify-between gap-3"
+                        pct < 60 ? "p-5 rounded-xl border border-amber-500/20 bg-amber-955/10 text-amber-450 shadow-[inset_0_0_12px_rgba(245,158,11,0.02)] transition-all duration-300 hover:scale-[1.01] flex flex-col justify-between gap-3" :
+                          "p-5 rounded-xl border border-emerald-500/20 bg-emerald-955/10 text-emerald-455 shadow-[inset_0_0_12px_rgba(16,185,129,0.02)] transition-all duration-300 hover:scale-[1.01] flex flex-col justify-between gap-3"
                     }>
                       <div className="flex justify-between items-start">
                         <span className="text-[11px] uppercase font-mono tracking-widest text-zinc-400 font-semibold">Time To Crack</span>
@@ -443,8 +443,8 @@ export default function PasswordCheckerPage() {
                     {/* Length Card */}
                     <div className={
                       (data?.length || 0) < 8 ? "p-5 rounded-xl border border-rose-500/20 bg-rose-950/10 text-rose-400 shadow-[inset_0_0_12px_rgba(244,63,94,0.02)] transition-all duration-300 hover:scale-[1.01] flex flex-col justify-between gap-3" :
-                      (data?.length || 0) < 12 ? "p-5 rounded-xl border border-amber-500/20 bg-amber-950/10 text-amber-400 shadow-[inset_0_0_12px_rgba(245,158,11,0.02)] transition-all duration-300 hover:scale-[1.01] flex flex-col justify-between gap-3" :
-                      "p-5 rounded-xl border border-emerald-500/20 bg-emerald-950/10 text-emerald-400 shadow-[inset_0_0_12px_rgba(16,185,129,0.02)] transition-all duration-300 hover:scale-[1.01] flex flex-col justify-between gap-3"
+                        (data?.length || 0) < 12 ? "p-5 rounded-xl border border-amber-500/20 bg-amber-950/10 text-amber-400 shadow-[inset_0_0_12px_rgba(245,158,11,0.02)] transition-all duration-300 hover:scale-[1.01] flex flex-col justify-between gap-3" :
+                          "p-5 rounded-xl border border-emerald-500/20 bg-emerald-950/10 text-emerald-400 shadow-[inset_0_0_12px_rgba(16,185,129,0.02)] transition-all duration-300 hover:scale-[1.01] flex flex-col justify-between gap-3"
                     }>
                       <div className="flex justify-between items-start">
                         <span className="text-[11px] uppercase font-mono tracking-widest text-zinc-400 font-semibold">Length</span>
@@ -612,8 +612,8 @@ function Badge({ ok, children }) {
   return (
     <span
       className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full border text-xs font-mono transition-all ${ok
-          ? "border-emerald-500/30 bg-emerald-500/10 text-emerald-400 shadow-[0_0_8px_rgba(16,185,129,0.06)]"
-          : "border-zinc-800 bg-zinc-900/40 text-zinc-500"
+        ? "border-emerald-500/30 bg-emerald-500/10 text-emerald-400 shadow-[0_0_8px_rgba(16,185,129,0.06)]"
+        : "border-zinc-800 bg-zinc-900/40 text-zinc-500"
         }`}
     >
       {ok ? (
