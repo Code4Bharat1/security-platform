@@ -1,17 +1,25 @@
 "use client";
+
 import { useState } from "react";
 import axios from "axios";
 import jsPDF from "jspdf";
 import autoTable from "jspdf-autotable";
 import useProtectedAction from "../UseProtectedAction/UseProtectedAction";
 import OwnershipVerificationWizard from "@/components/ownership/OwnershipVerificationWizard";
+import {
+  Globe,
+  Search,
+  Loader2,
+  AlertTriangle,
+  Info,
+  Terminal,
+  FileDown,
+  Download,
+  Calendar,
+  Clock
+} from "lucide-react";
 
 export default function SubdomainScanner() {
-  // ====================================================
-  // TEMPORARILY DISABLED FOR LOCAL TESTING
-  // Purpose: Skip domain ownership verification.
-  // Re-enable before production deployment.
-  // ====================================================
   const SKIP_DOMAIN_VERIFICATION_FOR_TESTING = true;
 
   const protectedAction = useProtectedAction();
@@ -96,7 +104,7 @@ export default function SubdomainScanner() {
     if (!results || results.length === 0) return;
 
     const doc = new jsPDF();
-    const tableColumn = ["#", "Subdomain"];
+    const tableColumn = ["#", "Subdomain Hostname"];
     const tableRows = [];
 
     results.forEach((item, index) => {
@@ -104,36 +112,40 @@ export default function SubdomainScanner() {
       tableRows.push(subdomainData);
     });
 
-    // Header
-    doc.setFontSize(20);
-    doc.setTextColor(220, 38, 38); // Red-600
-    doc.text("Security Platform", 14, 22);
-
-    doc.setFontSize(16);
-    doc.setTextColor(0, 0, 0);
-    doc.text("Subdomain Enumeration Report", 14, 32);
+    // Header Banner
+    doc.setFillColor(18, 18, 18);
+    doc.rect(0, 0, doc.internal.pageSize.width, 80, "F");
+    
+    doc.setTextColor(239, 68, 68);
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(18);
+    doc.text("NEXCORE RED TEAM SECURITY AUDIT", 14, 35);
+    
+    doc.setTextColor(255, 255, 255);
+    doc.setFontSize(10);
+    doc.text("SUBDOMAIN ENUMERATION DISCOVERY LOG", 14, 55);
 
     // Metadata
     doc.setFontSize(10);
-    doc.setTextColor(100, 100, 100);
+    doc.setTextColor(50, 50, 50);
     const date = new Date().toLocaleString();
-    doc.text(`Target Domain: ${domain}`, 14, 42);
-    doc.text(`Total Subdomains Discovery: ${stats?.total || results.length}`, 14, 47);
-    doc.text(`Scan Date: ${date}`, 14, 52);
+    doc.text(`Target Domain: ${domain}`, 14, 100);
+    doc.text(`Total Subdomains: ${stats?.total || results.length}`, 14, 115);
+    doc.text(`Scan Date: ${date}`, 14, 130);
     if (stats?.durationMs) {
-      doc.text(`Scan Duration: ${formatDuration(stats.durationMs)}`, 14, 57);
+      doc.text(`Scan Duration: ${formatDuration(stats.durationMs)}`, 14, 145);
     }
 
     // Table
     autoTable(doc, {
-      startY: 65,
+      startY: 160,
       head: [tableColumn],
       body: tableRows,
       theme: "grid",
-      headStyles: { fillColor: [220, 38, 38], textColor: [255, 255, 255] },
-      styles: { fontSize: 9, cellPadding: 3 },
+      headStyles: { fillColor: [239, 68, 68], textColor: [255, 255, 255] },
+      styles: { fontSize: 9, cellPadding: 4 },
       columnStyles: {
-        0: { cellWidth: 15 },
+        0: { cellWidth: 20 },
         1: { cellWidth: "auto" },
       },
     });
@@ -147,127 +159,243 @@ export default function SubdomainScanner() {
   };
 
   return (
-    <div className="tool-detail-page min-h-screen bg-black text-white">
-      <div className="tool-detail-shell max-w-4xl mx-auto p-8">
-        {/* Header */}
-        {/* Header */}
-        <div className="tool-detail-hero flex items-center justify-between mb-8 gap-4 sm:gap-6">
-          {/* Logo (Left) */}
-          <div className="w-30 h-30 sm:w-30 sm:h-30 rounded-full border-4 border-red-500 overflow-hidden flex items-center justify-center bg-gray-800">
-            <img
-              src="/RedTeam/subdomain.png"
-              alt="Logo"
-              className="w-full h-full object-cover"
-            />
-          </div>
+    <div 
+      className="tool-detail-page min-h-screen"
+      style={{
+        '--hero-ambient-a': 'rgba(239, 68, 68, 0.08)',
+        '--hero-ambient-b': 'rgba(249, 115, 22, 0.03)',
+        '--glow-primary': '0 0 34px rgba(239, 68, 68, 0.16)',
+        '--gold': '#ef4444',
+        '--gold-strong': '#f87171',
+        '--gold-dark': '#b91c1c',
+        '--ring': 'rgba(239, 68, 68, 0.34)',
+        '--surface-glow': 'rgba(239, 68, 68, 0.14)',
+      }}
+    >
+      <style>{`
+        .tool-detail-page .tool-detail-shell {
+          padding-top: 3.5rem !important;
+        }
+        .tool-detail-page ::-webkit-scrollbar-thumb {
+          background: rgba(239, 68, 68, 0.35) !important;
+        }
+        .tool-detail-page ::-webkit-scrollbar-thumb:hover {
+          background: rgba(239, 68, 68, 0.55) !important;
+        }
+        .tool-detail-page ::selection {
+          background: rgba(239, 68, 68, 0.22) !important;
+          color: #fef2f2 !important;
+        }
+        .tool-detail-page :is(button, [role="button"]):is([class*="bg-red-"], [class*="bg-rose-"]) {
+          color: #000000 !important;
+        }
+        .tool-detail-page :is(button, [role="button"]):is([class*="bg-red-"], [class*="bg-rose-"]) * {
+          color: #000000 !important;
+        }
+      `}</style>
 
-          {/* Title + Description (Right) */}
-          <div className="flex-1 text-left">
-            <h1 className="text-2xl sm:text-3xl font-bold text-white">
-              Subdomain Scanner
+      <div className="tool-detail-shell">
+        {/* Navigation & Header */}
+        <div className="flex justify-end mb-8">
+          <span className="rounded-full border border-red-500/30 px-3 py-1 font-mono text-[0.62rem] uppercase tracking-[0.28em] text-red-400">
+            Red Team
+          </span>
+        </div>
+
+        {/* Title Block */}
+        <div className="mb-10 flex flex-col md:flex-row items-start md:items-center gap-6">
+          <div className="w-16 h-16 rounded-2xl border border-red-500/30 overflow-hidden shadow-lg flex-shrink-0 flex items-center justify-center">
+            <Search className="h-8 w-8 text-red-400" />
+          </div>
+          <div>
+            <h1 className="text-4xl sm:text-5xl font-mono font-bold text-zinc-100">
+              SUBDOMAIN <span className="text-red-400">SCANNER</span>
             </h1>
-            <p className="text-gray-400 text-base sm:text-lg mt-1">
-              Scan websites for analyzing subdomains and their security posture.
+            <p className="mt-2 text-zinc-400 max-w-2xl text-base font-normal">
+              Perform broad reconnaissance across target domains to discover active subdomains and audit host security configurations.
             </p>
           </div>
         </div>
 
-        {/* Main Form */}
-        <div className="bg-gray-900 border border-white-700 rounded-lg p-6">
-          <div className="mb-6">
-            <label className="block text-red-400 text-lg font-semibold mb-4">
-              Subdomain
-            </label>
-            <input
-              type="text"
-              placeholder="Enter domain (e.g., example.com)"
-              value={domain}
-              onChange={(e) => setDomain(e.target.value)}
-              className="w-full p-4 bg-white text-black rounded-lg text-lg placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-red-500"
-            />
-          </div>
+        {/* 2-Column Layout */}
+        <div className="grid gap-8 lg:grid-cols-[1fr_400px]">
+          
+          {/* Left Column */}
+          <div className="space-y-6">
+            
+            {/* Form Card */}
+            <div className="bg-zinc-950/20 backdrop-blur-md border border-zinc-800/80 rounded-2xl p-6 shadow-[0_8px_30px_rgb(0,0,0,0.2)] hover:border-red-500/10 transition-all duration-300 space-y-5">
+              <h2 className="text-lg font-mono font-medium text-zinc-100 mb-2 flex items-center gap-2">
+                <Globe className="h-5 w-5 text-red-400" />
+                Target Reconnaissance
+              </h2>
 
-          <button
-            onClick={handleSubmit}
-            disabled={loading}
-            className="w-full bg-red-600 hover:bg-red-700 text-white py-4 rounded-lg text-lg font-semibold disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-          >
-            {loading ? "Scanning..." : "Find Subdomains"}
-          </button>
-          <OwnershipVerificationWizard
-            targetValue={domain}
-            targetLabel="Domain"
-            onVerifiedChange={setOwnershipVerified}
-            className="mt-4"
-          />
-        </div>
+              <div className="space-y-4">
+                {/* Domain Input */}
+                <div>
+                  <label className="block text-xs uppercase tracking-wider font-mono text-zinc-400 mb-2 font-semibold">
+                    Target Domain
+                  </label>
+                  <div className="relative">
+                    <Globe className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-650" />
+                    <input
+                      type="text"
+                      placeholder="Enter target domain (e.g. example.com)"
+                      value={domain}
+                      onChange={(e) => setDomain(e.target.value.trim())}
+                      className="w-full bg-zinc-900/40 text-zinc-100 border border-zinc-800/80 rounded-xl p-3.5 pl-12 text-sm focus:border-red-500/50 focus:ring-1 focus:ring-red-500/30 focus:shadow-[0_0_12px_rgba(239,68,68,0.08)] focus:outline-none transition-all placeholder:text-zinc-600 font-mono"
+                    />
+                  </div>
+                </div>
 
-        {/* Error Message */}
-        {error && (
-          <div className="mt-6 p-4 bg-red-900/50 border border-red-500 rounded-lg">
-            <p className="text-red-400">{error}</p>
-          </div>
-        )}
+                {/* Submit button */}
+                <div className="pt-2">
+                  <button
+                    onClick={handleSubmit}
+                    disabled={loading || !domain}
+                    className="w-full bg-red-500 hover:bg-red-600 text-black rounded-xl font-mono font-bold text-xs uppercase py-4 transition-all duration-300 hover:scale-[1.01] active:scale-[0.99] flex items-center justify-center gap-2 cursor-pointer hover:shadow-[0_0_20px_rgba(239,68,68,0.2)] focus:outline-none focus:ring-2 focus:ring-red-500/40 focus:ring-offset-2 focus:ring-offset-black/20 disabled:opacity-40 disabled:pointer-events-none"
+                  >
+                    {loading ? (
+                      <>
+                        <Loader2 className="w-4 h-4 animate-spin text-black" />
+                        Enumerating Subdomains...
+                      </>
+                    ) : (
+                      <>
+                        <Search className="w-4 h-4 text-black" />
+                        Find Subdomains
+                      </>
+                    )}
+                  </button>
+                </div>
 
-        {/* Stats */}
-        {stats && (
-          <div className="mt-6 bg-gray-900 border border-white-700 rounded-lg p-6">
-            <div className="grid grid-cols-2 gap-6">
-              <div>
-                <p className="text-gray-400 text-sm mb-1">Total subdomains</p>
-                <p className="text-white text-2xl font-bold">
-                  {stats.total ?? "-"}
-                </p>
-              </div>
-              <div>
-                <p className="text-gray-400 text-sm mb-1">Scan duration</p>
-                <p className="text-white text-2xl font-bold">
-                  {formatDuration(stats.durationMs)}
-                </p>
-              </div>
-              <div className="col-span-2">
-                <p className="text-gray-400 text-sm mb-1">Starting time</p>
-                <p className="text-white font-medium">
-                  {formatDate(stats.startedAt)}
-                </p>
-              </div>
-              <div className="col-span-2">
-                <p className="text-gray-400 text-sm mb-1">Finish time</p>
-                <p className="text-white font-medium">
-                  {formatDate(stats.finishedAt)}
-                </p>
+                {/* Ownership Verification */}
+                <OwnershipVerificationWizard
+                  targetValue={domain}
+                  targetLabel="Domain"
+                  onVerifiedChange={setOwnershipVerified}
+                />
               </div>
             </div>
-          </div>
-        )}
 
-        {/* Results */}
-        {results.length > 0 && (
-          <div className="mt-6">
-            <h3 className="text-xl font-semibold mb-4 text-white">Results</h3>
-            <div className="bg-gray-900 border border-white-700 rounded-lg p-4 max-h-80 overflow-auto">
-              <ul className="space-y-2">
-                {results.map(({ subdomain }, idx) => (
-                  <li key={idx}>
-                    <button
-                      onClick={() => handleSubdomainClick(subdomain)}
-                      className="text-blue-400 hover:text-blue-300 hover:underline break-all text-left"
-                    >
-                      {subdomain}
-                    </button>
-                  </li>
-                ))}
+            {/* Error Message */}
+            {error && (
+              <div className="p-4 rounded-xl border border-red-500/20 bg-red-955/10 text-red-400 text-xs font-mono flex items-start gap-2">
+                <AlertTriangle size={16} className="mt-0.5 flex-shrink-0" />
+                <span>Reconnaissance Failure: {error}</span>
+              </div>
+            )}
+
+            {/* Stats Block */}
+            {stats && (
+              <div className="bg-zinc-950/20 backdrop-blur-md border border-zinc-800/80 rounded-2xl p-6 shadow-[0_8px_30px_rgb(0,0,0,0.2)] hover:border-red-500/10 transition-all duration-300">
+                <h3 className="text-sm font-mono font-bold text-zinc-200 flex items-center gap-2 border-b border-zinc-850 pb-2.5 mb-4">
+                  <Terminal className="w-4 h-4 text-red-400" />
+                  Scan Telemetry Metrics
+                </h3>
+                <div className="grid grid-cols-2 gap-4 text-xs font-mono">
+                  <div className="bg-zinc-900/40 border border-zinc-800/80 p-3.5 rounded-xl">
+                    <span className="text-[10px] text-zinc-550 block mb-1">Total Subdomains</span>
+                    <span className="text-zinc-200 font-bold text-base">{stats.total ?? "-"}</span>
+                  </div>
+                  <div className="bg-zinc-900/40 border border-zinc-800/80 p-3.5 rounded-xl">
+                    <span className="text-[10px] text-zinc-550 block mb-1">Scan Duration</span>
+                    <span className="text-zinc-200 font-bold text-base">{formatDuration(stats.durationMs)}</span>
+                  </div>
+                  <div className="bg-zinc-900/40 border border-zinc-800/80 p-3.5 rounded-xl col-span-2 flex items-center gap-2">
+                    <Calendar className="w-4 h-4 text-red-400" />
+                    <div>
+                      <span className="text-[10px] text-zinc-550 block">Start Time</span>
+                      <span className="text-zinc-300 font-medium">{formatDate(stats.startedAt)}</span>
+                    </div>
+                  </div>
+                  <div className="bg-zinc-900/40 border border-zinc-800/80 p-3.5 rounded-xl col-span-2 flex items-center gap-2">
+                    <Clock className="w-4 h-4 text-red-400" />
+                    <div>
+                      <span className="text-[10px] text-zinc-550 block">Finish Time</span>
+                      <span className="text-zinc-300 font-medium">{formatDate(stats.finishedAt)}</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* Results Block */}
+            {results.length > 0 && (
+              <div className="bg-zinc-950/20 backdrop-blur-md border border-zinc-800/80 rounded-2xl p-6 shadow-[0_8px_30px_rgb(0,0,0,0.2)] hover:border-red-500/10 transition-all duration-300 space-y-5">
+                <div className="flex justify-between items-center gap-4 flex-wrap border-b border-zinc-800/40 pb-4">
+                  <div>
+                    <h3 className="text-lg font-mono font-bold text-zinc-100 uppercase tracking-wider">
+                      Discovery Logs
+                    </h3>
+                    <p className="text-xs font-mono text-zinc-500 mt-0.5">
+                      Subdomains mapping details
+                    </p>
+                  </div>
+
+                  <button
+                    onClick={downloadPDF}
+                    className="px-4 py-2.5 bg-zinc-900/40 hover:bg-red-500/5 text-zinc-300 hover:text-red-400 border border-zinc-800/80 hover:border-red-500/30 rounded-xl font-mono font-bold text-xs uppercase transition-all duration-300 flex items-center justify-center gap-1.5 cursor-pointer"
+                  >
+                    <Download className="w-3.5 h-3.5" />
+                    Download PDF
+                  </button>
+                </div>
+
+                <div className="bg-zinc-900/40 border border-zinc-800/80 p-4 rounded-xl max-h-80 overflow-y-auto font-mono text-xs">
+                  <ul className="space-y-3.5 list-none pl-0">
+                    {results.map(({ subdomain }, idx) => (
+                      <li key={idx} className="flex items-start gap-2">
+                        <span className="inline-block w-1.5 h-1.5 rounded-full bg-red-500/60 mt-1.5 flex-shrink-0" />
+                        <button
+                          onClick={() => handleSubdomainClick(subdomain)}
+                          className="text-red-400 hover:text-red-300 hover:underline break-all text-left font-mono font-semibold"
+                        >
+                          {subdomain}
+                        </button>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              </div>
+            )}
+
+          </div>
+
+          {/* Right Column */}
+          <div className="space-y-6">
+            
+            {/* Guidance sidebar card */}
+            <div className="border border-zinc-800/80 bg-zinc-950/20 backdrop-blur-md rounded-2xl p-6 space-y-4 shadow-[0_8px_30px_rgb(0,0,0,0.12)]">
+              <h2 className="text-xs font-mono font-bold uppercase tracking-wider text-zinc-100 flex items-center gap-2">
+                <Info className="text-red-400 w-4 h-4" />
+                Scanner Scope
+              </h2>
+              <ul className="space-y-3.5 list-none pl-0">
+                <li className="flex items-start gap-2">
+                  <span className="inline-block w-1.5 h-1.5 rounded-full bg-red-500/60 mt-1.5 flex-shrink-0" />
+                  <span className="text-xs text-zinc-400 leading-relaxed font-mono">
+                    Resolves subdomains mapping matrices to locate unknown attack vectors.
+                  </span>
+                </li>
+                <li className="flex items-start gap-2">
+                  <span className="inline-block w-1.5 h-1.5 rounded-full bg-red-500/60 mt-1.5 flex-shrink-0" />
+                  <span className="text-xs text-zinc-400 leading-relaxed font-mono">
+                    Audits active ports, DNS values, and host headers records configurations.
+                  </span>
+                </li>
+                <li className="flex items-start gap-2">
+                  <span className="inline-block w-1.5 h-1.5 rounded-full bg-red-500/60 mt-1.5 flex-shrink-0" />
+                  <span className="text-xs text-zinc-400 leading-relaxed font-mono">
+                    Logs telemetry data to optimize penetration testing security posture.
+                  </span>
+                </li>
               </ul>
             </div>
 
-            <button
-              onClick={downloadPDF}
-              className="mt-4 w-full bg-red-600 hover:bg-red-700 text-white py-3 rounded-lg font-semibold transition-colors"
-            >
-              Download PDF
-            </button>
           </div>
-        )}
+
+        </div>
       </div>
     </div>
   );

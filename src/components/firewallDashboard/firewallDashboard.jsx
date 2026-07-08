@@ -3,26 +3,35 @@
 import React from "react";
 import { jsPDF } from "jspdf";
 import autoTable from "jspdf-autotable";
-import { FileText, FileDown, Shield, AlertTriangle, CheckCircle2, Link2 } from "lucide-react";
+import { 
+  FileText, 
+  FileDown, 
+  Shield, 
+  AlertTriangle, 
+  CheckCircle2, 
+  Link2,
+  Terminal,
+  Download
+} from "lucide-react";
 
 export default function FirewallDashboard({ data }) {
   const matchedHeaders = data?.matchedHeaders ?? [];
   const securityHeadersDetected = data?.securityHeadersDetected ?? [];
 
   const protectionColors = {
-    None: "text-gray-700 bg-black-100 ring-1 ring-gray-200",
-    Moderate: "text-amber-800 bg-amber-100 ring-1 ring-amber-200",
-    High: "text-red-800 bg-red-100 ring-1 ring-red-200",
+    None: "bg-zinc-800 text-zinc-400 border border-zinc-700",
+    Moderate: "bg-blue-500/10 text-blue-400 border border-blue-500/20",
+    High: "bg-red-500/10 text-red-400 border border-red-500/20",
   };
 
   const ProtectionPill = ({ level }) => (
     <span
-      className={`inline-flex items-center gap-2 px-3 py-1 rounded-full text-sm font-medium
+      className={`inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[10px] font-mono font-bold uppercase tracking-wider
         ${protectionColors[level] ?? protectionColors.None}`}
     >
-      {level === "High" ? <AlertTriangle className="h-4 w-4" /> :
-       level === "Moderate" ? <Shield className="h-4 w-4" /> :
-       <CheckCircle2 className="h-4 w-4" />}
+      {level === "High" ? <AlertTriangle className="h-3 w-3" /> :
+       level === "Moderate" ? <Shield className="h-3 w-3" /> :
+       <CheckCircle2 className="h-3 w-3" />}
       {level || "None"}
     </span>
   );
@@ -54,67 +63,69 @@ export default function FirewallDashboard({ data }) {
       y += 18;
     };
 
-    // Title
+    // Header Banner
+    doc.setFillColor(18, 18, 18);
+    doc.rect(0, 0, doc.internal.pageSize.width, 80, "F");
+    
+    doc.setTextColor(59, 130, 246);
     doc.setFont("helvetica", "bold");
     doc.setFontSize(18);
-    doc.text("Firewall Detection Report", M, y);
-    y += 26;
+    doc.text("NEXCORE SECURITY PLATFORM", M, 35);
+    
+    doc.setTextColor(255, 255, 255);
+    doc.setFontSize(11);
+    doc.text("WAF SECURITY AUDIT REPORT", M, 55);
+    y = 110;
 
-    // Meta
-    line(`Generated: ${new Date().toLocaleString()}`);
-    line(`URL: ${url}`);
-    line(`HTTP Status: ${statusCode}`);
-    line(`Protection Level: ${protectionLevel}`);
-    line(`Firewall Detected: ${detected ? firewallName : "None"}`);
-    line(`Server Header: ${serverHeader}`);
+    doc.setTextColor(50, 50, 50);
+    doc.setFont("helvetica", "normal");
+    doc.setFontSize(10);
+    doc.text(`Generated: ${new Date().toLocaleString()}`, M, y);
+    y += 18;
 
-    // Summary table
-    y += 6;
     autoTable(doc, {
       startY: y,
       head: [["Field", "Value"]],
       body: [
-        ["URL", url],
-        ["HTTP Status", String(statusCode)],
+        ["URL Target", url],
+        ["HTTP Status Code", String(statusCode)],
         ["Protection Level", protectionLevel],
-        ["Firewall Detected", detected ? firewallName : "None"],
-        ["Server Header", serverHeader || "N/A"],
+        ["Firewall Vendor", detected ? firewallName : "None"],
+        ["Server Response Header", serverHeader || "N/A"],
       ],
-      styles: { font: "helvetica", fontSize: 10 },
-      headStyles: { fillColor: [34, 197, 94] },
+      styles: { fontSize: 10 },
+      headStyles: { fillColor: [59, 130, 246], textColor: [255, 255, 255] },
       margin: { left: M, right: M },
     });
-    y = doc.lastAutoTable.finalY + 20;
+    y = doc.lastAutoTable.finalY + 16;
 
-    // Matched headers
     if (matchedHeaders.length) {
-      line("Matched Headers", 13, "bold");
       autoTable(doc, {
         startY: y,
-        head: [["Header", "Value"]],
+        head: [["Header Key", "Response Value"]],
         body: matchedHeaders.map((h) => [h.header ?? "-", String(h.value ?? "")]),
-        styles: { fontSize: 9, cellWidth: "wrap" },
+        styles: { fontSize: 9 },
+        headStyles: { fillColor: [59, 130, 246], textColor: [255, 255, 255] },
         columnStyles: { 0: { cellWidth: 180 }, 1: { cellWidth: 320 } },
         margin: { left: M, right: M },
       });
-      y = doc.lastAutoTable.finalY + 20;
+      y = doc.lastAutoTable.finalY + 16;
     }
 
-    // Security headers
-    line("Security Headers Detected", 13, "bold");
     autoTable(doc, {
       startY: y,
-      head: [["Header"]],
+      head: [["Security Headers Detected"]],
       body: securityHeadersDetected.length
         ? securityHeadersDetected.map((h) => [h])
         : [["None"]],
       styles: { fontSize: 10 },
+      headStyles: { fillColor: [59, 130, 246], textColor: [255, 255, 255] },
+      margin: { left: M, right: M },
     });
 
     doc.save(`Firewall_Report_${safeNameFromUrl(url)}.pdf`);
   };
 
-  // NEW: plain-text export
   const handleDownloadTxt = () => {
     if (!data) return;
 
@@ -130,7 +141,7 @@ export default function FirewallDashboard({ data }) {
     const allHeaders = data.headers || data.rawHeaders || null;
 
     const lines = [];
-    lines.push("Firewall Detection Report");
+    lines.push("WAF Security Detection Report");
     lines.push("====================================");
     lines.push(`Generated:        ${new Date().toLocaleString()}`);
     lines.push(`URL:              ${url}`);
@@ -179,44 +190,10 @@ export default function FirewallDashboard({ data }) {
     link.remove();
   };
 
-  // Empty state
   if (!data) {
     return (
-      <div className="max-w-5xl mx-auto p-6">
-        <div className="rounded-2xl bg-white shadow-md border border-gray-100 p-8">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-3">
-              <img src="/tools/card-images/waf1.png" alt="verify" className="w-12 h-14" />
-              <div>
-                <h2 className="text-2xl font-bold">Firewall Detection Report</h2>
-                <p className="text-sm text-gray-500">Run a scan to see details here.</p>
-              </div>
-            </div>
-            <div className="flex gap-2">
-              <button
-                disabled
-                className="h-10 px-4 rounded-lg border border-gray-200 text-gray-400 cursor-not-allowed"
-                title="Run a scan first"
-              >
-                <div className="inline-flex items-center gap-2">
-                  <FileText className="h-4 w-4" /> Download PDF
-                </div>
-              </button>
-              <button
-                disabled
-                className="h-10 px-4 rounded-lg border border-gray-200 text-gray-400 cursor-not-allowed"
-                title="Run a scan first"
-              >
-                <div className="inline-flex items-center gap-2">
-                  <FileDown className="h-4 w-4" /> Download TXT
-                </div>
-              </button>
-            </div>
-          </div>
-          <div className="mt-6 rounded-lg bg-black-50 p-6 text-gray-600">
-            No data to display.
-          </div>
-        </div>
+      <div className="bg-zinc-900/40 border border-zinc-850 p-6 rounded-2xl font-mono text-zinc-550 text-xs text-center">
+        No active telemetry data to display. Execute WAF detection check above.
       </div>
     );
   }
@@ -231,128 +208,136 @@ export default function FirewallDashboard({ data }) {
   } = data;
 
   return (
-    <div className="max-w-5xl mx-auto p-6">
-      <div className="rounded-2xl bg-black shadow-md border border-gray-100 p-8">
-        {/* Header row */}
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <img src="/BlueTeam/waf.png" alt="verify" className="w-15 h-15" />
-            <div>
-              <h2 className="text-2xl font-bold">Firewall Detection Report</h2>
-              <p className="text-sm text-white-500">Results for your latest scan.</p>
-            </div>
-          </div>
-          <div className="flex gap-2">
-            <button
-              onClick={handleDownloadPdf}
-              className="h-10 px-4 rounded-lg border border-blue-700 text-white-700 hover:bg-blue-50 transition"
-              title="Download PDF"
-            >
-              <div className="inline-flex items-center gap-2">
-                <FileText className="h-4 w-4" /> Download PDF
-              </div>
-            </button>
-            <button
-              onClick={handleDownloadTxt}
-              className="h-10 px-4 rounded-lg border border-blue-700 text-white-700 hover:bg-black-50 transition"
-              title="Download TXT"
-            >
-              <div className="inline-flex items-center gap-2">
-                <FileDown className="h-4 w-4" /> Download TXT
-              </div>
-            </button>
-          </div>
+    <div className="bg-zinc-950/20 backdrop-blur-md border border-zinc-800/80 rounded-2xl p-6 shadow-[0_8px_30px_rgb(0,0,0,0.2)] hover:border-blue-500/10 transition-all duration-300 space-y-6">
+      
+      {/* Header bar */}
+      <div className="flex items-center justify-between gap-4 flex-wrap border-b border-zinc-800/40 pb-4">
+        <div>
+          <h3 className="text-lg font-mono font-bold text-zinc-100 uppercase tracking-wider">
+            Detection Telemetry Results
+          </h3>
+          <p className="text-xs font-mono text-zinc-500 mt-0.5">
+            Real-time security analytics log
+          </p>
         </div>
-
-        {/* Summary */}
-        <div className="mt-6 grid grid-cols-1 md:grid-cols-2 gap-4">
-          <div className="rounded-lg border border-blue-600 bg-black-50 p-4">
-            <div className="text-sm text-white-500 mb-1">URL Scanned</div>
-            <div className="flex items-center gap-2">
-              <Link2 className="h-4 w-4 text-blue-600" />
-              <a
-                href={url}
-                target="_blank"
-                rel="noreferrer"
-                className="text-blue-600 break-all hover:underline"
-                title={url}
-              >
-                {url}
-              </a>
-            </div>
-          </div>
-
-          <div className="rounded-lg border border-blue-600 bg-black-50 p-4">
-            <div className="text-sm text-white-500 mb-1">HTTP Status Code</div>
-            <div className="text-white font-semibold">{statusCode}</div>
-          </div>
-
-          <div className="rounded-lg border border-blue-600 bg-black-50 p-4">
-            <div className="text-sm text-white-500 mb-1">Protection Level</div>
-            <ProtectionPill level={protectionLevel} />
-          </div>
-
-          <div className="rounded-lg border border-blue-600 bg-black-50 p-4">
-            <div className="text-sm text-white-500 mb-1">Firewall Detected</div>
-            {detected ? (
-              <div className="inline-flex items-center gap-2 text-green-700 font-semibold">
-                <Shield className="h-4 w-4" />
-                {firewallName}
-              </div>
-            ) : (
-              <span className="text-white-500 italic">None</span>
-            )}
-          </div>
-
-          <div className="rounded-lg border border-blue-600 bg-black-50 p-4 md:col-span-2">
-            <div className="text-sm text-white mb-1">Server Header</div>
-            <div className="text-gray-800 break-all">{serverHeader || "N/A"}</div>
-          </div>
+        
+        <div className="flex gap-2">
+          <button
+            onClick={handleDownloadPdf}
+            className="px-4 py-2.5 bg-zinc-900/40 hover:bg-blue-500/5 text-zinc-300 hover:text-blue-400 border border-zinc-800/80 hover:border-blue-500/30 rounded-xl font-mono font-bold text-xs uppercase transition-all duration-300 hover:scale-[1.01] active:scale-[0.99] flex items-center justify-center gap-1.5"
+          >
+            <Download className="w-3.5 h-3.5" />
+            PDF Report
+          </button>
+          <button
+            onClick={handleDownloadTxt}
+            className="px-4 py-2.5 bg-zinc-900/40 hover:bg-blue-500/5 text-zinc-300 hover:text-blue-400 border border-zinc-800/80 hover:border-blue-500/30 rounded-xl font-mono font-bold text-xs uppercase transition-all duration-300 hover:scale-[1.01] active:scale-[0.99] flex items-center justify-center gap-1.5"
+          >
+            <FileDown className="w-3.5 h-3.5" />
+            TXT Report
+          </button>
         </div>
-
-        {/* Details */}
-        <div className="mt-8 grid grid-cols-1 md:grid-cols-2 gap-6">
-          <div className="rounded-lg border border-blue-600">
-            <div className="px-4 py-3 bg-black-50 font-semibold">
-              Matched Headers
-            </div>
-            <div className="p-4">
-              {matchedHeaders.length > 0 ? (
-                <ul className="space-y-2">
-                  {matchedHeaders.map(({ header, value }, idx) => (
-                    <li key={`${header}-${idx}`} className="text-sm">
-                      <code className="bg-black-100 px-1 py-0.5 rounded">{header}</code>
-                      <span className="text-gray-600">: {String(value ?? "")}</span>
-                    </li>
-                  ))}
-                </ul>
-              ) : (
-                <div className="text-white text-sm">None</div>
-              )}
-            </div>
-          </div>
-
-          <div className="rounded-lg border border-blue-600">
-            <div className="px-4 py-3 text-white bg-black-50 font-semibold">
-              Security Headers Detected
-            </div>
-            <div className="p-4">
-              {securityHeadersDetected.length > 0 ? (
-                <ul className="space-y-2">
-                  {securityHeadersDetected.map((header, idx) => (
-                    <li key={`${header}-${idx}`} className="text-sm">
-                      <code className="bg-black-100 px-1 py-0.5 rounded">{header}</code>
-                    </li>
-                  ))}
-                </ul>
-              ) : (
-                <div className="text-white-500 text-sm">None</div>
-              )}
-            </div>
-          </div>
-        </div>
-
       </div>
+
+      {/* Metrics summary cards */}
+      <div className="grid gap-4 sm:grid-cols-2">
+        <div className="bg-zinc-900/40 border border-zinc-800/80 p-4 rounded-xl font-mono text-xs">
+          <span className="text-[10px] uppercase font-mono tracking-widest text-zinc-400 font-semibold mb-1 block">
+            Target Host Scanned
+          </span>
+          <div className="flex items-center gap-2">
+            <Link2 className="h-3.5 w-3.5 text-blue-400" />
+            <a
+              href={url}
+              target="_blank"
+              rel="noreferrer"
+              className="text-blue-450 break-all hover:underline truncate max-w-[200px]"
+              title={url}
+            >
+              {url}
+            </a>
+          </div>
+        </div>
+
+        <div className="bg-zinc-900/40 border border-zinc-800/80 p-4 rounded-xl font-mono text-xs">
+          <span className="text-[10px] uppercase font-mono tracking-widest text-zinc-400 font-semibold mb-1 block">
+            HTTP Status Response
+          </span>
+          <span className="font-semibold text-zinc-200">{statusCode}</span>
+        </div>
+
+        <div className="bg-zinc-900/40 border border-zinc-800/80 p-4 rounded-xl font-mono text-xs">
+          <span className="text-[10px] uppercase font-mono tracking-widest text-zinc-400 font-semibold mb-1 block">
+            WAF Protection Intensity
+          </span>
+          <ProtectionPill level={protectionLevel} />
+        </div>
+
+        <div className="bg-zinc-900/40 border border-zinc-800/80 p-4 rounded-xl font-mono text-xs">
+          <span className="text-[10px] uppercase font-mono tracking-widest text-zinc-400 font-semibold mb-1 block">
+            Firewall Active Shield
+          </span>
+          {detected ? (
+            <span className="inline-flex items-center gap-1.5 text-blue-450 font-bold">
+              <Shield className="h-3.5 w-3.5 text-blue-400" />
+              {firewallName}
+            </span>
+          ) : (
+            <span className="text-zinc-550 italic">None Detected</span>
+          )}
+        </div>
+
+        <div className="bg-zinc-900/40 border border-zinc-800/80 p-4 rounded-xl font-mono text-xs sm:col-span-2">
+          <span className="text-[10px] uppercase font-mono tracking-widest text-zinc-400 font-semibold mb-1 block">
+            Server Response Header Signature
+          </span>
+          <code className="text-zinc-300 break-all font-mono">{serverHeader || "N/A"}</code>
+        </div>
+      </div>
+
+      {/* Details grids */}
+      <div className="grid gap-6 md:grid-cols-2">
+        <div className="bg-zinc-900/40 border border-zinc-800/80 rounded-xl p-4 font-mono text-xs">
+          <h4 className="text-xs font-mono font-bold text-blue-400 mb-3 border-b border-zinc-850 pb-2 flex items-center gap-1.5">
+            <Terminal className="w-3.5 h-3.5" />
+            Matched Headers
+          </h4>
+          {matchedHeaders.length > 0 ? (
+            <ul className="space-y-2.5 list-none pl-0">
+              {matchedHeaders.map(({ header, value }, idx) => (
+                <li key={`${header}-${idx}`} className="text-xs flex items-start gap-1">
+                  <span className="inline-block w-1 h-1 rounded-full bg-blue-500/60 mt-1.5 flex-shrink-0" />
+                  <span className="text-zinc-400 font-mono">
+                    <code className="bg-zinc-950/45 px-1 py-0.5 rounded text-blue-400">{header}</code>: {String(value ?? "")}
+                  </span>
+                </li>
+              ))}
+            </ul>
+          ) : (
+            <div className="text-zinc-550 italic font-mono text-xs">No signatures detected.</div>
+          )}
+        </div>
+
+        <div className="bg-zinc-900/40 border border-zinc-800/80 rounded-xl p-4 font-mono text-xs">
+          <h4 className="text-xs font-mono font-bold text-blue-400 mb-3 border-b border-zinc-850 pb-2 flex items-center gap-1.5">
+            <Terminal className="w-3.5 h-3.5" />
+            Security Headers Detected
+          </h4>
+          {securityHeadersDetected.length > 0 ? (
+            <ul className="space-y-2.5 list-none pl-0">
+              {securityHeadersDetected.map((header, idx) => (
+                <li key={`${header}-${idx}`} className="text-xs flex items-start gap-1">
+                  <span className="inline-block w-1 h-1 rounded-full bg-blue-500/60 mt-1.5 flex-shrink-0" />
+                  <code className="bg-zinc-950/45 px-1 py-0.5 rounded text-zinc-300 font-mono">{header}</code>
+                </li>
+              ))}
+            </ul>
+          ) : (
+            <div className="text-zinc-550 italic font-mono text-xs">No security headers detected.</div>
+          )}
+        </div>
+      </div>
+
     </div>
   );
 }

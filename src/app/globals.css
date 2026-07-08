@@ -672,10 +672,10 @@ html.theme-dark {
     opacity: 0.14;
   }
 
-  .tool-detail-page :is(button, [role="button"]):is([class*="bg-emerald-"], [class*="bg-green-"]) {
+  .tools-route-family :is(button, [role="button"]):is([class*="bg-emerald-"], [class*="bg-green-"], [class*="bg-amber-"], [class*="bg-orange-"]) {
     color: #000000 !important;
   }
-  .tool-detail-page :is(button, [role="button"]):is([class*="bg-emerald-"], [class*="bg-green-"]) * {
+  .tools-route-family :is(button, [role="button"]):is([class*="bg-emerald-"], [class*="bg-green-"], [class*="bg-amber-"], [class*="bg-orange-"]) * {
     color: #000000 !important;
   }
 
@@ -1018,6 +1018,13 @@ html.theme-dark {
     width: min(100%, 78rem);
     margin-inline: auto;
     padding: 7rem 1rem 5rem;
+  }
+
+  .tools-route-family > .tool-guidance-root {
+    padding: 0 !important;
+    width: 100% !important;
+    max-width: none !important;
+    margin: 0 !important;
   }
 
   .tools-route-family :is([class*="bg-white"], [class*="bg-gray"], [class*="bg-black"], [class*="bg-zinc"]) {

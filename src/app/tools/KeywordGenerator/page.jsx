@@ -135,7 +135,6 @@ export default function KeywordIntelligencePage() {
             Authorization: `Bearer ${userToken}`,
           },
           body: JSON.stringify({ url: normalized }),
-          body: JSON.stringify({ url: normalized }),
         });
 
         if (!r.ok) {

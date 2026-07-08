@@ -1,8 +1,20 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import { jsPDF } from "jspdf";
 import autoTable from "jspdf-autotable";
+import { 
+  Shield, 
+  Download, 
+  Terminal, 
+  Info, 
+  Key, 
+  FileText,
+  AlertTriangle,
+  Lock,
+  ChevronDown,
+  Loader2
+} from "lucide-react";
 import useProtectedAction from "../UseProtectedAction/UseProtectedAction";
 
 /* ---------- small helpers ---------- */
@@ -58,15 +70,9 @@ function computeScore(payload = {}, issues = []) {
   return { score, breakdown };
 }
 
-/* Build endpoint safely whether env contains /api or not */
-const API_BASE = (process.env.NEXT_PUBLIC_PROD_API_URL || "").replace(
-  /\/$/,
-  ""
-);
+const API_BASE = (process.env.NEXT_PUBLIC_PROD_API_URL || "").replace(/\/$/, "");
 const USE_API_PREFIX = !/\/api$/i.test(API_BASE);
-const ENDPOINT = `${API_BASE}${
-  USE_API_PREFIX ? "/api" : ""
-}/auth/oauthTokenInspector`;
+const ENDPOINT = `${API_BASE}${USE_API_PREFIX ? "/api" : ""}/auth/oauthTokenInspector`;
 
 export default function OAuthTokenInspector() {
   const [token, setToken] = useState("");
@@ -92,7 +98,6 @@ export default function OAuthTokenInspector() {
 
   const showToast = (message, type = "success") => setToast({ message, type });
 
-  /* Call API */
   const analyzeToken = async () => {
     setLoading(true);
     setResult(null);
@@ -112,7 +117,7 @@ export default function OAuthTokenInspector() {
         if (!res.ok || data?.error) {
           showToast(data?.error || `Analysis failed (${res.status})`, "error");
         } else {
-          showToast("Token analyzed successfully! ✨", "success");
+          showToast("Token analyzed successfully!", "success");
         }
       } catch (e) {
         setResult({ error: "Connection error. Is the API running?" });
@@ -123,15 +128,13 @@ export default function OAuthTokenInspector() {
     });
   };
 
-  /* Derive meta either from API (if provided) or from payload */
   const payload = result?.payload || {};
   const issues = result?.issues || [];
 
   const expEpoch = result?.meta?.expEpoch ?? payload?.exp ?? null;
   const iatEpoch = result?.meta?.iatEpoch ?? payload?.iat ?? null;
 
-  const isExpired =
-    result?.meta?.isExpired ?? (expEpoch ? now >= expEpoch : null);
+  const isExpired = result?.meta?.isExpired ?? (expEpoch ? now >= expEpoch : null);
 
   const lifetimePercentUsed = useMemo(() => {
     if (result?.meta?.lifetimePercentUsed != null)
@@ -156,31 +159,12 @@ export default function OAuthTokenInspector() {
       };
     }
     return computeScore(payload, issues);
-  }, [
-    result?.meta?.securityScore,
-    result?.meta?.scoreBreakdown,
-    payload,
-    issues,
-  ]);
+  }, [result?.meta?.securityScore, result?.meta?.scoreBreakdown, payload, issues]);
 
   const score = scoreObj.score;
-  const scoreBarColor =
-    score >= 80
-      ? "bg-emerald-500"
-      : score >= 60
-      ? "bg-amber-500"
-      : "bg-red-500";
+  const scoreBarColor = score >= 80 ? "bg-blue-500" : score >= 60 ? "bg-orange-500" : "bg-red-500";
+  const progressColor = timeRemaining == null ? "bg-zinc-700" : isExpired ? "bg-red-500" : (lifetimePercentUsed ?? 0) >= 80 ? "bg-orange-500" : "bg-blue-500";
 
-  const progressColor =
-    timeRemaining == null
-      ? "bg-gray-300"
-      : isExpired
-      ? "bg-red-500"
-      : (lifetimePercentUsed ?? 0) >= 80
-      ? "bg-amber-500"
-      : "bg-emerald-500";
-
-  /* ---------- Exports ---------- */
   const handleDownloadTxt = () => {
     if (!result || result.error) return;
     const lines = [
@@ -190,13 +174,7 @@ export default function OAuthTokenInspector() {
       "== Summary ==",
       `Issued At: ${fmtDateTime(iatEpoch)}`,
       `Expires At: ${fmtDateTime(expEpoch)}`,
-      `Time Remaining: ${
-        expEpoch == null
-          ? "—"
-          : timeRemaining <= 0 // ✅ FIX: Changed from isExpired to timeRemaining <= 0
-          ? "Expired"
-          : fmtDuration(timeRemaining)
-      }`,
+      `Time Remaining: ${expEpoch == null ? "—" : timeRemaining <= 0 ? "Expired" : fmtDuration(timeRemaining)}`,
       `Security Score: ${score}/100`,
       "",
       "== Issues ==",
@@ -207,9 +185,7 @@ export default function OAuthTokenInspector() {
       "",
       "== Score Breakdown ==",
       ...(scoreObj.breakdown.length
-        ? scoreObj.breakdown.map(
-            (b) => `- ${b.label}${b.delta ? ` (${b.delta})` : ""}`
-          )
+        ? scoreObj.breakdown.map((b) => `- ${b.label}${b.delta ? ` (${b.delta})` : ""}`)
         : ["—"]),
       "",
     ].join("\n");
@@ -218,12 +194,12 @@ export default function OAuthTokenInspector() {
     const filename = `OAuth_Report_${safeName(nameFrom)}.txt`;
 
     const blob = new Blob([lines], { type: "text/plain;charset=utf-8" });
-    const url = URL.createObjectURL(blob);
+    const urlObj = URL.createObjectURL(blob);
     const a = document.createElement("a");
-    a.href = url;
+    a.href = urlObj;
     a.download = filename;
     a.click();
-    URL.revokeObjectURL(url);
+    URL.revokeObjectURL(urlObj);
   };
 
   const handleDownloadPdf = () => {
@@ -240,64 +216,67 @@ export default function OAuthTokenInspector() {
       y += 18;
     };
 
-    // Title
+    // Header Banner
+    doc.setFillColor(18, 18, 18);
+    doc.rect(0, 0, doc.internal.pageSize.width, 80, "F");
+    
+    doc.setTextColor(59, 130, 246); // Blue Accent
     doc.setFont("helvetica", "bold");
-    doc.setFontSize(18);
-    doc.text("OAuth Token Report", M, y);
-    y += 26;
+    doc.setFontSize(20);
+    doc.text("NEXCORE SECURITY PLATFORM", M, 35);
+    
+    doc.setTextColor(255, 255, 255);
+    doc.setFontSize(12);
+    doc.text("OAUTH TOKEN INSPECTION REPORT", M, 55);
+    y = 110;
 
     add(`Generated: ${new Date().toLocaleString()}`);
 
-    // Summary
+    // Summary Table
     autoTable(doc, {
       startY: y,
       head: [["Field", "Value"]],
       body: [
         ["Issued At", fmtDateTime(iatEpoch)],
         ["Expires At", fmtDateTime(expEpoch)],
-        [
-          "Time Remaining",
-          expEpoch == null
-            ? "—"
-            : timeRemaining <= 0 // ✅ FIX: Changed from isExpired to timeRemaining <= 0
-            ? "Expired"
-            : fmtDuration(timeRemaining),
-        ],
+        ["Time Remaining", expEpoch == null ? "—" : timeRemaining <= 0 ? "Expired" : fmtDuration(timeRemaining)],
         ["Security Score", `${score}/100`],
       ],
       styles: { font: "helvetica", fontSize: 10 },
-      headStyles: { fillColor: [16, 185, 129] },
+      headStyles: { fillColor: [59, 130, 246], textColor: [255, 255, 255] },
       margin: { left: M, right: M },
     });
     y = doc.lastAutoTable.finalY + 18;
 
-    // Issues
+    // Issues Table
     autoTable(doc, {
       startY: y,
-      head: [["Issues"]],
+      head: [["Issues Detected"]],
       body: (issues.length ? issues : ["None"]).map((i) => [i]),
       styles: { fontSize: 10 },
+      headStyles: { fillColor: [59, 130, 246], textColor: [255, 255, 255] },
       margin: { left: M, right: M },
     });
     y = doc.lastAutoTable.finalY + 18;
 
-    // Score breakdown
+    // Score Breakdown Table
     if (scoreObj.breakdown.length) {
       autoTable(doc, {
         startY: y,
         head: [["Item", "Delta"]],
         body: scoreObj.breakdown.map((b) => [b.label, String(b.delta ?? "")]),
         styles: { fontSize: 10 },
+        headStyles: { fillColor: [59, 130, 246], textColor: [255, 255, 255] },
         margin: { left: M, right: M },
       });
       y = doc.lastAutoTable.finalY + 18;
     }
 
-    // Payload
+    // Payload Details
     add("Payload", 13, "bold");
     const payloadStr = JSON.stringify(payload ?? {}, null, 2);
-    const lines = doc.splitTextToSize(payloadStr, 515);
-    lines.forEach((ln) => {
+    const splitLines = doc.splitTextToSize(payloadStr, 515);
+    splitLines.forEach((ln) => {
       if (y > 780) {
         doc.addPage();
         y = 56;
@@ -311,31 +290,57 @@ export default function OAuthTokenInspector() {
     doc.save(filename);
   };
 
-  /* ---------- UI ---------- */
   return (
-    <div className="min-h-screen bg-black p-4 relative">
-      {/* Toast */}
+    <div 
+      className="tool-detail-page min-h-screen"
+      style={{
+        '--hero-ambient-a': 'rgba(59, 130, 246, 0.08)',
+        '--hero-ambient-b': 'rgba(6, 182, 212, 0.03)',
+        '--glow-primary': '0 0 34px rgba(59, 130, 246, 0.16)',
+        '--gold': '#3b82f6',
+        '--gold-strong': '#60a5fa',
+        '--gold-dark': '#1d4ed8',
+        '--ring': 'rgba(59, 130, 246, 0.34)',
+        '--surface-glow': 'rgba(59, 130, 246, 0.14)',
+      }}
+    >
+      <style>{`
+        .tool-detail-page .tool-detail-shell {
+          padding-top: 3.5rem !important;
+        }
+        .tool-detail-page ::-webkit-scrollbar-thumb {
+          background: rgba(59, 130, 246, 0.35) !important;
+        }
+        .tool-detail-page ::-webkit-scrollbar-thumb:hover {
+          background: rgba(59, 130, 246, 0.55) !important;
+        }
+        .tool-detail-page ::selection {
+          background: rgba(59, 130, 246, 0.22) !important;
+          color: #eff6ff !important;
+        }
+        .tool-detail-page :is(button, [role="button"]):is([class*="bg-blue-"], [class*="bg-sky-"]) {
+          color: #000000 !important;
+        }
+        .tool-detail-page :is(button, [role="button"]):is([class*="bg-blue-"], [class*="bg-sky-"]) * {
+          color: #000000 !important;
+        }
+      `}</style>
+
+      {/* Toast Alert */}
       {toast && (
         <div className="fixed top-6 right-6 z-50 animate-in slide-in-from-right duration-300">
           <div
-            className={`px-6 py-4 rounded-2xl shadow-2xl border backdrop-blur-sm ${
+            className={`px-6 py-4 rounded-xl border backdrop-blur-md font-mono text-xs uppercase tracking-wider ${
               toast.type === "success"
-                ? "bg-emerald-900/90 border-emerald-700 text-emerald-200"
-                : "bg-red-900/90 border-red-700 text-red-200"
+                ? "bg-blue-950/90 border-blue-500/30 text-blue-400"
+                : "bg-red-950/90 border-red-500/30 text-red-400"
             }`}
           >
             <div className="flex items-center gap-3">
-              <div
-                className={`w-8 h-8 rounded-full flex items-center justify-center ${
-                  toast.type === "success" ? "bg-emerald-800" : "bg-red-800"
-                }`}
-              >
-                {toast.type === "success" ? "✓" : "×"}
-              </div>
-              <span className="font-medium">{toast.message}</span>
+              <span className="font-semibold">{toast.message}</span>
               <button
                 onClick={() => setToast(null)}
-                className="ml-2 text-gray-400 hover:text-gray-200"
+                className="ml-2 text-zinc-400 hover:text-zinc-200"
               >
                 ×
               </button>
@@ -344,199 +349,265 @@ export default function OAuthTokenInspector() {
         </div>
       )}
 
-      <div className="max-w-5xl mx-auto">
-        {/* Header */}
-        <div className="flex items-center justify-left gap-6 mb-8 pt-8 mt-15">
-          <img
-            src="/BlueTeam/oauth_token.png"
-            alt="OAuth2"
-            className="w-30 h-30 rounded-full shadow-lg border-2 border-blue-500"
-          />
-          <div className="text-left">
-            <h1 className="text-4xl font-bold text-white mb-2">
-              OAuth Token Inspector
+      <div className="tool-detail-shell">
+        {/* Navigation & Header */}
+        <div className="flex justify-end mb-8">
+          <span className="rounded-full border border-blue-500/30 px-3 py-1 font-mono text-[0.62rem] uppercase tracking-[0.28em] text-blue-400">
+            Blue Team
+          </span>
+        </div>
+
+        {/* Title Block */}
+        <div className="mb-10 flex flex-col md:flex-row items-start md:items-center gap-6">
+          <div className="w-16 h-16 rounded-2xl border border-blue-500/30 overflow-hidden shadow-lg flex-shrink-0 flex items-center justify-center">
+            <Lock className="h-8 w-8 text-blue-400" />
+          </div>
+          <div>
+            <h1 className="text-4xl sm:text-5xl font-mono font-bold text-zinc-100">
+              OAUTH TOKEN <span className="text-blue-400">INSPECTOR</span>
             </h1>
-            <p className="text-gray-400 text-lg">
-              Analyze and validate your JWT tokens with security insights
+            <p className="mt-2 text-zinc-400 max-w-2xl text-base font-normal">
+              Analyze JSON Web Tokens (JWT), inspect claims metadata, calculate lifecycle expiration metrics, and audit protocol parameters.
             </p>
           </div>
         </div>
 
-        {/* Card */}
-        <div className="bg-gray-900/90 backdrop-blur-sm shadow-xl rounded-3xl border border-white-800 overflow-hidden">
-          <div className="p-8">
-            {/* Input */}
-            <div className="mb-6">
-              <label className="block text-xl font-semibold text-gray-300 mb-3 text-center">
-                Paste Your OAuth Token (JWT)
-              </label>
-              <textarea
-                rows={6}
-                className="w-full bg-black border-2 border-white-700 focus:border-emerald-500 focus:ring-4 focus:ring-emerald-900 rounded-2xl p-4 text-sm font-mono resize-none text-gray-200 transition-all"
-                placeholder="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
-                value={token}
-                onChange={(e) => setToken(e.target.value)}
-              />
-            </div>
+        {/* 2-Column Layout */}
+        <div className="grid gap-8 lg:grid-cols-[1fr_400px]">
+          
+          {/* Left Column */}
+          <div className="space-y-6">
+            
+            {/* Form Card */}
+            <div className="bg-zinc-950/20 backdrop-blur-md border border-zinc-800/80 rounded-2xl p-6 shadow-[0_8px_30px_rgb(0,0,0,0.2)] hover:border-blue-500/10 transition-all duration-300 space-y-5">
+              <h2 className="text-lg font-mono font-medium text-zinc-100 mb-2 flex items-center gap-2">
+                <Lock className="h-5 w-5 text-blue-400" />
+                Token Details
+              </h2>
 
-            {/* Actions */}
-            <div className="flex flex-col sm:flex-row gap-3">
-              <button
-                onClick={analyzeToken}
-                disabled={!token.trim() || loading}
-                className="flex-1 py-4 bg-blue-600 hover:bg-blue-700 disabled:bg-blue-700 text-white font-bold rounded-2xl transition-all duration-300"
-              >
-                {loading ? "Analyzing Token..." : "Inspect Token"}
-              </button>
-
-              <button
-                type="button"
-                onClick={handleDownloadPdf}
-                disabled={!result || result.error}
-                className="px-4 py-4 rounded-2xl bg-blue-600 hover:bg-blue-700 disabled:bg-blue-700 text-white font-bold transition-all duration-300"
-                title={!result ? "Run analysis first" : "Download PDF report"}
-              >
-                📄 Download PDF
-              </button>
-
-              <button
-                type="button"
-                onClick={handleDownloadTxt}
-                disabled={!result || result.error}
-                className="px-4 py-4 rounded-2xl bg-blue-600 hover:bg-blue-700 disabled:bg-blue-700 text-white font-bold transition-all duration-300"
-                title={!result ? "Run analysis first" : "Download TXT report"}
-              >
-                📝 Download TXT
-              </button>
-            </div>
-          </div>
-
-          {/* Results */}
-          {result && (
-            <div className="border-t border-white-800 bg-black p-8 space-y-6">
-              {result.error ? (
-                <div className="bg-red-900/50 border-l-4 border-red-700 p-6 rounded-2xl shadow-sm">
-                  <h3 className="font-bold text-red-400 mb-1">
-                    Error Occurred
-                  </h3>
-                  <p className="text-red-300">{result.error}</p>
+              <div className="space-y-4">
+                <div>
+                  <label className="block text-xs uppercase tracking-wider font-mono text-zinc-400 mb-2 font-semibold">
+                    Paste Your OAuth Token (JWT)
+                  </label>
+                  <textarea
+                    rows={6}
+                    placeholder="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
+                    value={token}
+                    onChange={(e) => setToken(e.target.value)}
+                    className="w-full bg-zinc-900/40 text-zinc-100 border border-zinc-800/80 rounded-xl p-3.5 text-xs focus:border-blue-500/50 focus:ring-1 focus:ring-blue-500/30 focus:shadow-[0_0_12px_rgba(59,130,246,0.08)] focus:outline-none transition-all placeholder:text-zinc-650 font-mono resize-none"
+                  />
                 </div>
-              ) : (
-                <>
-                  {/* Summary cards */}
-                  <div className="grid gap-4 md:grid-cols-2">
-                    <div className="p-4 rounded-xl border border-white-700 bg-gray-800">
-                      <div className="text-sm text-gray-400 mb-1">
-                        Issued At
-                      </div>
-                      <div className="font-semibold text-white">
-                        {fmtDateTime(iatEpoch)}
-                      </div>
-                    </div>
-                    <div className="p-4 rounded-xl border border-white-700 bg-gray-800">
-                      <div className="text-sm text-gray-400 mb-1">
-                        Expires At
-                      </div>
-                      <div className="font-semibold text-white">
-                        {fmtDateTime(expEpoch)}
-                      </div>
-                    </div>
-                    <div className="p-4 rounded-xl border border-white-700 bg-gray-800">
-                      <div className="text-sm text-gray-400 mb-2">
-                        Time Remaining
-                      </div>
-                      <div className="font-semibold text-white">
-                        {expEpoch == null
-                          ? "—"
-                          : timeRemaining <=
-                            0 /* ✅ FIX: Changed from isExpired to timeRemaining <= 0 */
-                          ? "Expired"
-                          : fmtDuration(timeRemaining)}
-                      </div>
-                      {lifetimePercentUsed != null && (
-                        <div className="mt-3 h-2 w-full bg-gray-700 rounded-full overflow-hidden">
-                          <div
-                            className={`${progressColor} h-2`}
-                            style={{
-                              width: `${Math.min(
-                                Math.max(lifetimePercentUsed, 0),
-                                100
-                              )}%`,
-                            }}
-                          />
-                        </div>
-                      )}
-                    </div>
-                    <div className="p-4 rounded-xl border border-white-700 bg-gray-800">
-                      <div className="flex items-center justify-between mb-2">
-                        <div className="text-sm text-gray-400">
-                          Token Security Score
-                        </div>
-                        <div className="text-xs text-gray-500">{score}/100</div>
-                      </div>
-                      <div className="h-2 w-full bg-gray-700 rounded-full overflow-hidden">
-                        <div
-                          className={`${scoreBarColor} h-2`}
-                          style={{ width: `${score}%` }}
-                        />
-                      </div>
-                      {!!scoreObj.breakdown.length && (
-                        <ul className="mt-3 text-sm text-gray-400 list-disc ml-5 space-y-1">
-                          {scoreObj.breakdown.map((b, i) => (
-                            <li key={i}>
-                              {b.label} {b.delta ? `(${b.delta})` : ""}
-                            </li>
-                          ))}
-                        </ul>
-                      )}
-                    </div>
-                  </div>
 
-                  {/* Issues */}
-                  {issues.length > 0 ? (
-                    <div className="bg-amber-900/40 border border-amber-700 rounded-2xl p-6 shadow-sm">
-                      <h2 className="text-lg font-bold text-amber-400 mb-3">
-                        Security Issues Detected
+                <div className="pt-2">
+                  <button
+                    onClick={analyzeToken}
+                    disabled={!token.trim() || loading}
+                    className="w-full bg-blue-500 hover:bg-blue-600 text-black rounded-xl font-mono font-bold text-xs uppercase py-4 transition-all duration-300 hover:scale-[1.01] active:scale-[0.99] flex items-center justify-center gap-2 cursor-pointer hover:shadow-[0_0_20px_rgba(59,130,246,0.2)] focus:outline-none focus:ring-2 focus:ring-blue-500/40 focus:ring-offset-2 focus:ring-offset-black/20 disabled:opacity-40 disabled:pointer-events-none"
+                  >
+                    {loading ? (
+                      <>
+                        <Loader2 className="h-4 w-4 animate-spin text-black" />
+                        Analyzing Token claims...
+                      </>
+                    ) : (
+                      <>
+                        <Key className="h-4 w-4 text-black" />
+                        Inspect OAuth Token
+                      </>
+                    )}
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            {/* Results block */}
+            {result && (
+              <div className="bg-zinc-950/20 backdrop-blur-md border border-zinc-800/80 rounded-2xl p-6 shadow-[0_8px_30px_rgb(0,0,0,0.2)] hover:border-blue-500/10 transition-all duration-300 space-y-6">
+                
+                {result.error ? (
+                  <div className="border border-red-500/30 bg-red-500/10 rounded-xl p-4 flex items-center gap-3 text-red-400">
+                    <AlertTriangle className="h-6 w-6" />
+                    <div>
+                      <h2 className="text-lg font-mono font-bold uppercase tracking-wider">
+                        Error Occurred
                       </h2>
-                      <div className="space-y-2">
-                        {issues.map((issue, idx) => (
-                          <div
-                            key={idx}
-                            className="p-3 bg-gray-800 rounded-xl border border-amber-800 text-gray-200"
-                          >
-                            {issue}
-                          </div>
-                        ))}
-                      </div>
-                    </div>
-                  ) : (
-                    <div className="bg-emerald-900/40 border border-emerald-700 rounded-2xl p-6 shadow-sm">
-                      <h3 className="text-lg font-bold text-emerald-400 mb-1">
-                        Token Validated
-                      </h3>
-                      <p className="text-emerald-300">
-                        No major security issues found.
+                      <p className="text-xs font-mono text-zinc-400 mt-0.5">
+                        {result.error}
                       </p>
                     </div>
-                  )}
-
-                  {/* Payload */}
-                  <div className="bg-gray-900 rounded-2xl p-6 border border-white-700">
-                    <h2 className="text-lg font-bold text-emerald-400 mb-3">
-                      Decoded Payload
-                    </h2>
-                    <pre className="overflow-x-auto text-sm text-gray-300 font-mono leading-relaxed">
-                      {JSON.stringify(payload, null, 2)}
-                    </pre>
                   </div>
-                </>
-              )}
-            </div>
-          )}
-        </div>
+                ) : (
+                  <>
+                    {/* Exporters */}
+                    <div className="flex flex-wrap gap-3">
+                      <button
+                        onClick={handleDownloadPdf}
+                        className="flex-1 bg-zinc-900/40 hover:bg-blue-500/5 text-zinc-300 hover:text-blue-400 border border-zinc-800/80 hover:border-blue-500/30 rounded-xl font-mono font-bold text-xs uppercase py-3.5 transition-all duration-300 hover:scale-[1.01] active:scale-[0.99] flex items-center justify-center gap-2 cursor-pointer"
+                      >
+                        <Download className="w-4 h-4" />
+                        Download PDF Report
+                      </button>
 
-        <div className="text-center mt-8 text-blue-600 text-sm ">
-          <p>Secure token analysis • Built with modern security practices</p>
+                      <button
+                        onClick={handleDownloadTxt}
+                        className="flex-1 bg-zinc-900/40 hover:bg-blue-500/5 text-zinc-300 hover:text-blue-400 border border-zinc-800/80 hover:border-blue-500/30 rounded-xl font-mono font-bold text-xs uppercase py-3.5 transition-all duration-300 hover:scale-[1.01] active:scale-[0.99] flex items-center justify-center gap-2 cursor-pointer"
+                      >
+                        <FileText className="w-4 h-4" />
+                        Download TXT Report
+                      </button>
+                    </div>
+
+                    {/* Summary metrics grid cards */}
+                    <div className="grid gap-4 sm:grid-cols-2">
+                      <div className="bg-zinc-900/40 border border-zinc-800/80 p-4 rounded-xl font-mono text-xs">
+                        <span className="text-[10px] uppercase font-mono tracking-widest text-zinc-400 font-semibold mb-1 block">
+                          Issued At
+                        </span>
+                        <span className="font-semibold text-zinc-100">
+                          {fmtDateTime(iatEpoch)}
+                        </span>
+                      </div>
+
+                      <div className="bg-zinc-900/40 border border-zinc-800/80 p-4 rounded-xl font-mono text-xs">
+                        <span className="text-[10px] uppercase font-mono tracking-widest text-zinc-400 font-semibold mb-1 block">
+                          Expires At
+                        </span>
+                        <span className="font-semibold text-zinc-100">
+                          {fmtDateTime(expEpoch)}
+                        </span>
+                      </div>
+
+                      {/* Lifetime Countdown */}
+                      <div className="bg-zinc-900/40 border border-zinc-800/80 p-4 rounded-xl font-mono text-xs">
+                        <span className="text-[10px] uppercase font-mono tracking-widest text-zinc-400 font-semibold mb-1 block">
+                          Time Remaining
+                        </span>
+                        <span className="font-semibold text-zinc-100">
+                          {expEpoch == null ? "—" : timeRemaining <= 0 ? "Expired" : fmtDuration(timeRemaining)}
+                        </span>
+                        {lifetimePercentUsed != null && (
+                          <div className="mt-3 h-1.5 w-full bg-zinc-850 rounded-full overflow-hidden">
+                            <div
+                              className={`${progressColor} h-1.5`}
+                              style={{
+                                width: `${Math.min(Math.max(lifetimePercentUsed, 0), 100)}%`,
+                              }}
+                            />
+                          </div>
+                        )}
+                      </div>
+
+                      {/* Security Score */}
+                      <div className="bg-zinc-900/40 border border-zinc-800/80 p-4 rounded-xl font-mono text-xs">
+                        <div className="flex items-center justify-between mb-1">
+                          <span className="text-[10px] uppercase font-mono tracking-widest text-zinc-400 font-semibold">
+                            Token Security Score
+                          </span>
+                          <span className="text-[10px] text-zinc-500 font-bold">{score}/100</span>
+                        </div>
+                        <div className="h-1.5 w-full bg-zinc-850 rounded-full overflow-hidden">
+                          <div
+                            className={`${scoreBarColor} h-1.5`}
+                            style={{ width: `${score}%` }}
+                          />
+                        </div>
+                        {!!scoreObj.breakdown.length && (
+                          <ul className="mt-2.5 text-[10px] text-zinc-400 list-none pl-0 space-y-1">
+                            {scoreObj.breakdown.map((b, i) => (
+                              <li key={i} className="flex items-center gap-1">
+                                <span className="inline-block w-1 h-1 rounded-full bg-zinc-500" />
+                                <span>{b.label} {b.delta ? `(${b.delta})` : ""}</span>
+                              </li>
+                            ))}
+                          </ul>
+                        )}
+                      </div>
+                    </div>
+
+                    {/* Security Issues Panel */}
+                    {issues.length > 0 ? (
+                      <div className="bg-orange-950/20 border border-orange-500/30 rounded-xl p-4 space-y-3">
+                        <h3 className="text-sm font-mono font-bold text-orange-400 flex items-center gap-1.5">
+                          <AlertTriangle className="w-4 h-4" />
+                          Security Issues Detected
+                        </h3>
+                        <div className="space-y-2">
+                          {issues.map((issue, idx) => (
+                            <div
+                              key={idx}
+                              className="bg-zinc-900/40 border border-zinc-800/80 text-zinc-300 p-2.5 rounded-lg text-xs font-mono"
+                            >
+                              {issue}
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    ) : (
+                      <div className="border border-blue-500/30 bg-blue-500/10 rounded-xl p-4 flex items-center gap-3 text-blue-400">
+                        <Shield className="h-6 w-6" />
+                        <div>
+                          <h2 className="text-sm font-mono font-bold uppercase tracking-wider">
+                            Token Validated
+                          </h2>
+                          <p className="text-[11px] font-mono text-zinc-400 mt-0.5">
+                            No critical compliance or configuration issues were detected.
+                          </p>
+                        </div>
+                      </div>
+                    )}
+
+                    {/* Decoded Claims Payload */}
+                    <div className="bg-zinc-900/40 border border-zinc-800/80 p-4 rounded-xl font-mono text-xs overflow-auto">
+                      <h3 className="text-sm font-mono font-bold text-blue-400 mb-2 border-b border-zinc-800/40 pb-2 flex items-center gap-1.5">
+                        <Terminal className="w-4 h-4" />
+                        Decoded Claims Payload
+                      </h3>
+                      <pre className="text-xs text-zinc-300 leading-relaxed">
+                        {JSON.stringify(payload, null, 2)}
+                      </pre>
+                    </div>
+                  </>
+                )}
+
+              </div>
+            )}
+
+          </div>
+
+          {/* Right Column */}
+          <div className="space-y-6">
+            
+            {/* Guidance sidebar card */}
+            <div className="border border-zinc-800/80 bg-zinc-950/20 backdrop-blur-md rounded-2xl p-6 space-y-4 shadow-[0_8px_30px_rgb(0,0,0,0.12)]">
+              <h2 className="text-xs font-mono font-bold uppercase tracking-wider text-zinc-100 flex items-center gap-2">
+                <Info className="text-blue-400 w-4 h-4" />
+                Inspector Scope
+              </h2>
+              <ul className="space-y-3.5 list-none pl-0">
+                <li className="flex items-start gap-2">
+                  <span className="inline-block w-1.5 h-1.5 rounded-full bg-blue-500/60 mt-1.5 flex-shrink-0" />
+                  <span className="text-xs text-zinc-400 leading-relaxed font-mono">
+                    Parses JWT claim definitions (iss, sub, aud, exp, iat, jti).
+                  </span>
+                </li>
+                <li className="flex items-start gap-2">
+                  <span className="inline-block w-1.5 h-1.5 rounded-full bg-blue-500/60 mt-1.5 flex-shrink-0" />
+                  <span className="text-xs text-zinc-400 leading-relaxed font-mono">
+                    Audits token expiration countdowns and flags active lifespan percentages.
+                  </span>
+                </li>
+                <li className="flex items-start gap-2">
+                  <span className="inline-block w-1.5 h-1.5 rounded-full bg-blue-500/60 mt-1.5 flex-shrink-0" />
+                  <span className="text-xs text-zinc-400 leading-relaxed font-mono">
+                    Scores token vulnerability thresholds based on cryptographic configurations.
+                  </span>
+                </li>
+              </ul>
+            </div>
+
+          </div>
+
         </div>
       </div>
     </div>

@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import {
   Search,
   CheckCircle,
@@ -13,7 +13,10 @@ import {
   Check,
   Download,
   FileText,
-  RefreshCcw,
+  RefreshCw,
+  Info,
+  Terminal,
+  Database
 } from "lucide-react";
 import { jsPDF } from "jspdf";
 import autoTable from "jspdf-autotable";
@@ -86,7 +89,7 @@ export default function ReverseDNSLookup() {
     const zones = data?.blacklist?.results || [];
     return zones.map((z) => {
       const namePart = z.zone.split(".")[0];
-      const displayName = namePart === "zen" ? "Spamhaus Zen" : namePart === "bl" ? "SpamCop" : namePart === "b" ? "Barracuda BRBL" : namePart === "dnsbl" ? "SORBS" : namePart === "cbl" ? "CBL" : z.zone;
+      const displayName = namePart === "zen" ? "Spamhaus Zen" : namePart === "bl" ? "SpamCop" : namePart === "bl" ? "Barracuda BRBL" : namePart === "dnsbl" ? "SORBS" : namePart === "cbl" ? "CBL" : z.zone;
       return {
         name: displayName,
         status: z.listed ? "Listed" : "Clear",
@@ -97,12 +100,6 @@ export default function ReverseDNSLookup() {
         lastSeen: z.listed ? new Date().toLocaleDateString("en-GB", { day: "2-digit", month: "short", year: "numeric" }) : "—"
       };
     });
-  }, [data]);
-
-  const blacklistCount = useMemo(() => {
-    const zones = data?.blacklist?.results || [];
-    const listed = zones.filter((z) => z.listed).length;
-    return { total: zones.length, listed };
   }, [data]);
 
   const forwardVerdict = useMemo(() => {
@@ -132,7 +129,7 @@ export default function ReverseDNSLookup() {
         });
         const j = await res.json();
         if (!res.ok) throw new Error(j.error || res.statusText);
-        // Backwards-compat: if old payload {domains: [...]}
+        
         if (!j.type && j.domains && !j.ptr) {
           setData({
             type: "PTR",
@@ -167,7 +164,6 @@ export default function ReverseDNSLookup() {
     return String(val);
   }
 
-  // ---- Export TXT / PDF ----
   function downloadTXT() {
     if (!data) return;
     const forward = data.forwardValidation || [];
@@ -240,27 +236,40 @@ export default function ReverseDNSLookup() {
     const M = 40;
     let y = 56;
 
+    // Header Banner
+    doc.setFillColor(18, 18, 18);
+    doc.rect(0, 0, doc.internal.pageSize.width, 80, "F");
+    
+    doc.setTextColor(59, 130, 246);
     doc.setFont("helvetica", "bold");
-    doc.setFontSize(16);
-    doc.text("Reverse DNS Report", M, y);
-    y += 24;
+    doc.setFontSize(18);
+    doc.text("NEXCORE SECURITY PLATFORM", M, 35);
+    
+    doc.setTextColor(255, 255, 255);
+    doc.setFontSize(11);
+    doc.text("REVERSE DNS RESOLUTION REPORT", M, 55);
+    y = 110;
 
+    doc.setTextColor(50, 50, 50);
     doc.setFont("helvetica", "normal");
-    doc.setFontSize(12);
+    doc.setFontSize(10);
+    doc.text(`Generated: ${new Date().toLocaleString()}`, M, y);
+    y += 18;
+
     autoTable(doc, {
       startY: y,
       head: [["Field", "Value"]],
       body: [
         ["Type", human(data.type, "PTR")],
         ["IP", `${data.ip}${data.displayName ? " " + data.displayName : ""}`],
-        ["PTR", data.ptr?.length ? data.ptr.join(", ") : "(none)"],
+        ["PTR Records", data.ptr?.length ? data.ptr.join(", ") : "(none)"],
         ["Reverse name", human(data.reverseName)],
         ["TTL", human(data.ttlHuman)],
         ["Result", human(data.result)],
-        ["Test", human(data.test, "public")],
-        ["Lookup time (ms)", human(data.timespan)],
+        ["Test Type", human(data.test, "public")],
+        ["Lookup latency (ms)", human(data.timespan)],
       ],
-      headStyles: { fillColor: [16, 185, 129] },
+      headStyles: { fillColor: [59, 130, 246], textColor: [255, 255, 255] },
       styles: { fontSize: 10 },
       margin: { left: M, right: M },
     });
@@ -268,31 +277,33 @@ export default function ReverseDNSLookup() {
     // Geolocation / ASN
     autoTable(doc, {
       startY: doc.lastAutoTable.finalY + 16,
-      head: [["Geolocation", "Value"]],
+      head: [["Geolocation Details", "Value"]],
       body: data.geo
         ? [
             ["Country", human(data.geo.country)],
             ["Region", human(data.geo.region)],
             ["City", human(data.geo.city)],
             ["Timezone", human(data.geo.timezone)],
-            ["Lat/Lon", human(data.geo.ll?.join(", "))],
+            ["Coordinates (Lat/Lon)", human(data.geo.ll?.join(", "))],
           ]
         : [["(not available)", ""]],
+      headStyles: { fillColor: [59, 130, 246], textColor: [255, 255, 255] },
       styles: { fontSize: 10 },
       margin: { left: M, right: M },
     });
 
     autoTable(doc, {
       startY: doc.lastAutoTable.finalY + 12,
-      head: [["ASN / WHOIS", "Value"]],
+      head: [["ASN / WHOIS Metadata", "Value"]],
       body: data.asn
         ? [
-            ["ASN", human(data.asn.asn)],
-            ["ORG", human(data.asn.org)],
-            ["ISP", human(data.asn.isp)],
-            ["CIDR", human(data.asn.cidr)],
+            ["Autonomous System Number", human(data.asn.asn)],
+            ["Organization", human(data.asn.org)],
+            ["Internet Service Provider", human(data.asn.isp)],
+            ["CIDR Routing Prefix", human(data.asn.cidr)],
           ]
         : [["(not available)", ""]],
+      headStyles: { fillColor: [59, 130, 246], textColor: [255, 255, 255] },
       styles: { fontSize: 10 },
       margin: { left: M, right: M },
     });
@@ -300,14 +311,14 @@ export default function ReverseDNSLookup() {
     // Blacklist / Reputation
     autoTable(doc, {
       startY: doc.lastAutoTable.finalY + 16,
-      head: [["IP Reputation Assessment Summary", "Value"]],
+      head: [["IP Threat Intelligence Summary", "Value"]],
       body: [
-        ["Reputation Score", `${blacklistSummary.reputationScore} / 100`],
-        ["Detection Rate", `${blacklistSummary.flagged} / ${blacklistSummary.checked} Blacklists Flagged`],
-        ["Risk Level", blacklistSummary.riskLevel],
-        ["Recommended Action", blacklistSummary.recommendedAction]
+        ["Abuse Score", `${blacklistSummary.reputationScore} / 100`],
+        ["Detection Count", `${blacklistSummary.flagged} / ${blacklistSummary.checked} lists flagged`],
+        ["Risk Assessment", blacklistSummary.riskLevel],
+        ["Action Guide", blacklistSummary.recommendedAction]
       ],
-      headStyles: { fillColor: [30, 41, 59] }, // Slate gray header
+      headStyles: { fillColor: [59, 130, 246], textColor: [255, 255, 255] },
       styles: { fontSize: 10 },
       margin: { left: M, right: M },
     });
@@ -322,19 +333,20 @@ export default function ReverseDNSLookup() {
     ]);
     autoTable(doc, {
       startY: doc.lastAutoTable.finalY + 12,
-      head: [["Blacklist Feed", "Status", "Severity", "Confidence", "Observed Threat Intel", "Last Seen"]],
+      head: [["Blacklist Database", "Status", "Severity", "Confidence", "Intel details", "Last Seen"]],
       body: blRows.length ? blRows : [["(none)", "", "", "", "", ""]],
+      headStyles: { fillColor: [59, 130, 246], textColor: [255, 255, 255] },
       styles: { fontSize: 8.5 },
       columnStyles: {
         4: { cellWidth: 180 }
       },
-      didParseCell: (data) => {
-        if (data.column.index === 1 && data.section === "body") {
-          if (data.cell.raw === "Listed") {
-            data.cell.styles.textColor = [220, 53, 69]; // red
-            data.cell.styles.fontStyle = "bold";
-          } else if (data.cell.raw === "Clear") {
-            data.cell.styles.textColor = [16, 185, 129]; // green
+      didParseCell: (parsed) => {
+        if (parsed.column.index === 1 && parsed.section === "body") {
+          if (parsed.cell.raw === "Listed") {
+            parsed.cell.styles.textColor = [220, 53, 69];
+            parsed.cell.styles.fontStyle = "bold";
+          } else if (parsed.cell.raw === "Clear") {
+            parsed.cell.styles.textColor = [16, 185, 129];
           }
         }
       },
@@ -351,8 +363,9 @@ export default function ReverseDNSLookup() {
     ]);
     autoTable(doc, {
       startY: doc.lastAutoTable.finalY + 12,
-      head: [["Domain", "Check", "Resolved"]],
+      head: [["Hostname Domain", "Forward Check", "DNS Resolves"]],
       body: fRows.length ? fRows : [["(none)", "", ""]],
+      headStyles: { fillColor: [59, 130, 246], textColor: [255, 255, 255] },
       styles: { fontSize: 9 },
       margin: { left: M, right: M },
     });
@@ -361,445 +374,550 @@ export default function ReverseDNSLookup() {
   }
 
   return (
-    <div className="min-h-screen bg-black p-4">
-      <div className="max-w-3xl mx-auto">
-        {/* Header */}
-        <div className="flex items-center gap-4 mb-8 mt-15">
-          <img
-            src="/BlueTeam/reverse dns.png"
-            alt="Reverse DNS"
-            className="w-30 h-30 rounded-full border-4 border-blue-500"
-          />
+    <div 
+      className="tool-detail-page min-h-screen"
+      style={{
+        '--hero-ambient-a': 'rgba(59, 130, 246, 0.08)',
+        '--hero-ambient-b': 'rgba(6, 182, 212, 0.03)',
+        '--glow-primary': '0 0 34px rgba(59, 130, 246, 0.16)',
+        '--gold': '#3b82f6',
+        '--gold-strong': '#60a5fa',
+        '--gold-dark': '#1d4ed8',
+        '--ring': 'rgba(59, 130, 246, 0.34)',
+        '--surface-glow': 'rgba(59, 130, 246, 0.14)',
+      }}
+    >
+      <style>{`
+        .tool-detail-page .tool-detail-shell {
+          padding-top: 3.5rem !important;
+        }
+        .tool-detail-page ::-webkit-scrollbar-thumb {
+          background: rgba(59, 130, 246, 0.35) !important;
+        }
+        .tool-detail-page ::-webkit-scrollbar-thumb:hover {
+          background: rgba(59, 130, 246, 0.55) !important;
+        }
+        .tool-detail-page ::selection {
+          background: rgba(59, 130, 246, 0.22) !important;
+          color: #eff6ff !important;
+        }
+        .tool-detail-page :is(button, [role="button"]):is([class*="bg-blue-"], [class*="bg-sky-"]) {
+          color: #000000 !important;
+        }
+        .tool-detail-page :is(button, [role="button"]):is([class*="bg-blue-"], [class*="bg-sky-"]) * {
+          color: #000000 !important;
+        }
+      `}</style>
 
-          <div className="text-white">
-            <h1 className="text-3xl font-semibold">Reverse DNS Lookup</h1>
-            <p className="text-white">
-              PTR + Geo + ASN/WHOIS + DNSBL + <br />
-              Forward Validation (with PDF/TXT export)
+      <div className="tool-detail-shell">
+        {/* Navigation & Header */}
+        <div className="flex justify-end mb-8">
+          <span className="rounded-full border border-blue-500/30 px-3 py-1 font-mono text-[0.62rem] uppercase tracking-[0.28em] text-blue-400">
+            Blue Team
+          </span>
+        </div>
+
+        {/* Title Block */}
+        <div className="mb-10 flex flex-col md:flex-row items-start md:items-center gap-6">
+          <div className="w-16 h-16 rounded-2xl border border-blue-500/30 overflow-hidden shadow-lg flex-shrink-0 flex items-center justify-center">
+            <Globe className="h-8 w-8 text-blue-400" />
+          </div>
+          <div>
+            <h1 className="text-4xl sm:text-5xl font-mono font-bold text-zinc-100">
+              REVERSE DNS <span className="text-blue-400">RESOLVER</span>
+            </h1>
+            <p className="mt-2 text-zinc-400 max-w-2xl text-base font-normal">
+              Perform IP-to-Domain lookup checks, fetch autonomous system registration (ASN/WHOIS), locate geographic scopes, and check global spam/threat feeds.
             </p>
           </div>
         </div>
 
-        {/* Form Card */}
-        <div className="bg-black/80 backdrop-blur-sm rounded-2xl shadow-xl border border-blue-500 p-6 mb-6">
-          <div className="space-y-4">
-            <div>
-              <label className="block text-xl font-semibold text-white mb-2 text-center">
-                IP Address
-              </label>
-              <div className="relative">
-                <input
-                  type="text"
-                  placeholder="e.g., 8.8.8.8 or 2001:4860:4860::8888"
-                  value={ip}
-                  onChange={(e) => setIp(e.target.value)}
-                  className={`w-full text-white px-4 py-3 pl-12 border-2 rounded-xl transition-all duration-200 focus:outline-none focus:ring-4 ${
-                    validationMsg
-                      ? "border-red-300 focus:border-red-500 focus:ring-red-100"
-                      : valid
-                      ? "border-blue-300 focus:border-blue-500 focus:ring-blue-100"
-                      : "border-blue-500 focus:border-blue-400 focus:ring-blue-50"
-                  } text-gray-700 font-mono`}
-                />
-                <Globe
-                  className={`absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 ${
-                    validationMsg
-                      ? "text-red-400"
-                      : valid
-                      ? "text-white"
-                      : "text-gray-400"
-                  }`}
-                />
-                {valid && (
-                  <CheckCircle className="absolute right-4 top-1/2 -translate-y-1/2 w-5 h-5 text-green-500" />
-                )}
-              </div>
-              {validationMsg && (
-                <div className="flex items-center gap-2 mt-2 text-red-600 text-sm">
-                  <AlertCircle className="w-4 h-4" /> {validationMsg}
-                </div>
-              )}
-            </div>
+        {/* 2-Column Layout */}
+        <div className="grid gap-8 lg:grid-cols-[1fr_400px]">
+          
+          {/* Left Column */}
+          <div className="space-y-6">
+            
+            {/* Form Card */}
+            <div className="bg-zinc-950/20 backdrop-blur-md border border-zinc-800/80 rounded-2xl p-6 shadow-[0_8px_30px_rgb(0,0,0,0.2)] hover:border-blue-500/10 transition-all duration-300 space-y-5">
+              <h2 className="text-lg font-mono font-medium text-zinc-100 mb-2 flex items-center gap-2">
+                <Globe className="h-5 w-5 text-blue-400" />
+                IP Target Parameters
+              </h2>
 
-            <div className="flex gap-3">
-              <button
-                onClick={lookup}
-                disabled={!valid || loading}
-                className={`flex-1 py-3 font-semibold rounded-xl transition-all duration-200 flex items-center justify-center gap-2 ${
-                  valid && !loading
-                    ? "bg-blue-900 text-white shadow-lg hover:bg-blue-700 hover:shadow-xl"
-                    : "bg-blue-600 text-white cursor-not-allowed"
-                }`}
-              >
-                {loading ? (
-                  <>
-                    <Loader2 className="w-5 h-5 animate-spin" /> Looking up...
-                  </>
-                ) : (
-                  <>
-                    <Search className="w-5 h-5" /> Perform Lookup
-                  </>
-                )}
-              </button>
-
-              <button
-                onClick={() => {
-                  setIp("");
-                  setData(null);
-                  setErr("");
-                }}
-                className="px-4 py-3 rounded-xl bg-blue-600 text-white hover:bg-blue-700 flex items-center gap-2"
-                title="Reset"
-              >
-                <RefreshCcw className="w-5 h-5" />
-                Reset
-              </button>
-            </div>
-          </div>
-        </div>
-
-        {/* Error */}
-        {err && (
-          <div className="bg-red-50 border border-blue-200 rounded-xl p-4 mb-6 text-red-700 flex items-center gap-2">
-            <AlertCircle className="w-5 h-5" /> {err}
-          </div>
-        )}
-
-        {/* Results */}
-        {data && (
-          <div className="bg-black backdrop-blur-sm rounded-2xl shadow-xl border border-blue-200 p-6 space-y-6">
-            {/* Top summary + exports */}
-            <div className="flex items-center justify-between gap-3 flex-wrap">
-              <div className="space-y-1">
-                <div className="text-xl text-white font-semibold">
-                  Reverse DNS Summary
-                </div>
-                <div className="text-sm text-gray-500">{data.ip}</div>
-              </div>
-              <div className="flex gap-2">
-                <button
-                  onClick={downloadPDF}
-                  className="px-3 py-2 rounded-lg border border-blue-700 text-white hover:bg-emerald-50 flex items-center gap-2"
-                >
-                  <Download className="w-4 h-4" /> Download PDF
-                </button>
-                <button
-                  onClick={downloadTXT}
-                  className="px-3 py-2 rounded-lg border border-blue-700 text-white hover:bg-emerald-50 flex items-center gap-2"
-                >
-                  <FileText className="w-4 h-4" /> Download TXT
-                </button>
-              </div>
-            </div>
-
-            {/* IP Reputation Assessment Summary Card */}
-            <div className="bg-black/45 border border-blue-500/20 rounded-xl p-5 shadow-lg space-y-4">
-              <div className="flex items-center justify-between border-b border-blue-500/10 pb-3">
-                <h3 className="text-base font-semibold text-white flex items-center gap-2">
-                  <Shield className="w-5 h-5 text-blue-500 animate-pulse" />
-                  IP Reputation & Threat Assessment
-                </h3>
-                <span className={`px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider ${
-                  blacklistSummary.riskLevel === "Critical"
-                    ? "bg-red-500/20 text-red-400 border border-red-500/30"
-                    : blacklistSummary.riskLevel === "High"
-                    ? "bg-orange-500/20 text-orange-400 border border-orange-500/30"
-                    : blacklistSummary.riskLevel === "Medium"
-                    ? "bg-yellow-500/20 text-yellow-400 border border-yellow-500/30"
-                    : "bg-emerald-500/20 text-emerald-450 border border-emerald-500/30"
-                }`}>
-                  {blacklistSummary.riskLevel} Risk
-                </span>
-              </div>
-              <div className="grid md:grid-cols-3 gap-6 items-center">
-                {/* Reputation Score Meter */}
-                <div className="flex flex-col items-center justify-center p-3 bg-blue-955/10 border border-blue-500/5 rounded-lg text-center">
-                  <div className="text-xs text-gray-400 uppercase tracking-wider mb-1">Reputation Score</div>
-                  <div className="relative flex items-center justify-center">
-                    <svg className="w-20 h-20 transform -rotate-90">
-                      <circle cx="40" cy="40" r="34" className="stroke-current text-blue-950" strokeWidth="6" fill="transparent" />
-                      <circle cx="40" cy="40" r="34" className={`stroke-current ${
-                        blacklistSummary.reputationScore >= 75 ? "text-red-500" : blacklistSummary.reputationScore >= 40 ? "text-orange-500" : blacklistSummary.reputationScore >= 11 ? "text-yellow-500" : "text-emerald-500"
-                      }`} strokeWidth="6" fill="transparent"
-                      strokeDasharray={213.6}
-                      strokeDashoffset={213.6 - (213.6 * blacklistSummary.reputationScore) / 100}
-                      strokeLinecap="round" />
-                    </svg>
-                    <div className="absolute text-lg font-bold text-white">
-                      {blacklistSummary.reputationScore}
-                    </div>
-                  </div>
-                  <div className="text-[10px] text-gray-500 mt-1">out of 100 max</div>
-                </div>
-
-                {/* Match Counter */}
-                <div className="space-y-1 text-center md:text-left">
-                  <div className="text-xs text-gray-400 uppercase tracking-wider">Blacklist Match Count</div>
-                  <div className="text-3xl font-extrabold text-white">
-                    {blacklistSummary.flagged} <span className="text-sm font-normal text-gray-500">/ {blacklistSummary.checked} Flagged</span>
-                  </div>
-                  <div className="text-xs text-gray-400">
-                    Queried from active reputation lists.
-                  </div>
-                </div>
-
-                {/* Recommendations */}
-                <div className="p-3.5 bg-blue-955/15 border border-blue-500/10 rounded-lg space-y-1 text-left">
-                  <div className="text-xs font-semibold text-blue-450 flex items-center gap-1.5">
-                    <CheckCircle className="w-3.5 h-3.5" />
-                    Security Guidance:
-                  </div>
-                  <p className="text-xs text-gray-300 leading-relaxed font-medium">
-                    {blacklistSummary.recommendedAction}
-                  </p>
-                </div>
-              </div>
-            </div>
-
-            {/* Cards row */}
-            <div className="grid md:grid-cols-3 gap-4">
-              <div className="rounded-lg border border-blue-200 bg-gray-50 p-4">
-                <div className="text-xs text-gray-500">Type</div>
-                <div className="text-gray-800 font-semibold mt-1">
-                  {data.type || "PTR"}
-                </div>
-              </div>
-              <div className="rounded-lg border border-blue-200 bg-gray-50 p-4">
-                <div className="text-xs text-gray-500">
-                  IP address with name
-                </div>
-                <div className="text-gray-800 font-semibold mt-1">
-                  {data.ip}
-                  {data.displayName ? ` ${data.displayName}` : ""}
-                </div>
-              </div>
-              <div className="rounded-lg border border-blue-200 bg-gray-50 p-4">
-                <div className="text-xs text-gray-500">TTL</div>
-                <div className="text-gray-800 font-semibold mt-1">
-                  {human(data.ttlHuman) ||
-                    human(data.ttl ? `${data.ttl}s` : null)}
-                </div>
-              </div>
-              <div className="rounded-lg border border-blue-200 bg-gray-50 p-4">
-                <div className="text-xs text-gray-500">Result</div>
-                <div className="text-gray-800 font-semibold mt-1">
-                  {human(data.result, "dns lookup found")}
-                </div>
-              </div>
-              <div className="rounded-lg border border-blue-200 bg-gray-50 p-4">
-                <div className="text-xs text-gray-500">Test</div>
-                <div className="text-gray-800 font-semibold mt-1">
-                  {human(data.test, "public")}
-                </div>
-              </div>
-              <div className="rounded-lg border border-blue-200 bg-gray-50 p-4">
-                <div className="text-xs text-gray-500">Reverse name</div>
-                <div className="text-gray-800 font-semibold mt-1">
-                  {human(data.reverseName)}
-                </div>
-              </div>
-            </div>
-
-            {/* PTR list */}
-            <div>
-              <div className="font-semibold mb-2 text-white">PTR Domains</div>
-              {data.ptr?.length ? (
-                <ul className="list-disc list-inside text-sm text-gray-800">
-                  {data.ptr.map((d) => (
-                    <li key={d}>
-                      <code className="bg-gray-100 px-1 py-0.5 rounded">
-                        {d}
-                      </code>
-                    </li>
-                  ))}
-                </ul>
-              ) : (
-                <div className="text-sm text-gray-500">No PTR records.</div>
-              )}
-            </div>
-
-            {/* Geo + ASN */}
-            <div className="grid md:grid-cols-2 gap-4">
-              <div className="rounded-lg border border-blue-200 p-4">
-                <div className="font-semibold mb-2 flex text-white items-center gap-2">
-                  <MapPin className="w-4 h-4 text-green-600" />
-                  Geolocation
-                </div>
-                {data.geo ? (
-                  <div className="text-sm text-white space-y-1">
-                    <div>
-                      Country:{" "}
-                      <span className="font-medium">
-                        {human(data.geo.country)}
-                      </span>
-                    </div>
-                    <div>
-                      Region / City:{" "}
-                      <span className="font-medium">
-                        {human(data.geo.region)} / {human(data.geo.city)}
-                      </span>
-                    </div>
-                    <div>Timezone: {human(data.geo.timezone)}</div>
-                    <div>Lat/Lon: {human(data.geo.ll?.join(", "))}</div>
-                  </div>
-                ) : (
-                  <div className="text-sm text-gray-500">Not available</div>
-                )}
-              </div>
-              <div className="rounded-lg border border-blue-200 text-white p-4">
-                <div className="font-semibold mb-2">ASN / WHOIS</div>
-                {data.asn ? (
-                  <div className="text-sm text-white space-y-1">
-                    <div>
-                      ASN:{" "}
-                      <span className="font-medium">{human(data.asn.asn)}</span>
-                    </div>
-                    <div>Org: {human(data.asn.org)}</div>
-                    <div>ISP: {human(data.asn.isp)}</div>
-                    <div>CIDR: {human(data.asn.cidr)}</div>
-                  </div>
-                ) : (
-                  <div className="text-sm text-gray-500">Not available</div>
-                )}
-              </div>
-            </div>
-
-            {/* IP Reputation & Blacklist Details Table */}
-            <div className="bg-black/45 border border-blue-500/20 rounded-xl p-5 shadow-lg space-y-4">
-              <div className="font-semibold text-base text-white flex items-center gap-2 border-b border-blue-500/10 pb-3">
-                <Globe className="w-5 h-5 text-blue-500" />
-                IP Reputation & Blacklist Details
-              </div>
-              <div className="overflow-x-auto">
-                <table className="w-full text-left border-collapse">
-                  <thead>
-                    <tr className="border-b border-blue-500/10 text-gray-400 text-xs font-semibold uppercase">
-                      <th className="py-2.5 px-3">Blacklist Feed</th>
-                      <th className="py-2.5 px-3">Status</th>
-                      <th className="py-2.5 px-3">Severity</th>
-                      <th className="py-2.5 px-3">Confidence</th>
-                      <th className="py-2.5 px-3">Observed Threat Intel</th>
-                      <th className="py-2.5 px-3">Last Seen</th>
-                    </tr>
-                  </thead>
-                  <tbody className="divide-y divide-blue-500/10 text-sm">
-                    {blacklists.map((bl) => (
-                      <tr key={bl.name} className="hover:bg-blue-950/10 transition-colors">
-                        <td className="py-3 px-3 font-semibold text-white">{bl.name}</td>
-                        <td className="py-3 px-3">
-                          <span className={`px-2 py-0.5 text-xs font-bold rounded-full ${
-                            bl.status === "Listed"
-                              ? "bg-red-500/10 text-red-400 border border-red-500/20"
-                              : "bg-emerald-500/10 text-emerald-400 border border-emerald-500/20"
-                          }`}>
-                            {bl.status}
-                          </span>
-                        </td>
-                        <td className="py-3 px-3">
-                          <span className={`font-semibold ${
-                            bl.severity === "High"
-                              ? "text-red-400"
-                              : bl.severity === "Medium"
-                              ? "text-orange-400"
-                              : bl.severity === "Low"
-                              ? "text-blue-400"
-                              : "text-gray-400"
-                          }`}>
-                            {bl.severity}
-                          </span>
-                        </td>
-                        <td className="py-3 px-3 text-gray-300">{bl.confidence}</td>
-                        <td className="py-3 px-3 text-xs text-gray-400 max-w-xs truncate" title={bl.reason}>
-                          {bl.reason}
-                        </td>
-                        <td className="py-3 px-3 text-xs text-gray-500">{bl.lastSeen}</td>
-                      </tr>
-                    ))}
-                    {!blacklists.length && (
-                      <tr>
-                        <td colSpan="6" className="py-4 text-center text-sm text-gray-500">
-                          No blacklists checked.
-                        </td>
-                      </tr>
+              <div className="space-y-4">
+                <div>
+                  <label className="block text-xs uppercase tracking-wider font-mono text-zinc-400 mb-2 font-semibold">
+                    IP Address
+                  </label>
+                  <div className="relative">
+                    <input
+                      type="text"
+                      placeholder="e.g. 8.8.8.8 or 2001:4860:4860::8888"
+                      value={ip}
+                      onChange={(e) => setIp(e.target.value)}
+                      className={`w-full bg-zinc-900/40 text-zinc-100 border p-3.5 pl-12 rounded-xl text-sm focus:outline-none transition-all font-mono ${
+                        validationMsg
+                          ? "border-red-500/40 focus:border-red-500/70 focus:ring-1 focus:ring-red-500/30"
+                          : valid
+                          ? "border-blue-500/40 focus:border-blue-500/70 focus:ring-1 focus:ring-blue-500/30 focus:shadow-[0_0_12px_rgba(59,130,246,0.08)]"
+                          : "border-zinc-800 focus:border-blue-500/50 focus:ring-1 focus:ring-blue-500/30"
+                      }`}
+                    />
+                    <Globe
+                      className={`absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 transition-colors ${
+                        validationMsg
+                          ? "text-red-400"
+                          : valid
+                          ? "text-blue-400"
+                          : "text-zinc-600"
+                      }`}
+                    />
+                    {valid && (
+                      <CheckCircle className="absolute right-4 top-1/2 -translate-y-1/2 w-4 h-4 text-emerald-500" />
                     )}
-                  </tbody>
-                </table>
-              </div>
-            </div>
-
-            {/* Forward validation */}
-            <div className="rounded-lg border border-blue-200 p-4">
-              <div className="font-semibold mb-2 text-white">
-                Forward DNS Validation
-              </div>
-              <div className="text-sm mb-3">
-                {forwardVerdict.verified ? (
-                  <span className="inline-flex items-center gap-1 text-white">
-                    <Check className="w-4 h-4" /> All mappings verified
-                  </span>
-                ) : forwardVerdict.suspicious ? (
-                  <span className="inline-flex items-center gap-1 text-red-700">
-                    <AlertCircle className="w-4 h-4" /> Suspicious: at least one
-                    reverse → forward mapping did not point back to {data.ip}
-                  </span>
-                ) : (
-                  <span className="text-gray-600">
-                    No forward checks available.
-                  </span>
-                )}
-              </div>
-              <div className="space-y-2">
-                {(data.forwardValidation || []).map((f) => (
-                  <div
-                    key={f.domain}
-                    className={`p-3 rounded border text-sm ${
-                      f.matches
-                        ? "bg-black border-green-200 text-white"
-                        : "bg-red-50 border-white text-red-700"
-                    }`}
-                  >
-                    <div className="flex items-center justify-between">
-                      <code className="font-mono">{f.domain}</code>
-                      {f.matches ? (
-                        <Check className="w-4 h-4" />
-                      ) : (
-                        <AlertCircle className="w-4 h-4" />
-                      )}
-                    </div>
-                    <div className="mt-1 text-xs">
-                      A=[{(f.resolved?.A || []).join(", ")}] AAAA=[
-                      {(f.resolved?.AAAA || []).join(", ")}]
-                    </div>
                   </div>
-                ))}
-                {!data.forwardValidation?.length && (
-                  <div className="text-sm text-gray-500">No forward data.</div>
-                )}
+                  {validationMsg && (
+                    <div className="flex items-center gap-2 mt-2 text-red-400 text-xs font-mono">
+                      <AlertCircle className="w-3.5 h-3.5" /> {validationMsg}
+                    </div>
+                  )}
+                </div>
+
+                {/* Buttons Actions */}
+                <div className="flex gap-3">
+                  <button
+                    onClick={lookup}
+                    disabled={!valid || loading}
+                    className="flex-1 bg-blue-500 hover:bg-blue-600 text-black rounded-xl font-mono font-bold text-xs uppercase py-4 transition-all duration-300 hover:scale-[1.01] active:scale-[0.99] flex items-center justify-center gap-2 cursor-pointer hover:shadow-[0_0_20px_rgba(59,130,246,0.2)] focus:outline-none focus:ring-2 focus:ring-blue-500/40 focus:ring-offset-2 focus:ring-offset-black/20 disabled:opacity-40 disabled:pointer-events-none"
+                  >
+                    {loading ? (
+                      <>
+                        <Loader2 className="w-4 h-4 animate-spin text-black" /> Looking up...
+                      </>
+                    ) : (
+                      <>
+                        <Search className="w-4 h-4 text-black" /> Perform Lookup
+                      </>
+                    )}
+                  </button>
+
+                  <button
+                    onClick={() => {
+                      setIp("");
+                      setData(null);
+                      setErr("");
+                    }}
+                    className="px-5 py-4 bg-zinc-900/40 hover:bg-blue-500/5 text-zinc-300 hover:text-blue-400 border border-zinc-800/80 hover:border-blue-500/30 rounded-xl font-mono font-bold text-xs uppercase transition-all duration-300 hover:scale-[1.01] active:scale-[0.99] flex items-center justify-center gap-2 cursor-pointer"
+                    title="Reset"
+                  >
+                    <RefreshCw className="w-4 h-4" />
+                    Reset
+                  </button>
+                </div>
               </div>
             </div>
 
-            {/* Security usefulness line */}
-            <div className="rounded-lg border border-blue-200">
-              <div className="font-semibold mb-2 text-white">
-                Security notes
+            {/* Error output */}
+            {err && (
+              <div className="p-4 rounded-xl border border-red-500/20 bg-red-950/10 text-red-400 text-xs font-mono flex items-start gap-2">
+                <AlertCircle size={16} className="mt-0.5 flex-shrink-0" />
+                <span>Error: {err}</span>
               </div>
-              <ul className="list-disc pl-5 text-sm text-white space-y-1">
-                <li>
-                  DNSBL listing and reverse/forward mismatch are common signals
-                  of potential abuse/spoofing.
+            )}
+
+            {/* Results block */}
+            {data && (
+              <div className="bg-zinc-950/20 backdrop-blur-md border border-zinc-800/80 rounded-2xl p-6 shadow-[0_8px_30px_rgb(0,0,0,0.2)] hover:border-blue-500/10 transition-all duration-300 space-y-6">
+                
+                {/* Header title and exporters */}
+                <div className="flex items-center justify-between gap-4 flex-wrap border-b border-zinc-800/40 pb-4">
+                  <div>
+                    <h3 className="text-lg font-mono font-bold text-zinc-100 uppercase tracking-wider">
+                      Lookup Resolution Summary
+                    </h3>
+                    <p className="text-xs font-mono text-zinc-500 mt-0.5">
+                      Target IP: {data.ip}
+                    </p>
+                  </div>
+                  
+                  <div className="flex gap-2">
+                    <button
+                      onClick={downloadPDF}
+                      className="px-4 py-2.5 bg-zinc-900/40 hover:bg-blue-500/5 text-zinc-300 hover:text-blue-400 border border-zinc-800/80 hover:border-blue-500/30 rounded-xl font-mono font-bold text-xs uppercase transition-all duration-300 hover:scale-[1.01] active:scale-[0.99] flex items-center justify-center gap-1.5"
+                    >
+                      <Download className="w-3.5 h-3.5" />
+                      PDF Report
+                    </button>
+                    <button
+                      onClick={downloadTXT}
+                      className="px-4 py-2.5 bg-zinc-900/40 hover:bg-blue-500/5 text-zinc-300 hover:text-blue-400 border border-zinc-800/80 hover:border-blue-500/30 rounded-xl font-mono font-bold text-xs uppercase transition-all duration-300 hover:scale-[1.01] active:scale-[0.99] flex items-center justify-center gap-1.5"
+                    >
+                      <FileText className="w-3.5 h-3.5" />
+                      TXT Report
+                    </button>
+                  </div>
+                </div>
+
+                {/* Threat Intel panel */}
+                <div className="bg-zinc-900/40 border border-zinc-800/80 rounded-xl p-5 shadow-lg space-y-4">
+                  <div className="flex items-center justify-between border-b border-zinc-800/40 pb-3">
+                    <h3 className="text-sm font-mono font-bold text-zinc-200 flex items-center gap-2">
+                      <Shield className="w-4 h-4 text-blue-400" />
+                      IP Reputation & Threat Assessment
+                    </h3>
+                    <span className={`px-2.5 py-0.5 rounded-full text-[10px] font-mono font-bold uppercase tracking-wider ${
+                      blacklistSummary.riskLevel === "Critical"
+                        ? "bg-red-500/10 text-red-450 border border-red-500/20"
+                        : blacklistSummary.riskLevel === "High"
+                        ? "bg-orange-500/10 text-orange-450 border border-orange-500/20"
+                        : blacklistSummary.riskLevel === "Medium"
+                        ? "bg-yellow-500/10 text-yellow-450 border border-yellow-500/20"
+                        : "bg-emerald-500/10 text-emerald-450 border border-emerald-500/20"
+                    }`}>
+                      {blacklistSummary.riskLevel} Risk
+                    </span>
+                  </div>
+
+                  <div className="grid md:grid-cols-3 gap-6 items-center">
+                    
+                    {/* Score SVG */}
+                    <div className="flex flex-col items-center justify-center p-3 bg-zinc-950/20 border border-zinc-850 rounded-xl text-center">
+                      <span className="text-[9px] uppercase tracking-wider text-zinc-450 font-bold mb-1 font-mono">Reputation Score</span>
+                      <div className="relative flex items-center justify-center">
+                        <svg className="w-20 h-20 transform -rotate-90">
+                          <circle cx="40" cy="40" r="34" className="stroke-current text-zinc-800" strokeWidth="5" fill="transparent" />
+                          <circle cx="40" cy="40" r="34" className={`stroke-current ${
+                            blacklistSummary.reputationScore >= 75 ? "text-red-500" : blacklistSummary.reputationScore >= 40 ? "text-orange-500" : blacklistSummary.reputationScore >= 11 ? "text-yellow-500" : "text-blue-500"
+                          }`} strokeWidth="5" fill="transparent"
+                          strokeDasharray={213.6}
+                          strokeDashoffset={213.6 - (213.6 * blacklistSummary.reputationScore) / 100}
+                          strokeLinecap="round" />
+                        </svg>
+                        <div className="absolute text-lg font-bold text-zinc-100 font-mono">
+                          {blacklistSummary.reputationScore}
+                        </div>
+                      </div>
+                      <span className="text-[8px] text-zinc-550 mt-1 font-mono">max 100 (clean = 0)</span>
+                    </div>
+
+                    {/* Detections Counter */}
+                    <div className="space-y-1 text-center md:text-left font-mono">
+                      <span className="text-[10px] uppercase tracking-wider text-zinc-450 font-bold font-mono">Spam Lists Checked</span>
+                      <div className="text-3xl font-extrabold text-zinc-100">
+                        {blacklistSummary.flagged} <span className="text-xs font-normal text-zinc-500">/ {blacklistSummary.checked} listed</span>
+                      </div>
+                      <p className="text-[10px] text-zinc-500 leading-normal">
+                        IP queried from active dnsbl blacklists.
+                      </p>
+                    </div>
+
+                    {/* Recommendations block */}
+                    <div className="p-3.5 bg-zinc-950/20 border border-zinc-850 rounded-xl space-y-1 text-left font-mono">
+                      <span className="text-[10px] font-semibold text-blue-400 flex items-center gap-1.5 font-mono">
+                        <CheckCircle className="w-3.5 h-3.5 text-blue-400" />
+                        Security Guidance:
+                      </span>
+                      <p className="text-[10px] text-zinc-350 leading-relaxed">
+                        {blacklistSummary.recommendedAction}
+                      </p>
+                    </div>
+
+                  </div>
+                </div>
+
+                {/* Grid details cards */}
+                <div className="grid gap-4 sm:grid-cols-3">
+                  <div className="bg-zinc-900/40 border border-zinc-800/80 p-4 rounded-xl font-mono text-xs">
+                    <span className="text-[10px] uppercase font-mono tracking-widest text-zinc-400 font-semibold mb-1 block">
+                      Record Type
+                    </span>
+                    <span className="font-semibold text-zinc-200">
+                      {data.type || "PTR"}
+                    </span>
+                  </div>
+
+                  <div className="bg-zinc-900/40 border border-zinc-800/80 p-4 rounded-xl font-mono text-xs">
+                    <span className="text-[10px] uppercase font-mono tracking-widest text-zinc-400 font-semibold mb-1 block">
+                      IP Scope
+                    </span>
+                    <span className="font-semibold text-zinc-250 truncate block">
+                      {data.ip}{data.displayName ? ` ${data.displayName}` : ""}
+                    </span>
+                  </div>
+
+                  <div className="bg-zinc-900/40 border border-zinc-800/80 p-4 rounded-xl font-mono text-xs">
+                    <span className="text-[10px] uppercase font-mono tracking-widest text-zinc-400 font-semibold mb-1 block">
+                      TTL Record
+                    </span>
+                    <span className="font-semibold text-zinc-200">
+                      {human(data.ttlHuman) || human(data.ttl ? `${data.ttl}s` : null)}
+                    </span>
+                  </div>
+
+                  <div className="bg-zinc-900/40 border border-zinc-800/80 p-4 rounded-xl font-mono text-xs">
+                    <span className="text-[10px] uppercase font-mono tracking-widest text-zinc-400 font-semibold mb-1 block">
+                      Result Msg
+                    </span>
+                    <span className="font-semibold text-zinc-250 truncate block">
+                      {human(data.result, "dns lookup found")}
+                    </span>
+                  </div>
+
+                  <div className="bg-zinc-900/40 border border-zinc-800/80 p-4 rounded-xl font-mono text-xs">
+                    <span className="text-[10px] uppercase font-mono tracking-widest text-zinc-400 font-semibold mb-1 block">
+                      Test Class
+                    </span>
+                    <span className="font-semibold text-zinc-200">
+                      {human(data.test, "public")}
+                    </span>
+                  </div>
+
+                  <div className="bg-zinc-900/40 border border-zinc-800/80 p-4 rounded-xl font-mono text-xs">
+                    <span className="text-[10px] uppercase font-mono tracking-widest text-zinc-400 font-semibold mb-1 block">
+                      Reverse Hostname
+                    </span>
+                    <span className="font-semibold text-zinc-250 truncate block" title={data.reverseName}>
+                      {human(data.reverseName)}
+                    </span>
+                  </div>
+                </div>
+
+                {/* PTR domains list */}
+                <div className="bg-zinc-900/40 border border-zinc-800/80 p-4 rounded-xl font-mono text-xs">
+                  <h3 className="text-sm font-mono font-bold text-blue-400 mb-2 border-b border-zinc-800/40 pb-2 flex items-center gap-1.5">
+                    <Database className="w-4 h-4" />
+                    PTR Domains List
+                  </h3>
+                  {data.ptr?.length ? (
+                    <ul className="space-y-1.5 list-none pl-0">
+                      {data.ptr.map((d) => (
+                        <li key={d} className="flex items-center gap-2">
+                          <span className="inline-block w-1 h-1 rounded-full bg-blue-500/60" />
+                          <code className="text-zinc-300 font-mono">{d}</code>
+                        </li>
+                      ))}
+                    </ul>
+                  ) : (
+                    <div className="text-zinc-550">No PTR records returned.</div>
+                  )}
+                </div>
+
+                {/* Geolocation + ASN WHOIS */}
+                <div className="grid md:grid-cols-2 gap-4">
+                  <div className="bg-zinc-900/40 border border-zinc-800/80 p-4 rounded-xl font-mono text-xs">
+                    <h3 className="text-sm font-mono font-bold text-zinc-100 mb-3 border-b border-zinc-800/40 pb-2 flex items-center gap-1.5">
+                      <MapPin className="w-4 h-4 text-blue-400" />
+                      Geolocation
+                    </h3>
+                    {data.geo ? (
+                      <div className="text-zinc-300 space-y-2">
+                        <div className="flex justify-between border-b border-zinc-800/20 py-0.5">
+                          <span className="text-zinc-450">Country:</span>
+                          <span className="font-medium text-zinc-100">{human(data.geo.country)}</span>
+                        </div>
+                        <div className="flex justify-between border-b border-zinc-800/20 py-0.5">
+                          <span className="text-zinc-450">Region / City:</span>
+                          <span className="font-medium text-zinc-100">{human(data.geo.region)} / {human(data.geo.city)}</span>
+                        </div>
+                        <div className="flex justify-between border-b border-zinc-800/20 py-0.5">
+                          <span className="text-zinc-450">Timezone:</span>
+                          <span className="text-zinc-100">{human(data.geo.timezone)}</span>
+                        </div>
+                        <div className="flex justify-between border-b border-zinc-800/20 py-0.5">
+                          <span className="text-zinc-450">Lat/Lon:</span>
+                          <span className="text-zinc-100">{human(data.geo.ll?.join(", "))}</span>
+                        </div>
+                      </div>
+                    ) : (
+                      <div className="text-zinc-550 font-mono">Not available.</div>
+                    )}
+                  </div>
+
+                  <div className="bg-zinc-900/40 border border-zinc-800/80 p-4 rounded-xl font-mono text-xs">
+                    <h3 className="text-sm font-mono font-bold text-zinc-100 mb-3 border-b border-zinc-800/40 pb-2 flex items-center gap-1.5">
+                      <Terminal className="w-4 h-4 text-blue-400" />
+                      ASN / WHOIS Metadata
+                    </h3>
+                    {data.asn ? (
+                      <div className="text-zinc-300 space-y-2">
+                        <div className="flex justify-between border-b border-zinc-800/20 py-0.5">
+                          <span className="text-zinc-450">ASN:</span>
+                          <span className="font-medium text-zinc-100">{human(data.asn.asn)}</span>
+                        </div>
+                        <div className="flex justify-between border-b border-zinc-800/20 py-0.5">
+                          <span className="text-zinc-450">Org:</span>
+                          <span className="text-zinc-100 max-w-[150px] truncate" title={data.asn.org}>{human(data.asn.org)}</span>
+                        </div>
+                        <div className="flex justify-between border-b border-zinc-800/20 py-0.5">
+                          <span className="text-zinc-450">ISP:</span>
+                          <span className="text-zinc-100 max-w-[150px] truncate" title={data.asn.isp}>{human(data.asn.isp)}</span>
+                        </div>
+                        <div className="flex justify-between border-b border-zinc-800/20 py-0.5">
+                          <span className="text-zinc-450">CIDR:</span>
+                          <span className="text-zinc-100">{human(data.asn.cidr)}</span>
+                        </div>
+                      </div>
+                    ) : (
+                      <div className="text-zinc-550 font-mono">Not available.</div>
+                    )}
+                  </div>
+                </div>
+
+                {/* Table reputation details */}
+                <div className="bg-zinc-900/40 border border-zinc-800/80 rounded-xl p-5 shadow-lg space-y-4">
+                  <div className="font-semibold text-sm text-zinc-200 flex items-center gap-2 border-b border-zinc-800/40 pb-3">
+                    <Globe className="w-4 h-4 text-blue-400" />
+                    IP Reputation & Blacklist Database Details
+                  </div>
+                  <div className="overflow-x-auto">
+                    <table className="w-full text-left border-collapse">
+                      <thead>
+                        <tr className="border-b border-zinc-800/80 text-zinc-400 text-[10px] font-bold uppercase tracking-wider py-2.5 px-3 font-mono">
+                          <th className="py-2.5 px-3">Blacklist Feed</th>
+                          <th className="py-2.5 px-3">Status</th>
+                          <th className="py-2.5 px-3">Severity</th>
+                          <th className="py-2.5 px-3">Confidence</th>
+                          <th className="py-2.5 px-3">Observed Threat Intel</th>
+                          <th className="py-2.5 px-3">Last Seen</th>
+                        </tr>
+                      </thead>
+                      <tbody className="divide-y divide-zinc-850 text-xs font-mono text-zinc-300">
+                        {blacklists.map((bl) => (
+                          <tr key={bl.name} className="hover:bg-blue-500/5 transition-colors">
+                            <td className="py-3 px-3 font-semibold text-zinc-100">{bl.name}</td>
+                            <td className="py-3 px-3">
+                              <span className={`px-2 py-0.5 text-[9px] font-bold rounded-full font-mono uppercase tracking-wider ${
+                                bl.status === "Listed"
+                                  ? "bg-red-500/10 text-red-400 border border-red-500/20"
+                                  : "bg-blue-500/10 text-blue-400 border border-blue-500/20"
+                              }`}>
+                                {bl.status}
+                              </span>
+                            </td>
+                            <td className="py-3 px-3">
+                              <span className={`font-semibold ${
+                                bl.severity === "High"
+                                  ? "text-red-400"
+                                  : bl.severity === "Medium"
+                                  ? "text-orange-400"
+                                  : bl.severity === "Low"
+                                  ? "text-blue-400"
+                                  : "text-zinc-550"
+                              }`}>
+                                {bl.severity}
+                              </span>
+                            </td>
+                            <td className="py-3 px-3 text-zinc-400">{bl.confidence}</td>
+                            <td className="py-3 px-3 text-[11px] text-zinc-450 max-w-[200px] truncate" title={bl.reason}>
+                              {bl.reason}
+                            </td>
+                            <td className="py-3 px-3 text-[11px] text-zinc-550">{bl.lastSeen}</td>
+                          </tr>
+                        ))}
+                        {!blacklists.length && (
+                          <tr>
+                            <td colSpan="6" className="py-4 text-center text-zinc-550 font-mono">
+                              No blacklists checked.
+                            </td>
+                          </tr>
+                        )}
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+
+                {/* Forward DNS Validation */}
+                <div className="bg-zinc-900/40 border border-zinc-800/80 p-4 rounded-xl font-mono text-xs space-y-4">
+                  <h3 className="text-sm font-mono font-bold text-zinc-100 border-b border-zinc-800/40 pb-2 flex items-center gap-1.5">
+                    <Terminal className="w-4 h-4 text-blue-400" />
+                    Forward DNS Validation Checks
+                  </h3>
+
+                  <div className="text-xs">
+                    {forwardVerdict.verified ? (
+                      <span className="inline-flex items-center gap-1.5 text-blue-400 bg-blue-500/10 border border-blue-500/30 rounded-xl p-3.5 w-full">
+                        <Check className="w-4 h-4 text-blue-400" /> 
+                        All reverse → forward mappings verified back to {data.ip}
+                      </span>
+                    ) : forwardVerdict.suspicious ? (
+                      <span className="inline-flex items-center gap-1.5 text-red-400 bg-red-500/10 border border-red-500/30 rounded-xl p-3.5 w-full">
+                        <AlertCircle className="w-4 h-4 text-red-400" /> 
+                        Suspicious: at least one reverse → forward mapping did not point back to {data.ip}
+                      </span>
+                    ) : (
+                      <span className="text-zinc-550">
+                        No forward resolution logs found.
+                      </span>
+                    )}
+                  </div>
+
+                  <div className="space-y-2">
+                    {(data.forwardValidation || []).map((f) => (
+                      <div
+                        key={f.domain}
+                        className={`p-3.5 rounded-xl border text-xs font-mono ${
+                          f.matches
+                            ? "bg-zinc-900/40 border-zinc-800/80 text-zinc-200"
+                            : "bg-red-950/20 border-red-500/20 text-red-300"
+                        }`}
+                      >
+                        <div className="flex items-center justify-between">
+                          <code className="font-mono">{f.domain}</code>
+                          {f.matches ? (
+                            <Check className="w-4 h-4 text-blue-450" />
+                          ) : (
+                            <AlertCircle className="w-4 h-4 text-red-405" />
+                          )}
+                        </div>
+                        <div className="mt-1.5 text-[10px] text-zinc-500">
+                          A=[{(f.resolved?.A || []).join(", ")}] AAAA=[
+                          {(f.resolved?.AAAA || []).join(", ")}]
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
+              </div>
+            )}
+
+          </div>
+
+          {/* Right Column */}
+          <div className="space-y-6">
+            
+            {/* Guidance sidebar card */}
+            <div className="border border-zinc-800/80 bg-zinc-950/20 backdrop-blur-md rounded-2xl p-6 space-y-4 shadow-[0_8px_30px_rgb(0,0,0,0.12)]">
+              <h2 className="text-xs font-mono font-bold uppercase tracking-wider text-zinc-100 flex items-center gap-2">
+                <Info className="text-blue-400 w-4 h-4" />
+                Resolution Scope
+              </h2>
+              <ul className="space-y-3.5 list-none pl-0">
+                <li className="flex items-start gap-2">
+                  <span className="inline-block w-1.5 h-1.5 rounded-full bg-blue-500/60 mt-1.5 flex-shrink-0" />
+                  <span className="text-xs text-zinc-400 leading-relaxed font-mono">
+                    Performs standard Pointer (PTR) record queries on target network IP interfaces.
+                  </span>
                 </li>
-                <li>
-                  ASN/WHOIS + Geolocation help attribute ownership and hosting
-                  region.
+                <li className="flex items-start gap-2">
+                  <span className="inline-block w-1.5 h-1.5 rounded-full bg-blue-500/60 mt-1.5 flex-shrink-0" />
+                  <span className="text-xs text-zinc-400 leading-relaxed font-mono">
+                    Executes dynamic forward mapping matching to verify hosting provider authenticity.
+                  </span>
                 </li>
-                <li>
-                  PTR presence alone does not imply trust; always validate
-                  forward mapping.
+                <li className="flex items-start gap-2">
+                  <span className="inline-block w-1.5 h-1.5 rounded-full bg-blue-500/60 mt-1.5 flex-shrink-0" />
+                  <span className="text-xs text-zinc-400 leading-relaxed font-mono">
+                    Audits global IP databases for blacklist status, location origins, and network ASNs.
+                  </span>
                 </li>
               </ul>
             </div>
+
           </div>
-        )}
+
+        </div>
       </div>
     </div>
   );
