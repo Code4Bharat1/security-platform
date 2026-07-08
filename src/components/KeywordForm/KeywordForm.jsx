@@ -322,6 +322,9 @@ export default function KeywordPage() {
       '--surface-glow': 'rgba(16, 185, 129, 0.14)',
     }}>
       <style>{`
+        .tool-detail-page .tool-detail-shell {
+          padding-top: 3.5rem !important;
+        }
         .tool-detail-page ::-webkit-scrollbar-thumb {
           background: rgba(16, 185, 129, 0.35) !important;
         }

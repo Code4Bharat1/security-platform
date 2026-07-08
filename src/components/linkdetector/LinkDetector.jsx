@@ -290,6 +290,9 @@ export default function LinkDetector() {
       }}
     >
       <style>{`
+        .tool-detail-page .tool-detail-shell {
+          padding-top: 3.5rem !important;
+        }
         .tool-detail-page ::-webkit-scrollbar-thumb {
           background: rgba(16, 185, 129, 0.35) !important;
         }

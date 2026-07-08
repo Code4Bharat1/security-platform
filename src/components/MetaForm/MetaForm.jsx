@@ -361,6 +361,9 @@ table{border-collapse:collapse;width:100%;font-size:13px} td,th{border:1px solid
       '--surface-glow': 'rgba(16, 185, 129, 0.14)',
     }}>
       <style>{`
+        .tool-detail-page .tool-detail-shell {
+          padding-top: 3.5rem !important;
+        }
         .tool-detail-page ::-webkit-scrollbar-thumb {
           background: rgba(16, 185, 129, 0.35) !important;
         }

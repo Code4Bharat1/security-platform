@@ -672,6 +672,13 @@ html.theme-dark {
     opacity: 0.14;
   }
 
+  .tool-detail-page :is(button, [role="button"]):is([class*="bg-emerald-"], [class*="bg-green-"]) {
+    color: #000000 !important;
+  }
+  .tool-detail-page :is(button, [role="button"]):is([class*="bg-emerald-"], [class*="bg-green-"]) * {
+    color: #000000 !important;
+  }
+
   .site-page-shell {
     position: relative;
     min-height: 100vh;
@@ -1072,13 +1079,13 @@ html.theme-dark {
       box-shadow 180ms ease, transform 180ms ease;
   }
 
-  .tools-route-family :is([class*="bg-blue-"], [class*="bg-green-"], [class*="bg-red-"], [class*="bg-emerald-"], [class*="bg-orange-"], [class*="bg-teal-"], [class*="bg-cyan-"]) {
+  .tools-route-family :is([class*="bg-blue-"], [class*="bg-green-"], [class*="bg-red-"], [class*="bg-emerald-"], [class*="bg-orange-"], [class*="bg-teal-"], [class*="bg-cyan-"], [class*="bg-amber-"]) {
     background: var(--gold);
     color: #111111;
     border-color: rgba(212, 166, 74, 0.8);
   }
 
-  .tools-route-family :is([class*="hover:bg-blue"], [class*="hover:bg-green"], [class*="hover:bg-red"], [class*="hover:bg-emerald"], [class*="hover:bg-orange"], [class*="hover:bg-teal"], [class*="hover:bg-cyan"], [class*="hover:bg-gray"]):hover {
+  .tools-route-family :is([class*="hover:bg-blue"], [class*="hover:bg-green"], [class*="hover:bg-red"], [class*="hover:bg-emerald"], [class*="hover:bg-orange"], [class*="hover:bg-teal"], [class*="hover:bg-cyan"], [class*="hover:bg-gray"], [class*="hover:bg-amber"]):hover {
     background: var(--gold-strong);
     color: #111111;
     box-shadow: 0 0 32px rgba(212, 166, 74, 0.18);

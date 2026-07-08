@@ -11,8 +11,7 @@ import {
   Loader2, 
   Cloud,
   Key,
-  CheckCircle2,
-  AlertTriangle
+  Info
 } from "lucide-react";
 import jsPDF from "jspdf";
 import "jspdf-autotable";
@@ -108,7 +107,7 @@ export default function CloudSecurityPage() {
     doc.setFillColor(18, 18, 18);
     doc.rect(0, 0, doc.internal.pageSize.width, 40, "F");
     
-    doc.setTextColor(212, 166, 74); // Gold
+    doc.setTextColor(245, 158, 11); // Warm Amber
     doc.setFont("Helvetica", "bold");
     doc.setFontSize(22);
     doc.text("NEXCORE SECURITY PLATFORM", 15, 20);
@@ -124,7 +123,7 @@ export default function CloudSecurityPage() {
     doc.text(`Date: ${new Date().toLocaleString()}`, 15, 55);
     doc.text("Status: Completed / Compliance Checked", 15, 60);
     
-    doc.setDrawColor(212, 166, 74);
+    doc.setDrawColor(245, 158, 11);
     doc.setLineWidth(0.5);
     doc.line(15, 67, doc.internal.pageSize.width - 15, 67);
 
@@ -160,7 +159,7 @@ export default function CloudSecurityPage() {
       ],
       startY: 105,
       theme: "striped",
-      headStyles: { fillColor: [212, 166, 74], textColor: [255, 255, 255] },
+      headStyles: { fillColor: [245, 158, 11], textColor: [255, 255, 255] },
       margin: { top: 105 }
     });
     
@@ -168,43 +167,89 @@ export default function CloudSecurityPage() {
   };
 
   return (
-    <div className="tool-detail-page min-h-screen">
+    <div 
+      className="tool-detail-page min-h-screen"
+      style={{
+        "--hero-ambient-a": "rgba(245, 158, 11, 0.08)",
+        "--hero-ambient-b": "rgba(249, 115, 22, 0.03)",
+        "--glow-primary": "0 0 34px rgba(245, 158, 11, 0.16)",
+        "--gold": "#f59e0b",
+        "--gold-strong": "#fbbf24",
+        "--gold-dark": "#b45309",
+        "--ring": "rgba(245, 158, 11, 0.34)",
+        "--surface-glow": "rgba(245, 158, 11, 0.14)",
+      }}
+    >
+      <style>{`
+        .tool-detail-page .tool-detail-shell {
+          padding-top: 3.5rem !important;
+        }
+        .tool-detail-page ::-webkit-scrollbar-thumb {
+          background: rgba(245, 158, 11, 0.35) !important;
+        }
+        .tool-detail-page ::-webkit-scrollbar-thumb:hover {
+          background: rgba(245, 158, 11, 0.55) !important;
+        }
+        .tool-detail-page ::selection {
+          background: rgba(245, 158, 11, 0.22) !important;
+          color: #fffbeb !important;
+        }
+        .tool-detail-page :is(button, [role="button"]):is([class*="bg-amber-"], [class*="bg-orange-"]) {
+          color: #000000 !important;
+        }
+        .tool-detail-page :is(button, [role="button"]):is([class*="bg-amber-"], [class*="bg-orange-"]) * {
+          color: #000000 !important;
+        }
+      `}</style>
+
       <div className="tool-detail-shell">
         {/* Navigation & Header */}
-        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-end gap-4 mb-8">
-          <span className="rounded-full border border-[color:var(--border)] px-3 py-1 font-mono text-[0.62rem] uppercase tracking-[0.28em] text-[color:var(--text-muted)] bg-white/[0.02]">
-            Vulnerability Assessment
+        <div className="flex justify-end mb-8">
+          <span className="rounded-full border border-amber-500/30 px-3 py-1 font-mono text-[0.62rem] uppercase tracking-[0.28em] text-amber-400">
+            Amber Team
           </span>
         </div>
 
-        <div className="mb-10">
-          <h1 className="text-4xl sm:text-5xl font-mono font-bold text-[color:var(--text-heading)]">
-            CREDENTIAL <span className="text-[color:var(--gold)]">VALIDATION</span>
-          </h1>
-          <p className="mt-2 text-[color:var(--text-muted)] max-w-2xl text-base">
-            Audit cloud access keys, user profiles, MFA policies, and IAM configurations to verify compliance with cloud security baselines.
-          </p>
+        {/* Title Block */}
+        <div className="mb-10 flex flex-col md:flex-row items-start md:items-center gap-6">
+          <div className="w-16 h-16 rounded-2xl border border-amber-500/30 overflow-hidden shadow-lg flex-shrink-0 flex items-center justify-center">
+            <Cloud className="h-8 w-8 text-amber-400" />
+          </div>
+          <div>
+            <h1 className="text-4xl sm:text-5xl font-mono font-bold text-zinc-100">
+              CREDENTIAL <span className="text-amber-400">VALIDATION</span>
+            </h1>
+            <p className="mt-2 text-zinc-400 max-w-2xl text-base font-normal">
+              Audit cloud access keys, user profiles, MFA policies, and IAM configurations to verify compliance with cloud security baselines.
+            </p>
+          </div>
         </div>
 
+        {/* 2-Column Layout */}
         <div className="grid gap-8 lg:grid-cols-[1fr_400px]">
-          {/* Main Controls */}
+          
+          {/* Left Column */}
           <div className="space-y-6">
-            <div className="bg-[color:var(--surface-card)] border border-[color:var(--border)] rounded-2xl p-6 shadow-[var(--shadow-soft)]">
-              <h2 className="text-lg font-mono font-semibold text-[color:var(--text-heading)] mb-4 flex items-center gap-2">
-                <Cloud className="h-5 w-5 text-[color:var(--gold)]" />
+            
+            {/* Form card */}
+            <div className="bg-zinc-950/20 backdrop-blur-md border border-zinc-800/80 rounded-2xl p-6 shadow-[0_8px_30px_rgb(0,0,0,0.2)] hover:border-amber-500/10 transition-all duration-300">
+              <h2 className="text-lg font-mono font-medium text-zinc-100 mb-6 flex items-center gap-2">
+                <Cloud className="h-5 w-5 text-amber-400" />
                 Target Environment Details
               </h2>
               
               <form onSubmit={handleStartScan} className="space-y-4">
                 <div>
-                  <label className="block text-xs uppercase tracking-wider font-mono text-[color:var(--text-muted)] mb-2 font-semibold">Target Profile, Account ID, or AWS Access Key</label>
+                  <label className="block text-xs uppercase tracking-wider font-mono text-zinc-400 mb-2 font-semibold">
+                    Target Profile, Account ID, or AWS Access Key
+                  </label>
                   <input 
                     type="text" 
                     value={target}
                     onChange={(e) => setTarget(e.target.value)}
                     disabled={scanning}
                     placeholder="e.g. AWS-Production-Profile or Account ID"
-                    className="w-full bg-[color:var(--surface-subtle)] text-[color:var(--text-heading)] border border-[color:var(--border)] rounded-xl p-3 text-sm focus:ring-1 focus:ring-[color:var(--gold)] focus:border-[color:var(--gold)] focus:outline-none transition-all placeholder:text-[color:var(--text-muted)] font-mono"
+                    className="w-full bg-zinc-900/40 text-zinc-100 border border-zinc-800/80 rounded-xl p-3 text-sm focus:border-amber-500/50 focus:ring-1 focus:ring-amber-500/30 focus:shadow-[0_0_12px_rgba(245,158,11,0.08)] focus:outline-none transition-all placeholder:text-zinc-650 font-mono"
                     required
                   />
                 </div>
@@ -213,16 +258,16 @@ export default function CloudSecurityPage() {
                   <button 
                     type="submit"
                     disabled={scanning}
-                    className="w-full bg-[color:var(--gold)] hover:bg-[color:var(--gold-strong)] text-black rounded-xl font-mono font-bold text-xs uppercase py-3.5 transition-all duration-200 hover:scale-[1.01] active:scale-[0.99] flex items-center justify-center gap-2 cursor-pointer shadow-lg"
+                    className="w-full bg-amber-500/5 hover:bg-amber-500/10 text-amber-400 border border-amber-500/20 hover:border-amber-500/50 rounded-xl font-mono font-bold text-xs uppercase py-4 transition-all duration-300 hover:scale-[1.01] active:scale-[0.99] flex items-center justify-center gap-2 cursor-pointer hover:shadow-[0_0_20px_rgba(245,158,11,0.15)] focus:outline-none focus:ring-2 focus:ring-amber-500/40 focus:ring-offset-2 focus:ring-offset-black/20 disabled:opacity-40 disabled:pointer-events-none"
                   >
                     {scanning ? (
                       <>
-                        <Loader2 className="h-4 w-4 animate-spin" />
+                        <Loader2 className="h-4 w-4 animate-spin text-amber-400" />
                         Validating Credentials...
                       </>
                     ) : (
                       <>
-                        <Key className="h-4 w-4" />
+                        <Key className="h-4 w-4 text-amber-400" />
                         Run Credential Validation Audit
                       </>
                     )}
@@ -233,23 +278,23 @@ export default function CloudSecurityPage() {
 
             {/* Console Output */}
             {(scanning || consoleLogs.length > 0) && (
-              <div className="border border-[color:var(--border)] bg-black/45 rounded-2xl p-6 font-mono text-xs text-white/80 space-y-4 shadow-inner">
-                <div className="flex items-center justify-between border-b border-[color:var(--border)]/60 pb-3">
-                  <span className="flex items-center gap-2 font-bold text-[color:var(--gold)]">
+              <div className="border border-zinc-800/80 bg-zinc-950/20 backdrop-blur-md rounded-2xl p-6 font-mono text-xs text-white/80 space-y-4 shadow-[0_8px_30px_rgb(0,0,0,0.12)]">
+                <div className="flex items-center justify-between border-b border-zinc-800/40 pb-3">
+                  <span className="flex items-center gap-2 font-bold text-amber-400">
                     <Terminal className="h-4 w-4" />
                     AUDIT CONSOLE OUTPUT
                   </span>
-                  {scanning && <span className="text-[color:var(--gold)] animate-pulse">● RUNNING</span>}
+                  {scanning && <span className="text-amber-400 animate-pulse">● RUNNING</span>}
                 </div>
                 
                 <div 
                   ref={logContainerRef}
-                  className="h-64 overflow-y-auto space-y-2 pr-2 custom-scrollbar text-white/60"
+                  className="h-64 overflow-y-auto space-y-2 pr-2 custom-scrollbar text-zinc-400"
                 >
                   {consoleLogs.map((log, index) => {
-                    let color = "text-white/60";
-                    if (log.includes("[SUCCESS]")) color = "text-green-400";
-                    if (log.includes("[WARNING]")) color = "text-yellow-500";
+                    let color = "text-zinc-400";
+                    if (log.includes("[SUCCESS]")) color = "text-amber-400";
+                    if (log.includes("[WARNING]")) color = "text-orange-400";
                     if (log.includes("[ALERT]")) color = "text-red-500 font-bold";
                     
                     return (
@@ -263,29 +308,29 @@ export default function CloudSecurityPage() {
             )}
           </div>
 
-          {/* Sidebar results card */}
+          {/* Right Column */}
           <div className="space-y-6">
             {reportReady ? (
-              <div className="border border-[color:var(--gold)]/30 bg-black/35 backdrop-blur-xl rounded-2xl p-6 space-y-6 shadow-[var(--shadow-elevated)]">
+              <div className="border border-amber-500/30 bg-zinc-950/20 backdrop-blur-md rounded-2xl p-6 space-y-6 shadow-[0_8px_30px_rgb(0,0,0,0.15)]">
                 <div className="text-center space-y-2">
-                  <div className="inline-flex h-12 w-12 items-center justify-center border border-[color:var(--gold)]/25 text-[color:var(--gold)] rounded-full bg-[color:var(--gold)]/10 mb-2">
+                  <div className="inline-flex h-12 w-12 items-center justify-center border border-amber-500/25 text-amber-400 rounded-full bg-amber-500/10 mb-2">
                     <Award className="h-6 w-6" />
                   </div>
-                  <h3 className="text-xl font-mono font-bold text-[color:var(--text-heading)]">Audit Complete</h3>
-                  <p className="text-xs text-[color:var(--text-muted)]">Findings compiled for {target}</p>
+                  <h3 className="text-xl font-mono font-bold text-zinc-100">Audit Complete</h3>
+                  <p className="text-xs text-zinc-400">Findings compiled for {target}</p>
                 </div>
 
-                <div className="border-t border-[color:var(--border)]/50 pt-4 space-y-3 font-mono text-xs">
+                <div className="border-t border-zinc-800/40 pt-4 space-y-3 font-mono text-xs">
                   <div className="flex justify-between">
-                    <span className="text-[color:var(--text-muted)]">Checks Failed:</span>
-                    <span className="text-[color:var(--gold)] font-bold">4 Policies</span>
+                    <span className="text-zinc-400">Checks Failed:</span>
+                    <span className="text-orange-400 font-bold">4 Policies</span>
                   </div>
                   <div className="flex justify-between">
-                    <span className="text-[color:var(--text-muted)]">Checks Passed:</span>
-                    <span className="text-green-400 font-bold font-mono">1 Policy</span>
+                    <span className="text-zinc-400">Checks Passed:</span>
+                    <span className="text-amber-400 font-bold font-mono">1 Policy</span>
                   </div>
                   <div className="flex justify-between">
-                    <span className="text-[color:var(--text-muted)]">Risk Band:</span>
+                    <span className="text-zinc-400">Risk Band:</span>
                     <span className="text-red-500 font-bold">High Risk</span>
                   </div>
                 </div>
@@ -293,7 +338,7 @@ export default function CloudSecurityPage() {
                 <div className="space-y-2">
                   <button 
                     onClick={handleDownloadPDF}
-                    className="w-full bg-[color:var(--gold)] hover:bg-[color:var(--gold-strong)] text-black font-mono font-bold text-xs uppercase py-3 rounded-xl transition duration-200 flex items-center justify-center gap-2 cursor-pointer shadow-md"
+                    className="w-full bg-amber-500/5 hover:bg-amber-500/10 text-amber-400 border border-amber-500/20 hover:border-amber-500/50 rounded-xl font-mono font-bold text-xs uppercase py-4 transition-all duration-300 hover:scale-[1.01] active:scale-[0.99] flex items-center justify-center gap-2 cursor-pointer hover:shadow-[0_0_20px_rgba(245,158,11,0.15)] focus:outline-none disabled:opacity-40 disabled:pointer-events-none"
                   >
                     <Download className="h-4 w-4" />
                     Download PDF Report
@@ -301,25 +346,44 @@ export default function CloudSecurityPage() {
                 </div>
               </div>
             ) : (
-              <div className="border border-[color:var(--border)] bg-[color:var(--surface-subtle)] rounded-2xl p-6 text-center py-16 text-[color:var(--text-muted)] space-y-3 shadow-sm">
-                <FileText className="h-12 w-12 mx-auto text-[color:var(--border)]/60" />
-                <p className="text-sm font-mono uppercase tracking-wider font-semibold text-[color:var(--text-heading)]">No Audit Executed</p>
+              <div className="border border-zinc-800/80 bg-zinc-950/20 backdrop-blur-md rounded-2xl p-6 text-center py-16 text-zinc-400 space-y-3 shadow-sm">
+                <FileText className="h-12 w-12 mx-auto text-zinc-650" />
+                <p className="text-sm font-mono uppercase tracking-wider font-semibold text-zinc-200">No Audit Executed</p>
                 <p className="text-xs max-w-[240px] mx-auto leading-relaxed">
                   Specify target cloud environment and run the validation audit to generate consolidated credentials assessment.
                 </p>
               </div>
             )}
 
-            {/* Quick Tips */}
-            <div className="border border-[color:var(--border)] bg-black/20 rounded-2xl p-5 space-y-4">
-              <h4 className="text-xs font-mono font-bold uppercase tracking-wider text-[color:var(--text-heading)]">Audit Specs</h4>
-              <ul className="space-y-2 text-xs text-[color:var(--text-muted)] list-disc pl-4 leading-relaxed">
-                <li>Validates MFA enforcement policies on administrative user groups.</li>
-                <li>Audits password policies, credentials rotation intervals, and access key ages.</li>
-                <li>Identifies unused, stale IAM credentials to reduce attack vector.</li>
+            {/* Specs & Guidance sidebar card */}
+            <div className="border border-zinc-800/80 bg-zinc-950/20 backdrop-blur-md rounded-2xl p-6 space-y-4 shadow-[0_8px_30px_rgb(0,0,0,0.12)]">
+              <h2 className="text-xs font-mono font-bold uppercase tracking-wider text-zinc-100 flex items-center gap-2">
+                <Info className="text-amber-400 w-4 h-4" />
+                Audit Specs
+              </h2>
+              <ul className="space-y-3.5 list-none pl-0">
+                <li className="flex items-start gap-2">
+                  <span className="inline-block w-1.5 h-1.5 rounded-full bg-amber-500/60 mt-1.5 flex-shrink-0" />
+                  <span className="text-xs text-zinc-400 leading-relaxed">
+                    Validates MFA enforcement policies on administrative user groups.
+                  </span>
+                </li>
+                <li className="flex items-start gap-2">
+                  <span className="inline-block w-1.5 h-1.5 rounded-full bg-amber-500/60 mt-1.5 flex-shrink-0" />
+                  <span className="text-xs text-zinc-400 leading-relaxed">
+                    Audits password policies, credentials rotation intervals, and access key ages.
+                  </span>
+                </li>
+                <li className="flex items-start gap-2">
+                  <span className="inline-block w-1.5 h-1.5 rounded-full bg-amber-500/60 mt-1.5 flex-shrink-0" />
+                  <span className="text-xs text-zinc-400 leading-relaxed">
+                    Identifies unused, stale IAM credentials to reduce attack vector.
+                  </span>
+                </li>
               </ul>
             </div>
           </div>
+          
         </div>
       </div>
     </div>

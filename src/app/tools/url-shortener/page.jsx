@@ -1,8 +1,8 @@
 "use client";
+
 import { useState } from "react";
 import {
   Link2,
-  ExternalLink,
   Copy,
   Check,
   RefreshCw,
@@ -10,7 +10,7 @@ import {
   Sliders,
   Shield,
   Clock,
-  ExternalLink as LinkIcon
+  Globe,
 } from "lucide-react";
 import toast, { Toaster } from "react-hot-toast";
 import useProtectedAction from "@/components/UseProtectedAction/UseProtectedAction";
@@ -77,7 +77,6 @@ export default function UrlShortener() {
           const professionalUrl = `${url.replace("/shorten", "")}/${data.code}`;
           setShortUrl(professionalUrl);
           
-          // Add to session history
           const now = new Date();
           const timestamp = now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' });
           setHistory(prev => [
@@ -102,19 +101,22 @@ export default function UrlShortener() {
 
   return (
     <div
-      className="min-h-screen bg-black text-slate-100 tool-detail-page"
+      className="tool-detail-page min-h-screen"
       style={{
-        '--hero-ambient-a': 'rgba(16, 185, 129, 0.08)',
-        '--hero-ambient-b': 'rgba(16, 185, 129, 0.03)',
-        '--glow-primary': '0 0 34px rgba(16, 185, 129, 0.16)',
-        '--gold': '#10b981',
-        '--gold-strong': '#34d399',
-        '--gold-dark': '#047857',
-        '--ring': 'rgba(16, 185, 129, 0.34)',
-        '--surface-glow': 'rgba(16, 185, 129, 0.14)',
+        "--hero-ambient-a": "rgba(16, 185, 129, 0.08)",
+        "--hero-ambient-b": "rgba(16, 185, 129, 0.03)",
+        "--glow-primary": "0 0 34px rgba(16, 185, 129, 0.16)",
+        "--gold": "#10b981",
+        "--gold-strong": "#34d399",
+        "--gold-dark": "#047857",
+        "--ring": "rgba(16, 185, 129, 0.34)",
+        "--surface-glow": "rgba(16, 185, 129, 0.14)",
       }}
     >
       <style>{`
+        .tool-detail-page .tool-detail-shell {
+          padding-top: 3.5rem !important;
+        }
         .tool-detail-page ::-webkit-scrollbar-thumb {
           background: rgba(16, 185, 129, 0.35) !important;
         }
@@ -143,55 +145,42 @@ export default function UrlShortener() {
             0 0 40px rgba(16, 185, 129, 0.04) !important;
           border-color: rgba(16, 185, 129, 0.12) !important;
         }
-        .tool-detail-page .shorten-button {
-          background-color: #10b981 !important;
-          color: #000000 !important;
-          border-color: #10b981 !important;
-        }
-        .tool-detail-page .shorten-button:hover,
-        .tool-detail-page .shorten-button:focus,
-        .tool-detail-page .shorten-button:active {
-          background-color: #10b981 !important;
-          color: #000000 !important;
-          opacity: 1 !important;
-          box-shadow: 0 0 15px rgba(16, 185, 129, 0.3) !important;
-        }
       `}</style>
 
-      <div className="max-w-6xl mx-auto p-6 space-y-8">
+      <div className="tool-detail-shell">
         <Toaster position="top-right" reverseOrder={false} />
 
-        {/* Team Header Badges & Title Icons */}
-        <div className="flex justify-between items-start gap-4 mt-6">
-          <div className="flex items-center gap-4">
-            <div className="w-12 h-12 flex-shrink-0 flex items-center justify-center">
-              <Link2 className="text-emerald-400 w-8 h-8" />
-            </div>
-            <div>
-              <h1 className="font-mono font-bold text-2xl md:text-3xl text-zinc-100 tracking-tight">
-                URL <span className="text-emerald-400">SHORTENER</span>
-              </h1>
-              <p className="text-sm text-zinc-350 mt-2 max-w-2xl font-mono leading-relaxed">
-                Make your long links short, clean & professional for secure link distribution.
-              </p>
-            </div>
+        {/* Top Badge */}
+        <div className="flex justify-end mb-8">
+          <span className="rounded-full border border-emerald-500/30 px-3 py-1 font-mono text-[0.62rem] uppercase tracking-[0.28em] text-emerald-400">
+            Green Team
+          </span>
+        </div>
+
+        {/* Title Block */}
+        <div className="mb-10 flex flex-col md:flex-row items-start md:items-center gap-6">
+          <div className="w-16 h-16 rounded-2xl border border-emerald-500/30 overflow-hidden shadow-lg flex-shrink-0 flex items-center justify-center">
+            <Link2 className="h-8 w-8 text-emerald-400" />
           </div>
-          <div className="hidden sm:block">
-            <span className="rounded-full border border-emerald-500/30 px-3 py-1 font-mono text-[0.62rem] uppercase tracking-[0.28em] text-emerald-400 whitespace-nowrap">
-              Green Team
-            </span>
+          <div>
+            <h1 className="text-4xl sm:text-5xl font-mono font-bold text-zinc-100">
+              URL <span className="text-emerald-400">SHORTENER</span>
+            </h1>
+            <p className="mt-2 text-zinc-400 max-w-2xl text-base font-normal">
+              Make your long links short, clean & professional for secure link distribution.
+            </p>
           </div>
         </div>
 
-        {/* 2 Column Settings and Guidance Layout */}
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
-
-          {/* Left Panel: Shortener Settings */}
-          <div className="lg:col-span-8 space-y-6">
+        {/* 2-Column Grid Layout */}
+        <div className="grid gap-8 lg:grid-cols-[1fr_400px]">
+          {/* Left Column */}
+          <div className="space-y-6">
+            {/* Form card */}
             <div className="bg-zinc-950/20 backdrop-blur-md border border-zinc-800/80 rounded-2xl p-6 shadow-[0_8px_30px_rgb(0,0,0,0.2)] hover:border-emerald-500/10 transition-all duration-300">
               <h2 className="text-lg font-mono font-medium text-zinc-100 mb-6 flex items-center gap-2">
                 <Sliders className="text-emerald-400 w-5 h-5" />
-                <span>Shortener Settings</span>
+                Shortener Settings
               </h2>
 
               <div className="space-y-4">
@@ -199,30 +188,33 @@ export default function UrlShortener() {
                   <label className="block text-xs uppercase tracking-widest font-mono text-zinc-400 mb-2 font-semibold">
                     Target Long URL
                   </label>
-                  <input
-                    type="text"
-                    placeholder="🔗 Paste your long URL here..."
-                    value={originalUrl}
-                    onChange={(e) => setOriginalUrl(e.target.value)}
-                    className="w-full bg-zinc-900/40 text-zinc-100 border border-zinc-800/80 rounded-xl p-3 text-sm focus:border-emerald-500/50 focus:ring-1 focus:ring-emerald-500/30 focus:shadow-[0_0_12px_rgba(16,185,129,0.08)] focus:outline-none transition-all placeholder:text-zinc-600 font-mono"
-                  />
+                  <div className="relative">
+                    <Globe className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-zinc-500" />
+                    <input
+                      type="text"
+                      placeholder="https://example.com/very-long-path-name"
+                      value={originalUrl}
+                      onChange={(e) => setOriginalUrl(e.target.value)}
+                      className="w-full pl-10 bg-zinc-900/40 text-zinc-100 border border-zinc-800/80 rounded-xl p-3 text-sm focus:border-emerald-500/50 focus:ring-1 focus:ring-emerald-500/30 focus:shadow-[0_0_12px_rgba(16,185,129,0.08)] focus:outline-none transition-all placeholder:text-zinc-600 font-mono"
+                    />
+                  </div>
                 </div>
 
                 <div className="flex justify-end pt-2">
                   <button
                     onClick={handleShorten}
                     disabled={loading || !originalUrl}
-                    className="shorten-button bg-emerald-500/5 hover:bg-emerald-500/10 text-emerald-400 border border-emerald-500/25 hover:border-emerald-500/50 py-3.5 px-4 rounded-xl transition-all duration-300 font-mono font-bold text-xs uppercase tracking-wider flex items-center justify-center gap-2 cursor-pointer hover:scale-[1.01] active:scale-[0.99] hover:shadow-[0_0_15px_rgba(16,185,129,0.15)] focus:outline-none focus:ring-2 focus:ring-emerald-500/40 focus:ring-offset-2 focus:ring-offset-black/20 disabled:opacity-40 disabled:cursor-not-allowed disabled:pointer-events-none"
+                    className="w-full bg-emerald-500/5 hover:bg-emerald-500/10 text-emerald-400 border border-emerald-500/25 hover:border-emerald-500/50 py-3.5 px-4 rounded-xl transition-all duration-300 font-mono font-bold text-xs uppercase tracking-wider flex items-center justify-center gap-2 cursor-pointer hover:scale-[1.01] active:scale-[0.99] hover:shadow-[0_0_15px_rgba(16,185,129,0.15)] focus:outline-none disabled:opacity-40 disabled:pointer-events-none"
                   >
                     {loading ? (
                       <>
                         <RefreshCw className="animate-spin w-4 h-4" />
-                        <span>Shortening...</span>
+                        Shortening...
                       </>
                     ) : (
                       <>
                         <Link2 className="w-4 h-4" />
-                        <span>Generate Short URL</span>
+                        Generate Short URL
                       </>
                     )}
                   </button>
@@ -232,10 +224,10 @@ export default function UrlShortener() {
 
             {/* Results Panel */}
             {shortUrl && (
-              <div className="bg-zinc-950/20 backdrop-blur-md border border-zinc-800/80 rounded-2xl p-6 shadow-[0_8px_30px_rgb(0,0,0,0.2)] hover:border-emerald-500/10 transition-all duration-300 space-y-4 animate-[fadeIn_0.3s_ease-out]">
+              <div className="bg-zinc-950/20 backdrop-blur-md border border-zinc-800/80 rounded-2xl p-6 shadow-[0_8px_30px_rgb(0,0,0,0.2)] hover:border-emerald-500/10 transition-all duration-300 space-y-4">
                 <h2 className="text-lg font-mono font-medium text-zinc-100 border-b border-zinc-800/40 pb-3 flex items-center gap-2">
                   <Shield className="text-emerald-400 w-5 h-5" />
-                  <span>SHORTENER RESULTS</span>
+                  Shortener Results
                 </h2>
 
                 <div className="space-y-4">
@@ -259,7 +251,7 @@ export default function UrlShortener() {
                             toast.error("Failed to copy.");
                           }
                         }}
-                        className="p-3.5 rounded-xl border border-zinc-800 bg-zinc-950/80 text-zinc-400 hover:text-emerald-400 hover:border-emerald-500/30 transition-all flex items-center justify-center flex-shrink-0"
+                        className="p-3.5 rounded-xl border border-zinc-800 bg-zinc-950/80 text-zinc-400 hover:text-emerald-400 hover:border-emerald-500/30 transition-all flex items-center justify-center flex-shrink-0 cursor-pointer"
                       >
                         {copiedResult ? <Check size={16} className="text-emerald-400" /> : <Copy size={16} />}
                       </button>
@@ -270,7 +262,7 @@ export default function UrlShortener() {
             )}
 
             {error && (
-              <div className="p-4 rounded-xl border border-rose-500/20 bg-rose-950/10 text-rose-400 text-xs font-mono">
+              <div className="p-4 rounded-xl border border-rose-500/20 bg-rose-955/10 text-rose-400 text-xs font-mono">
                 {error}
               </div>
             )}
@@ -280,18 +272,18 @@ export default function UrlShortener() {
               <div className="bg-zinc-950/20 backdrop-blur-md border border-zinc-800/80 rounded-2xl p-6 shadow-[0_8px_30px_rgb(0,0,0,0.2)] hover:border-emerald-500/10 transition-all duration-300 space-y-5">
                 <h2 className="text-lg font-mono font-medium text-zinc-100 flex items-center gap-2">
                   <Clock className="text-emerald-400 w-5 h-5" />
-                  <span>Session History</span>
+                  Session History
                 </h2>
 
                 {/* Dashboard Stats */}
                 <div className="grid grid-cols-2 gap-4">
-                  <div className="p-4.5 rounded-xl border border-emerald-500/20 bg-emerald-950/10 text-black shadow-[inset_0_0_12px_rgba(16,185,129,0.02)] transition-all duration-300 hover:scale-[1.01] flex flex-col justify-between gap-1">
-                    <span className="text-[10px] uppercase font-mono tracking-widest text-black/60 font-semibold">Total Shortened</span>
+                  <div className="p-4.5 rounded-xl border border-emerald-500/20 bg-emerald-950/10 text-emerald-400 shadow-[inset_0_0_12px_rgba(16,185,129,0.02)] transition-all duration-300 hover:scale-[1.01] flex flex-col justify-between gap-1">
+                    <span className="text-[10px] uppercase font-mono tracking-widest text-zinc-550 font-semibold">Total Shortened</span>
                     <span className="text-2xl font-bold font-mono">{history.length}</span>
                   </div>
-                  <div className="p-4.5 rounded-xl border border-amber-500/20 bg-amber-950/10 text-amber-400 shadow-[inset_0_0_12px_rgba(245,158,11,0.02)] transition-all duration-300 hover:scale-[1.01] flex flex-col justify-between gap-1">
-                    <span className="text-[10px] uppercase font-mono tracking-widest text-zinc-400 font-semibold">Redirect Hops</span>
-                    <span className="text-xs font-bold font-mono mt-2.5">301 Permanent</span>
+                  <div className="p-4.5 rounded-xl border border-emerald-500/20 bg-emerald-950/10 text-emerald-400 shadow-[inset_0_0_12px_rgba(16,185,129,0.02)] transition-all duration-300 hover:scale-[1.01] flex flex-col justify-between gap-1">
+                    <span className="text-[10px] uppercase font-mono tracking-widest text-zinc-550 font-semibold">Redirect Hops</span>
+                    <span className="text-xs font-bold font-mono mt-2">301 Permanent</span>
                   </div>
                 </div>
 
@@ -312,7 +304,7 @@ export default function UrlShortener() {
                               {item.short}
                             </a>
                           </div>
-                          <div className="text-[10px] text-zinc-550 truncate">
+                          <div className="text-[10px] text-zinc-500 truncate">
                             → {item.original}
                           </div>
                         </div>
@@ -328,7 +320,7 @@ export default function UrlShortener() {
                               toast.error("Failed to copy.");
                             }
                           }}
-                          className="p-2 rounded-lg border border-zinc-850 bg-zinc-900/40 text-zinc-400 hover:text-emerald-400 hover:border-emerald-500/20 transition-all flex items-center justify-center flex-shrink-0"
+                          className="p-2 rounded-lg border border-zinc-850 bg-zinc-900/40 text-zinc-400 hover:text-emerald-400 hover:border-emerald-500/20 transition-all flex items-center justify-center flex-shrink-0 cursor-pointer"
                         >
                           {copiedIndex === idx ? <Check size={12} className="text-emerald-400" /> : <Copy size={12} />}
                         </button>
@@ -340,34 +332,26 @@ export default function UrlShortener() {
             )}
           </div>
 
-          {/* Right Panel: Specs & Guidance */}
-          <div className="lg:col-span-4 bg-zinc-950/20 backdrop-blur-md border border-zinc-800/80 rounded-2xl p-6 shadow-[0_8px_30px_rgb(0,0,0,0.2)] hover:border-emerald-500/10 transition-all duration-300 flex flex-col justify-between h-fit">
-            <div>
-              <h2 className="text-lg font-mono font-medium text-zinc-100 mb-6 flex items-center gap-2">
-                <Info className="text-emerald-400 w-5 h-5" />
-                <span>Specs & Guidance</span>
-              </h2>
+          {/* Right Column */}
+          <div className="space-y-6">
+            <div className="border border-zinc-800/80 bg-zinc-950/20 backdrop-blur-md rounded-2xl p-6 space-y-4 shadow-[0_8px_30px_rgb(0,0,0,0.12)]">
+              <h4 className="text-xs font-mono font-bold uppercase tracking-wider text-zinc-100 flex items-center gap-2">
+                <Info className="text-emerald-400 w-4 h-4" />
+                Specs & Guidance
+              </h4>
 
-              <div className="space-y-4 text-xs md:text-sm font-mono text-zinc-300 leading-relaxed">
-                <div className="flex items-start gap-2.5">
-                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 mt-1.5 flex-shrink-0" />
-                  <span>
-                    <strong className="text-emerald-400">Mitigate Phishing:</strong> Shortened URLs can hide malicious destinations. Use only for authorized domains.
-                  </span>
-                </div>
-                <div className="flex items-start gap-2.5">
-                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 mt-1.5 flex-shrink-0" />
-                  <span>
-                    <strong className="text-emerald-400">Avoid Hops:</strong> Multiple redirection chains trigger security blocks by enterprise email filters.
-                  </span>
-                </div>
-                <div className="flex items-start gap-2.5">
-                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 mt-1.5 flex-shrink-0" />
-                  <span>
-                    <strong className="text-emerald-400">Traceable Auditing:</strong> Session logging enables tracking access patterns for verification.
-                  </span>
-                </div>
-              </div>
+              <ul className="space-y-3.5 list-none pl-0">
+                {[
+                  "Mitigate Phishing: Shortened URLs can hide malicious destinations. Use only for authorized domains.",
+                  "Avoid Hops: Multiple redirection chains trigger security blocks by enterprise email filters.",
+                  "Traceable Auditing: Session logging enables tracking access patterns for verification.",
+                ].map((text, i) => (
+                  <li key={i} className="flex items-start gap-2">
+                    <span className="inline-block w-1.5 h-1.5 rounded-full bg-emerald-500/60 mt-1.5 flex-shrink-0" />
+                    <span className="text-xs text-zinc-400 leading-relaxed">{text}</span>
+                  </li>
+                ))}
+              </ul>
             </div>
           </div>
         </div>

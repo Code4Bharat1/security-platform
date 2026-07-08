@@ -107,6 +107,9 @@ export default function PasswordCheckerPage() {
       }}
     >
       <style>{`
+        .tool-detail-page .tool-detail-shell {
+          padding-top: 3.5rem !important;
+        }
         .tool-detail-page ::-webkit-scrollbar-thumb {
           background: rgba(16, 185, 129, 0.35) !important;
         }
@@ -149,52 +152,39 @@ export default function PasswordCheckerPage() {
         .custom-scrollbar::-webkit-scrollbar-thumb:hover {
           background: rgba(16, 185, 129, 0.45);
         }
-        .tool-detail-page .analyze-button {
-          background-color: #10b981 !important;
-          color: #000000 !important;
-          border-color: #10b981 !important;
-        }
-        .tool-detail-page .analyze-button:hover,
-        .tool-detail-page .analyze-button:focus,
-        .tool-detail-page .analyze-button:active {
-          background-color: #10b981 !important;
-          color: #000000 !important;
-          opacity: 1 !important;
-          box-shadow: 0 0 15px rgba(16, 185, 129, 0.3) !important;
-        }
       `}</style>
 
-      <div className="max-w-6xl mx-auto p-6 space-y-8">
+      <div className="tool-detail-shell">
         <Toaster position="top-right" reverseOrder={false} />
 
-        {/* Modern Custom Header */}
-        <div className="flex justify-between items-start gap-4 mt-6">
-          <div className="flex items-center gap-4">
-            <div className="w-12 h-12 flex-shrink-0 flex items-center justify-center">
-              <Lock className="text-emerald-400 w-8 h-8" />
-            </div>
-            <div>
-              <h1 className="font-mono font-bold text-2xl md:text-3xl text-zinc-100 tracking-tight">
-                PASSWORD <span className="text-emerald-400">STRENGTH CHECKER</span>
-              </h1>
-              <p className="text-sm text-zinc-300 mt-2 max-w-2xl font-mono leading-relaxed">
-                Evaluate Shannon entropy, brute-force timelines, and character pool completeness in real-time.
-              </p>
-            </div>
+        {/* Top Badge */}
+        <div className="flex justify-end mb-8">
+          <span className="rounded-full border border-emerald-500/30 px-3 py-1 font-mono text-[0.62rem] uppercase tracking-[0.28em] text-emerald-400">
+            Green Team
+          </span>
+        </div>
+
+        {/* Title Block */}
+        <div className="mb-10 flex flex-col md:flex-row items-start md:items-center gap-6">
+          <div className="w-16 h-16 rounded-2xl border border-emerald-500/30 overflow-hidden shadow-lg flex-shrink-0 flex items-center justify-center">
+            <Lock className="h-8 w-8 text-emerald-400" />
           </div>
-          <div className="hidden sm:block">
-            <span className="rounded-full border border-emerald-500/30 px-3 py-1 font-mono text-[0.62rem] uppercase tracking-[0.28em] text-emerald-400 whitespace-nowrap">
-              Green Team
-            </span>
+          <div>
+            <h1 className="text-4xl sm:text-5xl font-mono font-bold text-zinc-100">
+              PASSWORD <span className="text-emerald-400">STRENGTH</span>
+            </h1>
+            <p className="mt-2 text-zinc-400 max-w-2xl text-base font-normal">
+              Evaluate Shannon entropy, brute-force timelines, and character pool completeness in real-time.
+            </p>
           </div>
         </div>
 
         {/* 2 Column Settings and Guidance Layout */}
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+        <div className="grid gap-8 lg:grid-cols-[1fr_400px]">
 
-          {/* Left Panel: Analyzer Settings */}
-          <div className="lg:col-span-8 bg-zinc-950/20 backdrop-blur-md border border-zinc-800/80 rounded-2xl p-6 shadow-[0_8px_30px_rgb(0,0,0,0.2)] hover:border-emerald-500/10 transition-all duration-300 flex flex-col justify-between">
-            <div>
+          {/* Left Column */}
+          <div className="space-y-6">
+            <div className="bg-zinc-950/20 backdrop-blur-md border border-zinc-800/80 rounded-2xl p-6 shadow-[0_8px_30px_rgb(0,0,0,0.2)] hover:border-emerald-500/10 transition-all duration-300">
               <h2 className="text-lg font-mono font-medium text-zinc-100 mb-6 flex items-center gap-2">
                 <Sliders className="text-emerald-400 w-5 h-5" />
                 <span>Analyzer Settings</span>
@@ -252,74 +242,65 @@ export default function PasswordCheckerPage() {
                   </div>
                 </div>
               </div>
-            </div>
 
-            <div className="mt-8">
-              <button
-                type="button"
-                disabled={loading || !pw}
-                onClick={async () => {
-                  setErr(null);
-                  setLoading(true);
-                  try {
-                    const tokenRaw = typeof window !== "undefined" ? localStorage.getItem("token") : null;
-                    const token = tokenRaw ? tokenRaw.replace(/^"|"$/g, "") : "";
-                    const r = await fetch(`${API_BASE}${ENDPOINT}`, {
-                      method: "POST",
-                      headers: {
-                        "Content-Type": "application/json",
-                        Authorization: `Bearer ${token}`
-                      },
-                      body: JSON.stringify({ password: pw }),
-                    });
-                    const json = await r.json();
-                    if (!r.ok) throw new Error(json?.message || `HTTP ${r.status}`);
-                    setData(json);
-                    toast.success("Security audit completed!");
-                  } catch (e) {
-                    setErr(e?.message || "Failed to analyze.");
-                    setData(null);
-                  } finally {
-                    setLoading(false);
-                  }
-                }}
-                className="analyze-button w-full py-4 px-4 rounded-xl transition-all duration-300 font-mono font-bold text-sm uppercase tracking-wider flex items-center justify-center gap-2 cursor-pointer hover:scale-[1.01] active:scale-[0.99] focus:outline-none focus:ring-2 focus:ring-emerald-500/40"
-              >
-                {loading ? <RefreshCw className="animate-spin w-4 h-4" /> : <ShieldCheck className="w-4 h-4" />}
-                {loading ? "Analyzing..." : "Analyze Password"}
-              </button>
+              <div className="mt-8">
+                <button
+                  type="button"
+                  disabled={loading || !pw}
+                  onClick={async () => {
+                    setErr(null);
+                    setLoading(true);
+                    try {
+                      const tokenRaw = typeof window !== "undefined" ? localStorage.getItem("token") : null;
+                      const token = tokenRaw ? tokenRaw.replace(/^"|"$/g, "") : "";
+                      const r = await fetch(`${API_BASE}${ENDPOINT}`, {
+                        method: "POST",
+                        headers: {
+                          "Content-Type": "application/json",
+                          Authorization: `Bearer ${token}`
+                        },
+                        body: JSON.stringify({ password: pw }),
+                      });
+                      const json = await r.json();
+                      if (!r.ok) throw new Error(json?.message || `HTTP ${r.status}`);
+                      setData(json);
+                      toast.success("Security audit completed!");
+                    } catch (e) {
+                      setErr(e?.message || "Failed to analyze.");
+                      setData(null);
+                    } finally {
+                      setLoading(false);
+                    }
+                  }}
+                  className="w-full bg-emerald-500/5 hover:bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 hover:border-emerald-500/50 rounded-xl font-mono font-bold text-xs uppercase py-4 transition-all duration-300 hover:scale-[1.01] active:scale-[0.99] flex items-center justify-center gap-2 cursor-pointer hover:shadow-[0_0_20px_rgba(16,185,129,0.15)] focus:outline-none focus:ring-2 focus:ring-emerald-500/40 focus:ring-offset-2 focus:ring-offset-black/20 disabled:opacity-40 disabled:pointer-events-none"
+                >
+                  {loading ? <RefreshCw className="animate-spin w-4 h-4" /> : <ShieldCheck className="w-4 h-4" />}
+                  {loading ? "Analyzing..." : "Analyze Password"}
+                </button>
+              </div>
             </div>
           </div>
 
-          {/* Right Panel: Specs & Guidance */}
-          <div className="lg:col-span-4 bg-zinc-950/20 backdrop-blur-md border border-zinc-800/80 rounded-2xl p-6 shadow-[0_8px_30px_rgb(0,0,0,0.2)] hover:border-emerald-500/10 transition-all duration-300 flex flex-col justify-between">
-            <div>
-              <h2 className="text-lg font-mono font-medium text-zinc-100 mb-6 flex items-center gap-2">
-                <Info className="text-emerald-400 w-5 h-5" />
-                <span>Specs & Guidance</span>
+          {/* Right Column */}
+          <div className="space-y-6">
+            <div className="border border-zinc-800/80 bg-zinc-950/20 backdrop-blur-md rounded-2xl p-6 space-y-4 shadow-[0_8px_30px_rgb(0,0,0,0.12)]">
+              <h2 className="text-xs font-mono font-bold uppercase tracking-wider text-zinc-100 flex items-center gap-2">
+                <Info className="text-emerald-400 w-4 h-4" />
+                Specs & Guidance
               </h2>
-              <div className="space-y-4 text-xs md:text-sm font-mono text-zinc-300 leading-relaxed">
-                <div className="flex items-start gap-2.5">
-                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 mt-1.5 flex-shrink-0" />
-                  <span>
-                    <strong className="text-emerald-400">Prioritize Length:</strong> Make passwords at least 12 to 16 characters long.
-                  </span>
-                </div>
-                <div className="flex items-start gap-2.5">
-                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 mt-1.5 flex-shrink-0" />
-                  <span>
-                    <strong className="text-emerald-400">Make Them Unpredictable:</strong> Avoid using common words. Instead, string together four to seven random, unrelated words into a memorable passphrase.
-                  </span>
-                </div>
-                <div className="flex items-start gap-2.5">
-                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 mt-1.5 flex-shrink-0" />
-                  <span>
-                    <strong className="text-emerald-400">Use a Mix of Characters:</strong> Combine uppercase and lowercase letters, numbers, and special symbols (e.g., !@#$%^&*) throughout the password.
-                  </span>
-                </div>
-              </div>
+              <ul className="space-y-3.5 list-none pl-0">
+                {[
+                  "Prioritize Length: Make passwords at least 12 to 16 characters long.",
+                  "Make Them Unpredictable: Avoid using common words. Instead, string together four to seven random, unrelated words into a memorable passphrase.",
+                  "Use a Mix of Characters: Combine uppercase and lowercase letters, numbers, and special symbols (e.g., !@#$%^&*) throughout the password.",
+                ].map((text, i) => (
+                  <li key={i} className="flex items-start gap-2">
+                    <span className="inline-block w-1.5 h-1.5 rounded-full bg-emerald-500/60 mt-1.5 flex-shrink-0" />
+                    <span className="text-xs text-zinc-400 leading-relaxed">{text}</span>
+                  </li>
+                ))}
+              </ul>
             </div>
-
           </div>
 
         </div>
