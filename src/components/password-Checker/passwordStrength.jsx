@@ -311,7 +311,7 @@ export default function PasswordCheckerPage() {
           if (data) {
             if ((data.length || 0) < 14) {
               suggestions.push("Increase password length to 14+ characters.");
-            }
+              }
             if (!data.classes?.symbol) {
               suggestions.push("Add more symbols to expand character pool complexity.");
             }

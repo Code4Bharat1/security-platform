@@ -17,8 +17,14 @@ import {
   Unlock,
   AlertCircle,
   CheckCircle2,
+  Check,
+  AlertTriangle,
+  Target,
+  Users,
+  Gauge
 } from "lucide-react";
 import useProtectedAction from "@/components/UseProtectedAction/UseProtectedAction";
+import toast from "react-hot-toast";
 
 const API_BASE =
   process.env.NEXT_PUBLIC_PROD_API_URL ||
@@ -28,6 +34,7 @@ const ENDPOINT = "/keywords/generate";
 
 export default function KeywordIntelligencePage() {
   const [url, setUrl] = useState("");
+  const [competitor, setCompetitor] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const [raw, setRaw] = useState([]);
@@ -36,6 +43,15 @@ export default function KeywordIntelligencePage() {
   const [highPriority, setHighPriority] = useState([]);
   const [longTail, setLongTail] = useState([]);
   const [overlap, setOverlap] = useState([]);
+
+  // Advanced SEO and Audit State
+  const [overallSeoScore, setOverallSeoScore] = useState(0);
+  const [seoAudit, setSeoAudit] = useState(null);
+  const [recommendations, setRecommendations] = useState([]);
+  const [competitorAnalysis, setCompetitorAnalysis] = useState(null);
+  const [summary, setSummary] = useState(null);
+
+  const [activeTab, setActiveTab] = useState("keywords"); // "keywords" | "competitor" | "audit"
 
   const protectedAction = useProtectedAction();
 
@@ -52,61 +68,11 @@ export default function KeywordIntelligencePage() {
 
   const websiteHost = useMemo(() => {
     try {
-      return url ? new URL(url).origin : "";
+      return url ? new URL(url.startsWith("http") ? url : `https://${url}`).origin : "";
     } catch {
       return "";
     }
   }, [url]);
-
-  function classifyIntent(k) {
-    const s = k.toLowerCase();
-    if (/(buy|price|agency|hire|company|services?|solutions?)/.test(s))
-      return "Commercial";
-    if (/(best|vs|comparison|deal|quote|pricing)/.test(s))
-      return "Transactional";
-    if (/(how|what|why|guide|tutorial|benefits|tips)/.test(s))
-      return "Informational";
-    return "Navigational";
-  }
-
-  function seedTables(keywords) {
-    const hp = keywords
-      .filter((k) => k.trim().split(/\s+/).length <= 3)
-      .slice(0, 6)
-      .map((k) => ({
-        keyword: k,
-        volume: "",
-        cpc: "",
-        difficulty: "",
-        trend6m: "",
-        intent: classifyIntent(k) || "",
-      }));
-
-    const lt = keywords
-      .filter((k) => k.trim().split(/\s+/).length >= 3)
-      .slice(0, 8)
-      .map((k) => ({
-        keyword: k,
-        volume: "",
-        cpc: "",
-        difficulty: "",
-        trend6m: "",
-        intent: classifyIntent(k) || "",
-      }));
-
-    const overlapCandidates = keywords.filter((k) =>
-      /(services?|solutions?)/i.test(k)
-    );
-    const ov = overlapCandidates.slice(0, 6).map((k) => ({
-      keyword: k,
-      yours: "",
-      competitor: "",
-    }));
-
-    setHighPriority(hp);
-    setLongTail(lt);
-    setOverlap(ov);
-  }
 
   async function analyze() {
     setError(null);
@@ -134,7 +100,7 @@ export default function KeywordIntelligencePage() {
             "Content-Type": "application/json",
             Authorization: `Bearer ${userToken}`,
           },
-          body: JSON.stringify({ url: normalized }),
+          body: JSON.stringify({ url: normalized, competitor: competitor.trim() }),
         });
 
         if (!r.ok) {
@@ -158,13 +124,16 @@ export default function KeywordIntelligencePage() {
         const kws = Array.isArray(data.keywords) ? data.keywords : [];
         setRaw(kws);
 
-        if (Array.isArray(data.highPriority) && data.highPriority.length) {
-          setHighPriority(data.highPriority);
-        } else {
-          seedTables(kws);
-        }
+        if (Array.isArray(data.highPriority)) setHighPriority(data.highPriority);
         if (Array.isArray(data.longTail)) setLongTail(data.longTail);
         if (Array.isArray(data.overlap)) setOverlap(data.overlap);
+
+        setOverallSeoScore(data.overallSeoScore || 0);
+        setSeoAudit(data.seoAudit || null);
+        setRecommendations(data.recommendations || []);
+        setCompetitorAnalysis(data.competitorAnalysis || null);
+        setSummary(data.summary || null);
+
         toast.success("Keyword intelligence report generated!");
       } catch (e) {
         const msg = String(e?.message || "");
@@ -187,7 +156,7 @@ export default function KeywordIntelligencePage() {
   function onChangeCell(rows, setRows, i, key, value) {
     const next = rows.slice();
     const row = { ...rows[i] };
-    if (["volume", "cpc", "difficulty"].includes(key)) {
+    if (["volume", "cpc", "difficulty", "opportunityScore", "rank", "compRank"].includes(key)) {
       row[key] = value === "" ? "" : Number(value);
     } else {
       row[key] = value;
@@ -198,40 +167,55 @@ export default function KeywordIntelligencePage() {
 
   function exportTXT() {
     const lines = [];
-    lines.push(`Keyword Intelligence Report — ${dateStr}`);
-    if (websiteHost) lines.push(`Website: ${websiteHost}`);
+    lines.push(`========================================================`);
+    lines.push(`🛡️ KEYWORD INTELLIGENCE AUDIT REPORT — ${dateStr}`);
+    lines.push(`========================================================`);
+    if (websiteHost) lines.push(`Website Target:     ${websiteHost}`);
+    if (summary?.competitor) lines.push(`Competitor Target:  ${summary.competitor}`);
+    lines.push(`Overall SEO Score:  ${overallSeoScore}/100 (${summary?.overallGrade || "B"})`);
+    lines.push(`Date Generated:     ${new Date().toLocaleString()}`);
+    lines.push(`--------------------------------------------------------`);
     lines.push("");
-    lines.push("High-Priority Keywords:");
+    lines.push(`EXECUTIVE SUMMARY:`);
+    lines.push(summary?.executiveSummary || "N/A");
+    lines.push("");
+    lines.push("HIGH-PRIORITY KEYWORDS:");
     highPriority.forEach((r, i) =>
       lines.push(
-        `${i + 1}. ${r.keyword}  | Vol:${r.volume || "-"}  CPC:${r.cpc || "-"
-        }  Diff:${r.difficulty || "-"}  Intent:${r.intent || "-"}`
+        `${i + 1}. ${r.keyword} | Vol: ${r.volume || "—"} | CPC: $${r.cpc || "—"} | Diff: ${r.difficulty}% | Intent: ${r.intent || "—"} (${r.intentConfidence}%) | Category: ${r.category || "—"}`
       )
     );
     lines.push("");
-    lines.push("Long-Tail Opportunities:");
+    lines.push("LONG-TAIL OPPORTUNITIES:");
     longTail.forEach((r, i) =>
       lines.push(
-        `${i + 1}. ${r.keyword}  | Vol:${r.volume || "-"}  Diff:${r.difficulty || "-"
-        }  CTR:(fill)`
+        `${i + 1}. ${r.keyword} | Vol: ${r.volume || "—"} | Diff: ${r.difficulty}% | Opportunity Score: ${r.opportunityScore || "—"}`
       )
     );
     lines.push("");
-    lines.push("Competitor Overlap:");
+    lines.push("COMPETITOR OVERLAP & GAP ANALYSIS:");
     overlap.forEach((r, i) =>
       lines.push(
-        `${i + 1}. ${r.keyword}  | Rank on your site: ${r.yours || "-"
-        } | Rank on competitor: ${r.competitor || "-"}`
+        `${i + 1}. ${r.keyword} | Yours: Rank ${r.yours || "—"} | Competitor: Rank ${r.competitor || "—"} | Status: ${r.gap || "—"}`
       )
     );
     lines.push("");
-    lines.push("Suggested Actions:");
-    lines.push(
-      "1) Remove low-value keywords and noise.",
-      "2) Create content around high-intent, lower-difficulty terms.",
-      "3) Optimize title/meta for top commercial terms.",
-      "4) Build backlinks to long-tail opportunity pages."
-    );
+    lines.push("ON-PAGE SEO AUDIT RESULTS:");
+    if (seoAudit) {
+      lines.push(`- Title Status:        ${seoAudit.titleStatus} (${seoAudit.titleLength} chars)`);
+      lines.push(`- Meta Description:    ${seoAudit.metaDescStatus} (${seoAudit.metaDescLength} chars)`);
+      lines.push(`- H1 Tags Count:       ${seoAudit.h1Count} (${seoAudit.h1Status})`);
+      lines.push(`- Keyword Density:     ${seoAudit.keywordDensityPct}% (${seoAudit.keywordDensityStatus})`);
+      lines.push(`- Mobile Friendly:     ${seoAudit.mobileFriendly ? "Yes" : "No"}`);
+      lines.push(`- Open Graph Tags:     ${seoAudit.hasOgTags ? "Present" : "Missing"}`);
+      lines.push(`- Canonical Tag:       ${seoAudit.hasCanonical ? "Present" : "Missing"}`);
+    }
+    lines.push("");
+    lines.push("RECOMMENDED ACTION PLAN:");
+    recommendations.forEach((r, i) => {
+      lines.push(`${i + 1}. [${r.type} Priority] ${r.title} (${r.action})`);
+      lines.push(`   Description: ${r.description}`);
+    });
 
     const blob = new Blob([lines.join("\n")], {
       type: "text/plain;charset=utf-8",
@@ -249,50 +233,72 @@ export default function KeywordIntelligencePage() {
 
     // Header Banner
     doc.setFillColor(18, 18, 18);
-    doc.rect(0, 0, doc.internal.pageSize.width, 40, "F");
+    doc.rect(0, 0, doc.internal.pageSize.width, 60, "F");
     doc.setTextColor(16, 185, 129);
     doc.setFont("Helvetica", "bold");
     doc.setFontSize(18);
-    doc.text("NEXCORE SECURITY PLATFORM", 15, 20);
+    doc.text("NEXCORE SECURITY PLATFORM", 40, 28);
     doc.setTextColor(255, 255, 255);
     doc.setFontSize(10);
-    doc.text("KEYWORD INTELLIGENCE INSIGHT REPORT", 15, 30);
+    doc.text("KEYWORD INTELLIGENCE & AUDIT ASSESSMENT", 40, 44);
 
     doc.setDrawColor(16, 185, 129);
-    doc.setLineWidth(0.5);
-    doc.line(15, 48, doc.internal.pageSize.width - 15, 48);
+    doc.setLineWidth(1);
+    doc.line(15, 68, doc.internal.pageSize.width - 15, 68);
 
-    doc.setTextColor(80, 80, 80);
+    // Page 1: Overview
+    doc.setTextColor(40, 40, 40);
+    doc.setFont("Helvetica", "bold");
+    doc.setFontSize(13);
+    doc.text("1. EXECUTIVE ASSESSMENT SUMMARY", marginX, 90);
+
     doc.setFont("Helvetica", "normal");
     doc.setFontSize(9);
-    doc.text(`Keyword Intelligence Report — ${dateStr}`, marginX, 68);
-    if (websiteHost) doc.text(`Website: ${websiteHost}`, marginX, 82);
-    doc.text(`Total Keywords Extracted: ${raw.length}`, marginX, 96);
-    doc.text(
-      `Filtered SEO Keywords: ${highPriority.length + longTail.length}`,
-      marginX,
-      110
-    );
+    doc.text(`Target URL:      ${url}`, marginX, 110);
+    if (summary?.competitor) doc.text(`Competitor URL:  ${summary.competitor}`, marginX, 122);
+    doc.text(`Scan Date:       ${new Date().toLocaleString()}`, marginX, 134);
+    doc.text(`SEO Score:       ${overallSeoScore}/100 (Grade: ${summary?.overallGrade || "B"})`, marginX, 146);
 
+    doc.setFont("Helvetica", "bold");
+    doc.text("Overview & Strategic Insights:", marginX, 170);
+    doc.setFont("Helvetica", "normal");
+    const splitText = doc.splitTextToSize(summary?.executiveSummary || "N/A", doc.internal.pageSize.width - marginX * 2);
+    doc.text(splitText, marginX, 184);
+
+    // On-Page Checklist
+    doc.setFont("Helvetica", "bold");
+    doc.text("On-Page SEO Checklist Audit:", marginX, 245);
+    doc.setFont("Helvetica", "normal");
+    if (seoAudit) {
+      doc.text(`• Title Tag: ${seoAudit.titleStatus} (${seoAudit.titleLength} chars)`, marginX + 10, 260);
+      doc.text(`• Meta Description: ${seoAudit.metaDescStatus} (${seoAudit.metaDescLength} chars)`, marginX + 10, 272);
+      doc.text(`• H1 Headers: ${seoAudit.h1Count} present (${seoAudit.h1Status})`, marginX + 10, 284);
+      doc.text(`• Viewport View (Mobile): ${seoAudit.mobileFriendly ? "Friendly" : "Missing Tag"}`, marginX + 10, 296);
+      doc.text(`• Structured Schema Data: ${seoAudit.hasStructuredData ? "Present" : "Missing"}`, marginX + 10, 308);
+      doc.text(`• Canonical Redirects: ${seoAudit.hasCanonical ? "Configured" : "Missing"}`, marginX + 10, 320);
+    }
+
+    // Add Page 2: Keywords
+    doc.addPage();
+    doc.setFillColor(18, 18, 18);
+    doc.rect(0, 0, doc.internal.pageSize.width, 40, "F");
+    doc.setTextColor(16, 185, 129);
+    doc.setFont("Helvetica", "bold");
+    doc.setFontSize(14);
+    doc.text("NEXCORE KEYWORD ANALYTICS", 40, 24);
+
+    doc.setTextColor(40, 40, 40);
+    doc.text("2. HIGH-PRIORITY KEYWORD MATRIX", marginX, 65);
     autoTable(doc, {
-      startY: 130,
-      head: [
-        [
-          "Keyword",
-          "Search Volume",
-          "CPC (USD)",
-          "Difficulty (%)",
-          "Trend (6 mo)",
-          "Intent",
-        ],
-      ],
+      startY: 75,
+      head: [["Keyword", "Volume", "CPC (USD)", "Difficulty", "Intent (Confidence)", "Opportunity"]],
       body: highPriority.map((r) => [
         r.keyword,
         r.volume || "—",
-        r.cpc || "—",
-        r.difficulty || "—",
-        r.trend6m === "↗" ? "Rising" : r.trend6m === "↘" ? "Falling" : r.trend6m === "↔" ? "Stable" : r.trend6m || "—",
-        r.intent || "—",
+        r.cpc ? `$${r.cpc}` : "—",
+        r.difficulty ? `${r.difficulty}%` : "—",
+        `${r.intent || "—"} (${r.intentConfidence}%)`,
+        r.opportunityScore || "—",
       ]),
       styles: { fontSize: 8 },
       headStyles: { fillColor: [16, 185, 129], textColor: [255, 255, 255] },
@@ -300,14 +306,18 @@ export default function KeywordIntelligencePage() {
       theme: "grid",
     });
 
+    doc.setFont("Helvetica", "bold");
+    doc.text("3. LONG-TAIL OPPORTUNITIES", marginX, doc.lastAutoTable.finalY + 25);
     autoTable(doc, {
-      startY: doc.lastAutoTable.finalY + 20,
-      head: [["Keyword", "Search Volume", "Difficulty (%)", "CTR Potential"]],
+      startY: doc.lastAutoTable.finalY + 35,
+      head: [["Keyword", "Volume", "Difficulty", "Category", "Priority", "Opportunity"]],
       body: longTail.map((r) => [
         r.keyword,
         r.volume || "—",
-        r.difficulty || "—",
-        r.ctrPotential || "—",
+        r.difficulty ? `${r.difficulty}%` : "—",
+        r.category || "Long-tail",
+        r.priority || "—",
+        r.opportunityScore || "—",
       ]),
       styles: { fontSize: 8 },
       headStyles: { fillColor: [16, 185, 129], textColor: [255, 255, 255] },
@@ -315,25 +325,62 @@ export default function KeywordIntelligencePage() {
       theme: "grid",
     });
 
-    const isCustomOverlap = overlap.length > 0 && ('commonCompetitors' in overlap[0] || 'sharedKeywords' in overlap[0]);
-    const overlapHeaders = isCustomOverlap
-      ? ["Common Competitors", "Shared Keywords", "Overlap Score"]
-      : ["Keyword", "Rank on Your Site", "Rank on Competitor"];
-    const overlapBody = overlap.map((r) =>
-      isCustomOverlap
-        ? [r.commonCompetitors || "—", r.sharedKeywords || "—", r.overlapScore || "—"]
-        : [r.keyword || "—", r.yours || "—", r.competitor || "—"]
-    );
+    // Add Page 3: Competitors & Action plan
+    doc.addPage();
+    doc.setFillColor(18, 18, 18);
+    doc.rect(0, 0, doc.internal.pageSize.width, 40, "F");
+    doc.setTextColor(16, 185, 129);
+    doc.setFont("Helvetica", "bold");
+    doc.setFontSize(14);
+    doc.text("NEXCORE COMPETITOR & ACTION PLAN", 40, 24);
 
+    doc.setTextColor(40, 40, 40);
+    doc.text("4. COMPETITOR GAP OVERLAP", marginX, 65);
     autoTable(doc, {
-      startY: doc.lastAutoTable.finalY + 20,
-      head: [overlapHeaders],
-      body: overlapBody,
+      startY: 75,
+      head: [["Keyword", "Your Rank", "Competitor Rank", "Gap Status"]],
+      body: overlap.map((r) => [
+        r.keyword || "—",
+        r.yours || "—",
+        r.competitor || "—",
+        r.gap || "—",
+      ]),
       styles: { fontSize: 8 },
       headStyles: { fillColor: [16, 185, 129], textColor: [255, 255, 255] },
       margin: { left: marginX, right: marginX },
       theme: "grid",
     });
+
+    doc.setFont("Helvetica", "bold");
+    doc.text("5. RECOMMENDATIONS & WORKFLOW ACTION PLAN", marginX, doc.lastAutoTable.finalY + 25);
+    autoTable(doc, {
+      startY: doc.lastAutoTable.finalY + 35,
+      head: [["Priority", "Title", "Recommendation / Description", "Action Layer"]],
+      body: recommendations.map((r) => [
+        r.type,
+        r.title,
+        r.description,
+        r.action
+      ]),
+      styles: { fontSize: 8 },
+      headStyles: { fillColor: [16, 185, 129], textColor: [255, 255, 255] },
+      margin: { left: marginX, right: marginX },
+      theme: "grid",
+    });
+
+    // Draw page numbers & disclaimers
+    const totalPages = doc.internal.getNumberOfPages();
+    for (let i = 1; i <= totalPages; i++) {
+      doc.setPage(i);
+      doc.setFontSize(7);
+      doc.setTextColor(120, 120, 120);
+      doc.text(
+        `Page ${i} of ${totalPages} | Confidential Keyword Intelligence Assessment | Generated by Nexcore`,
+        doc.internal.pageSize.width / 2,
+        doc.internal.pageSize.height - 20,
+        { align: "center" }
+      );
+    }
 
     doc.save("keyword-intel-report.pdf");
   }
@@ -355,6 +402,10 @@ export default function KeywordIntelligencePage() {
       }}
     >
       <style>{`
+        .tool-detail-page table {
+          display: table !important;
+          width: 100% !important;
+        }
         .tool-detail-page .tool-detail-shell {
           padding-top: 3.5rem !important;
         }
@@ -402,23 +453,22 @@ export default function KeywordIntelligencePage() {
               KEYWORD <span className="text-emerald-400">INTELLIGENCE</span>
             </h1>
             <p className="mt-2 text-zinc-400 max-w-2xl text-base font-normal">
-              Extract SEO search terms, gauge search volumes, CPC rates, domain overlaps, and map user transaction intent indicators.
+              Extract SEO search terms, check CPC rates, difficulty scores, evaluate competitor gaps, and audit on-page metadata.
             </p>
           </div>
         </div>
 
-        {/* 2-Column Grid */}
-        <div className="grid gap-8 lg:grid-cols-[1fr_400px]">
-          {/* Left Column */}
-          <div className="space-y-6">
-            {/* Input Lookup Card */}
-            <div className="bg-zinc-950/20 backdrop-blur-md border border-zinc-800/80 rounded-2xl p-6 shadow-[0_8px_30px_rgb(0,0,0,0.2)] hover:border-emerald-500/10 transition-all duration-300">
-              <h2 className="text-lg font-mono font-medium text-zinc-100 mb-6 flex items-center gap-2">
-                <Search className="h-5 w-5 text-emerald-400" />
-                Analyze Web Content
-              </h2>
+        {/* Top Input & Intent Indicators Grid */}
+        <div className="grid gap-8 lg:grid-cols-[1fr_400px] items-stretch mb-8">
+          {/* Input Lookup Card */}
+          <div className="bg-zinc-950/20 backdrop-blur-md border border-zinc-800/80 rounded-2xl p-6 shadow-[0_8px_30px_rgb(0,0,0,0.2)] hover:border-emerald-500/10 transition-all duration-300 flex flex-col justify-between">
+            <h2 className="text-lg font-mono font-medium text-zinc-100 mb-6 flex items-center gap-2">
+              <Search className="h-5 w-5 text-emerald-400" />
+              Analyze Web Content
+            </h2>
 
-              <div className="space-y-4">
+            <div className="space-y-4 flex-1 flex flex-col justify-between">
+              <div className="grid gap-4 md:grid-cols-2">
                 <div>
                   <label className="block text-xs uppercase tracking-widest font-mono text-zinc-400 mb-2 font-semibold">
                     Target Website URL
@@ -439,181 +489,78 @@ export default function KeywordIntelligencePage() {
                   </div>
                 </div>
 
-                <div className="flex flex-wrap gap-3 pt-1">
-                  <button
-                    onClick={analyze}
-                    disabled={loading || !url.trim()}
-                    className="flex-1 min-w-[120px] bg-emerald-500/5 hover:bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 hover:border-emerald-500/50 rounded-xl font-mono font-bold text-xs uppercase py-3.5 transition-all duration-300 hover:scale-[1.01] active:scale-[0.99] flex items-center justify-center gap-2 cursor-pointer hover:shadow-[0_0_20px_rgba(16,185,129,0.15)] focus:outline-none"
-                  >
-                    {loading ? (
-                      <>
-                        <Loader2 className="h-4 w-4 animate-spin" />
-                        Generating...
-                      </>
-                    ) : (
-                      <>
-                        <Search className="h-4 w-4" />
-                        Generate Report
-                      </>
-                    )}
-                  </button>
-
-                  <button
-                    onClick={() => setEditable((v) => !v)}
-                    disabled={!hasData || loading}
-                    className="bg-emerald-500/5 hover:bg-emerald-500/10 text-emerald-400 border border-emerald-500/25 hover:border-emerald-500/50 px-4 py-3 rounded-xl transition-all duration-300 font-mono font-bold text-[11px] uppercase tracking-wider flex items-center gap-2 cursor-pointer hover:scale-[1.01] active:scale-[0.99] focus:outline-none"
-                  >
-                    {editable ? <LockIcon size={14} /> : <Edit3 size={14} />}
-                    {editable ? "Lock Editing" : "Edit Metrics"}
-                  </button>
-
-                  <button
-                    onClick={exportTXT}
-                    disabled={!hasData || loading}
-                    className="bg-emerald-500/5 hover:bg-emerald-500/10 text-emerald-400 border border-emerald-500/25 hover:border-emerald-500/50 px-4 py-3 rounded-xl transition-all duration-300 font-mono font-bold text-[11px] uppercase tracking-wider flex items-center gap-2 cursor-pointer hover:scale-[1.01] active:scale-[0.99] focus:outline-none"
-                  >
-                    <Download size={14} /> TXT
-                  </button>
-
-                  <button
-                    onClick={exportPDF}
-                    disabled={!hasData || loading}
-                    className="bg-emerald-500/5 hover:bg-emerald-500/10 text-emerald-400 border border-emerald-500/25 hover:border-emerald-500/50 px-4 py-3 rounded-xl transition-all duration-300 font-mono font-bold text-[11px] uppercase tracking-wider flex items-center gap-2 cursor-pointer hover:scale-[1.01] active:scale-[0.99] focus:outline-none"
-                  >
-                    <Download size={14} /> PDF
-                  </button>
+                <div>
+                  <label className="block text-xs uppercase tracking-widest font-mono text-zinc-400 mb-2 font-semibold">
+                    Competitor URL (Optional)
+                  </label>
+                  <div className="relative">
+                    <Globe className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-zinc-500" />
+                    <input
+                      type="text"
+                      placeholder="https://competitor.com"
+                      value={competitor}
+                      onChange={(e) => setCompetitor(e.target.value)}
+                      disabled={loading}
+                      onKeyDown={(e) => {
+                        if (e.key === "Enter" && !loading && url.trim()) analyze();
+                      }}
+                      className="w-full pl-10 bg-zinc-900/40 text-zinc-100 border border-zinc-800/80 rounded-xl p-3.5 text-sm focus:border-emerald-500/50 focus:ring-1 focus:ring-emerald-500/30 focus:shadow-[0_0_12px_rgba(16,185,129,0.08)] focus:outline-none transition-all placeholder:text-zinc-600 font-mono"
+                    />
+                  </div>
                 </div>
+              </div>
+
+              <div className="flex flex-wrap gap-3 pt-4">
+                <button
+                  onClick={analyze}
+                  disabled={loading || !url.trim()}
+                  className="flex-1 min-w-[120px] bg-emerald-500/5 hover:bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 hover:border-emerald-500/50 rounded-xl font-mono font-bold text-xs uppercase py-3.5 transition-all duration-300 hover:scale-[1.01] active:scale-[0.99] flex items-center justify-center gap-2 cursor-pointer hover:shadow-[0_0_20px_rgba(16,185,129,0.15)] focus:outline-none"
+                >
+                  {loading ? (
+                    <>
+                      <Loader2 className="h-4 w-4 animate-spin" />
+                      Generating...
+                    </>
+                  ) : (
+                    <>
+                      <Search className="h-4 w-4" />
+                      Generate Report
+                    </>
+                  )}
+                </button>
+
+                <button
+                  onClick={() => setEditable((v) => !v)}
+                  disabled={!hasData || loading}
+                  className="bg-emerald-500/5 hover:bg-emerald-500/10 text-emerald-400 border border-emerald-500/25 hover:border-emerald-500/50 px-4 py-3 rounded-xl transition-all duration-300 font-mono font-bold text-[11px] uppercase tracking-wider flex items-center gap-2 cursor-pointer hover:scale-[1.01] active:scale-[0.99] focus:outline-none"
+                >
+                  {editable ? <LockIcon size={14} /> : <Edit3 size={14} />}
+                  {editable ? "Lock Editing" : "Edit Metrics"}
+                </button>
+
+                <button
+                  onClick={exportTXT}
+                  disabled={!hasData || loading}
+                  className="bg-emerald-500/5 hover:bg-emerald-500/10 text-emerald-400 border border-emerald-500/25 hover:border-emerald-500/50 px-4 py-3 rounded-xl transition-all duration-300 font-mono font-bold text-[11px] uppercase tracking-wider flex items-center gap-2 cursor-pointer hover:scale-[1.01] active:scale-[0.99] focus:outline-none"
+                >
+                  <Download size={14} /> TXT
+                </button>
+
+                <button
+                  onClick={exportPDF}
+                  disabled={!hasData || loading}
+                  className="bg-emerald-500/5 hover:bg-emerald-500/10 text-emerald-400 border border-emerald-500/25 hover:border-emerald-500/50 px-4 py-3 rounded-xl transition-all duration-300 font-mono font-bold text-[11px] uppercase tracking-wider flex items-center gap-2 cursor-pointer hover:scale-[1.01] active:scale-[0.99] focus:outline-none"
+                >
+                  <Download size={14} /> PDF
+                </button>
               </div>
             </div>
-
-            {/* Loading Indicator */}
-            {loading && (
-              <div className="flex flex-col items-center justify-center p-10 bg-zinc-950/20 backdrop-blur-md border border-zinc-800/80 rounded-2xl shadow-[0_8px_30px_rgb(0,0,0,0.15)] animate-pulse">
-                <Loader2 className="h-8 w-8 text-emerald-400 animate-spin mb-4" />
-                <p className="text-emerald-400 font-mono font-bold text-xs uppercase tracking-widest text-center">
-                  Analyzing keyword intelligence...
-                </p>
-                <span className="text-[10px] text-zinc-500 font-mono mt-2 text-center">
-                  Crawl results parsing, sorting volume indices, and matching search difficulties
-                </span>
-              </div>
-            )}
-
-            {/* Error Message */}
-            {error && (
-              <div className="rounded-xl border border-rose-500/25 bg-rose-500/5 p-4 text-rose-400">
-                <div className="flex items-start gap-3">
-                  <XCircle className="h-5 w-5 mt-0.5 flex-shrink-0" />
-                  <div>
-                    <div className="text-xs font-semibold uppercase tracking-wider mb-1">Lookup Error</div>
-                    <div className="text-xs text-rose-300">{error}</div>
-                  </div>
-                </div>
-              </div>
-            )}
-
-            {/* Tables and Dashboard results */}
-            {hasData && !loading && (
-              <div className="space-y-6">
-                {/* Meta details banner */}
-                <div className="bg-zinc-950/20 backdrop-blur-md border border-zinc-800/80 rounded-2xl p-4 flex flex-wrap gap-4 text-xs font-mono text-zinc-400">
-                  <div>
-                    Website: <span className="text-zinc-100 font-semibold">{websiteHost || "—"}</span>
-                  </div>
-                  <div>
-                    Total Keywords: <span className="text-zinc-100 font-semibold">{raw.length}</span>
-                  </div>
-                  <div>
-                    Filtered SEO: <span className="text-zinc-100 font-semibold">{highPriority.length + longTail.length}</span>
-                  </div>
-                </div>
-
-                {/* Table HP */}
-                <div className="bg-zinc-950/20 backdrop-blur-md border border-zinc-800/80 rounded-2xl p-6 shadow-md">
-                  <TableHP
-                    rows={highPriority}
-                    editable={editable}
-                    onChange={(i, key, val) =>
-                      onChangeCell(highPriority, setHighPriority, i, key, val)
-                    }
-                  />
-                </div>
-
-                {/* Table LT */}
-                <div className="bg-zinc-950/20 backdrop-blur-md border border-zinc-800/80 rounded-2xl p-6 shadow-md">
-                  <TableLT
-                    rows={longTail}
-                    editable={editable}
-                    onChange={(i, key, val) =>
-                      onChangeCell(longTail, setLongTail, i, key, val)
-                    }
-                  />
-                </div>
-
-                {/* Table Overlap */}
-                <div className="bg-zinc-950/20 backdrop-blur-md border border-zinc-800/80 rounded-2xl p-6 shadow-md">
-                  <TableOverlap
-                    rows={overlap}
-                    editable={editable}
-                    onChange={(i, key, val) => {
-                      const next = overlap.slice();
-                      next[i] = {
-                        ...next[i],
-                        [key]: val === "" ? "" : Number(val),
-                      };
-                      setOverlap(next);
-                    }}
-                  />
-                </div>
-
-                {/* Actionable recommendations card */}
-                <div className="bg-zinc-950/20 backdrop-blur-md border border-zinc-800/80 rounded-2xl p-6 shadow-[0_12px_40px_rgb(0,0,0,0.2)] space-y-4 hover:border-emerald-500/10 transition-all duration-300">
-                  <h3 className="text-xs font-mono font-bold uppercase tracking-wider text-zinc-400">
-                    Suggested Actions
-                  </h3>
-                  <div className="space-y-3">
-                    {[
-                      "Remove low-value keywords (menus, UI labels, boilerplate noise).",
-                      "Create high-quality content around high-volume, lower-difficulty keywords.",
-                      "Optimize title/meta tags for top commercial-intent search terms.",
-                      "Build backlink index profiles targeting long-tail opportunity URLs.",
-                    ].map((text, i) => (
-                      <div key={i} className="flex items-start gap-3 bg-zinc-900/30 border border-zinc-800/50 rounded-xl p-3.5">
-                        <CheckCircle2 className="w-4.5 h-4.5 text-emerald-400 mt-0.5 flex-shrink-0" />
-                        <span className="text-xs font-mono text-zinc-300 leading-relaxed">{text}</span>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              </div>
-            )}
           </div>
 
-          {/* Right Column: Specs & Guidance Sidebar */}
-          <div className="space-y-6">
-            <div className="border border-zinc-800/80 bg-zinc-950/20 backdrop-blur-md rounded-2xl p-6 space-y-4 shadow-[0_8px_30px_rgb(0,0,0,0.12)]">
-              <h4 className="text-xs font-mono font-bold uppercase tracking-wider text-zinc-100 flex items-center gap-2">
-                <Info className="h-4 w-4 text-emerald-400" />
-                Intelligence Parameters
-              </h4>
-              <ul className="space-y-3.5 list-none pl-0">
-                {[
-                  "Identifies high-priority commercial terms with key intent labels.",
-                  "Filters long-tail opportunities for specific semantic queries.",
-                  "Calculates competitor overlap statistics and rank variations.",
-                  "Allows inline metadata adjustment to mock index metrics.",
-                  "Supports text and PDF reports for audit archiving.",
-                ].map((text, i) => (
-                  <li key={i} className="flex items-start gap-2">
-                    <span className="inline-block w-1.5 h-1.5 rounded-full bg-emerald-500/60 mt-1.5 flex-shrink-0" />
-                    <span className="text-xs text-zinc-400 leading-relaxed">{text}</span>
-                  </li>
-                ))}
-              </ul>
-            </div>
-
-            <div className="border border-zinc-800/80 bg-zinc-950/20 backdrop-blur-md rounded-2xl p-6 space-y-4 shadow-[0_8px_30px_rgb(0,0,0,0.12)]">
-              <h4 className="text-xs font-mono font-bold uppercase tracking-wider text-zinc-100 flex items-center gap-2">
+          {/* Right Column: Intent Indicators Sidebar Card */}
+          <div className="border border-zinc-800/80 bg-zinc-950/20 backdrop-blur-md rounded-2xl p-6 shadow-[0_8px_30px_rgb(0,0,0,0.12)] flex flex-col justify-between">
+            <div>
+              <h4 className="text-xs font-mono font-bold uppercase tracking-wider text-zinc-100 flex items-center gap-2 mb-4">
                 <Globe className="h-4 w-4 text-emerald-400" />
                 Intent Indicators
               </h4>
@@ -633,6 +580,226 @@ export default function KeywordIntelligencePage() {
             </div>
           </div>
         </div>
+
+        {/* Loading Indicator */}
+        {loading && (
+          <div className="flex flex-col items-center justify-center p-10 bg-zinc-950/20 backdrop-blur-md border border-zinc-800/80 rounded-2xl shadow-[0_8px_30px_rgb(0,0,0,0.15)] animate-pulse mb-8">
+            <Loader2 className="h-8 w-8 text-emerald-400 animate-spin mb-4" />
+            <p className="text-emerald-400 font-mono font-bold text-xs uppercase tracking-widest text-center">
+              Analyzing keyword intelligence...
+            </p>
+            <span className="text-[10px] text-zinc-500 font-mono mt-2 text-center">
+              Executing DOM extraction pipelines, calculating difficulty vectors, and evaluating local search parameters.
+            </span>
+          </div>
+        )}
+
+        {/* Error Message */}
+        {error && (
+          <div className="rounded-xl border border-rose-500/25 bg-rose-500/5 p-4 text-rose-400 mb-8">
+            <div className="flex items-start gap-3">
+              <XCircle className="h-5 w-5 mt-0.5 flex-shrink-0" />
+              <div>
+                <div className="text-xs font-semibold uppercase tracking-wider mb-1">Lookup Error</div>
+                <div className="text-xs text-rose-300">{error}</div>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Main Dashboard results */}
+        {hasData && !loading && (
+          <div className="space-y-6">
+            {/* Executive Score Summary Card */}
+            <div className="grid gap-6 md:grid-cols-[160px_1fr] bg-zinc-950/20 backdrop-blur-md border border-zinc-800/80 rounded-2xl p-6 shadow-md">
+              <div className="flex flex-col items-center justify-center border-r border-zinc-850 md:pr-6 gap-2">
+                <span className="text-[10px] font-mono uppercase tracking-widest text-zinc-500 font-bold">SEO Score</span>
+                <div className="relative w-24 h-24 flex items-center justify-center rounded-full border-4 border-emerald-500/10 shadow-[inset_0_0_12px_rgba(16,185,129,0.06)]">
+                  <span className="text-3xl font-extrabold font-mono text-emerald-400">{overallSeoScore}</span>
+                  <span className="text-[10px] font-mono text-zinc-500 absolute bottom-3">/100</span>
+                </div>
+                <span className="px-3 py-0.5 rounded-full text-[10px] font-mono font-bold bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
+                  Grade: {summary?.overallGrade || "B"}
+                </span>
+              </div>
+              <div className="flex flex-col justify-between py-1 space-y-3">
+                <div>
+                  <h3 className="text-sm font-mono font-bold text-zinc-200 uppercase tracking-wide">Executive Summary</h3>
+                  <p className="text-xs text-zinc-400 leading-relaxed font-mono mt-2">{summary?.executiveSummary}</p>
+                </div>
+                <div className="flex flex-wrap gap-4 text-[10px] font-mono text-zinc-500">
+                  <div>Extracted: <span className="text-zinc-300 font-semibold">{summary?.totalKeywordsExtracted || raw.length}</span></div>
+                  <div>Filtered SEO: <span className="text-zinc-300 font-semibold font-bold">{summary?.filteredSEOKeywords || (highPriority.length + longTail.length)}</span></div>
+                  <div> <span className="text-emerald-400 font-semibold uppercase"></span></div>
+                </div>
+              </div>
+            </div>
+
+            {/* Dashboard Tabs Switched View */}
+            <div className="flex border-b border-zinc-800/60 pb-px gap-1">
+              {[
+                { id: "keywords", label: "Keyword Analytics", icon: Target },
+                { id: "competitor", label: "Competitor Gap", icon: Users },
+                { id: "audit", label: "On-Page SEO Audit", icon: Gauge }
+              ].map((tab) => {
+                const Icon = tab.icon;
+                return (
+                  <button
+                    key={tab.id}
+                    onClick={() => setActiveTab(tab.id)}
+                    className={`flex items-center gap-1.5 px-4 py-2 text-xs font-mono font-bold uppercase tracking-wider border border-transparent rounded-t-xl transition-all cursor-pointer ${activeTab === tab.id
+                      ? "bg-zinc-950/40 text-emerald-400 border-zinc-800/80 border-b-transparent"
+                      : "text-zinc-500 hover:text-zinc-300"
+                      }`}
+                  >
+                    <Icon size={13} />
+                    {tab.label}
+                  </button>
+                );
+              })}
+            </div>
+
+            {/* Tab content 1: Keywords */}
+            {activeTab === "keywords" && (
+              <div className="space-y-6">
+                <div className="bg-zinc-950/20 backdrop-blur-md border border-zinc-800/80 rounded-2xl p-6 shadow-md">
+                  <TableHP
+                    rows={highPriority}
+                    editable={editable}
+                    onChange={(i, key, val) =>
+                      onChangeCell(highPriority, setHighPriority, i, key, val)
+                    }
+                  />
+                </div>
+
+                <div className="bg-zinc-950/20 backdrop-blur-md border border-zinc-800/80 rounded-2xl p-6 shadow-md">
+                  <TableLT
+                    rows={longTail}
+                    editable={editable}
+                    onChange={(i, key, val) =>
+                      onChangeCell(longTail, setLongTail, i, key, val)
+                    }
+                  />
+                </div>
+              </div>
+            )}
+
+            {/* Tab content 2: Competitor Overlap */}
+            {activeTab === "competitor" && (
+              <div className="space-y-6">
+                {competitorAnalysis && (
+                  <div className="grid gap-4 grid-cols-2 md:grid-cols-4">
+                    {[
+                      { label: "Overlap Score", val: `${competitorAnalysis.overlapPct}%`, color: "text-indigo-400" },
+                      { label: "Shared Keywords", val: competitorAnalysis.sharedKeywords, color: "text-emerald-400" },
+                      { label: "Missing Keywords", val: competitorAnalysis.missingKeywords, color: "text-amber-400" },
+                      { label: "Competitor Visibility", val: `${competitorAnalysis.visibilityComp}%`, color: "text-sky-400" }
+                    ].map((stat, i) => (
+                      <div key={i} className="p-4 rounded-xl border border-zinc-800 bg-zinc-950/30 font-mono flex flex-col justify-between gap-1">
+                        <span className="text-[9px] uppercase tracking-wider text-zinc-500">{stat.label}</span>
+                        <span className={`text-xl font-bold ${stat.color}`}>{stat.val}</span>
+                      </div>
+                    ))}
+                  </div>
+                )}
+
+                <div className="bg-zinc-950/20 backdrop-blur-md border border-zinc-800/80 rounded-2xl p-6 shadow-md">
+                  <TableOverlap
+                    rows={overlap}
+                    editable={editable}
+                    onChange={(i, key, val) => {
+                      const next = overlap.slice();
+                      next[i] = {
+                        ...next[i],
+                        [key]: val === "" ? "" : Number(val),
+                      };
+                      setOverlap(next);
+                    }}
+                  />
+                </div>
+              </div>
+            )}
+
+            {/* Tab content 3: SEO Audit & Action plan */}
+            {activeTab === "audit" && (
+              <div className="space-y-6">
+                {/* Checklist Grid */}
+                <div className="bg-zinc-950/20 backdrop-blur-md border border-zinc-800/80 rounded-2xl p-6 shadow-md">
+                  <h3 className="text-sm font-mono font-bold text-zinc-200 uppercase tracking-wider mb-4">On-Page SEO Checklist Audit</h3>
+                  <div className="grid gap-4 md:grid-cols-2 font-mono text-xs text-zinc-400">
+                    {seoAudit && (
+                      <>
+                        <div className="flex items-center justify-between p-3 rounded-xl border border-zinc-800 bg-zinc-950/20">
+                          <span>Title Tag Status ({seoAudit.titleLength} chars)</span>
+                          <span className={`px-2 py-0.5 rounded text-[10px] font-bold ${seoAudit.titleStatus === "Optimal" ? "bg-emerald-500/10 text-emerald-400 border border-emerald-500/20" : "bg-amber-500/10 text-amber-400 border border-amber-500/20"}`}>
+                            {seoAudit.titleStatus}
+                          </span>
+                        </div>
+                        <div className="flex items-center justify-between p-3 rounded-xl border border-zinc-800 bg-zinc-950/20">
+                          <span>Meta Description Status ({seoAudit.metaDescLength} chars)</span>
+                          <span className={`px-2 py-0.5 rounded text-[10px] font-bold ${seoAudit.metaDescStatus === "Optimal" ? "bg-emerald-500/10 text-emerald-400 border border-emerald-500/20" : "bg-amber-500/10 text-amber-400 border border-amber-500/20"}`}>
+                            {seoAudit.metaDescStatus}
+                          </span>
+                        </div>
+                        <div className="flex items-center justify-between p-3 rounded-xl border border-zinc-800 bg-zinc-950/20">
+                          <span>H1 Tags Count ({seoAudit.h1Count} present)</span>
+                          <span className={`px-2 py-0.5 rounded text-[10px] font-bold ${seoAudit.h1Status === "Optimal" ? "bg-emerald-500/10 text-emerald-400 border border-emerald-500/20" : "bg-rose-500/10 text-rose-400 border border-rose-500/20"}`}>
+                            {seoAudit.h1Status}
+                          </span>
+                        </div>
+                        <div className="flex items-center justify-between p-3 rounded-xl border border-zinc-800 bg-zinc-950/20">
+                          <span>Keyword Density ({seoAudit.keywordDensityPct}%)</span>
+                          <span className={`px-2 py-0.5 rounded text-[10px] font-bold ${seoAudit.keywordDensityStatus === "Optimal" ? "bg-emerald-500/10 text-emerald-400 border border-emerald-500/20" : "bg-amber-500/10 text-amber-400 border border-amber-500/20"}`}>
+                            {seoAudit.keywordDensityStatus}
+                          </span>
+                        </div>
+                        <div className="flex items-center justify-between p-3 rounded-xl border border-zinc-800 bg-zinc-950/20">
+                          <span>Mobile Friendliness (Viewport)</span>
+                          <span className={`px-2 py-0.5 rounded text-[10px] font-bold ${seoAudit.mobileFriendly ? "bg-emerald-500/10 text-emerald-400 border border-emerald-500/20" : "bg-rose-500/10 text-rose-400 border border-rose-500/20"}`}>
+                            {seoAudit.mobileFriendly ? "Responsive" : "Unfriendly"}
+                          </span>
+                        </div>
+                        <div className="flex items-center justify-between p-3 rounded-xl border border-zinc-800 bg-zinc-950/20">
+                          <span>Structured Schema Markup</span>
+                          <span className={`px-2 py-0.5 rounded text-[10px] font-bold ${seoAudit.hasStructuredData ? "bg-emerald-500/10 text-emerald-400 border border-emerald-500/20" : "bg-zinc-800 text-zinc-500"}`}>
+                            {seoAudit.hasStructuredData ? "Detected" : "None"}
+                          </span>
+                        </div>
+                      </>
+                    )}
+                  </div>
+                </div>
+
+                {/* Recommendations list */}
+                <div className="bg-zinc-950/20 backdrop-blur-md border border-zinc-800/80 rounded-2xl p-6 shadow-[0_12px_40px_rgb(0,0,0,0.2)] space-y-4 hover:border-emerald-500/10 transition-all duration-300">
+                  <h3 className="text-sm font-mono font-bold text-zinc-200 uppercase tracking-wider">
+                    Actionable Recommendations Plan
+                  </h3>
+                  <div className="space-y-3">
+                    {recommendations.map((rec, i) => (
+                      <div key={i} className="flex gap-3 bg-zinc-900/30 border border-zinc-800/50 rounded-xl p-3.5">
+                        {rec.type === "High" ? (
+                          <AlertTriangle className="w-5 h-5 text-rose-400 flex-shrink-0 mt-0.5" />
+                        ) : (
+                          <CheckCircle2 className="w-5 h-5 text-emerald-400 flex-shrink-0 mt-0.5" />
+                        )}
+                        <div className="font-mono">
+                          <div className="text-xs font-bold text-zinc-200 flex items-center gap-2">
+                            <span className={`text-[10px] px-2 py-px rounded font-semibold ${rec.type === "High" ? "bg-rose-500/10 text-rose-400 border border-rose-500/20" : rec.type === "Medium" ? "bg-amber-500/10 text-amber-400 border border-amber-500/20" : "bg-zinc-800 text-zinc-400"}`}>
+                              {rec.type} Priority
+                            </span>
+                            {rec.title} ({rec.action})
+                          </div>
+                          <div className="text-[11px] text-zinc-400 leading-relaxed mt-1">{rec.description}</div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </div>
+            )}
+          </div>
+        )}
       </div>
     </div>
   );
@@ -673,18 +840,19 @@ function TableHP({ rows, editable, onChange }) {
   return (
     <div>
       <h2 className="text-sm font-mono font-semibold text-zinc-200 mb-3 flex items-center gap-1.5">
-        🔥 High-Priority Keywords
+        High-Priority Keywords
       </h2>
       <div className="overflow-x-auto">
         <table className="w-full text-sm rounded-xl overflow-hidden border border-zinc-800/60">
           <thead className={theadCls}>
             <tr>
               <th>Keyword</th>
-              <th>Search Volume</th>
+              <th>Volume (Est.)</th>
               <th>CPC (USD)</th>
-              <th>Difficulty (%)</th>
-              <th>Trend (6 mo)</th>
-              <th>Intent</th>
+              <th>Difficulty</th>
+              <th>Trend</th>
+              <th>Intent (Conf %)</th>
+              <th>Opportunity</th>
             </tr>
           </thead>
           <tbody className="text-zinc-300">
@@ -713,7 +881,7 @@ function TableHP({ rows, editable, onChange }) {
                       onChange={(e) => onChange(i, "cpc", e.target.value)}
                     />
                   ) : (
-                    r.cpc || "—"
+                    r.cpc ? `$${r.cpc}` : "—"
                   )}
                 </td>
                 <td>
@@ -727,7 +895,7 @@ function TableHP({ rows, editable, onChange }) {
                       }
                     />
                   ) : (
-                    r.difficulty || "—"
+                    r.difficulty ? `${r.difficulty}%` : "—"
                   )}
                 </td>
                 <td>
@@ -759,11 +927,27 @@ function TableHP({ rows, editable, onChange }) {
                       <option>Navigational</option>
                     </select>
                   ) : (
-                    r.intent === "Navigational" ? <span className="px-2.5 py-0.5 rounded-full bg-sky-950/20 text-sky-400 font-semibold text-[10px] border border-sky-500/20 shadow-sm">Navigational</span> :
-                      r.intent === "Informational" ? <span className="px-2.5 py-0.5 rounded-full bg-emerald-950/20 text-emerald-400 font-semibold text-[10px] border border-emerald-500/20 shadow-sm">Informational</span> :
-                        r.intent === "Commercial" ? <span className="px-2.5 py-0.5 rounded-full bg-amber-950/20 text-amber-400 font-semibold text-[10px] border border-amber-500/20 shadow-sm">Commercial</span> :
-                          r.intent === "Transactional" ? <span className="px-2.5 py-0.5 rounded-full bg-indigo-950/20 text-indigo-400 font-semibold text-[10px] border border-indigo-500/20 shadow-sm">Transactional</span> :
-                            r.intent || "—"
+                    <div className="flex flex-col">
+                      {r.intent === "Navigational" ? <span className="px-2 py-0.5 rounded bg-sky-950/20 text-sky-400 font-semibold text-[10px] border border-sky-500/20 max-w-[100px] text-center">Navigational</span> :
+                        r.intent === "Informational" ? <span className="px-2 py-0.5 rounded bg-emerald-950/20 text-emerald-400 font-semibold text-[10px] border border-emerald-500/20 max-w-[100px] text-center">Informational</span> :
+                          r.intent === "Commercial" ? <span className="px-2 py-0.5 rounded bg-amber-950/20 text-amber-400 font-semibold text-[10px] border border-amber-500/20 max-w-[100px] text-center">Commercial</span> :
+                            r.intent === "Transactional" ? <span className="px-2 py-0.5 rounded bg-indigo-950/20 text-indigo-400 font-semibold text-[10px] border border-indigo-500/20 max-w-[100px] text-center">Transactional</span> :
+                              <span>{r.intent || "—"}</span>
+                      }
+                      <span className="text-[9px] text-zinc-550 mt-0.5">Conf: {r.intentConfidence}%</span>
+                    </div>
+                  )}
+                </td>
+                <td>
+                  {editable ? (
+                    <input
+                      type="number"
+                      className={inputSmCls}
+                      value={r.opportunityScore}
+                      onChange={(e) => onChange(i, "opportunityScore", e.target.value)}
+                    />
+                  ) : (
+                    <span className="font-semibold text-emerald-400">{r.opportunityScore || "—"}</span>
                   )}
                 </td>
               </tr>
@@ -779,16 +963,18 @@ function TableLT({ rows, editable, onChange }) {
   return (
     <div>
       <h2 className="text-sm font-mono font-semibold text-zinc-200 mb-3 flex items-center gap-1.5">
-        💡 Long-Tail Opportunities
+        Long-Tail Opportunities
       </h2>
       <div className="overflow-x-auto">
         <table className="w-full text-sm rounded-xl overflow-hidden border border-zinc-800/60">
           <thead className={theadCls}>
             <tr>
               <th>Keyword</th>
-              <th>Search Volume</th>
-              <th>Difficulty (%)</th>
-              <th>CTR Potential</th>
+              <th>Volume (Est.)</th>
+              <th>Difficulty</th>
+              <th>Category</th>
+              <th>Priority</th>
+              <th>Opportunity</th>
             </tr>
           </thead>
           <tbody className="text-zinc-300">
@@ -818,15 +1004,19 @@ function TableLT({ rows, editable, onChange }) {
                       }
                     />
                   ) : (
-                    r.difficulty || "—"
+                    r.difficulty ? `${r.difficulty}%` : "—"
                   )}
                 </td>
+                <td>{r.category || "Long-tail"}</td>
                 <td className={
-                  r.ctrPotential === "High" ? "text-emerald-400 font-semibold" :
-                    r.ctrPotential === "Medium" ? "text-amber-400 font-semibold" :
-                      "text-zinc-500"
+                  r.priority === "High" ? "text-emerald-400 font-semibold" :
+                    r.priority === "Medium" ? "text-amber-400 font-semibold" :
+                      "text-zinc-550"
                 }>
-                  {r.ctrPotential || "—"}
+                  {r.priority || "—"}
+                </td>
+                <td>
+                  <span className="font-semibold text-emerald-400">{r.opportunityScore || "—"}</span>
                 </td>
               </tr>
             ))}
@@ -838,70 +1028,59 @@ function TableLT({ rows, editable, onChange }) {
 }
 
 function TableOverlap({ rows, editable, onChange }) {
-  const isCustomOverlap = rows.length > 0 && ('commonCompetitors' in rows[0] || 'sharedKeywords' in rows[0]);
-
   return (
     <div>
       <h2 className="text-sm font-mono font-semibold text-zinc-200 mb-3 flex items-center gap-1.5">
-        📌 Competitor Overlap
+        Competitor Overlap & Gap Analysis
       </h2>
       <div className="overflow-x-auto">
         <table className="w-full text-sm rounded-xl overflow-hidden border border-zinc-800/60">
           <thead className={theadCls}>
-            {isCustomOverlap ? (
-              <tr>
-                <th>Common Competitors</th>
-                <th>Shared Keywords</th>
-                <th>Overlap Score</th>
-              </tr>
-            ) : (
-              <tr>
-                <th>Keyword</th>
-                <th>Rank on Your Site</th>
-                <th>Rank on Competitor</th>
-              </tr>
-            )}
+            <tr>
+              <th>Keyword</th>
+              <th>Your Rank</th>
+              <th>Competitor Rank</th>
+              <th>Gap Status</th>
+            </tr>
           </thead>
           <tbody className="text-zinc-300">
             {rows.map((r, i) => (
               <tr key={i} className={rowCls}>
-                {isCustomOverlap ? (
-                  <>
-                    <td className="font-medium text-zinc-300">{r.commonCompetitors}</td>
-                    <td className="text-zinc-300">{r.sharedKeywords}</td>
-                    <td className="text-emerald-400 font-semibold">{r.overlapScore}</td>
-                  </>
-                ) : (
-                  <>
-                    <td className="font-medium text-zinc-200">{r.keyword}</td>
-                    <td>
-                      {editable ? (
-                        <input
-                          type="number"
-                          className={inputCls}
-                          value={r.yours}
-                          onChange={(e) => onChange(i, "yours", e.target.value)}
-                        />
-                      ) : (
-                        r.yours || "—"
-                      )}
-                    </td>
-                    <td>
-                      {editable ? (
-                        <input
-                          type="number"
-                          className={inputCls}
-                          value={r.competitor}
-                          onChange={(e) =>
-                            onChange(i, "competitor", e.target.value)
-                          }
-                        />
-                      ) : (
-                        r.competitor || "—"
-                      )}
-                    </td>
-                  </>
-                )}
+                <td className="font-medium text-zinc-200">{r.keyword}</td>
+                <td>
+                  {editable ? (
+                    <input
+                      type="number"
+                      className={inputCls}
+                      value={r.yours}
+                      onChange={(e) => onChange(i, "yours", e.target.value)}
+                    />
+                  ) : (
+                    r.yours || "—"
+                  )}
+                </td>
+                <td>
+                  {editable ? (
+                    <input
+                      type="number"
+                      className={inputCls}
+                      value={r.competitor}
+                      onChange={(e) =>
+                        onChange(i, "competitor", e.target.value)
+                      }
+                    />
+                  ) : (
+                    r.competitor || "—"
+                  )}
+                </td>
+                <td>
+                  <span className={`px-2 py-0.5 rounded text-[10px] font-bold ${r.gap === "Opportunity" ? "bg-emerald-500/10 text-emerald-400 border border-emerald-500/20" :
+                    r.gap === "Gap" ? "bg-amber-500/10 text-amber-400 border border-amber-500/20" :
+                      "bg-zinc-800 text-zinc-400 border border-zinc-700/50"
+                    }`}>
+                    {r.gap || "Shared"}
+                  </span>
+                </td>
               </tr>
             ))}
           </tbody>

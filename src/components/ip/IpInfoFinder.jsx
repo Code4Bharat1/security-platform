@@ -15,6 +15,8 @@ import {
   Clock,
 } from "lucide-react";
 import axios from "axios";
+import { jsPDF } from "jspdf";
+import autoTable from "jspdf-autotable";
 import useProtectedAction from "../UseProtectedAction/UseProtectedAction";
 
 export default function IPInfoFinder() {
@@ -50,6 +52,209 @@ export default function IPInfoFinder() {
     [ip, protectedAction]
   );
 
+
+
+  function exportTXT() {
+    if (!info) return;
+    const lines = [
+      "==================================================",
+      `🛡️ ASSESSMENT REPORT: IP INTELLIGENCE LOOKUP 🛡️`,
+      "==================================================",
+      `IP Address:           ${info.basicInformation?.ipAddress}`,
+      `Classification:       ${info.basicInformation?.ipClass}`,
+      `Scan Date:            ${info.reportGeneratedAt || new Date().toLocaleString()}`,
+      `Overall Rating:       ${info.overallSecurityRating?.toUpperCase()}`,
+      "--------------------------------------------------",
+      "",
+      "[1. BASIC INFORMATION]",
+      `• IP Address:         ${info.basicInformation?.ipAddress}`,
+      `• IP Version:         ${info.basicInformation?.version}`,
+      `• Reverse DNS:        ${info.dnsInformation?.reverseDNS}`,
+      `• Hostname:           ${info.basicInformation?.hostname}`,
+      `• Classification:     ${info.basicInformation?.ipClass}`,
+      "",
+      "[2. LOCATION DATA]",
+      `• Country:            ${info.locationData?.country}`,
+      `• Region:             ${info.locationData?.region}`,
+      `• City:               ${info.locationData?.city}`,
+      `• Timezone:           ${info.locationData?.timezone}`,
+      `• Latitude:           ${info.locationData?.latitude}`,
+      `• Longitude:          ${info.locationData?.longitude}`,
+      "",
+      "[3. NETWORK DETAILS]",
+      `• ISP:                ${info.networkDetails?.isp}`,
+      `• Organization:       ${info.networkDetails?.organization}`,
+      `• ASN:                ${info.networkDetails?.asn}`,
+      "",
+      "[4. SECURITY & THREAT INTELLIGENCE]",
+      `• Overall Rating:     ${info.overallSecurityRating}`,
+      `• Risk Score (0-100): ${info.securityThreatIntel?.riskScore}`,
+      `• Proxy/VPN:          ${info.securityThreatIntel?.proxyOrVpn}`,
+      `• Tor Exit Node:      ${info.securityThreatIntel?.torExitNode}`,
+      `• Blacklist Status:   ${info.securityThreatIntel?.blacklistStatus}`,
+      `• Malware Detection:  ${info.securityThreatIntel?.malwareHostingHistory}`,
+      `• Spam Reports:       ${info.securityThreatIntel?.spamReports || 0}`,
+      "",
+      "[5. RECOMMENDATIONS]",
+      ...(info.recommendations || []).map((r, idx) => `${idx + 1}. ${r}`),
+      "",
+      "=================================================="
+    ];
+
+    const blob = new Blob([lines.join("\n")], {
+      type: "text/plain;charset=utf-8",
+    });
+    const a = document.createElement("a");
+    a.href = URL.createObjectURL(blob);
+    a.download = `ip-intelligence-report-${info.basicInformation?.ipAddress}.txt`;
+    a.click();
+    URL.revokeObjectURL(a.href);
+  }
+
+  function exportPDF() {
+    if (!info) return;
+    const doc = new jsPDF({ unit: "pt", format: "a4" });
+    const marginX = 40;
+
+    // Header Banner
+    doc.setFillColor(18, 18, 18);
+    doc.rect(0, 0, doc.internal.pageSize.width, 60, "F");
+    doc.setTextColor(16, 185, 129);
+    doc.setFont("Helvetica", "bold");
+    doc.setFontSize(18);
+    doc.text("NEXCORE SECURITY PLATFORM", 40, 28);
+    doc.setTextColor(255, 255, 255);
+    doc.setFontSize(10);
+    doc.text("IP INTELLIGENCE & THREAT ASSESSMENT REPORT", 40, 44);
+
+    doc.setDrawColor(16, 185, 129);
+    doc.setLineWidth(1);
+    doc.line(15, 68, doc.internal.pageSize.width - 15, 68);
+
+    // Page 1: Overview
+    doc.setTextColor(40, 40, 40);
+    doc.setFont("Helvetica", "bold");
+    doc.setFontSize(13);
+    doc.text("1. EXECUTIVE ASSESSMENT SUMMARY", marginX, 90);
+
+    doc.setFont("Helvetica", "normal");
+    doc.setFontSize(9);
+    doc.text(`Target IP:          ${info.basicInformation?.ipAddress}`, marginX, 110);
+    doc.text(`Classification:     ${info.basicInformation?.ipClass}`, marginX, 122);
+    doc.text(`Scan Date:          ${info.reportGeneratedAt || new Date().toLocaleString()}`, marginX, 134);
+    doc.text(`Security Rating:    ${info.overallSecurityRating} (Risk: ${info.securityThreatIntel?.riskScore}/100)`, marginX, 146);
+
+    doc.setFont("Helvetica", "bold");
+    doc.text("Actionable Recommendations:", marginX, 170);
+    doc.setFont("Helvetica", "normal");
+    let yPos = 184;
+    (info.recommendations || []).forEach((r) => {
+      const splitText = doc.splitTextToSize(`• ${r}`, doc.internal.pageSize.width - marginX * 2);
+      doc.text(splitText, marginX, yPos);
+      yPos += splitText.length * 12 + 4;
+    });
+
+    // Basic Information Table
+    autoTable(doc, {
+      startY: yPos + 10,
+      head: [["Basic Information", "Value"]],
+      body: [
+        ["IP Address", info.basicInformation?.ipAddress],
+        ["IP Version", info.basicInformation?.version],
+        ["Reverse DNS", info.basicInformation?.reverseDNS],
+        ["Hostname", info.basicInformation?.hostname],
+        ["Classification", info.basicInformation?.ipClass],
+      ],
+      styles: { fontSize: 8 },
+      headStyles: { fillColor: [16, 185, 129], textColor: [255, 255, 255] },
+      margin: { left: marginX, right: marginX },
+      theme: "grid",
+    });
+
+    // Location Table
+    doc.setFont("Helvetica", "bold");
+    doc.setFontSize(13);
+    doc.text("2. LOCATION DATA", marginX, doc.lastAutoTable.finalY + 25);
+    autoTable(doc, {
+      startY: doc.lastAutoTable.finalY + 35,
+      head: [["Location Field", "Value"]],
+      body: [
+        ["Country", info.locationData?.country],
+        ["Region", info.locationData?.region],
+        ["City", info.locationData?.city],
+        ["Timezone", info.locationData?.timezone],
+        ["Latitude", String(info.locationData?.latitude ?? "Not Available")],
+        ["Longitude", String(info.locationData?.longitude ?? "Not Available")],
+      ],
+      styles: { fontSize: 8 },
+      headStyles: { fillColor: [16, 185, 129], textColor: [255, 255, 255] },
+      margin: { left: marginX, right: marginX },
+      theme: "grid",
+    });
+
+    // Network Table
+    doc.setFont("Helvetica", "bold");
+    doc.text("3. NETWORK DETAILS", marginX, doc.lastAutoTable.finalY + 25);
+    autoTable(doc, {
+      startY: doc.lastAutoTable.finalY + 35,
+      head: [["Network Field", "Value"]],
+      body: [
+        ["ISP", info.networkDetails?.isp],
+        ["Organization", info.networkDetails?.organization],
+        ["ASN", info.networkDetails?.asn],
+      ],
+      styles: { fontSize: 8 },
+      headStyles: { fillColor: [16, 185, 129], textColor: [255, 255, 255] },
+      margin: { left: marginX, right: marginX },
+      theme: "grid",
+    });
+
+    // Security & Threat Intelligence Table
+    doc.addPage();
+    doc.setFillColor(18, 18, 18);
+    doc.rect(0, 0, doc.internal.pageSize.width, 40, "F");
+    doc.setTextColor(16, 185, 129);
+    doc.setFont("Helvetica", "bold");
+    doc.setFontSize(14);
+    doc.text("NEXCORE SECURITY & THREAT INTELLIGENCE", 40, 24);
+
+    doc.setTextColor(40, 40, 40);
+    doc.text("4. SECURITY & THREAT INTELLIGENCE", marginX, 65);
+    autoTable(doc, {
+      startY: 75,
+      head: [["Security Indicator", "Status / Value"]],
+      body: [
+        ["Overall Security Rating", info.overallSecurityRating],
+        ["Risk Score (0-100)", `${info.securityThreatIntel?.riskScore}`],
+        ["Proxy/VPN", info.securityThreatIntel?.proxyOrVpn],
+        ["Tor Exit Node", info.securityThreatIntel?.torExitNode],
+        ["Blacklist Status", info.securityThreatIntel?.blacklistStatus],
+        ["Malware Detection", info.securityThreatIntel?.malwareHostingHistory],
+        ["Spam Reports", `${info.securityThreatIntel?.spamReports || 0}`],
+      ],
+      styles: { fontSize: 8 },
+      headStyles: { fillColor: [16, 185, 129], textColor: [255, 255, 255] },
+      margin: { left: marginX, right: marginX },
+      theme: "grid",
+    });
+
+    // Draw page numbers & disclaimers
+    const totalPages = doc.internal.getNumberOfPages();
+    for (let i = 1; i <= totalPages; i++) {
+      doc.setPage(i);
+      doc.setFontSize(7);
+      doc.setTextColor(120, 120, 120);
+      doc.text(
+        `Page ${i} of ${totalPages} | Confidential IP Threat Assessment | Generated by Nexcore`,
+        doc.internal.pageSize.width / 2,
+        doc.internal.pageSize.height - 20,
+        { align: "center" }
+      );
+    }
+
+    doc.save(`ip-intelligence-report-${info.basicInformation?.ipAddress}.pdf`);
+  }
+
   return (
     <div
       className="tool-detail-page min-h-screen"
@@ -65,6 +270,10 @@ export default function IPInfoFinder() {
       }}
     >
       <style>{`
+        .tool-detail-page table {
+          display: table !important;
+          width: 100% !important;
+        }
         .tool-detail-page .tool-detail-shell {
           padding-top: 3.5rem !important;
         }
@@ -131,15 +340,15 @@ export default function IPInfoFinder() {
               <form onSubmit={handleSubmit} className="space-y-4">
                 <div>
                   <label className="block text-xs uppercase tracking-widest font-mono text-zinc-400 mb-2 font-semibold">
-                    IP Address
+                    IP Address or Domain
                   </label>
                   <div className="relative">
                     <Globe className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-zinc-500" />
                     <input
                       type="text"
-                      placeholder="e.g. 8.8.8.8 or 2001:4860:4860::8888"
+                      placeholder="e.g. 8.8.8.8, google.com, or https://web.whatsapp.com/"
                       value={ip}
-                      onChange={(e) => setIp(e.target.value.trim())}
+                      onChange={(e) => setIp(e.target.value)}
                       disabled={loading}
                       className="w-full pl-10 bg-zinc-900/40 text-zinc-100 border border-zinc-800/80 rounded-xl p-3.5 text-sm focus:border-emerald-500/50 focus:ring-1 focus:ring-emerald-500/30 focus:shadow-[0_0_12px_rgba(16,185,129,0.08)] focus:outline-none transition-all placeholder:text-zinc-600 font-mono"
                     />
@@ -202,12 +411,51 @@ export default function IPInfoFinder() {
                       IP Intelligence Report
                     </span>
                   </div>
-                  {info.reportGeneratedAt && (
-                    <div className="flex items-center gap-1.5 text-zinc-500 font-mono text-[11px]">
-                      <Clock size={12} />
-                      {info.reportGeneratedAt}
+                  <div className="flex items-center gap-3">
+                    {info.reportGeneratedAt && (
+                      <div className="flex items-center gap-1.5 text-zinc-500 font-mono text-[11px]">
+                        <Clock size={12} />
+                        {info.reportGeneratedAt}
+                      </div>
+                    )}
+                    <div className="flex items-center gap-1.5">
+                      <button
+                        onClick={exportTXT}
+                        className="px-2.5 py-1 rounded-lg bg-zinc-900 border border-zinc-800 text-[10px] font-mono text-zinc-300 hover:text-emerald-400 hover:border-emerald-500/30 transition flex items-center gap-1 cursor-pointer"
+                      >
+                        TXT
+                      </button>
+                      <button
+                        onClick={exportPDF}
+                        className="px-2.5 py-1 rounded-lg bg-emerald-500/10 border border-emerald-500/20 text-[10px] font-mono text-emerald-400 hover:bg-emerald-500/20 transition flex items-center gap-1 cursor-pointer"
+                      >
+                        PDF
+                      </button>
                     </div>
-                  )}
+                  </div>
+                </div>
+
+                {/* Overall Security Rating Gauge */}
+                <div className="bg-zinc-900/40 rounded-xl p-4 border border-zinc-800/60 flex items-center justify-between">
+                  <div>
+                    <div className="text-[10px] uppercase tracking-widest text-zinc-500 font-mono mb-1">Overall Security Rating</div>
+                    <div className="text-xs font-mono font-bold text-zinc-200">
+                      IP Status: <span className={
+                        info.overallSecurityRating === "Safe" ? "text-emerald-400" :
+                        info.overallSecurityRating === "Low Risk" ? "text-emerald-300" :
+                        info.overallSecurityRating === "Medium Risk" ? "text-amber-400" : "text-rose-400"
+                      }>{info.overallSecurityRating}</span>
+                    </div>
+                  </div>
+                  <div className="text-right">
+                    <div className="text-[10px] uppercase tracking-widest text-zinc-500 font-mono mb-1">Risk Score</div>
+                    <div className={`text-sm font-mono font-bold ${
+                      info.securityThreatIntel?.riskScore > 75 ? "text-rose-400" :
+                      info.securityThreatIntel?.riskScore > 45 ? "text-amber-400" : "text-emerald-400"
+                    }`}>
+                      {info.securityThreatIntel?.riskScore}/100
+                    </div>
+                  </div>
                 </div>
 
                 {/* Section 1: Basic Information */}
@@ -219,13 +467,14 @@ export default function IPInfoFinder() {
                   <div className="grid sm:grid-cols-2 gap-3">
                     {[
                       ["IP Address", info.basicInformation?.ipAddress],
-                      ["Version", info.basicInformation?.version],
+                      ["IP Version", info.basicInformation?.version],
                       ["Reverse DNS", info.basicInformation?.reverseDNS],
                       ["Hostname", info.basicInformation?.hostname],
+                      ["Classification", info.basicInformation?.ipClass],
                     ].map(([label, val]) => (
                       <div key={label} className="bg-zinc-900/30 rounded-xl p-3.5 border border-zinc-800/50">
                         <div className="text-[10px] uppercase tracking-widest text-zinc-500 font-mono mb-1">{label}</div>
-                        <div className="text-xs text-zinc-300 font-mono break-all">{val || "-"}</div>
+                        <div className="text-xs text-zinc-300 font-mono break-all">{val || "Not Available"}</div>
                       </div>
                     ))}
                   </div>
@@ -248,7 +497,7 @@ export default function IPInfoFinder() {
                     ].map(([label, val]) => (
                       <div key={label} className="bg-zinc-900/30 rounded-xl p-3.5 border border-zinc-800/50">
                         <div className="text-[10px] uppercase tracking-widest text-zinc-500 font-mono mb-1">{label}</div>
-                        <div className="text-xs text-zinc-300 font-mono break-all">{val || "-"}</div>
+                        <div className="text-xs text-zinc-300 font-mono break-all">{val === undefined || val === null ? "Not Available" : String(val)}</div>
                       </div>
                     ))}
                   </div>
@@ -262,15 +511,13 @@ export default function IPInfoFinder() {
                   </h3>
                   <div className="grid sm:grid-cols-2 gap-3">
                     {[
-                      ["ISP Provider", info.networkDetails?.isp],
+                      ["ISP", info.networkDetails?.isp],
                       ["Organization", info.networkDetails?.organization],
-                      ["Autonomous System (ASN)", info.networkDetails?.asn],
-                      ["ASN Routing Type", info.networkDetails?.asType],
-                      ["CIDR Block Range", info.networkDetails?.cidrRange],
+                      ["ASN", info.networkDetails?.asn],
                     ].map(([label, val]) => (
                       <div key={label} className="bg-zinc-900/30 rounded-xl p-3.5 border border-zinc-800/50">
                         <div className="text-[10px] uppercase tracking-widest text-zinc-500 font-mono mb-1">{label}</div>
-                        <div className="text-xs text-zinc-300 font-mono break-all">{val || "-"}</div>
+                        <div className="text-xs text-zinc-300 font-mono break-all">{val || "Not Available"}</div>
                       </div>
                     ))}
                   </div>
@@ -313,17 +560,45 @@ export default function IPInfoFinder() {
                             ? "bg-rose-950/20 text-rose-400 border-rose-500/25"
                             : "bg-emerald-950/20 text-emerald-400 border-emerald-500/25"
                         }`}>
-                          {info.securityThreatIntel.blacklistStatus || "Clean"}
+                          {info.securityThreatIntel.blacklistStatus || "Not Listed"}
+                        </span>
+                      </div>
+
+                      <div className="bg-zinc-900/30 rounded-xl p-3.5 border border-zinc-800/50">
+                        <div className="text-[10px] uppercase tracking-widest text-zinc-500 font-mono mb-1.5">Malware Detection</div>
+                        <span className={`inline-flex px-2.5 py-0.5 rounded-full text-[11px] font-mono font-bold border ${
+                          info.securityThreatIntel.malwareHostingHistory === "Detected"
+                            ? "bg-rose-950/20 text-rose-400 border-rose-500/25"
+                            : "bg-emerald-950/20 text-emerald-400 border-emerald-500/25"
+                        }`}>
+                          {info.securityThreatIntel.malwareHostingHistory || "None Detected"}
                         </span>
                       </div>
 
                       {[
-                        ["Malware Hosting", info.securityThreatIntel.malwareHostingHistory],
-                        ["Spam Reports (12m)", info.securityThreatIntel.spamReports],
+                        ["Spam Reports", info.securityThreatIntel.spamReports],
                       ].map(([label, val]) => (
                         <div key={label} className="bg-zinc-900/30 rounded-xl p-3.5 border border-zinc-800/50">
                           <div className="text-[10px] uppercase tracking-widest text-zinc-500 font-mono mb-1">{label}</div>
-                          <div className="text-xs text-zinc-300 font-mono break-all">{val || "-"}</div>
+                          <div className="text-xs text-zinc-300 font-mono break-all">{val ?? "0"}</div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {/* Section 5: Recommendations */}
+                {info.recommendations && info.recommendations.length > 0 && (
+                  <div className="space-y-3">
+                    <h3 className="text-xs font-mono font-bold uppercase tracking-wider text-zinc-400 flex items-center gap-2">
+                      <ShieldCheck className="h-3.5 w-3.5 text-emerald-400" />
+                      Recommendations
+                    </h3>
+                    <div className="bg-zinc-900/30 rounded-xl p-4 border border-zinc-800/50 space-y-2.5">
+                      {info.recommendations.map((rec, i) => (
+                        <div key={i} className="flex items-start gap-2.5 text-xs text-zinc-300 font-mono leading-relaxed">
+                          <span className="text-emerald-400 font-bold mt-0.5">•</span>
+                          <span>{rec}</span>
                         </div>
                       ))}
                     </div>
@@ -359,26 +634,7 @@ export default function IPInfoFinder() {
               </ul>
             </div>
 
-            {/* Spec Card */}
-            <div className="border border-zinc-800/80 bg-zinc-950/20 backdrop-blur-md rounded-2xl p-6 space-y-4 shadow-[0_8px_30px_rgb(0,0,0,0.12)]">
-              <h4 className="text-xs font-mono font-bold uppercase tracking-wider text-zinc-100 flex items-center gap-2">
-                <LocateFixed className="h-4 w-4 text-emerald-400" />
-                Protocol Support
-              </h4>
-              <div className="space-y-2.5">
-                {[
-                  ["IPv4 Addresses", "Supported"],
-                  ["IPv6 Addresses", "Supported"],
-                  ["CIDR Mappings", "Automatic"],
-                  ["Threat Database", "Real-Time Query"],
-                ].map(([label, val]) => (
-                  <div key={label} className="flex items-center justify-between py-1.5 border-b border-zinc-800/40 last:border-0">
-                    <span className="text-[11px] text-zinc-500 font-mono uppercase tracking-wider">{label}</span>
-                    <span className="text-[11px] text-emerald-400 font-mono font-semibold">{val}</span>
-                  </div>
-                ))}
-              </div>
-            </div>
+
           </div>
         </div>
       </div>
