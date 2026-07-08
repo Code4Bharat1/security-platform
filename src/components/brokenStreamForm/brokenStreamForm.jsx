@@ -1,9 +1,28 @@
 "use client";
+
 import { useMemo, useRef, useState } from "react";
 import { jsPDF } from "jspdf";
 import autoTable from "jspdf-autotable";
 import useProtectedAction from "../UseProtectedAction/UseProtectedAction";
 import { toast } from "react-hot-toast";
+import {
+  Link2Off,
+  Globe,
+  Search,
+  Loader2,
+  ShieldAlert,
+  Info,
+  Terminal,
+  Activity,
+  CheckCircle2,
+  Download,
+  FileSpreadsheet,
+  FileText,
+  Copy,
+  ExternalLink,
+  Layers,
+  HelpCircle
+} from "lucide-react";
 
 export default function BrokenStreamPage() {
   const [url, setUrl] = useState("");
@@ -20,7 +39,6 @@ export default function BrokenStreamPage() {
     []
   );
 
-  // Helper to handle URL copying
   async function copyToClipboard(text) {
     try {
       if (navigator.clipboard && window.isSecureContext) {
@@ -50,16 +68,14 @@ export default function BrokenStreamPage() {
       setSummary(null);
       setProgress({ done: 0, total: 0 });
 
-      // Close previous stream if exists
       if (eventSourceRef.current) eventSourceRef.current.close();
 
       try {
-        // ✅ FIX: Pass token as query parameter (EventSource doesn't support headers)
         const streamUrl = `${apiBase}/brokenlink/brokenlink-stream?url=${encodeURIComponent(
           url
-        )}&token=${encodeURIComponent(token)}`; // ✅ ADD TOKEN HERE
+        )}&token=${encodeURIComponent(token)}`;
 
-        const es = new EventSource(streamUrl); // ✅ REMOVE headers option
+        const es = new EventSource(streamUrl);
         eventSourceRef.current = es;
 
         es.onmessage = (event) => {
@@ -100,32 +116,27 @@ export default function BrokenStreamPage() {
     });
   };
 
-  // Function to compute severity (Critical, Warning, OK, Redirect)
   function computedSeverity(item) {
     if (item.finalUrl && item.finalUrl !== item.url) return "redirect";
     if (Number(item.status) >= 400) return "critical";
     return "ok";
   }
 
-  // Helper for status badge styling
   function severityBadge(sev) {
-    const base = "px-2 py-0.5 rounded text-xs font-semibold";
+    const base = "px-2.5 py-0.5 rounded-lg text-[10px] font-bold font-mono border uppercase tracking-wider";
     if (sev === "critical")
-      return `${base} bg-red-100 text-red-700 border border-red-300`;
+      return `${base} border-red-500/40 bg-red-500/5 text-red-400`;
     if (sev === "redirect")
-      return `${base} bg-yellow-100 text-yellow-700 border border-yellow-300`;
-    return `${base} bg-green-100 text-green-700 border border-green-300`;
+      return `${base} border-orange-500/40 bg-orange-500/5 text-orange-400`;
+    return `${base} border-zinc-800/80 bg-zinc-900/40 text-zinc-400`;
   }
 
-  // Helper for status tinting
   function statusTint(sev) {
-    if (sev === "critical") return "border-red-700 bg-red-950/40 text-red-200";
-    if (sev === "redirect")
-      return "border-yellow-700 bg-yellow-950/40 text-yellow-200";
-    return "border-green-700 bg-green-950/40 text-green-200";
+    if (sev === "critical") return "border-red-500/20 bg-red-955/10 text-zinc-200";
+    if (sev === "redirect") return "border-orange-500/20 bg-orange-955/10 text-zinc-200";
+    return "border-zinc-800/80 bg-zinc-900/20 text-zinc-300";
   }
 
-  // ---------- Export Functions (unchanged) ----------
   function csvEscape(v) {
     const s = `${v ?? ""}`;
     return /[",\n]/.test(s) ? `"${s.replace(/"/g, '""')}"` : s;
@@ -199,41 +210,39 @@ export default function BrokenStreamPage() {
     );
   }
 
-  async function toDataURL(path) {
-    const res = await fetch(path);
-    const blob = await res.blob();
-    return new Promise((resolve) => {
-      const reader = new FileReader();
-      reader.onload = () => resolve(reader.result);
-      reader.readAsDataURL(blob);
-    });
-  }
-
   async function downloadPDF() {
     const doc = new jsPDF({ unit: "pt", format: "a4" });
+    const pageWidth = doc.internal.pageSize.getWidth();
 
-    try {
-      const dataUrl = await toDataURL("/brokenlink1.png");
-      doc.addImage(dataUrl, "PNG", 40, 28, 40, 50);
-    } catch {}
+    // Header Banner
+    doc.setFillColor(18, 18, 18);
+    doc.rect(0, 0, pageWidth, 55, "F");
 
-    doc.setFontSize(16);
-    doc.text("Broken Link Scan Report", 90, 50);
-    doc.setFontSize(10);
-    doc.text(`Scanned URL: ${url}`, 90, 66);
+    doc.setTextColor(239, 68, 68);
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(18);
+    doc.text("NEXCORE RED TEAM SECURITY AUDIT", 20, 25);
+
+    doc.setTextColor(255, 255, 255);
+    doc.setFontSize(9);
+    doc.text(`BROKEN LINK SCAN REPORT FOR ${url.toUpperCase()}`, 20, 42);
+
+    // Summary metadata
+    doc.setTextColor(50, 50, 50);
+    doc.setFontSize(9);
     if (summary) {
       doc.text(
         `Summary: Total ${summary.total} | Working ${summary.working} | Broken ${summary.broken} | Redirects ${summary.redirects}`,
-        90,
-        82
+        20,
+        75
       );
       if (summary.diff) {
         doc.text(
           `Change vs last scan: broken ${summary.diff.broken >= 0 ? "+" : ""}${
             summary.diff.broken
           } | fixed ${summary.diff.fixed}`,
-          90,
-          98
+          20,
+          90
         );
       }
     }
@@ -253,7 +262,7 @@ export default function BrokenStreamPage() {
     ]);
 
     autoTable(doc, {
-      startY: 120,
+      startY: 110,
       head: [
         [
           "Severity",
@@ -268,185 +277,332 @@ export default function BrokenStreamPage() {
         ],
       ],
       body,
-      styles: { fontSize: 8, cellWidth: "wrap" },
+      theme: "grid",
+      styles: { fontSize: 7, cellWidth: "wrap" },
+      headStyles: { fillColor: [239, 68, 68], textColor: [255, 255, 255] },
       columnStyles: {
-        3: { cellWidth: 180 },
-        4: { cellWidth: 180 },
-        8: { cellWidth: 160 },
+        3: { cellWidth: 100 },
+        4: { cellWidth: 100 },
+        8: { cellWidth: 80 },
       },
     });
 
-    doc.save("broken-links.pdf");
+    doc.save("broken_links_report.pdf");
   }
 
   return (
-    <main className="min-h-screen bg-neutral-950 text-slate-100 px-4">
-      <div className="max-w-4xl mx-auto pt-16 ">
-        <div className="flex items-center gap-4 mb-4">
-          <img
-            src="/RedTeam/brokenlink.png"
-            alt="verify"
-            className="w-30 h-30 mt-2 border-4 border-red-600 rounded-full"
-          />
+    <div 
+      className="tool-detail-page min-h-screen"
+      style={{
+        '--hero-ambient-a': 'rgba(239, 68, 68, 0.08)',
+        '--hero-ambient-b': 'rgba(249, 115, 22, 0.03)',
+        '--glow-primary': '0 0 34px rgba(239, 68, 68, 0.16)',
+        '--gold': '#ef4444',
+        '--gold-strong': '#f87171',
+        '--gold-dark': '#b91c1c',
+        '--ring': 'rgba(239, 68, 68, 0.34)',
+        '--surface-glow': 'rgba(239, 68, 68, 0.14)',
+      }}
+    >
+      <style>{`
+        .tool-detail-page .tool-detail-shell {
+          padding-top: 3.5rem !important;
+        }
+        .tool-detail-page ::-webkit-scrollbar-thumb {
+          background: rgba(239, 68, 68, 0.35) !important;
+        }
+        .tool-detail-page ::-webkit-scrollbar-thumb:hover {
+          background: rgba(239, 68, 68, 0.55) !important;
+        }
+        .tool-detail-page ::selection {
+          background: rgba(239, 68, 68, 0.22) !important;
+          color: #fef2f2 !important;
+        }
+        .tool-detail-page :is(button, [role="button"]):is([class*="bg-red-"], [class*="bg-rose-"]) {
+          color: #000000 !important;
+        }
+        .tool-detail-page :is(button, [role="button"]):is([class*="bg-red-"], [class*="bg-rose-"]) * {
+          color: #000000 !important;
+        }
+      `}</style>
 
+      <div className="tool-detail-shell">
+        {/* Navigation & Header */}
+        <div className="flex justify-end mb-8">
+          <span className="rounded-full border border-red-500/30 px-3 py-1 font-mono text-[0.62rem] uppercase tracking-[0.28em] text-red-400">
+            Red Team
+          </span>
+        </div>
+
+        {/* Title Block */}
+        <div className="mb-10 flex flex-col md:flex-row items-start md:items-center gap-6">
+          <div className="w-16 h-16 rounded-2xl border border-red-500/30 overflow-hidden shadow-lg flex-shrink-0 flex items-center justify-center">
+            <Link2Off className="h-8 w-8 text-red-400" />
+          </div>
           <div>
-            <h1 className="text-2xl font-bold">
-              Broken Link Checker (Streaming)
+            <h1 className="text-4xl sm:text-5xl font-mono font-bold text-zinc-100">
+              BROKEN LINK <span className="text-red-400">CHECKER</span>
             </h1>
-            <p className="text-sm text-slate-400">
-              Redirect tracking • Anchor & location • Priority & fixes • Exports
+            <p className="mt-2 text-zinc-400 max-w-2xl text-base font-normal">
+              Audit external and internal hyperlinks in real-time. Trace redirect pathways, identify dead endpoints, and optimize reference layouts.
             </p>
           </div>
         </div>
 
-        <div className="flex flex-col sm:flex-row gap-3 border border-white px-20 py-20">
-          <input
-            className="w-full bg-neutral-900 border border-red-600 text-slate-100 placeholder-slate-500 rounded px-3 py-2 outline-none focus:ring-2 focus:ring-blue-500"
-            placeholder="https://example.com"
-            value={url}
-            onChange={(e) => setUrl(e.target.value)}
-            disabled={loading}
-          />
-          <button
-            onClick={startCheck}
-            className="shrink-0 bg-red-600 text-white px-4 py-2 rounded hover:bg-red-600 disabled:opacity-60"
-            disabled={loading || !url}
-          >
-            {loading ? "Checking…" : "Check Links"}
-          </button>
-        </div>
+        {/* 2-Column Split Layout */}
+        <div className="grid gap-8 lg:grid-cols-[1fr_400px]">
+          
+          {/* Left Column */}
+          <div className="space-y-6">
+            
+            {/* Input Form Card */}
+            <div className="bg-zinc-950/20 backdrop-blur-md border border-zinc-800/80 rounded-2xl p-6 shadow-[0_8px_30px_rgb(0,0,0,0.2)] hover:border-red-500/10 transition-all duration-300 space-y-4">
+              <h2 className="text-lg font-mono font-medium text-zinc-100 mb-2 flex items-center gap-2">
+                <Globe className="h-5 w-5 text-red-400" />
+                Link Assessment Scope
+              </h2>
 
-        {progress.total > 0 && (
-          <div className="mt-4">
-            <div className="text-sm text-slate-300 mb-1">
-              Progress: {progress.done} / {progress.total} links
-            </div>
-            <div className="w-full bg-neutral-800 rounded h-2">
-              <div
-                className="bg-blue-600 h-2 rounded"
-                style={{
-                  width: `${Math.min(
-                    100,
-                    (progress.done / progress.total) * 100
-                  )}%`,
-                }}
-              />
-            </div>
-          </div>
-        )}
+              <div className="space-y-4">
+                <div>
+                  <label className="block text-xs uppercase tracking-wider font-mono text-zinc-400 mb-2 font-semibold">
+                    Website URL
+                  </label>
+                  <div className="relative">
+                    <Globe className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-650" />
+                    <input
+                      type="text"
+                      placeholder="https://example.com"
+                      value={url}
+                      onChange={(e) => setUrl(e.target.value)}
+                      disabled={loading}
+                      className="w-full bg-zinc-900/40 text-zinc-100 border border-zinc-800/80 rounded-xl p-3.5 pl-12 text-sm focus:border-red-500/50 focus:ring-1 focus:ring-red-500/30 focus:shadow-[0_0_12px_rgba(239,68,68,0.08)] focus:outline-none transition-all placeholder:text-zinc-600 font-mono"
+                    />
+                  </div>
+                </div>
 
-        {summary && (
-          <div className="mt-4 p-3 border rounded bg-neutral-900/60 border-neutral-700">
-            <div className="font-semibold">Scan Summary</div>
-            <div className="text-sm">
-              Total: <b>{summary.total}</b> · Working:{" "}
-              <b className="text-green-400">{summary.working}</b> · Broken:{" "}
-              <b className="text-red-400">{summary.broken}</b> · Redirects:{" "}
-              <b className="text-yellow-400">{summary.redirects}</b>
+                <button
+                  onClick={startCheck}
+                  disabled={loading || !url}
+                  className="w-full bg-red-500 hover:bg-red-600 text-black rounded-xl font-mono font-bold text-xs uppercase py-4 transition-all duration-300 hover:scale-[1.01] active:scale-[0.99] flex items-center justify-center gap-2 cursor-pointer hover:shadow-[0_0_20px_rgba(239,68,68,0.2)] focus:outline-none"
+                >
+                  {loading ? (
+                    <>
+                      <Loader2 className="w-4 h-4 animate-spin text-black" />
+                      Checking Streaming Redirects...
+                    </>
+                  ) : (
+                    <>
+                      <Search className="w-4 h-4 text-black" />
+                      Check Links
+                    </>
+                  )}
+                </button>
+              </div>
             </div>
-            {summary.diff && (
-              <div className="text-sm mt-1">
-                Change vs last: Broken{" "}
-                <b>
-                  {summary.diff.broken >= 0 ? "+" : ""}
-                  {summary.diff.broken}
-                </b>{" "}
-                · Fixed <b>{summary.diff.fixed}</b>
+
+            {/* Progress Metrics */}
+            {progress.total > 0 && (
+              <div className="bg-zinc-950/20 backdrop-blur-md border border-zinc-800/80 rounded-2xl p-6 shadow-[0_8px_30px_rgb(0,0,0,0.2)] font-mono text-xs space-y-3">
+                <div className="flex justify-between items-center text-zinc-300">
+                  <span>Stream Validation Progress</span>
+                  <span className="text-red-400 font-bold">{progress.done} / {progress.total} links resolved</span>
+                </div>
+                <div className="w-full bg-zinc-900 border border-zinc-850 rounded-full h-2.5 overflow-hidden">
+                  <div
+                    className="bg-red-500 h-full rounded-full transition-all duration-300"
+                    style={{
+                      width: `${Math.min(
+                        100,
+                        (progress.done / progress.total) * 100
+                      )}%`,
+                    }}
+                  />
+                </div>
               </div>
             )}
-          </div>
-        )}
 
-        {items.length > 0 && (
-          <div className="mt-4 flex gap-2">
-            <button
-              onClick={downloadCSV}
-              className="px-3 py-2 rounded border border-neutral-700 hover:bg-neutral-900"
-            >
-              Export CSV
-            </button>
-            <button
-              onClick={downloadTXT}
-              className="px-3 py-2 rounded border border-neutral-700 hover:bg-neutral-900"
-            >
-              Export TXT
-            </button>
-            <button
-              onClick={downloadPDF}
-              className="px-3 py-2 rounded border border-neutral-700 hover:bg-neutral-900"
-            >
-              Export PDF
-            </button>
-          </div>
-        )}
+            {/* Scan Summary */}
+            {summary && (
+              <div className="bg-zinc-950/20 backdrop-blur-md border border-zinc-800/80 rounded-2xl p-6 shadow-[0_8px_30px_rgb(0,0,0,0.2)] space-y-4">
+                <h3 className="text-sm font-mono font-bold text-zinc-200 flex items-center gap-2 border-b border-zinc-850 pb-2.5">
+                  <Terminal className="w-4 h-4 text-red-400" />
+                  Audit Summary Metrics
+                </h3>
+                <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 text-xs font-mono">
+                  <div className="bg-zinc-900/40 border border-zinc-800/80 p-3 rounded-xl">
+                    <span className="text-[10px] text-zinc-550 block mb-0.5">Total Links</span>
+                    <span className="text-zinc-200 font-bold text-sm">{summary.total}</span>
+                  </div>
+                  <div className="bg-zinc-900/40 border border-zinc-800/80 p-3 rounded-xl">
+                    <span className="text-[10px] text-zinc-550 block mb-0.5">Working</span>
+                    <span className="text-red-400 font-bold text-sm">{summary.working}</span>
+                  </div>
+                  <div className="bg-zinc-900/40 border border-zinc-800/80 p-3 rounded-xl">
+                    <span className="text-[10px] text-zinc-550 block mb-0.5">Broken</span>
+                    <span className="text-red-400 font-bold text-sm">{summary.broken}</span>
+                  </div>
+                  <div className="bg-zinc-900/40 border border-zinc-800/80 p-3 rounded-xl">
+                    <span className="text-[10px] text-zinc-550 block mb-0.5">Redirects</span>
+                    <span className="text-orange-400 font-bold text-sm">{summary.redirects}</span>
+                  </div>
+                </div>
 
-        <div className="mt-6 grid md:grid-cols-2 gap-3">
-          {items.map((i, idx) => {
-            const sev = computedSeverity(i);
-            return (
-              <div
-                key={`${i.url}-${idx}`}
-                className={`p-3 border rounded ${statusTint(sev)}`}
-              >
-                <div className="flex items-center gap-2">
-                  <span className={severityBadge(sev)}>{sev}</span>
-                  <span className="text-sm font-medium">
-                    [{i.status} {i.statusText}]
-                  </span>
-                  <span className="ml-auto text-xs px-2 py-0.5 rounded bg-neutral-900 border border-neutral-700">
-                    {i.scope}
-                  </span>
-                  <span className="text-xs px-2 py-0.5 rounded bg-neutral-900 border border-neutral-700">
-                    {i.location}
-                  </span>
-                </div>
-                <div className="mt-2 text-sm">
-                  <div className="text-slate-300">
-                    <b>Anchor:</b> {i.anchorText || "-"}
+                {summary.diff && (
+                  <div className="text-[11px] font-mono text-zinc-400 bg-zinc-900/20 p-3 rounded-xl border border-zinc-850">
+                    Change compared to last scan: Broken{" "}
+                    <span className="text-red-400 font-bold">
+                      {summary.diff.broken >= 0 ? "+" : ""}
+                      {summary.diff.broken}
+                    </span>{" "}
+                    · Fixed <span className="text-red-400 font-bold">{summary.diff.fixed}</span>
                   </div>
-                  <a
-                    href={i.url}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="underline break-words text-blue-300 hover:text-blue-200"
-                  >
-                    {i.url}
-                  </a>
-                  {i.finalUrl && i.finalUrl !== i.url && (
-                    <div className="mt-1">
-                      <b>Final:</b>{" "}
-                      <a
-                        className="underline break-words"
-                        href={i.finalUrl}
-                        target="_blank"
-                        rel="noreferrer"
-                      >
-                        {i.finalUrl}
-                      </a>{" "}
-                      ({i.redirectHops} hops)
-                    </div>
-                  )}
-                  <div className="text-slate-300 mt-1">
-                    <b>Found on:</b> {i.sourcePath || "-"} | <b>Priority:</b>{" "}
-                    {i.priorityScore}
-                  </div>
-                  {i.suggestion && (
-                    <div className="mt-1">
-                      <b>Suggestion:</b> {i.suggestion}{" "}
-                      <button
-                        onClick={() => copyToClipboard(i.finalUrl || i.url)}
-                        className="ml-2 text-xs underline"
-                      >
-                        Copy URL
-                      </button>
-                    </div>
-                  )}
-                </div>
+                )}
               </div>
-            );
-          })}
+            )}
+
+            {/* Export Buttons */}
+            {items.length > 0 && (
+              <div className="flex flex-wrap gap-3">
+                <button
+                  onClick={downloadCSV}
+                  className="px-4 py-2.5 bg-zinc-900/40 hover:bg-red-500/5 text-zinc-350 hover:text-red-400 border border-zinc-800/80 hover:border-red-500/30 rounded-xl font-mono font-bold text-xs uppercase transition-all duration-300 flex items-center gap-1.5 cursor-pointer"
+                >
+                  <FileSpreadsheet className="w-3.5 h-3.5" />
+                  CSV Export
+                </button>
+                <button
+                  onClick={downloadTXT}
+                  className="px-4 py-2.5 bg-zinc-900/40 hover:bg-red-500/5 text-zinc-350 hover:text-red-400 border border-zinc-800/80 hover:border-red-500/30 rounded-xl font-mono font-bold text-xs uppercase transition-all duration-300 flex items-center gap-1.5 cursor-pointer"
+                >
+                  <FileText className="w-3.5 h-3.5" />
+                  TXT Export
+                </button>
+                <button
+                  onClick={downloadPDF}
+                  className="px-4 py-2.5 bg-zinc-900/40 hover:bg-red-500/5 text-zinc-350 hover:text-red-400 border border-zinc-800/80 hover:border-red-500/30 rounded-xl font-mono font-bold text-xs uppercase transition-all duration-300 flex items-center gap-1.5 cursor-pointer"
+                >
+                  <Download className="w-3.5 h-3.5" />
+                  PDF Report
+                </button>
+              </div>
+            )}
+
+            {/* Findings List */}
+            {items.length > 0 && (
+              <div className="grid gap-4 sm:grid-cols-2">
+                {items.map((i, idx) => {
+                  const sev = computedSeverity(i);
+                  return (
+                    <div
+                      key={`${i.url}-${idx}`}
+                      className={`p-4 rounded-xl border font-mono text-xs flex flex-col justify-between ${statusTint(sev)}`}
+                    >
+                      <div className="space-y-2">
+                        <div className="flex items-center gap-2 flex-wrap">
+                          <span className={severityBadge(sev)}>{sev}</span>
+                          <span className="font-bold text-zinc-250">
+                            [{i.status} {i.statusText}]
+                          </span>
+                          <span className="text-[10px] px-1.5 py-0.5 rounded bg-zinc-900/80 border border-zinc-800/60 text-zinc-400">
+                            {i.scope}
+                          </span>
+                          <span className="text-[10px] px-1.5 py-0.5 rounded bg-zinc-900/80 border border-zinc-800/60 text-zinc-400">
+                            {i.location}
+                          </span>
+                        </div>
+                        
+                        <div className="text-zinc-400 space-y-1 mt-1 leading-relaxed">
+                          <div>
+                            <span className="text-zinc-550">Anchor:</span> {i.anchorText || "-"}
+                          </div>
+                          <div className="overflow-hidden">
+                            <span className="text-zinc-550 block">Target Link</span>
+                            <a
+                              href={i.url}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="underline break-all text-red-400 hover:text-red-300 block font-semibold"
+                            >
+                              {i.url}
+                            </a>
+                          </div>
+                          {i.finalUrl && i.finalUrl !== i.url && (
+                            <div>
+                              <span className="text-zinc-550 block">Redirected Link ({i.redirectHops} hops)</span>
+                              <a
+                                className="underline break-all block text-zinc-350"
+                                href={i.finalUrl}
+                                target="_blank"
+                                rel="noreferrer"
+                              >
+                                {i.finalUrl}
+                              </a>
+                            </div>
+                          )}
+                          <div className="text-[10px] text-zinc-550 border-t border-zinc-900 pt-1.5 mt-1.5">
+                            Source: {i.sourcePath || "-"} | Priority: {i.priorityScore}
+                          </div>
+                        </div>
+                      </div>
+
+                      {i.suggestion && (
+                        <div className="mt-3 bg-zinc-950/40 p-2.5 rounded-lg border border-zinc-900 flex justify-between items-center gap-2">
+                          <div className="text-zinc-450 leading-normal">
+                            <span className="text-[10px] text-zinc-600 block uppercase font-bold tracking-wider">Fix Suggestion</span>
+                            {i.suggestion}
+                          </div>
+                          <button
+                            onClick={() => copyToClipboard(i.finalUrl || i.url)}
+                            className="p-1.5 text-zinc-400 hover:text-red-400 hover:bg-zinc-900 rounded-lg transition-colors flex-shrink-0 cursor-pointer"
+                            title="Copy link to clipboard"
+                          >
+                            <Copy size={13} />
+                          </button>
+                        </div>
+                      )}
+                    </div>
+                  );
+                })}
+              </div>
+            )}
+
+          </div>
+
+          {/* Right Column */}
+          <div className="space-y-6">
+            
+            {/* Guidance sidebar card */}
+            <div className="border border-zinc-800/80 bg-zinc-950/20 backdrop-blur-md rounded-2xl p-6 space-y-4 shadow-[0_8px_30px_rgb(0,0,0,0.12)]">
+              <h2 className="text-xs font-mono font-bold uppercase tracking-wider text-zinc-100 flex items-center gap-2">
+                <Info className="text-red-400 w-4 h-4" />
+                Scanner Guidance
+              </h2>
+              <ul className="space-y-3.5 list-none pl-0">
+                <li className="flex items-start gap-2">
+                  <span className="inline-block w-1.5 h-1.5 rounded-full bg-red-500/60 mt-1.5 flex-shrink-0" />
+                  <span className="text-xs text-zinc-400 leading-relaxed font-mono">
+                    Audits target domain link maps in real-time using asynchronous workers.
+                  </span>
+                </li>
+                <li className="flex items-start gap-2">
+                  <span className="inline-block w-1.5 h-1.5 rounded-full bg-red-500/60 mt-1.5 flex-shrink-0" />
+                  <span className="text-xs text-zinc-400 leading-relaxed font-mono">
+                    Identifies redirect loops, dead pointers, and security header parameters.
+                  </span>
+                </li>
+                <li className="flex items-start gap-2">
+                  <span className="inline-block w-1.5 h-1.5 rounded-full bg-red-500/60 mt-1.5 flex-shrink-0" />
+                  <span className="text-xs text-zinc-400 leading-relaxed font-mono">
+                    Calculates link priority score to prioritize critical remediation tasks.
+                  </span>
+                </li>
+              </ul>
+            </div>
+
+          </div>
+
         </div>
       </div>
-    </main>
+    </div>
   );
 }

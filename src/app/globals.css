@@ -1623,3 +1623,76 @@ html.theme-dark {
     animation: none !important;
   }
 }
+
+/* ==========================================================================
+   RED TEAM BRAND BUTTON SYSTEM (Design System Upgrade)
+   ========================================================================== */
+
+/* 1. Primary Filled Brand Button State */
+.tool-detail-page :is(button, [role="button"]):is([class*="bg-red-"], [class*="bg-rose-"]):not([class*="bg-red-955"]):not([class*="bg-red-950"]) {
+  background-color: var(--gold, #ef4444) !important;
+  color: #000000 !important;
+  border: none !important;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06) !important;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
+  transform: translateY(0) scale(1) !important;
+}
+
+/* Ensure inner elements (text, icons) are forced to black for accessibility */
+.tool-detail-page :is(button, [role="button"]):is([class*="bg-red-"], [class*="bg-rose-"]):not([class*="bg-red-955"]):not([class*="bg-red-950"]) * {
+  color: #000000 !important;
+}
+
+/* 2. Premium Hover State (No fill change, soft glow + slight translation + elevation) */
+.tool-detail-page :is(button, [role="button"]):is([class*="bg-red-"], [class*="bg-rose-"]):not([class*="bg-red-955"]):not([class*="bg-red-950"]):hover {
+  background-color: var(--gold, #ef4444) !important;
+  color: #000000 !important;
+  transform: translateY(-2px) scale(1.01) !important;
+  box-shadow: 0 0 24px rgba(239, 68, 68, 0.55), 0 8px 16px -2px rgba(0, 0, 0, 0.3) !important;
+}
+
+.tool-detail-page :is(button, [role="button"]):is([class*="bg-red-"], [class*="bg-rose-"]):not([class*="bg-red-955"]):not([class*="bg-red-950"]):hover * {
+  color: #000000 !important;
+}
+
+/* 3. Premium Active State (Pressed effect, reduced glow) */
+.tool-detail-page :is(button, [role="button"]):is([class*="bg-red-"], [class*="bg-rose-"]):not([class*="bg-red-955"]):not([class*="bg-red-950"]):active {
+  background-color: var(--gold-dark, #b91c1c) !important;
+  transform: translateY(0px) scale(0.99) !important;
+  box-shadow: 0 0 8px rgba(239, 68, 68, 0.34), 0 2px 4px -1px rgba(0, 0, 0, 0.1) !important;
+}
+
+/* 4. Keyboard Focus State */
+.tool-detail-page :is(button, [role="button"]):is([class*="bg-red-"], [class*="bg-rose-"]):not([class*="bg-red-955"]):not([class*="bg-red-950"]):focus-visible {
+  outline: none !important;
+  box-shadow: 0 0 0 2px #000000, 0 0 0 4px var(--gold, #ef4444) !important;
+}
+
+/* 5. Disabled State */
+.tool-detail-page :is(button, [role="button"]):is([class*="bg-red-"], [class*="bg-rose-"]):not([class*="bg-red-955"]):not([class*="bg-red-950"]):disabled {
+  background-color: #27272a !important;
+  opacity: 0.45 !important;
+  cursor: not-allowed !important;
+  transform: none !important;
+  box-shadow: none !important;
+}
+
+.tool-detail-page :is(button, [role="button"]):is([class*="bg-red-"], [class*="bg-rose-"]):not([class*="bg-red-955"]):not([class*="bg-red-950"]):disabled * {
+  color: #71717a !important;
+}
+
+/* 6. Secondary / Outline Buttons (e.g. Export buttons, File choosing, Toggles) */
+.tool-detail-page :is(button, [role="button"], label):is([class*="border-zinc-800"], [class*="border-zinc-850"], [class*="border-zinc-700"]):not([class*="bg-red-"]):not([class*="bg-rose-"]) {
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
+}
+
+.tool-detail-page :is(button, [role="button"], label):is([class*="border-zinc-800"], [class*="border-zinc-850"], [class*="border-zinc-700"]):not([class*="bg-red-"]):not([class*="bg-rose-"]):hover {
+  border-color: rgba(239, 68, 68, 0.35) !important;
+  background-color: rgba(239, 68, 68, 0.05) !important;
+  color: #f87171 !important;
+  transform: translateY(-1.5px) !important;
+}
+
+.tool-detail-page :is(button, [role="button"], label):is([class*="border-zinc-800"], [class*="border-zinc-850"], [class*="border-zinc-700"]):not([class*="bg-red-"]):not([class*="bg-rose-"]):active {
+  transform: translateY(0px) scale(0.99) !important;
+}

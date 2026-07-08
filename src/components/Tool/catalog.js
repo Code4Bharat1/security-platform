@@ -482,7 +482,7 @@ export const vaTools = [
   {
     name: "Web Application Test",
     description: "Review app and server configuration issues, headers, and cookies.",
-    slug: "config-audit",
+    slug: "web-app-audit",
     buttonLabel: "Launch Tool",
     team: "va",
     teamLabel: "VA",
@@ -491,21 +491,23 @@ export const vaTools = [
   {
     name: "Active Directory Scan",
     description: "Generate consolidated findings and remediation paths.",
-    slug: "report-generator",
+    slug: "active-directory-scan",
     buttonLabel: "Launch Tool",
     team: "va",
     teamLabel: "VA",
     status: "passive",
   },
+
   {
     name: "Credential Path Audit",
     description: "Trace identity pathways and privilege escalation routes.",
-    slug: "report-generator",
+    slug: "credential-path-audit",
     buttonLabel: "Launch Tool",
     team: "va",
     teamLabel: "VA",
     status: "passive",
   },
+
 ];
 
 export const toolGroups = [

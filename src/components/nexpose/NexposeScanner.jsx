@@ -1,4 +1,5 @@
 "use client";
+
 import { useMemo, useState } from "react";
 import {
   Radar,
@@ -6,16 +7,26 @@ import {
   ChevronUp,
   ExternalLink,
   Clipboard,
+  Shield,
+  Globe,
+  CheckCircle2,
+  Clock,
+  Server,
+  FileDown,
+  Download,
+  Info,
+  Terminal,
+  Activity,
+  Layers,
+  Cpu,
+  ShieldAlert
 } from "lucide-react";
 import { jsPDF } from "jspdf";
 import autoTable from "jspdf-autotable";
 import useProtectedAction from "../UseProtectedAction/UseProtectedAction";
 
-/** Safe API base with fallback */
 const API_BASE = process.env.NEXT_PUBLIC_PROD_API_URL;
-// .replace(/\/+$/, "");
 
-/** Strict http(s) URL validation */
 function isValidHttpUrl(value) {
   try {
     const u = new URL(String(value).trim());
@@ -27,23 +38,19 @@ function isValidHttpUrl(value) {
 
 export default function NexposeScanner() {
   const [url, setUrl] = useState("");
-  const [paramName] = useState("test"); // using defaults (inputs hidden)
+  const [paramName] = useState("test");
   const [method] = useState("GET");
   const [postEncoder] = useState("form");
-  const [customHeaders] = useState(""); // inputs hidden; keep API shape
+  const [customHeaders] = useState("");
   const [scanning, setScanning] = useState(false);
   const [result, setResult] = useState(null);
   const [error, setError] = useState("");
-  const [urlError, setUrlError] = useState(""); // <-- inline URL error
+  const [urlError, setUrlError] = useState("");
   const [openIdx, setOpenIdx] = useState(null);
   const [showPositivesOnly, setShowPositivesOnly] = useState(false);
+  
   const protectedAction = useProtectedAction();
-
   const urlIsValid = isValidHttpUrl(url);
-  const typesList = useMemo(
-    () => result?.coverage?.typesAttempted || [],
-    [result]
-  );
 
   function onUrlChange(v) {
     const val = v.replace(/\s+/g, " ").trim();
@@ -70,11 +77,9 @@ export default function NexposeScanner() {
       return;
     }
 
-    // Use your useProtectedAction hook — it will redirect to login if needed
     await protectedAction(async (token) => {
       setScanning(true);
 
-      // We keep the shape for future use; currently headers input is hidden
       let headers = {};
       if (customHeaders?.trim()) {
         try {
@@ -92,7 +97,7 @@ export default function NexposeScanner() {
           headers: {
             "Content-Type": "application/json",
             Authorization: `Bearer ${token}`,
-            ...headers, // if you want to merge custom headers into the request headers
+            ...headers,
           },
           body: JSON.stringify({
             url,
@@ -105,7 +110,6 @@ export default function NexposeScanner() {
 
         const data = await res.json().catch(() => ({}));
         if (!res.ok) {
-          // propagate backend message precisely if present
           throw new Error(data?.message || `HTTP ${res.status}`);
         }
         setResult(data);
@@ -125,16 +129,24 @@ export default function NexposeScanner() {
     if (!result) return;
     const doc = new jsPDF({ orientation: "p", unit: "pt", format: "a4" });
 
-    doc.setFontSize(14);
-    doc.text("SQL Injection Scan Report", 40, 40);
-    doc.setFontSize(10);
-    doc.text(`Target: ${result.url || "N/A"}`, 40, 58);
-    doc.text(`Method: ${result.method || "N/A"} (param: ${result.paramName || "N/A"})`, 40, 72);
-    doc.text(`Risk: ${result.riskScore ?? 0}/100 (${result.riskLevel || "N/A"})`, 40, 86);
-    doc.text(`Coverage: ${result.payloadsAttempted ?? 0} payloads`, 40, 100);
-    doc.text(`Types: ${(result.typesAttempted || []).join(", ") || "None"}`, 40, 114);
+    // Red Team header banner style
+    doc.setFillColor(18, 18, 18);
+    doc.rect(0, 0, 595, 55, "F");
 
-    doc.text(`OWASP: ${result.owasp}`, 40, 128);
+    doc.setTextColor(239, 68, 68);
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(16);
+    doc.text("SQL INJECTION SCAN REPORT", 40, 35);
+
+    doc.setTextColor(255, 255, 255);
+    doc.setFontSize(9);
+    doc.text(`Target: ${result.url || "N/A"}`, 40, 48);
+
+    doc.setTextColor(50, 50, 50);
+    doc.setFontSize(9);
+    doc.text(`Method: ${result.method || "N/A"} (param: ${result.paramName || "N/A"})`, 40, 75);
+    doc.text(`Risk: ${result.riskScore ?? 0}/100 (${result.riskLevel || "N/A"})`, 40, 90);
+    doc.text(`Coverage: ${result.payloadsAttempted ?? 0} payloads`, 40, 105);
 
     const head = [
       ["#", "Type", "Payload/Pair", "Evidence", "Status", "Time(ms)"],
@@ -149,11 +161,12 @@ export default function NexposeScanner() {
     ]);
 
     autoTable(doc, {
-      startY: 150,
+      startY: 125,
       head,
       body: rows,
+      theme: "grid",
       styles: { fontSize: 8, cellPadding: 3, overflow: "linebreak" },
-      headStyles: { fillColor: [240, 240, 240] },
+      headStyles: { fillColor: [239, 68, 68] },
       margin: { left: 40, right: 40 },
       columnStyles: {
         0: { cellWidth: 20 },
@@ -187,419 +200,432 @@ export default function NexposeScanner() {
   }, [result, showPositivesOnly]);
 
   return (
-    <div className="tool-detail-page min-h-screen bg-black flex flex-col items-center pt-10 px-4 text-white">
-      {/* Header with logo and title */}
-      {/* Header with logo and title */}
-      <div className="tool-detail-shell text-center mb-4 px-2 sm:px-4">
-        <div className="tool-detail-hero flex flex-row items-center justify-start mb-4">
-          {/* Logo */}
-          <div className="w-30 h-30 sm:w-24 md:w-30 sm:h-24 md:h-30 rounded-full border-4 border-red-500 flex items-center justify-center overflow-hidden mr-4 flex-shrink-0">
-            <img
-              src="/Redteam/sql_injection.png" // <-- apni image path
-              alt="Logo"
-              className="w-full h-full object-cover rounded-full"
-            />
-          </div>
+    <div 
+      className="tool-detail-page min-h-screen"
+      style={{
+        '--hero-ambient-a': 'rgba(239, 68, 68, 0.08)',
+        '--hero-ambient-b': 'rgba(249, 115, 22, 0.03)',
+        '--glow-primary': '0 0 34px rgba(239, 68, 68, 0.16)',
+        '--gold': '#ef4444',
+        '--gold-strong': '#f87171',
+        '--gold-dark': '#b91c1c',
+        '--ring': 'rgba(239, 68, 68, 0.34)',
+        '--surface-glow': 'rgba(239, 68, 68, 0.14)',
+      }}
+    >
+      <style>{`
+        .tool-detail-page .tool-detail-shell {
+          padding-top: 3.5rem !important;
+        }
+        .tool-detail-page ::-webkit-scrollbar-thumb {
+          background: rgba(239, 68, 68, 0.35) !important;
+        }
+        .tool-detail-page ::-webkit-scrollbar-thumb:hover {
+          background: rgba(239, 68, 68, 0.55) !important;
+        }
+        .tool-detail-page ::selection {
+          background: rgba(239, 68, 68, 0.22) !important;
+          color: #fef2f2 !important;
+        }
+        .tool-detail-page :is(button, [role="button"]):is([class*="bg-red-"], [class*="bg-rose-"]) {
+          color: #000000 !important;
+        }
+        .tool-detail-page :is(button, [role="button"]):is([class*="bg-red-"], [class*="bg-rose-"]) * {
+          color: #000000 !important;
+        }
+      `}</style>
 
-          {/* Text */}
-          <div className="text-left">
-            <h1 className="text-lg sm:text-xl md:text-2xl font-bold text-white">
-              SQLi Scanner
+      <div className="tool-detail-shell">
+        {/* Navigation & Header */}
+        <div className="flex justify-end mb-8">
+          <span className="rounded-full border border-red-500/30 px-3 py-1 font-mono text-[0.62rem] uppercase tracking-[0.28em] text-red-400">
+            Red Team
+          </span>
+        </div>
+
+        {/* Title Block */}
+        <div className="mb-10 flex flex-col md:flex-row items-start md:items-center gap-6">
+          <div className="w-16 h-16 rounded-2xl border border-red-500/30 overflow-hidden shadow-lg flex-shrink-0 flex items-center justify-center">
+            <Radar className="h-8 w-8 text-red-400" />
+          </div>
+          <div>
+            <h1 className="text-4xl sm:text-5xl font-mono font-bold text-zinc-100">
+              SQLi <span className="text-red-400">SCANNER</span>
             </h1>
-            <p className="text-gray-400 text-xs sm:text-sm md:text-base">
-              Detect error-based, union-based, boolean/time-based blind SQLi.
+            <p className="mt-2 text-zinc-400 max-w-2xl text-base font-normal">
+              Probe dynamic backend database endpoints for SQL injection vectors. Automatically scans parameters using error, boolean-blind, and time-based payloads.
             </p>
           </div>
         </div>
-      </div>
 
-      {/* Main scanner box */}
-      <div className="bg-black border-2 border-white-600 rounded-lg p-6 w-full max-w-4xl">
-        {/* URL input with validation */}
-        <label className="block text-white font-medium mb-2">Target URL</label>
-        <input
-          className={`w-full px-4 py-3 bg-black border-2 rounded-lg text-white placeholder-gray-500 focus:outline-none ${
-            urlError
-              ? "border-red-500"
-              : "border-white-600 focus:border-red-600"
-          }`}
-          value={url}
-          onChange={(e) => onUrlChange(e.target.value)}
-          placeholder="https://example.com"
-          aria-invalid={!!urlError}
-          aria-describedby="url-error"
-        />
-        {urlError && (
-          <div id="url-error" className="mt-2 text-sm text-red-400">
-            {urlError}
-          </div>
-        )}
+        {/* 2-Column Split Layout */}
+        <div className="grid gap-8 lg:grid-cols-[1fr_400px]">
+          
+          {/* Left Column */}
+          <div className="space-y-6">
+            
+            {/* Input Form Card */}
+            <div className="bg-zinc-950/20 backdrop-blur-md border border-zinc-800/80 rounded-2xl p-6 shadow-[0_8px_30px_rgb(0,0,0,0.2)] hover:border-red-500/10 transition-all duration-300 space-y-4">
+              <h2 className="text-lg font-mono font-medium text-zinc-100 mb-2 flex items-center gap-2">
+                <Terminal className="h-5 w-5 text-red-400" />
+                SQL Injection Parameters
+              </h2>
 
-        <button
-          onClick={handleScan}
-          disabled={scanning || !urlIsValid}
-          className={`mt-6 w-full py-3 rounded-lg text-white font-semibold border-2 transition-colors ${
-            scanning || !urlIsValid
-              ? "bg-red-800 border-white-600 cursor-not-allowed"
-              : "bg-red-700 border-red-600 hover:bg-red-800 hover:border-red-700"
-          }`}
-        >
-          {scanning ? "Scanning..." : "Start SQLi Scan"}
-        </button>
-
-        {error && (
-          <div className="mt-4 p-3 bg-red-900 border border-red-600 text-red-300 rounded">
-            {error}
-          </div>
-        )}
-      </div>
-
-      {/* Results section */}
-      {result && (
-        <div className="mt-8 w-full max-w-4xl space-y-6">
-          {/* Summary */}
-          <div className="bg-gray-900 border border-white-700 rounded-lg p-6">
-            {/* Status banners */}
-            {result.scanStatus !== "ok" && (
-              <div
-                className={
-                  result.scanStatus === "unreachable"
-                    ? "p-4 mb-4 rounded border bg-red-900 border-red-600 text-red-300"
-                    : result.scanStatus === "inconclusive"
-                    ? "p-4 mb-4 rounded border bg-yellow-900 border-yellow-600 text-yellow-300"
-                    : "p-4 mb-4 rounded border bg-blue-900 border-blue-600 text-blue-300"
-                }
-              >
-                <div className="font-semibold capitalize">
-                  {result.scanStatus}
-                </div>
-                <div className="text-sm">{result.message}</div>
-                <div className="text-xs mt-1">
-                  Attempted:{" "}
-                  <span className="font-semibold">
-                    {result.payloadsAttempted}
-                  </span>{" "}
-                  · Succeeded:{" "}
-                  <span className="font-semibold">
-                    {result.payloadsSucceeded}
-                  </span>{" "}
-                  · Success rate:{" "}
-                  <span className="font-semibold">
-                    {Math.round((result.successRate || 0) * 100)}%
-                  </span>
-                </div>
-                {result.diagnostics?.baseline?.error && (
-                  <div className="text-xs mt-1">
-                    Baseline error: {result.diagnostics.baseline.error}
+              <div className="space-y-4">
+                <div>
+                  <label className="block text-xs uppercase tracking-wider font-mono text-zinc-400 mb-2 font-semibold">
+                    Target Website URL
+                  </label>
+                  <div className="relative">
+                    <Globe className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-650" />
+                    <input
+                      type="url"
+                      value={url}
+                      onChange={(e) => onUrlChange(e.target.value)}
+                      placeholder="https://example.com/search?id=1"
+                      className="w-full bg-zinc-900/40 text-zinc-100 border border-zinc-800/80 rounded-xl p-3.5 pl-12 text-sm focus:border-red-500/50 focus:ring-1 focus:ring-red-500/30 focus:shadow-[0_0_12px_rgba(239,68,68,0.08)] focus:outline-none transition-all placeholder:text-zinc-600 font-mono"
+                    />
                   </div>
-                )}
+                  {urlError && (
+                    <div className="mt-2 text-xs font-mono text-red-400">
+                      {urlError}
+                    </div>
+                  )}
+                </div>
+
+                <button
+                  onClick={handleScan}
+                  disabled={scanning || !urlIsValid}
+                  className="w-full bg-red-500 hover:bg-red-600 text-black rounded-xl font-mono font-bold text-xs uppercase py-4 transition-all duration-300 hover:scale-[1.01] active:scale-[0.99] flex items-center justify-center gap-2 cursor-pointer hover:shadow-[0_0_20px_rgba(239,68,68,0.2)] focus:outline-none disabled:opacity-40"
+                >
+                  {scanning ? (
+                    <>
+                      <div className="w-4 h-4 border-2 border-black border-t-transparent rounded-full animate-spin" />
+                      Auditing database...
+                    </>
+                  ) : (
+                    <>
+                      <Radar className="w-4 h-4 text-black" />
+                      Start SQLi Scan
+                    </>
+                  )}
+                </button>
+              </div>
+            </div>
+
+            {/* Error Message */}
+            {error && (
+              <div className="p-4 rounded-xl border border-red-500/20 bg-red-955/10 text-red-400 text-xs font-mono flex items-start gap-2">
+                <ShieldAlert size={16} className="mt-0.5 flex-shrink-0" />
+                <span>Scan Error: {error}</span>
               </div>
             )}
 
-            {/* Normal summary */}
-            {(result.scanStatus === "ok" ||
-              result.scanStatus === "degraded") && (
-              <>
-                <div className="flex flex-wrap items-center justify-between gap-4">
-                  <div className="text-sm text-gray-300">
-                    <div className="font-semibold text-white">
-                      Scan Completed{" "}
-                      {result.scanStatus === "degraded" &&
-                        "(degraded confidence)"}
-                    </div>
-                    <div>
-                      {result.payloadsAttempted} payloads attempted ·{" "}
-                      {result.payloadsSucceeded} succeeded
-                    </div>
-                    <div>
-                      Types:{" "}
-                      {(result.coverage?.typesAttempted || []).join(", ")}
-                    </div>
-                    <div>OWASP: {result.owasp}</div>
-                  </div>
-                  <div className="text-right">
-                    <div className="text-sm text-gray-400">Risk Score</div>
-                    <div className="text-2xl font-bold text-white">
-                      {result.riskScore}/100
-                    </div>
-                    <div className="text-sm text-gray-400">
-                      {result.riskLevel}
-                    </div>
-                  </div>
-                </div>
-                <div className="mt-3 text-xs text-gray-400">
-                  Method:{" "}
-                  <span className="font-semibold text-white">
-                    {result.method}
-                  </span>{" "}
-                  &nbsp;|&nbsp; Parameter:{" "}
-                  <span className="font-semibold text-white">
-                    {result.paramName}
-                  </span>
-                </div>
-                {result.pocUrl && (
-                  <div className="mt-4 flex items-center gap-2">
-                    <ExternalLink size={16} className="text-gray-400" />
-                    <a
-                      href={result.pocUrl}
-                      target="_blank"
-                      rel="noreferrer"
-                      className="text-red-400 underline break-all"
+            {/* Results Details */}
+            {result && (
+              <div className="space-y-6">
+                
+                {/* Summary Score Card */}
+                <div className="bg-zinc-950/20 backdrop-blur-md border border-zinc-800/80 rounded-2xl p-6 shadow-[0_8px_30px_rgb(0,0,0,0.2)] space-y-4 font-mono text-xs">
+                  
+                  {/* Status Banner */}
+                  {result.scanStatus !== "ok" && (
+                    <div
+                      className={`p-4 rounded-xl border text-[11px] leading-relaxed space-y-1 ${
+                        result.scanStatus === "unreachable"
+                          ? "bg-red-955/10 border-red-500/20 text-red-400"
+                          : result.scanStatus === "inconclusive"
+                          ? "bg-orange-955/10 border-orange-500/20 text-orange-400"
+                          : "bg-zinc-900/40 border-zinc-800/80 text-zinc-300"
+                      }`}
                     >
-                      Proof of Concept URL
-                    </a>
+                      <div className="font-bold uppercase tracking-wider text-xs">
+                        Scan State: {result.scanStatus}
+                      </div>
+                      <div>{result.message}</div>
+                      <div className="text-[10px] text-zinc-500 pt-1">
+                        Attempted: <span className="font-bold text-zinc-300">{result.payloadsAttempted}</span> · 
+                        Succeeded: <span className="font-bold text-zinc-300">{result.payloadsSucceeded}</span> · 
+                        Success rate: <span className="font-bold text-zinc-300">{Math.round((result.successRate || 0) * 100)}%</span>
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Standard Summary info */}
+                  {(result.scanStatus === "ok" || result.scanStatus === "degraded") && (
+                    <div className="flex flex-wrap items-center justify-between gap-4 border-b border-zinc-900 pb-4">
+                      <div className="space-y-1 text-zinc-400">
+                        <div className="font-bold text-zinc-200 uppercase tracking-wide">
+                          Scan Completed{" "}
+                          {result.scanStatus === "degraded" && "(degraded confidence)"}
+                        </div>
+                        <div>
+                          {result.payloadsAttempted} payloads attempted · {result.payloadsSucceeded} responses received
+                        </div>
+                        <div className="text-[10px] text-zinc-500 pt-0.5">
+                          Types: {(result.coverage?.typesAttempted || []).join(", ")}
+                        </div>
+                        <div className="text-[10px] text-zinc-550">OWASP Mapping: {result.owasp}</div>
+                      </div>
+
+                      <div className="text-left sm:text-right flex-shrink-0">
+                        <span className="text-[10px] text-zinc-550 block font-bold uppercase tracking-wider">Risk Score</span>
+                        <span className="text-2xl font-extrabold text-red-450 block">{result.riskScore} / 100</span>
+                        <span className="text-[10px] uppercase font-bold tracking-wider text-zinc-400">{result.riskLevel}</span>
+                      </div>
+                    </div>
+                  )}
+
+                  <div className="text-[10px] text-zinc-500 pt-1">
+                    Method: <span className="text-zinc-350 font-bold">{result.method}</span> &nbsp;|&nbsp; 
+                    Parameter Key: <span className="text-zinc-350 font-bold">{result.paramName}</span>
+                  </div>
+
+                  {/* Proof of concept URL */}
+                  {result.pocUrl && (
+                    <div className="mt-4 flex flex-wrap items-center gap-2 bg-zinc-900/40 border border-zinc-850 p-3 rounded-xl">
+                      <ExternalLink size={14} className="text-zinc-500 flex-shrink-0" />
+                      <span className="text-[10px] text-zinc-500 uppercase tracking-wider font-bold">PoC Node:</span>
+                      <a
+                        href={result.pocUrl}
+                        target="_blank"
+                        rel="noreferrer"
+                        className="text-red-400 hover:text-red-500 underline break-all flex-1 min-w-0"
+                      >
+                        {result.pocUrl}
+                      </a>
+                      <button
+                        onClick={() => copy(result.pocUrl)}
+                        className="px-2.5 py-1 text-[10px] bg-zinc-950 hover:bg-zinc-900 text-zinc-300 border border-zinc-850 hover:border-zinc-700 rounded-lg flex items-center gap-1 cursor-pointer font-bold uppercase"
+                      >
+                        <Clipboard size={12} /> Copy
+                      </button>
+                    </div>
+                  )}
+                </div>
+
+                {/* Filters toggle controls */}
+                <div className="flex items-center justify-between font-mono text-xs text-zinc-400">
+                  <div>
+                    Display logs:{" "}
+                    <span className="font-bold text-zinc-200">
+                      {showPositivesOnly
+                        ? result.findingsCount || 0
+                        : result.payloadsAttempted || 0}
+                    </span>{" "}
+                    {showPositivesOnly ? "positives" : "scans"}
+                  </div>
+                  <div className="flex gap-2 shrink-0">
                     <button
-                      onClick={() =>
-                        navigator.clipboard.writeText(result.pocUrl)
-                      }
-                      className="ml-2 px-2 py-1 text-xs bg-red-700 text-white rounded inline-flex items-center gap-1 hover:bg-red-800"
+                      onClick={() => setShowPositivesOnly(false)}
+                      className={`px-3 py-1.5 rounded-lg text-[10px] uppercase font-bold tracking-wider transition-all cursor-pointer border ${
+                        !showPositivesOnly
+                          ? "bg-red-500/5 text-red-400 border-red-500/40"
+                          : "bg-zinc-900/40 text-zinc-400 border-zinc-850 hover:bg-zinc-900/60"
+                      }`}
                     >
-                      <Clipboard size={14} /> Copy
+                      All
+                    </button>
+                    <button
+                      onClick={() => setShowPositivesOnly(true)}
+                      className={`px-3 py-1.5 rounded-lg text-[10px] uppercase font-bold tracking-wider transition-all cursor-pointer border ${
+                        showPositivesOnly
+                          ? "bg-red-500/5 text-red-400 border-red-500/40"
+                          : "bg-zinc-900/40 text-zinc-400 border-zinc-850 hover:bg-zinc-900/60"
+                      }`}
+                    >
+                      Positives
                     </button>
                   </div>
-                )}
-              </>
-            )}
-          </div>
+                </div>
 
-          {/* Toggle controls */}
-          <div className="flex items-center justify-between">
-            <div className="text-sm text-gray-300">
-              Showing:{" "}
-              <span className="font-semibold text-white">
-                {showPositivesOnly
-                  ? result.findingsCount || 0
-                  : result.payloadsAttempted || 0}
-              </span>{" "}
-              {showPositivesOnly ? "positive finding(s)" : "test(s)"}
+                {/* Vulnerability details lists */}
+                {result?.vulnerable && result?.vulnerabilityDetails?.length > 0 && (
+                  <div className="bg-zinc-950/20 backdrop-blur-md border border-zinc-800/80 rounded-2xl p-6 shadow-[0_8px_30px_rgb(0,0,0,0.2)] space-y-4 font-mono text-xs">
+                    <h3 className="text-sm font-mono font-bold text-zinc-200 flex items-center gap-2 border-b border-zinc-850 pb-2.5">
+                      <ShieldAlert className="w-4 h-4 text-red-400" />
+                      Exploitable Vulnerabilities
+                    </h3>
 
-            </div>
-            <div className="flex gap-2">
-              <button
-                onClick={() => setShowPositivesOnly(false)}
-                className={`px-4 py-2 rounded text-sm font-medium transition-colors ${
-                  !showPositivesOnly
-                    ? "bg-red-700 text-white border border-red-600"
-                    : "bg-gray-800 text-gray-300 border border-white-700 hover:bg-gray-700"
-                }`}
-              >
-                All tests
-              </button>
-              <button
-                onClick={() => setShowPositivesOnly(true)}
-                className={`px-4 py-2 rounded text-sm font-medium transition-colors ${
-                  showPositivesOnly
-                    ? "bg-red-700 text-white border border-red-600"
-                    : "bg-gray-800 text-gray-300 border border-white-700 hover:bg-gray-700"
-                }`}
-              >
-                Positive only
-              </button>
-            </div>
-          </div>
+                    <div className="space-y-4">
+                      {result.vulnerabilityDetails.map((v, i) => (
+                        <div key={i} className="p-4 rounded-xl border border-red-500/20 bg-red-955/10 text-zinc-300 space-y-3">
+                          <div className="flex flex-wrap items-center gap-2 text-[10px] font-bold">
+                            <span className="px-2 py-0.5 rounded bg-zinc-900 border border-zinc-800 text-zinc-300">
+                              {v.method}
+                            </span>
+                            <span className="px-2 py-0.5 rounded bg-zinc-900 border border-zinc-800 text-zinc-300">
+                              Param: {v.parameter}
+                            </span>
+                            <span className="px-2 py-0.5 rounded border border-red-500/30 bg-red-500/5 text-red-400">
+                              Risk: {v.risk}
+                            </span>
+                            <span className="px-2 py-0.5 rounded border border-zinc-800 bg-zinc-900/80 text-zinc-400 font-mono">
+                              {v.owasp}
+                            </span>
+                          </div>
 
-          {/* Vulnerability Details */}
-          {result?.vulnerable && result?.vulnerabilityDetails?.length > 0 && (
-            <div className="bg-gray-900 border border-white-700 rounded-lg p-6">
-              <div className="font-semibold text-white mb-4">
-                Vulnerability Details
-              </div>
-              <div className="space-y-4">
-                {result.vulnerabilityDetails.map((v, i) => (
-                  <div
-                    key={i}
-                    className="p-4 rounded-lg bg-gray-800 border border-white-700"
-                  >
-                    <div className="flex flex-wrap items-center gap-3 text-sm mb-3">
-                      <span className="px-2 py-1 rounded bg-white text-black font-medium">
-                        Method: {v.method}
-                      </span>
-                      <span className="px-2 py-1 rounded bg-gray-700 text-gray-300">
-                        Parameter: {v.parameter}
-                      </span>
-                      <span
-                        className={`px-2 py-1 rounded font-medium ${
-                          v.risk === "High"
-                            ? "bg-red-700 text-white"
-                            : v.risk === "Medium"
-                            ? "bg-yellow-700 text-white"
-                            : "bg-green-700 text-white"
-                        }`}
-                      >
-                        Risk: {v.risk}
-                      </span>
-                      <span className="px-2 py-1 rounded bg-blue-700 text-white">
-                        {v.owasp}
-                      </span>
-                    </div>
-                    <div className="text-sm">
-                      <div className="font-semibold text-white mb-2">
-                        Payload that worked
-                      </div>
-                      <div className="flex items-center gap-2">
-                        <code className="break-all bg-black border border-white-600 px-3 py-2 rounded text-gray-300 flex-1">
-                          {v.payload}
-                        </code>
-                        <button
-                          onClick={() =>
-                            navigator.clipboard.writeText(v.payload)
-                          }
-                          className="px-3 py-2 text-sm bg-red-700 text-white rounded hover:bg-red-800 whitespace-nowrap"
-                        >
-                          Copy
-                        </button>
-                      </div>
+                          <div className="space-y-1.5">
+                            <span className="text-[10px] text-zinc-550 block font-bold uppercase tracking-wider">Working Injection Payload</span>
+                            <div className="flex items-center gap-2">
+                              <code className="break-all bg-zinc-950 border border-zinc-900 px-3 py-2 rounded-xl text-red-400 font-semibold block flex-1 font-mono text-[11px] leading-relaxed">
+                                {v.payload}
+                              </code>
+                              <button
+                                onClick={() => copy(v.payload)}
+                                className="px-3 py-2.5 text-[10px] bg-zinc-900 hover:bg-zinc-800 text-zinc-300 border border-zinc-800 hover:border-zinc-700 rounded-xl whitespace-nowrap cursor-pointer uppercase font-bold"
+                              >
+                                Copy
+                              </button>
+                            </div>
+                          </div>
+                        </div>
+                      ))}
                     </div>
                   </div>
-                ))}
+                )}
+
+                {/* Scan logs tables */}
+                <div className="bg-zinc-950/20 backdrop-blur-md border border-zinc-800/80 rounded-2xl p-6 shadow-[0_8px_30px_rgb(0,0,0,0.2)] space-y-4 font-mono text-xs">
+                  <h3 className="text-sm font-mono font-bold text-zinc-200 flex items-center gap-2 border-b border-zinc-850 pb-2.5">
+                    <Activity className="w-4 h-4 text-red-400" />
+                    Injection Scan Logs
+                  </h3>
+
+                  <div className="overflow-x-auto rounded-xl border border-zinc-850 bg-zinc-900/10">
+                    <table className="min-w-full text-[11px] text-zinc-350 leading-relaxed">
+                      <thead className="bg-zinc-900/40 border-b border-zinc-850 text-zinc-500 font-bold uppercase tracking-wider text-[9px]">
+                        <tr>
+                          <th className="px-4 py-3 text-left">#</th>
+                          <th className="px-4 py-3 text-left">Type</th>
+                          <th className="px-4 py-3 text-left">Evidence / Error</th>
+                          <th className="px-4 py-3 text-left">HTTP</th>
+                          <th className="px-4 py-3 text-left">Time(ms)</th>
+                          <th className="px-4 py-3 text-left">Details</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {rows.map((f, idx) => {
+                          const open = openIdx === idx;
+                          return (
+                            <tr key={idx} className="border-t border-zinc-900 align-top hover:bg-zinc-900/40 transition-colors">
+                              <td className="px-4 py-3 text-zinc-650 font-bold">{idx + 1}</td>
+                              <td className="px-4 py-3 text-zinc-300 font-semibold">{f.type}</td>
+                              <td className="px-4 py-3 text-zinc-400 break-all max-w-[120px]">
+                                {f.evidence || (f.error ? "Request failed" : "—")}
+                              </td>
+                              <td className="px-4 py-3 text-zinc-400">{String(f.status)}</td>
+                              <td className="px-4 py-3 text-zinc-450">{String(f.timeMs)}</td>
+                              <td className="px-4 py-3">
+                                <button
+                                  onClick={() => setOpenIdx(open ? null : idx)}
+                                  className="px-2.5 py-1 text-[10px] bg-zinc-900 border border-zinc-850 text-zinc-300 rounded-lg inline-flex items-center gap-1 hover:border-zinc-700 cursor-pointer uppercase font-bold select-none"
+                                >
+                                  {open ? "Hide" : "View"}
+                                  {open ? (
+                                    <ChevronUp size={12} />
+                                  ) : (
+                                    <ChevronDown size={12} />
+                                  )}
+                                </button>
+                                {open && (
+                                  <div className="mt-3 p-3.5 bg-zinc-950/70 border border-zinc-850 rounded-xl space-y-1.5 leading-relaxed text-zinc-400 text-[10px]">
+                                    <div>
+                                      <span className="font-bold text-zinc-600">Parameter Key:</span> {f.param}
+                                    </div>
+                                    <div>
+                                      <span className="font-bold text-zinc-600">Method:</span> {f.method}
+                                    </div>
+                                    <div className="break-all">
+                                      <span className="font-bold text-zinc-600">Payload:</span> {f.payload}
+                                    </div>
+                                    {f.pocUrl && (
+                                      <div className="break-all">
+                                        <span className="font-bold text-zinc-600">PoC URL:</span> {f.pocUrl}
+                                      </div>
+                                    )}
+                                    <div>
+                                      <span className="font-bold text-zinc-600">Risk rating:</span> {f.risk}
+                                    </div>
+                                    {f.error && (
+                                      <div className="text-red-400">
+                                        <span className="font-bold">Error status:</span> {f.error}
+                                      </div>
+                                    )}
+                                  </div>
+                                )}
+                              </td>
+                            </tr>
+                          );
+                        })}
+                        {!rows.length && (
+                          <tr>
+                            <td className="px-4 py-8 text-center text-zinc-600 font-mono" colSpan={6}>
+                              No scan logs to display.
+                            </td>
+                          </tr>
+                        )}
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+
+                {/* Export Options */}
+                <div className="flex flex-wrap gap-3">
+                  <button
+                    onClick={exportJSON}
+                    className="px-4 py-2.5 bg-zinc-900/40 hover:bg-red-500/5 text-zinc-350 hover:text-red-400 border border-zinc-800/80 hover:border-red-500/30 rounded-xl font-mono font-bold text-xs uppercase transition-all duration-300 flex items-center gap-1.5 cursor-pointer"
+                  >
+                    <Download className="w-3.5 h-3.5" /> JSON Export
+                  </button>
+                  <button
+                    onClick={exportPDF}
+                    className="px-4 py-2.5 bg-zinc-900/40 hover:bg-red-500/5 text-zinc-350 hover:text-red-400 border border-zinc-800/80 hover:border-red-500/30 rounded-xl font-mono font-bold text-xs uppercase transition-all duration-300 flex items-center gap-1.5 cursor-pointer"
+                  >
+                    <FileDown className="w-3.5 h-3.5" /> PDF Report
+                  </button>
+                </div>
+
               </div>
-            </div>
-          )}
+            )}
 
-          {/* Results table */}
-          <div className="bg-gray-900 border border-white-700 rounded-lg overflow-hidden">
-            <div className="overflow-x-auto">
-              <table className="min-w-full text-sm">
-                <thead className="bg-gray-800">
-                  <tr>
-                    <th className="px-4 py-3 text-left text-white font-medium">
-                      #
-                    </th>
-                    <th className="px-4 py-3 text-left text-white font-medium">
-                      Type
-                    </th>
-                    <th className="px-4 py-3 text-left text-white font-medium">
-                      Evidence
-                    </th>
-                    <th className="px-4 py-3 text-left text-white font-medium">
-                      Status
-                    </th>
-                    <th className="px-4 py-3 text-left text-white font-medium">
-                      Time (ms)
-                    </th>
-                    <th className="px-4 py-3 text-left text-white font-medium">
-                      Details
-                    </th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {rows.map((f, idx) => {
-                    const open = openIdx === idx;
-                    return (
-                      <tr key={idx} className="border-t border-white-700">
-                        <td className="px-4 py-3 text-gray-300">{idx + 1}</td>
-                        <td className="px-4 py-3 text-gray-300">{f.type}</td>
-                        <td className="px-4 py-3 text-gray-300">
-                          {f.evidence || (f.error ? "Request error" : "—")}
-                        </td>
-                        <td className="px-4 py-3 text-gray-300">
-                          {String(f.status)}
-                        </td>
-                        <td className="px-4 py-3 text-gray-300">
-                          {String(f.timeMs)}
-                        </td>
-                        <td className="px-4 py-3">
-                          <button
-                            onClick={() => setOpenIdx(open ? null : idx)}
-                            className="px-3 py-1 text-xs bg-red-700 text-white rounded inline-flex items-center gap-1 hover:bg-red-800"
-                          >
-                            {open ? (
-                              <ChevronUp size={14} />
-                            ) : (
-                              <ChevronDown size={14} />
-                            )}
-                            {open ? "Hide" : "View"}
-                          </button>
-                          {open && (
-                            <div className="mt-3 p-3 bg-gray-800 rounded text-xs border border-white-600">
-                              <div className="text-gray-300 mb-1">
-                                <span className="font-semibold text-white">
-                                  Parameter:
-                                </span>{" "}
-                                {f.param}
-                              </div>
-                              <div className="text-gray-300 mb-1">
-                                <span className="font-semibold text-white">
-                                  Method:
-                                </span>{" "}
-                                {f.method}
-                              </div>
-                              <div className="break-words text-gray-300 mb-1">
-                                <span className="font-semibold text-white">
-                                  Payload:
-                                </span>{" "}
-                                {f.payload}
-                              </div>
-                              {f.pocUrl && (
-                                <div className="break-words text-gray-300 mb-1">
-                                  <span className="font-semibold text-white">
-                                    PoC URL:
-                                  </span>{" "}
-                                  {f.pocUrl}
-                                </div>
-                              )}
-                              <div className="text-gray-300 mb-1">
-                                <span className="font-semibold text-white">
-                                  OWASP:
-                                </span>{" "}
-                                A03:2021 Injection
-                              </div>
-                              <div className="text-gray-300 mb-1">
-                                <span className="font-semibold text-white">
-                                  Risk:
-                                </span>{" "}
-                                {f.risk}
-                              </div>
-                              {f.error && (
-                                <div className="text-red-400">
-                                  <span className="font-semibold">
-                                    Request error:
-                                  </span>{" "}
-                                  {f.error}
-                                </div>
-                              )}
-                            </div>
-                          )}
-                        </td>
-                      </tr>
-                    );
-                  })}
-                  {!rows.length && (
-                    <tr>
-                      <td
-                        className="px-4 py-8 text-center text-gray-500"
-                        colSpan={6}
-                      >
-                        No rows.
-                      </td>
-                    </tr>
-                  )}
-                </tbody>
-              </table>
-            </div>
           </div>
 
-          {/* Export buttons */}
-          <div className="flex flex-wrap gap-3">
-            <button
-              onClick={exportJSON}
-              className="bg-green-700 text-white px-4 py-2 rounded border border-green-600 hover:bg-green-800 transition-colors"
-            >
-              Export JSON
-            </button>
-            <button
-              onClick={exportPDF}
-              className="bg-red-700 text-white px-4 py-2 rounded border border-red-600 hover:bg-red-800 transition-colors"
-            >
-              Export PDF
-            </button>
+          {/* Right Column (Guidance) */}
+          <div className="space-y-6">
+            
+            {/* Guidance sidebar card */}
+            <div className="border border-zinc-800/80 bg-zinc-950/20 backdrop-blur-md rounded-2xl p-6 space-y-4 shadow-[0_8px_30px_rgb(0,0,0,0.12)]">
+              <h2 className="text-xs font-mono font-bold uppercase tracking-wider text-zinc-100 flex items-center gap-2">
+                <Info className="text-red-400 w-4 h-4" />
+                Scanner Guidance
+              </h2>
+              <ul className="space-y-3.5 list-none pl-0">
+                <li className="flex items-start gap-2">
+                  <span className="inline-block w-1.5 h-1.5 rounded-full bg-red-500/60 mt-1.5 flex-shrink-0" />
+                  <span className="text-xs text-zinc-400 leading-relaxed font-mono">
+                    Scans website parameters against error-based database injection signatures (MySQL, PostgreSQL, MSSQL).
+                  </span>
+                </li>
+                <li className="flex items-start gap-2">
+                  <span className="inline-block w-1.5 h-1.5 rounded-full bg-red-500/60 mt-1.5 flex-shrink-0" />
+                  <span className="text-xs text-zinc-400 leading-relaxed font-mono">
+                    Audits boolean and time delay variations (sleep delays validation checks).
+                  </span>
+                </li>
+                <li className="flex items-start gap-2">
+                  <span className="inline-block w-1.5 h-1.5 rounded-full bg-red-500/60 mt-1.5 flex-shrink-0" />
+                  <span className="text-xs text-zinc-400 leading-relaxed font-mono">
+                    Enforces clean Proof of Concept URLs verification and clipboard copying logic.
+                  </span>
+                </li>
+              </ul>
+            </div>
+
           </div>
+
         </div>
-      )}
-
-      <p className="text-gray-500 text-xs mt-8 text-center">
-        Use only on systems you are authorized to test.
-      </p>
+      </div>
     </div>
   );
 }

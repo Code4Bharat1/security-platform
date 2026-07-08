@@ -4,13 +4,19 @@ import { useRef, useState } from "react";
 import {
   Shield,
   Globe,
-  CheckCircle,
+  CheckCircle2,
   Clock,
   Server,
   FileDown,
   Download,
   Database,
   Lock,
+  Info,
+  Terminal,
+  Activity,
+  Layers,
+  Cpu,
+  ShieldAlert
 } from "lucide-react";
 import { jsPDF } from "jspdf";
 import { toPng } from "html-to-image";
@@ -27,11 +33,6 @@ const ccToFlag = (cc) => {
 const formatDate = (iso) => (iso ? new Date(iso).toLocaleString() : "—");
 
 export default function WhoisLookup() {
-  // ====================================================
-  // TEMPORARILY DISABLED FOR LOCAL TESTING
-  // Purpose: Skip domain ownership verification.
-  // Re-enable before production deployment.
-  // ====================================================
   const SKIP_DOMAIN_VERIFICATION_FOR_TESTING = true;
 
   const [domain, setDomain] = useState("");
@@ -65,7 +66,7 @@ export default function WhoisLookup() {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
-            Authorization: `Bearer ${token}`, // ✅ send token for protected access
+            Authorization: `Bearer ${token}`,
           },
           body: JSON.stringify({ domain: v }),
         });
@@ -89,11 +90,26 @@ export default function WhoisLookup() {
   const downloadPDF = () => {
     if (!result) return;
     const doc = new jsPDF();
-    doc.text(`WHOIS Report for ${result.input || domain}`, 10, 10);
+    const pad = 12;
+
+    // Red Team banner style
+    doc.setFillColor(18, 18, 18);
+    doc.rect(0, 0, 210, 55, "F");
+
+    doc.setTextColor(239, 68, 68);
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(16);
+    doc.text("WHOIS REGISTRY REPORT", pad, 25);
+
+    doc.setTextColor(255, 255, 255);
+    doc.setFontSize(9);
+    doc.text(`Target Domain: ${result.input || domain}`, pad, 40);
+
     const text = JSON.stringify(result.summary || result, null, 2);
     const lines = doc.splitTextToSize(text, 180);
-    doc.text(lines, 10, 20);
-    doc.save("whois-report.pdf");
+    doc.setTextColor(50, 50, 50);
+    doc.text(lines, pad, 70);
+    doc.save("whois_report.pdf");
   };
 
   const downloadPNG = async () => {
@@ -113,142 +129,274 @@ export default function WhoisLookup() {
   const summary = result?.summary;
 
   return (
-    <main className="min-h-screen bg-black text-white p-6">
-      <div className="w-full max-w-4xl mx-auto">
-        {/* Header (left) */}
-        <div className="flex items-center gap-4 mb-4 mt-15">
-          <div className="w-30 h-30 sm:w-24 md:w-30 sm:h-24 md:h-30 rounded-full overflow-hidden border-4 border-red-500 -ml-2 sm:-ml-3 md:-ml-5 flex-shrink-0">
-            <img
-              src="/Redteam/whois.png"
-              alt="Logo"
-              className="w-full h-full object-cover"
-            />
-          </div>
+    <div 
+      className="tool-detail-page min-h-screen"
+      style={{
+        '--hero-ambient-a': 'rgba(239, 68, 68, 0.08)',
+        '--hero-ambient-b': 'rgba(249, 115, 22, 0.03)',
+        '--glow-primary': '0 0 34px rgba(239, 68, 68, 0.16)',
+        '--gold': '#ef4444',
+        '--gold-strong': '#f87171',
+        '--gold-dark': '#b91c1c',
+        '--ring': 'rgba(239, 68, 68, 0.34)',
+        '--surface-glow': 'rgba(239, 68, 68, 0.14)',
+      }}
+    >
+      <style>{`
+        .tool-detail-page .tool-detail-shell {
+          padding-top: 3.5rem !important;
+        }
+        .tool-detail-page ::-webkit-scrollbar-thumb {
+          background: rgba(239, 68, 68, 0.35) !important;
+        }
+        .tool-detail-page ::-webkit-scrollbar-thumb:hover {
+          background: rgba(239, 68, 68, 0.55) !important;
+        }
+        .tool-detail-page ::selection {
+          background: rgba(239, 68, 68, 0.22) !important;
+          color: #fef2f2 !important;
+        }
+        .tool-detail-page :is(button, [role="button"]):is([class*="bg-red-"], [class*="bg-rose-"]) {
+          color: #000000 !important;
+        }
+        .tool-detail-page :is(button, [role="button"]):is([class*="bg-red-"], [class*="bg-rose-"]) * {
+          color: #000000 !important;
+        }
+      `}</style>
 
-          <div className="text-left">
-            <h1 className="text-3xl font-bold">Whois Domain Lookup</h1>
-            <p className="text-sm text-gray-400">
-              Retrieve domain registration and ownership details.
+      <div className="tool-detail-shell">
+        {/* Navigation & Header */}
+        <div className="flex justify-end mb-8">
+          <span className="rounded-full border border-red-500/30 px-3 py-1 font-mono text-[0.62rem] uppercase tracking-[0.28em] text-red-400">
+            Red Team
+          </span>
+        </div>
+
+        {/* Title Block */}
+        <div className="mb-10 flex flex-col md:flex-row items-start md:items-center gap-6">
+          <div className="w-16 h-16 rounded-2xl border border-red-500/30 overflow-hidden shadow-lg flex-shrink-0 flex items-center justify-center">
+            <Globe className="h-8 w-8 text-red-400" />
+          </div>
+          <div>
+            <h1 className="text-4xl sm:text-5xl font-mono font-bold text-zinc-100">
+              WHOIS DOMAIN <span className="text-red-400">LOOKUP</span>
+            </h1>
+            <p className="mt-2 text-zinc-400 max-w-2xl text-base font-normal">
+              Query global WHOIS registries to compile domain registration timestamps, registrar nodes, contact identities, and nameserver delegation parameters.
             </p>
           </div>
         </div>
 
-        <div className="border border-white mb-4 text-center px-10 py-10">
-          <p>WHOIS LOOKUP (Enhanced)</p>
+        {/* 2-Column Split Layout */}
+        <div className="grid gap-8 lg:grid-cols-[1fr_400px]">
+          
+          {/* Left Column */}
+          <div className="space-y-6">
+            
+            {/* Input Form Card */}
+            <div className="bg-zinc-950/20 backdrop-blur-md border border-zinc-800/80 rounded-2xl p-6 shadow-[0_8px_30px_rgb(0,0,0,0.2)] hover:border-red-500/10 transition-all duration-300 space-y-4">
+              <h2 className="text-lg font-mono font-medium text-zinc-100 mb-2 flex items-center gap-2">
+                <Globe className="h-5 w-5 text-red-400" />
+                WHOIS Registry Queries
+              </h2>
 
-          {/* Centered form */}
-          <div className="w-full flex justify-center">
-            <form
-              onSubmit={handleLookup}
-              className="w-full max-w-2xl flex flex-col gap-4"
-            >
-              <input
-                type="text"
-                placeholder="example.com"
-                value={domain}
-                onChange={(e) => setDomain(e.target.value)}
-                className="w-full px-4 py-3 rounded-full bg-black border border-white text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-red-500"
+              <form onSubmit={handleLookup} className="space-y-4">
+                <div>
+                  <label className="block text-xs uppercase tracking-wider font-mono text-zinc-400 mb-2 font-semibold">
+                    Domain Name
+                  </label>
+                  <div className="relative">
+                    <Globe className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-650" />
+                    <input
+                      type="text"
+                      placeholder="example.com"
+                      value={domain}
+                      onChange={(e) => setDomain(e.target.value)}
+                      className="w-full bg-zinc-900/40 text-zinc-100 border border-zinc-800/80 rounded-xl p-3.5 pl-12 text-sm focus:border-red-500/50 focus:ring-1 focus:ring-red-500/30 focus:shadow-[0_0_12px_rgba(239,68,68,0.08)] focus:outline-none transition-all placeholder:text-zinc-600 font-mono"
+                    />
+                  </div>
+                  <p className="mt-1.5 text-[10px] font-mono text-zinc-550">
+                    Input domain name only without http/https schema labels.
+                  </p>
+                </div>
+
+                <button
+                  type="submit"
+                  disabled={loading || !domain.trim()}
+                  className="w-full bg-red-500 hover:bg-red-600 text-black rounded-xl font-mono font-bold text-xs uppercase py-4 transition-all duration-300 hover:scale-[1.01] active:scale-[0.99] flex items-center justify-center gap-2 cursor-pointer hover:shadow-[0_0_20px_rgba(239,68,68,0.2)] focus:outline-none disabled:opacity-40"
+                >
+                  {loading ? (
+                    <>
+                      <div className="w-4 h-4 border-2 border-black border-t-transparent rounded-full animate-spin" />
+                      Looking up registry...
+                    </>
+                  ) : (
+                    <>
+                      <Globe className="w-4 h-4 text-black" />
+                      Lookup WHOIS Record
+                    </>
+                  )}
+                </button>
+              </form>
+
+              <OwnershipVerificationWizard
+                targetValue={domain}
+                targetLabel="Domain"
+                onVerifiedChange={setOwnershipVerified}
+                className="mt-4"
               />
+            </div>
 
-              <button
-                type="submit"
-                disabled={loading}
-                className="px-6 py-2 rounded bg-red-600 text-white hover:bg-red-700 transition disabled:opacity-50"
-              >
-                {loading ? "Looking up…" : "Lookup"}
-              </button>
-            </form>
-          </div>
-          <OwnershipVerificationWizard
-            targetValue={domain}
-            targetLabel="Domain"
-            onVerifiedChange={setOwnershipVerified}
-            className="mt-6"
-          />
+            {/* Error Message */}
+            {error && (
+              <div className="p-4 rounded-xl border border-red-500/20 bg-red-955/10 text-red-400 text-xs font-mono flex items-start gap-2">
+                <ShieldAlert size={16} className="mt-0.5 flex-shrink-0" />
+                <span>Lookup Error: {error}</span>
+              </div>
+            )}
 
-          {error && <p className="text-red-500 mt-4">{error}</p>}
+            {/* Loading Indicator */}
+            {loading && (
+              <div className="bg-zinc-950/20 backdrop-blur-md border border-zinc-800/80 rounded-2xl p-8 shadow-[0_8px_30px_rgb(0,0,0,0.2)] text-center space-y-4 font-mono text-xs text-zinc-400">
+                <div className="w-8 h-8 border-2 border-red-400 border-t-transparent rounded-full animate-spin mx-auto"></div>
+                <p>Querying IANA databases and parsing registrar response signatures...</p>
+              </div>
+            )}
 
-          {result?.ok && (
-            <>
-              <section
-                ref={cardRef}
-                className="bg-gray-900 text-white rounded-xl shadow p-5 mt-6"
-              >
-                <h2 className="text-xl font-bold mb-4">Domain Summary</h2>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div className="flex items-center gap-2">
-                    <Globe className="w-5 h-5 text-red-500" />
-                    <span className="font-semibold">Domain:</span>
-                    <span>{summary?.domainName || "—"}</span>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <Server className="w-5 h-5 text-red-500" />
-                    <span className="font-semibold">Registrar:</span>
-                    <span>{summary?.registrar || "—"}</span>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <Clock className="w-5 h-5 text-red-500" />
-                    <span className="font-semibold">Created:</span>
-                    <span>{formatDate(summary?.creationDate)}</span>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <Lock className="w-5 h-5 text-red-500" />
-                    <span className="font-semibold">Expires:</span>
-                    <span>{formatDate(summary?.registryExpiryDate)}</span>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <Database className="w-5 h-5 text-red-500" />
-                    <span className="font-semibold">Country:</span>
-                    <span>
-                      {ccToFlag(summary?.country)} {summary?.country || "—"}
-                    </span>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <Shield className="w-5 h-5 text-red-500" />
-                    <span className="font-semibold">Status:</span>
-                    <div className="flex flex-wrap items-center">
-                      {summary?.status?.length ? (
-                        summary.status.map((s, i) => (
-                          <span
-                            key={i}
-                            className="ml-1 inline-block px-2 py-0.5 text-xs rounded-full font-semibold bg-red-500 text-white"
-                          >
-                            {s}
-                          </span>
-                        ))
-                      ) : (
-                        <span className="ml-2">—</span>
-                      )}
+            {/* Results Details */}
+            {result?.ok && (
+              <div className="space-y-6">
+                
+                {/* Stats details card */}
+                <section
+                  ref={cardRef}
+                  className="bg-zinc-950/20 backdrop-blur-md border border-zinc-800/80 rounded-2xl p-6 shadow-[0_8px_30px_rgb(0,0,0,0.2)] space-y-4"
+                >
+                  <h3 className="text-sm font-mono font-bold text-zinc-200 flex items-center gap-2 border-b border-zinc-850 pb-2.5">
+                    <Activity className="w-4 h-4 text-red-400" />
+                    Domain Registry Summary
+                  </h3>
+
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4 font-mono text-xs text-zinc-350">
+                    <div className="flex items-center gap-2.5 bg-zinc-900/40 border border-zinc-850 p-3 rounded-xl">
+                      <Globe className="w-4.5 h-4.5 text-red-400 flex-shrink-0" />
+                      <span className="text-zinc-550 font-semibold">Domain:</span>
+                      <span className="text-zinc-200 font-bold break-all">{summary?.domainName || "—"}</span>
+                    </div>
+
+                    <div className="flex items-center gap-2.5 bg-zinc-900/40 border border-zinc-850 p-3 rounded-xl">
+                      <Server className="w-4.5 h-4.5 text-red-400 flex-shrink-0" />
+                      <span className="text-zinc-550 font-semibold">Registrar:</span>
+                      <span className="text-zinc-200 font-bold break-all">{summary?.registrar || "—"}</span>
+                    </div>
+
+                    <div className="flex items-center gap-2.5 bg-zinc-900/40 border border-zinc-850 p-3 rounded-xl">
+                      <Clock className="w-4.5 h-4.5 text-red-400 flex-shrink-0" />
+                      <span className="text-zinc-550 font-semibold">Created:</span>
+                      <span className="text-zinc-200 font-bold">{formatDate(summary?.creationDate)}</span>
+                    </div>
+
+                    <div className="flex items-center gap-2.5 bg-zinc-900/40 border border-zinc-850 p-3 rounded-xl">
+                      <Lock className="w-4.5 h-4.5 text-red-400 flex-shrink-0" />
+                      <span className="text-zinc-550 font-semibold">Expires:</span>
+                      <span className="text-zinc-200 font-bold">{formatDate(summary?.registryExpiryDate)}</span>
+                    </div>
+
+                    <div className="flex items-center gap-2.5 bg-zinc-900/40 border border-zinc-850 p-3 rounded-xl">
+                      <Database className="w-4.5 h-4.5 text-red-400 flex-shrink-0" />
+                      <span className="text-zinc-550 font-semibold">Country:</span>
+                      <span className="text-zinc-200 font-bold">
+                        {ccToFlag(summary?.country)} {summary?.country || "—"}
+                      </span>
+                    </div>
+
+                    <div className="flex items-center gap-2.5 bg-zinc-900/40 border border-zinc-850 p-3 rounded-xl">
+                      <Shield className="w-4.5 h-4.5 text-red-400 flex-shrink-0" />
+                      <span className="text-zinc-550 font-semibold">Status:</span>
+                      <div className="flex flex-wrap items-center gap-1.5">
+                        {summary?.status?.length ? (
+                          summary.status.map((s, i) => (
+                            <span
+                              key={i}
+                              className="inline-block px-2 py-0.5 text-[9px] rounded-lg border border-red-500/30 bg-red-500/5 text-red-400 font-semibold uppercase font-mono"
+                            >
+                              {s}
+                            </span>
+                          ))
+                        ) : (
+                          <span className="text-zinc-500">—</span>
+                        )}
+                      </div>
                     </div>
                   </div>
+                </section>
+
+                {/* Export Options */}
+                <div className="flex flex-wrap gap-3">
+                  <button
+                    onClick={downloadPDF}
+                    className="px-4 py-2.5 bg-zinc-900/40 hover:bg-red-500/5 text-zinc-350 hover:text-red-400 border border-zinc-800/80 hover:border-red-500/30 rounded-xl font-mono font-bold text-xs uppercase transition-all duration-300 flex items-center gap-1.5 cursor-pointer"
+                  >
+                    <FileDown className="w-3.5 h-3.5" /> PDF Report
+                  </button>
+                  <button
+                    onClick={downloadPNG}
+                    className="px-4 py-2.5 bg-zinc-900/40 hover:bg-red-50/5 text-zinc-350 hover:text-red-450 border border-zinc-800/80 hover:border-red-500/30 rounded-xl font-mono font-bold text-xs uppercase transition-all duration-350 flex items-center gap-1.5 cursor-pointer"
+                  >
+                    <Download className="w-3.5 h-3.5" /> PNG Image
+                  </button>
                 </div>
-              </section>
 
-              <div className="flex gap-4 mt-4">
-                <button
-                  onClick={downloadPDF}
-                  className="flex items-center gap-2 px-4 py-2 rounded border border-red-500 text-red-500 hover:bg-red-600 hover:text-white"
-                >
-                  <FileDown className="w-4 h-4" /> PDF
-                </button>
-                <button
-                  onClick={downloadPNG}
-                  className="flex items-center gap-2 px-4 py-2 rounded border border-red-500 text-red-500 hover:bg-red-600 hover:text-white"
-                >
-                  <Download className="w-4 h-4" /> PNG
-                </button>
+                {/* Raw response */}
+                <section className="bg-zinc-950/20 backdrop-blur-md border border-zinc-800/80 rounded-2xl p-6 shadow-[0_8px_30px_rgb(0,0,0,0.2)] space-y-3 font-mono text-xs">
+                  <h3 className="text-sm font-mono font-bold text-zinc-200 flex items-center gap-2 border-b border-zinc-900 pb-2.5">
+                    <Terminal className="w-4 h-4 text-red-400" />
+                    WHOIS Raw Response
+                  </h3>
+                  <pre className="whitespace-pre-wrap text-[11px] text-zinc-450 bg-zinc-950/65 border border-zinc-900 rounded-xl p-4 overflow-auto max-h-96 leading-relaxed">
+                    {result.raw || "No raw registry records found."}
+                  </pre>
+                </section>
               </div>
+            )}
 
-              <section className="bg-gray-900 text-white rounded-xl shadow p-5 mt-6">
-                <h2 className="text-xl font-bold mb-2">WHOIS Raw Data</h2>
-                <pre className="whitespace-pre-wrap text-sm text-gray-300 bg-black p-4 rounded">
-                  {result.raw || "—"}
-                </pre>
-              </section>
-            </>
-          )}
+          </div>
+
+          {/* Right Column (Guidance) */}
+          <div className="space-y-6">
+            
+            {/* Guidance sidebar card */}
+            <div className="border border-zinc-800/80 bg-zinc-950/20 backdrop-blur-md rounded-2xl p-6 space-y-4 shadow-[0_8px_30px_rgb(0,0,0,0.12)]">
+              <h2 className="text-xs font-mono font-bold uppercase tracking-wider text-zinc-100 flex items-center gap-2">
+                <Info className="text-red-400 w-4 h-4" />
+                Lookup Guidance
+              </h2>
+              <ul className="space-y-3.5 list-none pl-0">
+                <li className="flex items-start gap-2">
+                  <span className="inline-block w-1.5 h-1.5 rounded-full bg-red-500/60 mt-1.5 flex-shrink-0" />
+                  <span className="text-xs text-zinc-400 leading-relaxed font-mono">
+                    Queries registry networks globally to retrieve registration age, status, and domain expiration updates.
+                  </span>
+                </li>
+                <li className="flex items-start gap-2">
+                  <span className="inline-block w-1.5 h-1.5 rounded-full bg-red-500/60 mt-1.5 flex-shrink-0" />
+                  <span className="text-xs text-zinc-400 leading-relaxed font-mono">
+                    Identifies registry lock indicators (ClientTransferProhibited, ClientDeleteProhibited flags).
+                  </span>
+                </li>
+                <li className="flex items-start gap-2">
+                  <span className="inline-block w-1.5 h-1.5 rounded-full bg-red-500/60 mt-1.5 flex-shrink-0" />
+                  <span className="text-xs text-zinc-400 leading-relaxed font-mono">
+                    Logs active nameservers delegation mapping configurations.
+                  </span>
+                </li>
+              </ul>
+            </div>
+
+          </div>
+
         </div>
       </div>
-    </main>
+    </div>
   );
 }

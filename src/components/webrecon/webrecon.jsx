@@ -3,9 +3,30 @@
 import { useMemo, useState } from "react";
 import jsPDF from "jspdf";
 import autoTable from "jspdf-autotable";
-
 import useProtectedAction from "../UseProtectedAction/UseProtectedAction";
 import OwnershipVerificationWizard from "@/components/ownership/OwnershipVerificationWizard";
+import {
+  Globe,
+  Search,
+  Filter,
+  ShieldAlert,
+  Award,
+  FileText,
+  Loader2,
+  Key,
+  Info,
+  Terminal,
+  ChevronDown,
+  CheckCircle2,
+  Server,
+  Download,
+  FileSpreadsheet,
+  MapPin,
+  ShieldCheck,
+  Activity,
+  Layers,
+  Database
+} from "lucide-react";
 
 const dnsTypeMap = { 1: "A", 28: "AAAA", 15: "MX", 16: "TXT", 2: "NS" };
 const RECORD_TYPES = ["A", "AAAA", "MX", "TXT", "NS"];
@@ -27,18 +48,13 @@ const flattenTechnologies = (tech = {}) =>
   );
 
 const getPortTone = (state) => {
-  if (state === "open") return "text-emerald-400";
-  if (state === "closed") return "text-gray-400";
-  if (state === "filtered") return "text-amber-400";
-  return "text-rose-400";
+  if (state === "open") return "text-red-400 font-bold";
+  if (state === "closed") return "text-zinc-600";
+  if (state === "filtered") return "text-orange-400 font-medium";
+  return "text-zinc-500";
 };
 
 export default function Webrecon() {
-  // ====================================================
-  // TEMPORARILY DISABLED FOR LOCAL TESTING
-  // Purpose: Skip domain ownership verification.
-  // Re-enable before production deployment.
-  // ====================================================
   const SKIP_DOMAIN_VERIFICATION_FOR_TESTING = true;
 
   const protectedAction = useProtectedAction();
@@ -175,9 +191,10 @@ export default function Webrecon() {
     const pageWidth = doc.internal.pageSize.getWidth();
     const horizontalMargin = 10;
     const usableWidth = pageWidth - horizontalMargin * 2;
-    const sectionWidth = 28;
-    const keyWidth = 34;
+    const sectionWidth = 30;
+    const keyWidth = 40;
     const valueWidth = usableWidth - sectionWidth - keyWidth;
+    
     const body = [
       ["WHOIS", "Registrar", scan.whois?.registrar || "-"],
       ["WHOIS", "Created", scan.whois?.created || "-"],
@@ -206,21 +223,32 @@ export default function Webrecon() {
       ]) || []),
     ];
 
-    doc.setFontSize(14);
-    doc.text("Website Recon Report", horizontalMargin, 14);
+    // Header Banner
+    doc.setFillColor(18, 18, 18);
+    doc.rect(0, 0, pageWidth, 40, "F");
+
+    doc.setTextColor(239, 68, 68); // Red Team Primary
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(18);
+    doc.text("NEXCORE RED TEAM SECURITY AUDIT", horizontalMargin, 20);
+
+    doc.setTextColor(255, 255, 255);
+    doc.setFontSize(10);
+    doc.text("WEBSITE RECONNAISSANCE DISCOVERY LOG", horizontalMargin, 30);
+
     autoTable(doc, {
-      head: [["Section", "Key", "Value"]],
+      head: [["Section", "Audit Target Matrix Key", "Detected Value"]],
       body,
-      startY: 18,
+      startY: 48,
       margin: { left: horizontalMargin, right: horizontalMargin },
       styles: {
         fontSize: 8,
-        cellPadding: 2,
+        cellPadding: 3,
         overflow: "linebreak",
         valign: "middle",
       },
       headStyles: {
-        fillColor: [31, 41, 55],
+        fillColor: [239, 68, 68],
         textColor: 255,
         fontStyle: "bold",
       },
@@ -230,339 +258,531 @@ export default function Webrecon() {
         2: { cellWidth: valueWidth },
       },
     });
-    doc.save("website_recon.pdf");
+    
+    doc.save("website_recon_report.pdf");
   };
 
   return (
-    <div className="tool-detail-page min-h-screen bg-black text-white">
-      <div className="tool-detail-shell max-w-4xl mx-auto p-6">
-        <div className="tool-detail-hero flex flex-row items-center gap-4 mb-8 text-left">
-          <div className="w-30 h-30 bg-gray-800 rounded-full border-4 border-red-500 flex items-center justify-center overflow-hidden flex-shrink-0">
-            <img
-              src="/RedTeam/web-recon.png"
-              alt="Website Recon"
-              className="w-full h-full object-cover"
-            />
+    <div 
+      className="tool-detail-page min-h-screen"
+      style={{
+        '--hero-ambient-a': 'rgba(239, 68, 68, 0.08)',
+        '--hero-ambient-b': 'rgba(249, 115, 22, 0.03)',
+        '--glow-primary': '0 0 34px rgba(239, 68, 68, 0.16)',
+        '--gold': '#ef4444',
+        '--gold-strong': '#f87171',
+        '--gold-dark': '#b91c1c',
+        '--ring': 'rgba(239, 68, 68, 0.34)',
+        '--surface-glow': 'rgba(239, 68, 68, 0.14)',
+      }}
+    >
+      <style>{`
+        .tool-detail-page .tool-detail-shell {
+          padding-top: 3.5rem !important;
+        }
+        .tool-detail-page ::-webkit-scrollbar-thumb {
+          background: rgba(239, 68, 68, 0.35) !important;
+        }
+        .tool-detail-page ::-webkit-scrollbar-thumb:hover {
+          background: rgba(239, 68, 68, 0.55) !important;
+        }
+        .tool-detail-page ::selection {
+          background: rgba(239, 68, 68, 0.22) !important;
+          color: #fef2f2 !important;
+        }
+        .tool-detail-page :is(button, [role="button"]):is([class*="bg-red-"], [class*="bg-rose-"]) {
+          color: #000000 !important;
+        }
+        .tool-detail-page :is(button, [role="button"]):is([class*="bg-red-"], [class*="bg-rose-"]) * {
+          color: #000000 !important;
+        }
+      `}</style>
+
+      <div className="tool-detail-shell">
+        {/* Navigation Top Badge */}
+        <div className="flex justify-end mb-8">
+          <span className="rounded-full border border-red-500/30 px-3 py-1 font-mono text-[0.62rem] uppercase tracking-[0.28em] text-red-400">
+            Red Team
+          </span>
+        </div>
+
+        {/* Title Block */}
+        <div className="mb-10 flex flex-col md:flex-row items-start md:items-center gap-6">
+          <div className="w-16 h-16 rounded-2xl border border-red-500/30 overflow-hidden shadow-lg flex-shrink-0 flex items-center justify-center">
+            <Globe className="h-8 w-8 text-red-400" />
           </div>
           <div>
-            <h1 className="text-2xl sm:text-3xl font-bold text-white">
-              Website Recon Tool
+            <h1 className="text-4xl sm:text-5xl font-mono font-bold text-zinc-100">
+              WEBSITE RECON <span className="text-red-400">TOOL</span>
             </h1>
-            <p className="text-gray-400 text-base sm:text-lg">
-              Perform an in-depth reconnaissance of a website to identify key
-              metadata and technologies used.
+            <p className="mt-2 text-zinc-400 max-w-2xl text-base font-normal">
+              Perform in-depth active reconnaissance of targeted websites to inspect host metadata, active portfolios, running services, and technology footprints.
             </p>
           </div>
         </div>
 
-        <div className="bg-gray-900 border border-white-700 rounded-lg p-6 mb-6 text-center">
-          <h2 className="text-red-400 text-lg font-semibold mb-4">DNS Lookup</h2>
+        {/* 2-Column Split Layout */}
+        <div className="grid gap-8 lg:grid-cols-[1fr_400px]">
+          
+          {/* Left Column (Inputs, Settings, Logs & Results) */}
+          <div className="space-y-6">
+            
+            {/* Form Card 1: DNS Lookup */}
+            <div className="bg-zinc-950/20 backdrop-blur-md border border-zinc-800/80 rounded-2xl p-6 shadow-[0_8px_30px_rgb(0,0,0,0.2)] hover:border-red-500/10 transition-all duration-300 space-y-4">
+              <h2 className="text-lg font-mono font-medium text-zinc-100 mb-2 flex items-center gap-2">
+                <Database className="h-5 w-5 text-red-400" />
+                DNS Records Lookup
+              </h2>
 
-          <div className="flex flex-col sm:flex-row gap-2 mb-4">
-            <input
-              type="text"
-              placeholder="Enter domain (e.g., example.com)"
-              value={domain}
-              onChange={(e) => setDomain(e.target.value)}
-              className="w-full bg-gray-800 text-white border border-white-600 rounded px-3 py-2"
-            />
-            <select
-              value={recordType}
-              onChange={(e) => setRecordType(e.target.value)}
-              className="w-full sm:w-auto bg-gray-800 text-white border border-white-600 rounded px-3 py-2"
-            >
-              {RECORD_TYPES.map((rt) => (
-                <option key={rt} value={rt}>
-                  {rt}
-                </option>
-              ))}
-            </select>
-            <button
-              onClick={handleLookup}
-              disabled={loading}
-              className="w-full sm:w-auto bg-gray-700 hover:bg-gray-600 text-white px-4 py-2 rounded border border-white-600 disabled:opacity-50"
-            >
-              {loading ? "Looking up..." : "DNS Lookup"}
-            </button>
-          </div>
-
-          {error && <p className="text-red-400 mb-4">{error}</p>}
-
-          {result && (
-            <div className="bg-gray-800 border border-white-600 rounded p-4 mb-4 overflow-x-auto">
-              <h3 className="text-white font-semibold mb-2">DNS Results</h3>
-              {Array.isArray(result.Answer) && result.Answer.length > 0 ? (
-                <ul className="space-y-2 text-left">
-                  {result.Answer.map((rec, i) => (
-                    <li key={i} className="text-gray-300 text-sm">
-                      <div>
-                        <span className="text-gray-400">Name:</span> {rec.name}
-                      </div>
-                      <div>
-                        <span className="text-gray-400">Type:</span>{" "}
-                        {getTypeName(rec.type)}
-                      </div>
-                      <div>
-                        <span className="text-gray-400">TTL:</span> {rec.TTL}s
-                      </div>
-                      <div>
-                        <span className="text-gray-400">Data:</span> {rec.data}
-                      </div>
-                    </li>
-                  ))}
-                </ul>
-              ) : (
-                <div className="text-gray-400 text-sm">
-                  No DNS answers returned for this record type.
+              <div className="space-y-4">
+                <div>
+                  <label className="block text-xs uppercase tracking-wider font-mono text-zinc-400 mb-2 font-semibold">
+                    Target Domain
+                  </label>
+                  <input
+                    type="text"
+                    placeholder="Enter domain (e.g., example.com)"
+                    value={domain}
+                    onChange={(e) => setDomain(e.target.value)}
+                    className="w-full bg-zinc-900/40 text-zinc-100 border border-zinc-800/80 rounded-xl p-3.5 text-sm focus:border-red-500/50 focus:ring-1 focus:ring-red-500/30 focus:outline-none transition-all placeholder:text-zinc-600 font-mono"
+                  />
                 </div>
-              )}
+
+                <div className="grid gap-3 sm:grid-cols-2">
+                  {RECORD_TYPES.map((rt) => {
+                    const isSelected = recordType === rt;
+                    return (
+                      <label
+                        key={rt}
+                        onClick={() => setRecordType(rt)}
+                        className={`flex items-center gap-3 text-sm cursor-pointer group p-3.5 rounded-xl border transition-all ${
+                          isSelected
+                            ? "border-red-500/50 bg-red-500/5 text-white"
+                            : "border-zinc-800/80 bg-white/[0.01] text-zinc-300 hover:bg-white/[0.03] hover:border-zinc-700"
+                        }`}
+                      >
+                        <input
+                          type="radio"
+                          name="recordType"
+                          checked={isSelected}
+                          onChange={() => setRecordType(rt)}
+                          className="text-red-500 focus:ring-red-500 bg-transparent border-zinc-700"
+                        />
+                        <span className="font-mono font-medium">{rt} Type</span>
+                      </label>
+                    );
+                  })}
+                </div>
+
+                <button
+                  onClick={handleLookup}
+                  disabled={loading || !domain}
+                  className="w-full bg-red-500 hover:bg-red-600 text-black rounded-xl font-mono font-bold text-xs uppercase py-4 transition-all duration-300 hover:scale-[1.01] active:scale-[0.99] flex items-center justify-center gap-2 cursor-pointer hover:shadow-[0_0_20px_rgba(239,68,68,0.2)] focus:outline-none"
+                >
+                  {loading ? (
+                    <>
+                      <Loader2 className="w-4 h-4 animate-spin text-black" />
+                      Resolving DNS Records...
+                    </>
+                  ) : (
+                    <>
+                      <Search className="w-4 h-4 text-black" />
+                      Execute DNS Lookup
+                    </>
+                  )}
+                </button>
+              </div>
             </div>
-          )}
-        </div>
 
-        <div className="bg-gray-900 border border-white-700 rounded-lg p-6">
-          <div className="flex flex-col sm:flex-row items-center justify-between gap-3 mb-4">
-            <h3 className="text-gray-300 text-lg text-center sm:text-left">
-              Deep Scan (WHOIS, SSL, Tech, GeoIP, DNS, Headers, Ports)
-            </h3>
-            <button
-              onClick={handleDeepScan}
-              disabled={scanLoading}
-              className="w-full sm:w-auto px-4 py-2 bg-red-600 text-white rounded-lg shadow hover:bg-red-700 disabled:opacity-50"
-            >
-              {scanLoading ? "Scanning..." : "Run Deep Scan"}
-            </button>
-          </div>
-          <OwnershipVerificationWizard
-            targetValue={domain}
-            targetLabel="Domain"
-            onVerifiedChange={setOwnershipVerified}
-            className="mt-4"
-          />
-          {scanError && <p className="text-red-400 mb-4">{scanError}</p>}
-        </div>
+            {/* Error Message for DNS Lookup */}
+            {error && (
+              <div className="p-4 rounded-xl border border-red-500/20 bg-red-955/10 text-red-400 text-xs font-mono flex items-start gap-2">
+                <ShieldAlert size={16} className="mt-0.5 flex-shrink-0" />
+                <span>Lookup Failure: {error}</span>
+              </div>
+            )}
 
-        {scan && (
-          <div className="space-y-6 mt-6">
-            {scan.warnings?.length > 0 && (
-              <div className="bg-amber-950/40 border border-amber-700 rounded-lg p-4">
-                <h3 className="text-amber-300 font-semibold mb-2">
+            {/* DNS lookup results display */}
+            {result && (
+              <div className="bg-zinc-950/20 backdrop-blur-md border border-zinc-800/80 rounded-2xl p-6 shadow-[0_8px_30px_rgb(0,0,0,0.2)]">
+                <h3 className="text-sm font-mono font-bold text-zinc-200 flex items-center gap-2 border-b border-zinc-850 pb-2.5 mb-4">
+                  <Terminal className="w-4 h-4 text-red-400" />
+                  Resolved DNS Results ({recordType})
+                </h3>
+                {Array.isArray(result.Answer) && result.Answer.length > 0 ? (
+                  <div className="space-y-4">
+                    {result.Answer.map((rec, i) => (
+                      <div key={i} className="bg-zinc-900/40 border border-zinc-800/80 p-4 rounded-xl font-mono text-xs text-zinc-300 space-y-1">
+                        <div>
+                          <span className="text-zinc-500">Name:</span> {rec.name}
+                        </div>
+                        <div>
+                          <span className="text-zinc-500">Record Type:</span> {getTypeName(rec.type)}
+                        </div>
+                        <div>
+                          <span className="text-zinc-500">TTL Cache Time:</span> {rec.TTL} seconds
+                        </div>
+                        <div className="break-all font-semibold text-red-450 mt-1">
+                          <span className="text-zinc-500 font-normal">Data Value:</span> {rec.data}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <p className="text-xs font-mono text-zinc-550 italic text-center py-4">
+                    No DNS answers returned for this record type.
+                  </p>
+                )}
+              </div>
+            )}
+
+            {/* Form Card 2: Deep Security Recon */}
+            <div className="bg-zinc-950/20 backdrop-blur-md border border-zinc-800/80 rounded-2xl p-6 shadow-[0_8px_30px_rgb(0,0,0,0.2)] hover:border-red-500/10 transition-all duration-300 space-y-4">
+              <h2 className="text-lg font-mono font-medium text-zinc-100 mb-2 flex items-center gap-2">
+                <Activity className="h-5 w-5 text-red-400" />
+                Deep Scanning Suite
+              </h2>
+              <p className="text-xs text-zinc-400 leading-relaxed font-mono">
+                Retrieve WHOIS parameters, SSL/TLS handshake configurations, web server architectures, missing security headers, Geo-IP locations, and common port sweeps.
+              </p>
+
+              <div className="space-y-4">
+                <button
+                  onClick={handleDeepScan}
+                  disabled={scanLoading || !domain}
+                  className="w-full bg-red-500 hover:bg-red-600 text-black rounded-xl font-mono font-bold text-xs uppercase py-4 transition-all duration-300 hover:scale-[1.01] active:scale-[0.99] flex items-center justify-center gap-2 cursor-pointer hover:shadow-[0_0_20px_rgba(239,68,68,0.2)] focus:outline-none"
+                >
+                  {scanLoading ? (
+                    <>
+                      <Loader2 className="w-4 h-4 animate-spin text-black" />
+                      Running Deep Scan Suite...
+                    </>
+                  ) : (
+                    <>
+                      <Activity className="w-4 h-4 text-black" />
+                      Run Deep Recon Scan
+                    </>
+                  )}
+                </button>
+
+                <OwnershipVerificationWizard
+                  targetValue={domain}
+                  targetLabel="Domain"
+                  onVerifiedChange={setOwnershipVerified}
+                />
+              </div>
+            </div>
+
+            {/* Deep Scan Errors */}
+            {scanError && (
+              <div className="p-4 rounded-xl border border-red-500/20 bg-red-955/10 text-red-400 text-xs font-mono flex items-start gap-2">
+                <ShieldAlert size={16} className="mt-0.5 flex-shrink-0" />
+                <span>Deep Scan Error: {scanError}</span>
+              </div>
+            )}
+
+            {/* Warnings Block */}
+            {scan && scan.warnings?.length > 0 && (
+              <div className="border border-orange-500/20 bg-orange-950/10 rounded-2xl p-6 space-y-3 font-mono">
+                <h3 className="text-orange-400 text-xs font-bold uppercase tracking-wider flex items-center gap-2">
+                  <ShieldAlert className="w-4 h-4" />
                   Partial Scan Warnings
                 </h3>
-                <ul className="list-disc list-inside text-sm text-amber-200 space-y-1">
+                <ul className="list-none pl-0 space-y-2 text-xs text-orange-355">
                   {scan.warnings.map((warning, index) => (
-                    <li key={`${warning}-${index}`}>{warning}</li>
+                    <li key={`${warning}-${index}`} className="flex items-start gap-2">
+                      <span className="inline-block w-1 h-1 rounded-full bg-orange-500/60 mt-1.5 flex-shrink-0" />
+                      <span>{warning}</span>
+                    </li>
                   ))}
                 </ul>
               </div>
             )}
 
-            <div className="bg-gray-900 border border-white-700 rounded-lg p-6">
-              <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 mb-4">
-                <div className="text-sm text-gray-400">
-                  Scanned URL: {scan.urlUsed || "-"}
-                </div>
-                <div className="text-sm text-gray-400">
-                  Saved to database:{" "}
-                  <span
-                    className={
-                      scan.persistence?.saved
-                        ? "text-emerald-400"
-                        : "text-rose-400"
-                    }
-                  >
-                    {scan.persistence?.saved ? "Yes" : "No"}
-                  </span>
-                </div>
-              </div>
-
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div>
-                  <h3 className="text-white font-semibold mb-3">WHOIS</h3>
-                  <div className="space-y-1 text-gray-300">
-                    <div>Registrar: {scan.whois?.registrar || "-"}</div>
-                    <div>Created: {scan.whois?.created || "-"}</div>
-                    <div>Updated: {scan.whois?.updated || "-"}</div>
-                    <div>Expiry: {scan.whois?.expires || "-"}</div>
-                    <div>
-                      Privacy Protected:{" "}
-                      {scan.whois?.privacyProtected ? "Yes" : "No"}
-                    </div>
-                    <div>
-                      Source:{" "}
-                      {scan.whois?.source?.length
-                        ? scan.whois.source.join(", ")
-                        : "-"}
-                    </div>
+            {/* DEEP SCAN DETAILS RESULTS */}
+            {scan && (
+              <div className="space-y-6">
+                
+                {/* Telemetry info header */}
+                <div className="bg-zinc-900/40 border border-zinc-800/80 p-4 rounded-xl font-mono text-xs flex flex-wrap justify-between gap-4">
+                  <div className="text-zinc-400">
+                    Audit URL: <span className="text-zinc-200 font-bold">{scan.urlUsed || "-"}</span>
                   </div>
-                  <div className="mt-3">
-                    <div className="text-gray-400 text-sm mb-1">Nameservers</div>
-                    <ul className="list-disc list-inside text-sm text-gray-300">
-                      {scan.whois?.nameservers?.length ? (
-                        scan.whois.nameservers.map((item) => (
-                          <li key={item}>{item}</li>
-                        ))
-                      ) : (
-                        <li>-</li>
-                      )}
-                    </ul>
+                  <div className="text-zinc-400">
+                    Persistence Logged:{" "}
+                    <span className={scan.persistence?.saved ? "text-red-400 font-bold" : "text-zinc-550"}>
+                      {scan.persistence?.saved ? "Active Database Link" : "No"}
+                    </span>
                   </div>
                 </div>
 
-                <div>
-                  <h3 className="text-white font-semibold mb-3">SSL / TLS</h3>
-                  <div className="space-y-1 text-gray-300">
-                    <div>Issuer: {scan.ssl?.issuer || "-"}</div>
-                    <div>Subject CN: {scan.ssl?.subjectCN || "-"}</div>
-                    <div>Valid From: {scan.ssl?.validFrom || "-"}</div>
-                    <div>Valid Till: {scan.ssl?.validTo || "-"}</div>
-                    <div>TLS Version: {scan.ssl?.protocol || "-"}</div>
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            <div className="bg-gray-900 border border-white-700 rounded-lg p-6">
-              <h3 className="text-white font-semibold mb-4">
-                Technology Detection
-              </h3>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                {TECH_GROUPS.map(({ key, label }) => (
-                  <div key={key}>
-                    <div className="text-gray-300 font-medium mb-2">{label}</div>
-                    <ul className="list-disc list-inside text-sm text-gray-400 space-y-1">
-                      {scan.technologies?.[key]?.length ? (
-                        scan.technologies[key].map((item) => (
-                          <li key={`${key}-${item}`}>{item}</li>
-                        ))
-                      ) : (
-                        <li>-</li>
-                      )}
-                    </ul>
-                  </div>
-                ))}
-              </div>
-            </div>
-
-            <div className="bg-gray-900 border border-white-700 rounded-lg p-6">
-              <h3 className="text-white font-semibold mb-4">Security Headers</h3>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6 text-gray-300">
-                <div className="space-y-1">
-                  <div>
-                    HTTP redirects to HTTPS:{" "}
-                    {scan.securityHeaders?.redirect?.redirectsToHttps
-                      ? "Yes"
-                      : "No"}
-                  </div>
-                  <div>
-                    HSTS Enabled:{" "}
-                    {scan.securityHeaders?.hsts?.enabled ? "Yes" : "No"}
-                  </div>
-                  <div>
-                    HSTS Max-Age: {scan.securityHeaders?.hsts?.maxAge ?? "-"}
-                  </div>
-                  <div>Server: {scan.securityHeaders?.server || "-"}</div>
-                  <div>
-                    X-Powered-By: {scan.securityHeaders?.xPoweredBy || "-"}
-                  </div>
-                </div>
-
-                <div>
-                  <div className="text-gray-300 font-medium mb-2">
-                    Missing Core Headers
-                  </div>
-                  <ul className="list-disc list-inside text-sm text-gray-400 space-y-1">
-                    {scan.securityHeaders?.missing?.length ? (
-                      scan.securityHeaders.missing.map((item) => (
-                        <li key={item}>{item}</li>
-                      ))
-                    ) : (
-                      <li>None</li>
-                    )}
-                  </ul>
-                </div>
-              </div>
-            </div>
-
-            <div className="bg-gray-900 border border-white-700 rounded-lg p-6">
-              <h3 className="text-white font-semibold mb-3">Geo-IP</h3>
-              <div className="space-y-1 text-gray-300">
-                <div>IP: {scan.geoip?.ip || "-"}</div>
-                <div>
-                  Location: {scan.geoip?.country || "-"}
-                  {scan.geoip?.region ? ` (${scan.geoip.region})` : ""}
-                  {scan.geoip?.city ? ` - ${scan.geoip.city}` : ""}
-                </div>
-                <div>ISP: {scan.geoip?.isp || "-"}</div>
-              </div>
-            </div>
-
-            <div className="bg-gray-900 border border-white-700 rounded-lg p-6 overflow-x-auto">
-              <h3 className="text-white font-semibold mb-4">
-                DNS (A/AAAA/MX/TXT/NS)
-              </h3>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                {RECORD_TYPES.map((key) => (
-                  <div key={key}>
-                    <div className="text-gray-300 font-medium mb-1">{key}</div>
-                    <ul className="list-disc list-inside text-sm">
-                      {(scan.dns?.[key]?.Answer || []).map((rec, i) => (
-                        <li key={i} className="text-gray-400 break-words">
-                          {rec.name} - {getTypeName(rec.type)} - {rec.TTL}s -{" "}
-                          {rec.data}
-                        </li>
-                      ))}
-                      {!scan.dns?.[key]?.Answer?.length && (
-                        <li className="text-gray-500">-</li>
-                      )}
-                    </ul>
-                  </div>
-                ))}
-              </div>
-            </div>
-
-            <div className="bg-gray-900 border border-white-700 rounded-lg p-6">
-              <h3 className="text-white font-semibold mb-4">
-                Common Port Snapshot
-              </h3>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                {(scan.ports?.results || []).map((item) => (
-                  <div
-                    key={`${item.port}-${item.service}`}
-                    className="border border-white-700 rounded px-3 py-2 text-sm"
-                  >
-                    <div className="text-white font-medium">
-                      {item.port} / {item.service}
-                    </div>
-                    <div className={getPortTone(item.state)}>
-                      {item.state.toUpperCase()}
-                    </div>
-                    {item.error && (
-                      <div className="text-gray-500 break-words">
-                        {item.error}
+                {/* WHOIS and SSL Blocks */}
+                <div className="grid gap-6 md:grid-cols-2">
+                  {/* WHOIS */}
+                  <div className="bg-zinc-950/20 border border-zinc-800/80 rounded-2xl p-6 font-mono text-xs space-y-3">
+                    <h3 className="text-sm font-bold text-zinc-100 flex items-center gap-2 border-b border-zinc-850 pb-2">
+                      <FileText className="w-4 h-4 text-red-400" />
+                      WHOIS Identity Registry
+                    </h3>
+                    <div className="space-y-2 text-zinc-450">
+                      <div>Registrar: <span className="text-zinc-300 font-semibold">{scan.whois?.registrar || "-"}</span></div>
+                      <div>Created: <span className="text-zinc-300">{scan.whois?.created || "-"}</span></div>
+                      <div>Updated: <span className="text-zinc-300">{scan.whois?.updated || "-"}</span></div>
+                      <div>Expiry Date: <span className="text-zinc-300">{scan.whois?.expires || "-"}</span></div>
+                      <div>
+                        Privacy Masked:{" "}
+                        <span className={scan.whois?.privacyProtected ? "text-red-400" : "text-zinc-400"}>
+                          {scan.whois?.privacyProtected ? "Yes" : "No"}
+                        </span>
                       </div>
-                    )}
+                      <div className="pt-1.5">
+                        <span className="text-[10px] text-zinc-650 block mb-1">Nameservers Log</span>
+                        <div className="bg-zinc-900/40 p-2 rounded-lg border border-zinc-800/50 space-y-1">
+                          {scan.whois?.nameservers?.length ? (
+                            scan.whois.nameservers.map((item) => (
+                              <div key={item} className="text-[11px] text-zinc-350">{item}</div>
+                            ))
+                          ) : (
+                            <div className="text-zinc-600">-</div>
+                          )}
+                        </div>
+                      </div>
+                    </div>
                   </div>
-                ))}
+
+                  {/* SSL / TLS */}
+                  <div className="bg-zinc-950/20 border border-zinc-800/80 rounded-2xl p-6 font-mono text-xs space-y-3">
+                    <h3 className="text-sm font-bold text-zinc-100 flex items-center gap-2 border-b border-zinc-850 pb-2">
+                      <ShieldCheck className="w-4 h-4 text-red-400" />
+                      SSL / TLS Handshake Cert
+                    </h3>
+                    <div className="space-y-2 text-zinc-450">
+                      <div>Authority: <span className="text-zinc-300 font-semibold">{scan.ssl?.issuer || "-"}</span></div>
+                      <div>Subject CN: <span className="text-zinc-300">{scan.ssl?.subjectCN || "-"}</span></div>
+                      <div>Issued On: <span className="text-zinc-300">{scan.ssl?.validFrom || "-"}</span></div>
+                      <div>Expires On: <span className="text-zinc-300">{scan.ssl?.validTo || "-"}</span></div>
+                      <div>TLS Version: <span className="text-red-450 font-bold">{scan.ssl?.protocol || "-"}</span></div>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Tech Detection */}
+                <div className="bg-zinc-950/20 border border-zinc-800/80 rounded-2xl p-6 font-mono text-xs space-y-4">
+                  <h3 className="text-sm font-bold text-zinc-100 flex items-center gap-2 border-b border-zinc-850 pb-2">
+                    <Layers className="w-4 h-4 text-red-400" />
+                    Stack Technology footprint
+                  </h3>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    {TECH_GROUPS.map(({ key, label }) => (
+                      <div key={key} className="bg-zinc-900/40 p-3 rounded-xl border border-zinc-850">
+                        <div className="text-zinc-300 font-bold mb-2 flex items-center gap-1.5 uppercase text-[10px] tracking-wider">
+                          <span className="inline-block w-1.5 h-1.5 rounded-full bg-red-500/60" />
+                          {label}
+                        </div>
+                        <ul className="list-none pl-0 space-y-1 text-zinc-400">
+                          {scan.technologies?.[key]?.length ? (
+                            scan.technologies[key].map((item) => (
+                              <li key={`${key}-${item}`} className="text-zinc-250 font-semibold">{item}</li>
+                            ))
+                          ) : (
+                            <li className="text-zinc-650 italic">None detected</li>
+                          )}
+                        </ul>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Security Headers */}
+                <div className="bg-zinc-950/20 border border-zinc-800/80 rounded-2xl p-6 font-mono text-xs space-y-4">
+                  <h3 className="text-sm font-bold text-zinc-100 flex items-center gap-2 border-b border-zinc-850 pb-2">
+                    <ShieldAlert className="w-4 h-4 text-red-400" />
+                    Headers Vulnerabilities
+                  </h3>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6 text-zinc-450">
+                    <div className="space-y-2">
+                      <div>
+                        HTTPS Redirects:{" "}
+                        <span className={scan.securityHeaders?.redirect?.redirectsToHttps ? "text-red-400 font-bold" : "text-zinc-600"}>
+                          {scan.securityHeaders?.redirect?.redirectsToHttps ? "Enforced" : "Fail"}
+                        </span>
+                      </div>
+                      <div>
+                        HSTS Active:{" "}
+                        <span className={scan.securityHeaders?.hsts?.enabled ? "text-red-400 font-bold" : "text-zinc-600"}>
+                          {scan.securityHeaders?.hsts?.enabled ? "Yes" : "No"}
+                        </span>
+                      </div>
+                      <div>HSTS Max-Age: <span className="text-zinc-300">{scan.securityHeaders?.hsts?.maxAge ?? "-"}</span></div>
+                      <div>Server Signature: <span className="text-zinc-300 font-semibold">{scan.securityHeaders?.server || "-"}</span></div>
+                      <div>X-Powered-By: <span className="text-zinc-300">{scan.securityHeaders?.xPoweredBy || "-"}</span></div>
+                    </div>
+
+                    <div>
+                      <div className="text-[10px] text-zinc-650 font-bold uppercase tracking-wider mb-2">
+                        Missing Critical Protection Headers
+                      </div>
+                      <div className="bg-zinc-900/40 p-3.5 rounded-xl border border-zinc-850">
+                        <ul className="list-none pl-0 space-y-2">
+                          {scan.securityHeaders?.missing?.length ? (
+                            scan.securityHeaders.missing.map((item) => (
+                              <li key={item} className="flex items-center gap-2 text-red-400 font-medium">
+                                <span className="inline-block w-1.5 h-1.5 rounded-full bg-red-500/60 flex-shrink-0" />
+                                <span>{item}</span>
+                              </li>
+                            ))
+                          ) : (
+                            <li className="text-zinc-650 italic">None</li>
+                          )}
+                        </ul>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Geo-IP */}
+                <div className="bg-zinc-950/20 border border-zinc-800/80 rounded-2xl p-6 font-mono text-xs space-y-3">
+                  <h3 className="text-sm font-bold text-zinc-100 flex items-center gap-2 border-b border-zinc-850 pb-2">
+                    <MapPin className="w-4 h-4 text-red-400" />
+                    Target Network Geo-IP Location
+                  </h3>
+                  <div className="grid gap-3 sm:grid-cols-3">
+                    <div className="bg-zinc-900/40 border border-zinc-850 p-3 rounded-xl">
+                      <span className="text-[10px] text-zinc-600 block mb-1">Host IP</span>
+                      <span className="text-zinc-200 font-bold">{scan.geoip?.ip || "-"}</span>
+                    </div>
+                    <div className="bg-zinc-900/40 border border-zinc-850 p-3 rounded-xl">
+                      <span className="text-[10px] text-zinc-600 block mb-1">Location Coordinates</span>
+                      <span className="text-zinc-200 font-medium">
+                        {scan.geoip?.country || "-"}
+                        {scan.geoip?.region ? `, ${scan.geoip.region}` : ""}
+                        {scan.geoip?.city ? ` (${scan.geoip.city})` : ""}
+                      </span>
+                    </div>
+                    <div className="bg-zinc-900/40 border border-zinc-850 p-3 rounded-xl">
+                      <span className="text-[10px] text-zinc-600 block mb-1">ISP Provider</span>
+                      <span className="text-zinc-200 font-medium">{scan.geoip?.isp || "-"}</span>
+                    </div>
+                  </div>
+                </div>
+
+                {/* DNS (A/AAAA/MX/TXT/NS) in scan */}
+                <div className="bg-zinc-950/20 border border-zinc-800/80 rounded-2xl p-6 font-mono text-xs space-y-4">
+                  <h3 className="text-sm font-bold text-zinc-100 flex items-center gap-2 border-b border-zinc-850 pb-2">
+                    <Database className="w-4 h-4 text-red-400" />
+                    Broad DNS Discovery Mapping
+                  </h3>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    {RECORD_TYPES.map((key) => (
+                      <div key={key} className="bg-zinc-900/40 p-3.5 rounded-xl border border-zinc-850">
+                        <div className="text-zinc-300 font-bold mb-2 flex items-center gap-1.5 uppercase text-[10px] tracking-wider border-b border-zinc-800/50 pb-1">
+                          {key} Records
+                        </div>
+                        <ul className="list-none pl-0 space-y-2">
+                          {(scan.dns?.[key]?.Answer || []).map((rec, i) => (
+                            <li key={i} className="text-zinc-400 break-all text-[11px] leading-relaxed">
+                              {rec.name} <span className="text-zinc-600">→</span> {rec.data} <span className="text-red-400">({rec.TTL}s)</span>
+                            </li>
+                          ))}
+                          {!scan.dns?.[key]?.Answer?.length && (
+                            <li className="text-zinc-650 italic text-[11px]">-</li>
+                          )}
+                        </ul>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Common Port Snapshot */}
+                <div className="bg-zinc-950/20 border border-zinc-800/80 rounded-2xl p-6 font-mono text-xs space-y-4">
+                  <h3 className="text-sm font-bold text-zinc-100 flex items-center gap-2 border-b border-zinc-850 pb-2">
+                    <Server className="w-4 h-4 text-red-400" />
+                    Target Port State Scan
+                  </h3>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                    {(scan.ports?.results || []).map((item) => (
+                      <div
+                        key={`${item.port}-${item.service}`}
+                        className="bg-zinc-900/40 border border-zinc-800/80 p-3 rounded-xl text-[11px] flex justify-between items-center"
+                      >
+                        <div>
+                          <span className="text-zinc-200 font-bold">{item.port}</span>
+                          <span className="text-zinc-550 mx-1.5">/</span>
+                          <span className="text-zinc-400 uppercase">{item.service}</span>
+                        </div>
+                        <div className="text-right">
+                          <span className={getPortTone(item.state)}>{item.state.toUpperCase()}</span>
+                          {item.error && (
+                            <span className="text-[10px] text-zinc-600 block italic">{item.error}</span>
+                          )}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Download Actions */}
+                <div className="flex flex-col sm:flex-row gap-4 pt-2">
+                  <button
+                    onClick={downloadCSV}
+                    className="flex-1 px-4 py-3 bg-zinc-900/40 hover:bg-red-500/5 text-zinc-300 hover:text-red-400 border border-zinc-800/80 hover:border-red-500/30 rounded-xl font-mono font-bold text-xs uppercase transition-all duration-300 flex items-center justify-center gap-1.5 cursor-pointer"
+                  >
+                    <FileSpreadsheet className="w-4 h-4" />
+                    Download CSV Audit Log
+                  </button>
+                  <button
+                    onClick={downloadPDF}
+                    className="flex-1 px-4 py-3 bg-zinc-900/40 hover:bg-red-500/5 text-zinc-300 hover:text-red-400 border border-zinc-800/80 hover:border-red-500/30 rounded-xl font-mono font-bold text-xs uppercase transition-all duration-300 flex items-center justify-center gap-1.5 cursor-pointer"
+                  >
+                    <Download className="w-4 h-4" />
+                    Download PDF Report
+                  </button>
+                </div>
+
               </div>
+            )}
+
+          </div>
+
+          {/* Right Column (Specs & Guidance) */}
+          <div className="space-y-6">
+            
+            <div className="border border-zinc-800/80 bg-zinc-950/20 backdrop-blur-md rounded-2xl p-6 space-y-4 shadow-[0_8px_30px_rgb(0,0,0,0.12)]">
+              <h2 className="text-xs font-mono font-bold uppercase tracking-wider text-zinc-100 flex items-center gap-2">
+                <Info className="text-red-400 w-4 h-4" />
+                Recon scope guidance
+              </h2>
+              <ul className="space-y-3.5 list-none pl-0">
+                <li className="flex items-start gap-2">
+                  <span className="inline-block w-1.5 h-1.5 rounded-full bg-red-500/60 mt-1.5 flex-shrink-0" />
+                  <span className="text-xs text-zinc-400 leading-relaxed font-mono">
+                    DNS Lookup resolves target domains into root records maps for diagnostic audits.
+                  </span>
+                </li>
+                <li className="flex items-start gap-2">
+                  <span className="inline-block w-1.5 h-1.5 rounded-full bg-red-500/60 mt-1.5 flex-shrink-0" />
+                  <span className="text-xs text-zinc-400 leading-relaxed font-mono">
+                    WHOIS databases yield registration timestamps, renewal data, and contact addresses.
+                  </span>
+                </li>
+                <li className="flex items-start gap-2">
+                  <span className="inline-block w-1.5 h-1.5 rounded-full bg-red-500/60 mt-1.5 flex-shrink-0" />
+                  <span className="text-xs text-zinc-400 leading-relaxed font-mono">
+                    SSL handshake analyses review certification details and active security protocol layers.
+                  </span>
+                </li>
+                <li className="flex items-start gap-2">
+                  <span className="inline-block w-1.5 h-1.5 rounded-full bg-red-500/60 mt-1.5 flex-shrink-0" />
+                  <span className="text-xs text-zinc-400 leading-relaxed font-mono">
+                    Port audits scan system headers to identify exposed interfaces and active service protocols.
+                  </span>
+                </li>
+              </ul>
             </div>
 
-            <div className="flex flex-col sm:flex-row gap-2">
-              <button
-                onClick={downloadCSV}
-                className="w-full sm:w-auto bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded"
-              >
-                Download CSV
-              </button>
-              <button
-                onClick={downloadPDF}
-                className="w-full sm:w-auto bg-rose-600 hover:bg-rose-700 text-white px-4 py-2 rounded"
-              >
-                Download PDF
-              </button>
-            </div>
           </div>
-        )}
+
+        </div>
       </div>
     </div>
   );

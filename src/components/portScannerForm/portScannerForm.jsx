@@ -1,13 +1,28 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import { Globe, Search, Filter, Eye, EyeOff, Server, ChevronDown, CheckCircle2, ShieldAlert } from "lucide-react";
+import {
+  Globe,
+  Search,
+  Filter,
+  Eye,
+  EyeOff,
+  Server,
+  ChevronDown,
+  CheckCircle2,
+  ShieldAlert,
+  Info,
+  Terminal,
+  Activity,
+  Layers,
+  Download,
+  FileSpreadsheet,
+  FileJson
+} from "lucide-react";
 import useProtectedAction from "../UseProtectedAction/UseProtectedAction";
 
-// Set your API base
 const API = process.env.NEXT_PUBLIC_PROD_API_URL?.replace(/\/+$/, "");
 
-/** parse port input helper */
 function parsePortInput(input) {
   const s = String(input || "")
     .trim()
@@ -78,7 +93,6 @@ export default function PortScannerForm() {
           qs.set("startPort", String(parsed.start));
           qs.set("endPort", String(parsed.end));
         } else if (parsed.mode === "set") {
-          // For "common" ports, we'll make individual requests and combine
           const gathered = [];
           for (const p of parsed.ports) {
             const q = new URLSearchParams({
@@ -101,40 +115,22 @@ export default function PortScannerForm() {
               gathered.push(...Object.values(d.ports));
             }
           }
-
-          // Remove duplicates and create result object
-          const byPort = {};
-          for (const p of gathered) byPort[p.port] = p;
-          const portsArray = Object.values(byPort);
-          const portsObj = Object.fromEntries(
-            portsArray.map((p) => [p.port, p])
-          );
-          const total = portsArray.length;
-          const openCount = portsArray.filter((p) => p.open).length;
-
           setResult({
             host,
             filter,
             includeHostnames,
-            portRange: "common",
-            ports: portsObj,
-            portList: portsArray,
-            openPorts: portsArray.filter((p) => p.open).map((p) => p.port),
-            suspicious: portsArray
-              .filter((p) => p.open && p.risk === "High")
-              .map((p) => p.port),
+            portRange: portInput,
+            portList: gathered,
             summary: {
-              total,
-              open: openCount,
-              filtered: portsArray.length,
-              riskAssessment:
-                openCount > total * 0.3
-                  ? "High"
-                  : openCount > total * 0.1
-                  ? "Medium"
-                  : "Low",
+              total: gathered.length,
+              filtered: gathered.length,
+              open: gathered.filter((p) => p.open).length,
+              riskAssessment: gathered.some((p) => p.open && p.risk === "High")
+                ? "High"
+                : gathered.some((p) => p.open && p.risk === "Medium")
+                ? "Medium"
+                : "Low",
             },
-            recommendations: [],
           });
           return;
         }
@@ -142,10 +138,12 @@ export default function PortScannerForm() {
         const res = await fetch(`${API}/port-scanner/port-scan?${qs.toString()}`, {
           headers: { Authorization: `Bearer ${token}` },
         });
+
         if (!res.ok) {
           const errData = await res.json().catch(() => ({}));
           throw new Error(errData.message || errData.error || `HTTP ${res.status}`);
         }
+
         const data = await res.json();
         setResult(data);
       } catch (err) {
@@ -158,8 +156,6 @@ export default function PortScannerForm() {
 
   const rows = useMemo(() => {
     if (!result?.portList && !result?.ports) return [];
-
-    // Use portList if available (new format), otherwise fall back to ports object
     const portData = result.portList || Object.values(result.ports || {});
 
     return portData.map((p) => ({
@@ -175,366 +171,367 @@ export default function PortScannerForm() {
   const submitDisabled = loading || !host.trim() || !portInput.trim();
 
   const getRiskBadge = (risk) => {
+    const base = "inline-flex items-center px-2 py-0.5 rounded text-[10px] font-semibold border font-mono uppercase tracking-wider";
     if (risk === "High") {
       return (
-        <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-semibold bg-red-500/10 text-red-400">
+        <span className={`${base} border-red-500/40 bg-red-500/5 text-red-400`}>
           High
         </span>
       );
     }
     if (risk === "Medium") {
       return (
-        <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-semibold bg-yellow-500/10 text-yellow-400">
+        <span className={`${base} border-orange-500/40 bg-orange-500/5 text-orange-400`}>
           Medium
         </span>
       );
     }
     if (risk === "Low") {
       return (
-        <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-semibold bg-green-500/10 text-green-400">
+        <span className={`${base} border-zinc-800/80 bg-zinc-900/40 text-zinc-400`}>
           Low
         </span>
       );
     }
     return (
-      <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-semibold bg-gray-500/10 text-[color:var(--text-muted)]">
+      <span className={`${base} border-zinc-800/80 bg-zinc-900/40 text-zinc-500`}>
         N/A
       </span>
     );
   };
 
   return (
-    <div className="tool-detail-page flex min-h-screen flex-col">
+    <div 
+      className="tool-detail-page min-h-screen"
+      style={{
+        '--hero-ambient-a': 'rgba(239, 68, 68, 0.08)',
+        '--hero-ambient-b': 'rgba(249, 115, 22, 0.03)',
+        '--glow-primary': '0 0 34px rgba(239, 68, 68, 0.16)',
+        '--gold': '#ef4444',
+        '--gold-strong': '#f87171',
+        '--gold-dark': '#b91c1c',
+        '--ring': 'rgba(239, 68, 68, 0.34)',
+        '--surface-glow': 'rgba(239, 68, 68, 0.14)',
+      }}
+    >
+      <style>{`
+        .tool-detail-page .tool-detail-shell {
+          padding-top: 3.5rem !important;
+        }
+        .tool-detail-page ::-webkit-scrollbar-thumb {
+          background: rgba(239, 68, 68, 0.35) !important;
+        }
+        .tool-detail-page ::-webkit-scrollbar-thumb:hover {
+          background: rgba(239, 68, 68, 0.55) !important;
+        }
+        .tool-detail-page ::selection {
+          background: rgba(239, 68, 68, 0.22) !important;
+          color: #fef2f2 !important;
+        }
+        .tool-detail-page :is(button, [role="button"]):is([class*="bg-red-"], [class*="bg-rose-"]) {
+          color: #000000 !important;
+        }
+        .tool-detail-page :is(button, [role="button"]):is([class*="bg-red-"], [class*="bg-rose-"]) * {
+          color: #000000 !important;
+        }
+      `}</style>
+
       <div className="tool-detail-shell">
-        {/* Header Section */}
-        <div className="tool-detail-hero">
-          <div className="tool-detail-icon">
-            <img
-              src="/RedTeam/port_scan.png"
-              alt="Port Scanner"
-              className="w-full h-full object-cover rounded-full border-2 border-red-500/25"
-            />
+        {/* Navigation & Header */}
+        <div className="flex justify-end mb-8">
+          <span className="rounded-full border border-red-500/30 px-3 py-1 font-mono text-[0.62rem] uppercase tracking-[0.28em] text-red-400">
+            Red Team
+          </span>
+        </div>
+
+        {/* Title Block */}
+        <div className="mb-10 flex flex-col md:flex-row items-start md:items-center gap-6">
+          <div className="w-16 h-16 rounded-2xl border border-red-500/30 overflow-hidden shadow-lg flex-shrink-0 flex items-center justify-center">
+            <Server className="h-8 w-8 text-red-400" />
           </div>
-          <div className="tool-detail-copy">
-            <h1 className="text-white text-3xl font-bold">
-              Network Security Scanner
+          <div>
+            <h1 className="text-4xl sm:text-5xl font-mono font-bold text-zinc-100">
+              PORT <span className="text-red-400">SCANNER</span>
             </h1>
-            <p className="text-[color:var(--text-muted)] text-base mt-1.5 max-w-xl leading-relaxed">
-              Identify open ports, resolve remote hostnames, and evaluate potential security
-              vulnerabilities on your public network infrastructure.
+            <p className="mt-2 text-zinc-400 max-w-2xl text-base font-normal">
+              Validate public-facing infrastructure endpoint nodes. Trace open port statuses, resolve hostnames, and audit service identification details.
             </p>
           </div>
         </div>
 
-        {/* Form Card */}
-        <div className="bg-[color:var(--surface-card)] border border-[color:var(--border)] rounded-2xl p-6 md:p-8 shadow-[var(--shadow-elevated)] backdrop-blur-xl relative overflow-hidden mb-8">
-          <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-red-500 via-[color:var(--gold)] to-red-500"></div>
+        {/* 2-Column Split Layout */}
+        <div className="grid gap-8 lg:grid-cols-[1fr_400px]">
           
-          <div className="mb-6 pb-4 border-b border-[color:var(--border)]">
-            <h2 className="text-lg font-bold text-[color:var(--text-heading)]">
-              Enhanced Port Scanner
-            </h2>
-            <p className="text-[color:var(--text-muted)] text-sm mt-1">
-              Advanced network diagnostic utilities with optional DNS resolution parameters.
-            </p>
-          </div>
+          {/* Left Column */}
+          <div className="space-y-6">
+            
+            {/* Input Form Card */}
+            <div className="bg-zinc-950/20 backdrop-blur-md border border-zinc-800/80 rounded-2xl p-6 shadow-[0_8px_30px_rgb(0,0,0,0.2)] hover:border-red-500/10 transition-all duration-300 space-y-4">
+              <h2 className="text-lg font-mono font-medium text-zinc-100 mb-2 flex items-center gap-2">
+                <Globe className="h-5 w-5 text-red-400" />
+                Network Scan Parameters
+              </h2>
 
-          <form onSubmit={handleSubmit}>
-            {/* Host */}
-            <div className="mb-5">
-              <label htmlFor="host-address" className="block text-[color:var(--text-heading)] font-semibold text-sm mb-2">
-                Hostname or IP Address
-              </label>
-              <div className="relative">
-                <div className="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
-                  <Globe className="h-4 w-4 text-[color:var(--text-muted)]" />
-                </div>
-                <input
-                  id="host-address"
-                  type="text"
-                  value={host}
-                  onChange={(e) => setHost(e.target.value)}
-                  placeholder="example.com or 192.168.1.1"
-                  required
-                  className="w-full bg-[color:var(--surface-subtle)] text-[color:var(--text-heading)] border border-[color:var(--border)] rounded-xl py-2.5 pl-10 pr-4 text-sm focus:outline-none focus:ring-1 focus:ring-[color:var(--gold)] focus:border-[color:var(--gold)] transition-all placeholder:text-[color:var(--text-muted)]"
-                />
-              </div>
-            </div>
-
-            {/* Ports */}
-            <div className="mb-5">
-              <label htmlFor="ports-range" className="block text-[color:var(--text-heading)] font-semibold text-sm mb-2">
-                Port or Port Range
-              </label>
-              <div className="relative">
-                <div className="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
-                  <Search className="h-4 w-4 text-[color:var(--text-muted)]" />
-                </div>
-                <input
-                  id="ports-range"
-                  type="text"
-                  value={portInput}
-                  onChange={(e) => setPortInput(e.target.value)}
-                  placeholder="80, 80-10000, or 'common'"
-                  required
-                  className="w-full bg-[color:var(--surface-subtle)] text-[color:var(--text-heading)] border border-[color:var(--border)] rounded-xl py-2.5 pl-10 pr-4 text-sm focus:outline-none focus:ring-1 focus:ring-[color:var(--gold)] focus:border-[color:var(--gold)] transition-all placeholder:text-[color:var(--text-muted)]"
-                />
-              </div>
-              <p className="mt-1.5 text-xs text-[color:var(--text-muted)]">
-                Input formatting: Single port (e.g., <code className="text-red-400">80</code>), range (e.g., <code className="text-red-400">80-10000</code>), or type <code className="text-red-400">'common'</code>.
-              </p>
-            </div>
-
-            {/* Filter & Options Grid */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-5 mb-6">
-              {/* Port Filter */}
-              <div>
-                <label htmlFor="port-filter" className="block text-[color:var(--text-heading)] font-semibold text-sm mb-2">
-                  Port Filter
-                </label>
-                <div className="relative">
-                  <div className="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
-                    <Filter className="h-4 w-4 text-[color:var(--text-muted)]" />
-                  </div>
-                  <select
-                    id="port-filter"
-                    value={filter}
-                    onChange={(e) => setFilter(e.target.value)}
-                    className="w-full bg-[color:var(--surface-subtle)] text-[color:var(--text-heading)] border border-[color:var(--border)] rounded-xl py-2.5 pl-10 pr-10 text-sm focus:outline-none focus:ring-1 focus:ring-[color:var(--gold)] focus:border-[color:var(--gold)] appearance-none transition-all cursor-pointer"
-                  >
-                    <option value="all">All Ports</option>
-                    <option value="open">Open Ports Only</option>
-                    <option value="closed">Closed Ports Only</option>
-                  </select>
-                  <div className="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
-                    <ChevronDown className="h-4 w-4 text-[color:var(--text-muted)]" />
+              <form onSubmit={handleSubmit} className="space-y-4">
+                {/* Host */}
+                <div>
+                  <label className="block text-xs uppercase tracking-wider font-mono text-zinc-400 mb-2 font-semibold">
+                    Hostname or IP Address
+                  </label>
+                  <div className="relative">
+                    <Globe className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-650" />
+                    <input
+                      type="text"
+                      value={host}
+                      onChange={(e) => setHost(e.target.value)}
+                      placeholder="example.com or 192.168.1.1"
+                      required
+                      className="w-full bg-zinc-900/40 text-zinc-100 border border-zinc-800/80 rounded-xl p-3.5 pl-12 text-sm focus:border-red-500/50 focus:ring-1 focus:ring-red-500/30 focus:shadow-[0_0_12px_rgba(239,68,68,0.08)] focus:outline-none transition-all placeholder:text-zinc-600 font-mono"
+                    />
                   </div>
                 </div>
-                <p className="mt-1.5 text-xs text-[color:var(--text-muted)]">
-                  Filter scan results based on current status.
-                </p>
-              </div>
 
-              {/* Hostname Resolution */}
-              <div>
-                <label className="block text-[color:var(--text-heading)] font-semibold text-sm mb-2">
-                  Additional Options
-                </label>
-                <div className="flex items-center space-x-3 mt-1">
-                  <button
-                    type="button"
-                    onClick={() => setIncludeHostnames(!includeHostnames)}
-                    aria-pressed={includeHostnames}
-                    className={`flex items-center gap-2 px-4 py-2.5 rounded-xl border text-sm font-semibold transition-all duration-200 cursor-pointer ${
-                      includeHostnames
-                        ? "bg-red-500/10 border-red-500/35 text-red-400"
-                        : "bg-[color:var(--surface-subtle)] border-[color:var(--border)] text-[color:var(--text-muted)] hover:text-[color:var(--text-heading)]"
-                    }`}
-                  >
-                    {includeHostnames ? (
-                      <Eye className="h-4 w-4" />
-                    ) : (
-                      <EyeOff className="h-4 w-4" />
-                    )}
-                    <span>Include Hostnames</span>
-                  </button>
+                {/* Ports */}
+                <div>
+                  <label className="block text-xs uppercase tracking-wider font-mono text-zinc-400 mb-2 font-semibold">
+                    Port or Port Range
+                  </label>
+                  <div className="relative">
+                    <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-650" />
+                    <input
+                      type="text"
+                      value={portInput}
+                      onChange={(e) => setPortInput(e.target.value)}
+                      placeholder="80, 80-1000, or 'common'"
+                      required
+                      className="w-full bg-zinc-900/40 text-zinc-100 border border-zinc-800/80 rounded-xl p-3.5 pl-12 text-sm focus:border-red-500/50 focus:ring-1 focus:ring-red-500/30 focus:shadow-[0_0_12px_rgba(239,68,68,0.08)] focus:outline-none transition-all placeholder:text-zinc-600 font-mono"
+                    />
+                  </div>
+                  <p className="mt-1.5 text-[10px] font-mono text-zinc-550">
+                    Formatting formats: Single port (<code className="text-red-400">80</code>), range (<code className="text-red-400">80-1000</code>), or select predefined <code className="text-red-400">'common'</code>.
+                  </p>
                 </div>
-                <p className="mt-1.5 text-xs text-[color:var(--text-muted)]">
-                  Resolve hostnames for open ports (slower scan).
-                </p>
-              </div>
+
+                {/* Filter and Hostname options */}
+                <div className="grid gap-4 sm:grid-cols-2">
+                  <div>
+                    <label className="block text-xs uppercase tracking-wider font-mono text-zinc-400 mb-2 font-semibold">
+                      Port Status Filter
+                    </label>
+                    <div className="relative">
+                      <select
+                        value={filter}
+                        onChange={(e) => setFilter(e.target.value)}
+                        className="w-full bg-zinc-900/40 text-zinc-100 border border-zinc-800/80 rounded-xl p-3.5 text-sm focus:border-red-500/50 focus:ring-1 focus:ring-red-500/30 focus:outline-none transition-all font-mono appearance-none"
+                      >
+                        <option value="all">All Ports</option>
+                        <option value="open">Open Ports Only</option>
+                        <option value="closed">Closed Ports Only</option>
+                      </select>
+                      <ChevronDown className="absolute right-4 top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-550 pointer-events-none" />
+                    </div>
+                  </div>
+
+                  <div>
+                    <label className="block text-xs uppercase tracking-wider font-mono text-zinc-400 mb-2 font-semibold">
+                      Hostname Resolution
+                    </label>
+                    <button
+                      type="button"
+                      onClick={() => setIncludeHostnames(!includeHostnames)}
+                      className={`w-full flex items-center justify-center gap-2 p-3.5 rounded-xl border text-xs font-mono font-bold uppercase transition-all duration-200 cursor-pointer ${
+                        includeHostnames
+                          ? "bg-red-500/10 border-red-500/35 text-red-400"
+                          : "bg-zinc-900/40 border-zinc-800/80 text-zinc-500 hover:text-zinc-300"
+                      }`}
+                    >
+                      {includeHostnames ? <Eye className="h-4 w-4" /> : <EyeOff className="h-4 w-4" />}
+                      <span>Include DNS Names</span>
+                    </button>
+                  </div>
+                </div>
+
+                {/* Submit button */}
+                <button
+                  type="submit"
+                  disabled={submitDisabled}
+                  className="w-full bg-red-500 hover:bg-red-600 text-black rounded-xl font-mono font-bold text-xs uppercase py-4 transition-all duration-300 hover:scale-[1.01] active:scale-[0.99] flex items-center justify-center gap-2 cursor-pointer hover:shadow-[0_0_20px_rgba(239,68,68,0.2)] focus:outline-none disabled:opacity-40"
+                >
+                  {loading ? (
+                    <>
+                      <Loader2 className="w-4 h-4 animate-spin text-black" />
+                      Scanning Network Infrastructure...
+                    </>
+                  ) : (
+                    <>
+                      <Search className="w-4 h-4 text-black" />
+                      Start Enhanced Scan
+                    </>
+                  )}
+                </button>
+              </form>
             </div>
 
-            {/* Error Alert */}
+            {/* Error Message */}
             {error && (
-              <div className="mb-5 p-4 bg-red-950/20 border border-red-500/30 rounded-xl text-sm text-red-400 flex items-center gap-3">
-                <ShieldAlert className="h-5 w-5 text-red-400 shrink-0" />
-                <span>{error}</span>
+              <div className="p-4 rounded-xl border border-red-500/20 bg-red-955/10 text-red-400 text-xs font-mono flex items-start gap-2">
+                <ShieldAlert size={16} className="mt-0.5 flex-shrink-0" />
+                <span>Scan Error: {error}</span>
               </div>
             )}
 
-            {/* Submit Button */}
-            <button
-              type="submit"
-              disabled={submitDisabled}
-              className={`w-full text-white py-3 px-4 rounded-xl transition-all duration-200 flex items-center justify-center gap-2 font-bold cursor-pointer shadow-lg ${
-                submitDisabled
-                  ? "bg-red-900/40 text-white/40 cursor-not-allowed border border-white/5"
-                  : "bg-red-600 hover:bg-red-700 hover:scale-[1.01] active:scale-[0.99]"
-              }`}
-            >
-              <Search className="h-5 w-5" />
-              <span>{loading ? "Scanning Network..." : "Start Enhanced Scan"}</span>
-            </button>
-          </form>
-
-          {/* Loader */}
-          {loading && (
-            <div className="mt-6 flex flex-col items-center justify-center p-8 bg-[color:var(--surface-subtle)] border border-[color:var(--border)] rounded-2xl animate-pulse">
-              <div className="w-10 h-10 border-2 border-[color:var(--gold)] border-t-transparent rounded-full animate-spin mb-4"></div>
-              <p className="text-[color:var(--gold)] font-medium">Scanning network target...</p>
-              <p className="text-[color:var(--text-muted)] text-sm mt-1">
-                {includeHostnames
-                  ? "Querying DNS hostname records..."
-                  : "Analyzing port connection headers..."}
-              </p>
-            </div>
-          )}
-
-          {/* Results Block */}
-          {!loading && result && (
-            <div className="mt-8 border-t border-[color:var(--border)] pt-8">
-              
-              {/* Summary Stats Grid */}
-              <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
-                <StatCard label="Target Host" value={result.host} />
-                <StatCard
-                  label="Filtered Results"
-                  value={`${result.summary?.filtered || 0} / ${
-                    result.summary?.total || 0
-                  }`}
-                  highlight
-                />
-                <StatCard
-                  label="Open Ports"
-                  value={result.summary?.open || 0}
-                  highlight={result.summary?.open > 0}
-                />
-                <StatCard
-                  label="Risk Level"
-                  value={result.summary?.riskAssessment || "Low"}
-                  highlight
-                />
+            {/* Loading placeholder */}
+            {loading && (
+              <div className="bg-zinc-950/20 backdrop-blur-md border border-zinc-800/80 rounded-2xl p-8 shadow-[0_8px_30px_rgb(0,0,0,0.2)] text-center space-y-4 font-mono text-xs text-zinc-400">
+                <Loader2 className="h-8 w-8 animate-spin mx-auto text-red-400" />
+                <p>
+                  {includeHostnames
+                    ? "Querying PTR records and mapping host identities..."
+                    : "Connecting to remote sockets to verify response banner handshakes..."}
+                </p>
               </div>
+            )}
 
-              {/* Filter Info Header Tag */}
-              <div className="mb-6 p-4 bg-black/35 border border-[color:var(--border)] rounded-xl">
-                <div className="flex flex-wrap items-center gap-4 text-xs font-mono">
-                  <span className="text-[color:var(--text-muted)]">FILTER:</span>
-                  <span className="text-[color:var(--text-heading)] font-semibold capitalize">
-                    {result.filter || filter}
-                  </span>
-                  <span className="text-[color:var(--border)]">|</span>
-                  <span className="text-[color:var(--text-muted)]">RANGE:</span>
-                  <span className="text-[color:var(--text-heading)] font-semibold">
-                    {result.portRange || "Custom Input"}
-                  </span>
-                  {result.includeHostnames && (
-                    <>
-                      <span className="text-[color:var(--border)]">|</span>
-                      <div className="flex items-center gap-1 text-green-400">
-                        <Server className="h-3.5 w-3.5" />
-                        <span>DNS HOSTNAMES RESOLVED</span>
-                      </div>
-                    </>
-                  )}
+            {/* Results Block */}
+            {!loading && result && (
+              <div className="space-y-6">
+                
+                {/* Stats cards grid */}
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-xs font-mono">
+                  <div className="bg-zinc-900/40 border border-zinc-850 p-3.5 rounded-xl">
+                    <span className="text-[10px] text-zinc-550 block mb-0.5">Target Host</span>
+                    <span className="text-zinc-200 font-bold break-all block">{result.host}</span>
+                  </div>
+                  <div className="bg-zinc-900/40 border border-zinc-850 p-3.5 rounded-xl">
+                    <span className="text-[10px] text-zinc-550 block mb-0.5">Filtered Results</span>
+                    <span className="text-red-400 font-bold block">{result.summary?.filtered || 0} / {result.summary?.total || 0}</span>
+                  </div>
+                  <div className="bg-zinc-900/40 border border-zinc-850 p-3.5 rounded-xl">
+                    <span className="text-[10px] text-zinc-550 block mb-0.5">Open Ports</span>
+                    <span className="text-red-400 font-bold block">{result.summary?.open || 0}</span>
+                  </div>
+                  <div className="bg-zinc-900/40 border border-zinc-850 p-3.5 rounded-xl">
+                    <span className="text-[10px] text-zinc-550 block mb-0.5">Risk Level</span>
+                    <span className="text-red-450 font-extrabold uppercase tracking-wide block">{result.summary?.riskAssessment || "Low"}</span>
+                  </div>
                 </div>
-              </div>
 
-              {/* Export Options Panel */}
-              <div className="mb-6">
-                <ExportBar
-                  baseName={`port-scan-${result.host}-${filter}`}
-                  rows={rows}
-                />
-              </div>
+                {/* Filter info header tag */}
+                <div className="p-4 bg-zinc-900/40 border border-zinc-850 rounded-xl">
+                  <div className="flex flex-wrap items-center gap-4 text-xs font-mono">
+                    <span className="text-zinc-550">FILTER:</span>
+                    <span className="text-zinc-200 font-bold capitalize">{result.filter || filter}</span>
+                    <span className="text-zinc-800">|</span>
+                    <span className="text-zinc-550">PORT SCOPE:</span>
+                    <span className="text-zinc-200 font-bold">{result.portRange || "Custom Scope"}</span>
+                    {result.includeHostnames && (
+                      <>
+                        <span className="text-zinc-800">|</span>
+                        <div className="flex items-center gap-1.5 text-red-400 font-semibold">
+                          <Server className="h-3.5 w-3.5" />
+                          <span>DNS RESOLVED</span>
+                        </div>
+                      </>
+                    )}
+                  </div>
+                </div>
 
-              {/* Results Table */}
-              {rows.length > 0 && (
-                <div className="overflow-x-auto rounded-xl border border-[color:var(--border)] bg-black/10">
-                  <table className="min-w-full text-sm">
-                    <thead className="bg-black/45 border-b border-[color:var(--border)]">
-                      <tr>
-                        <th className="px-4 py-3 text-left font-semibold text-[color:var(--text-heading)]">
-                          Port
-                        </th>
-                        <th className="px-4 py-3 text-left font-semibold text-[color:var(--text-heading)]">
-                          Status
-                        </th>
-                        <th className="px-4 py-3 text-left font-semibold text-[color:var(--text-heading)]">
-                          Service
-                        </th>
-                        {includeHostnames && (
-                          <th className="px-4 py-3 text-left font-semibold text-[color:var(--text-heading)]">
-                            Hostname
-                          </th>
-                        )}
-                        <th className="px-4 py-3 text-left font-semibold text-[color:var(--text-heading)]">
-                          Risk
-                        </th>
-                        <th className="px-4 py-3 text-left font-semibold text-[color:var(--text-heading)]">
-                          Description
-                        </th>
-                      </tr>
-                    </thead>
-                    <tbody className="divide-y divide-[color:var(--border)]/30">
-                      {rows.map((r, i) => (
-                        <tr
-                          key={`${r.port}-${i}`}
-                          className="hover:bg-white/5 transition-colors"
-                        >
-                          <td className="px-4 py-3 text-[color:var(--text-heading)] font-mono font-medium">
-                            {r.port}
-                          </td>
-                          <td className="px-4 py-3">
-                            <span className={`inline-flex items-center px-2 py-0.5 rounded text-xs font-semibold ${
-                              r.status === "Open" ? "bg-red-500/10 text-red-400" : "bg-gray-500/10 text-gray-400"
-                            }`}>
-                              {r.status}
-                            </span>
-                          </td>
-                          <td className="px-4 py-3 text-[color:var(--text-body)]">
-                            {r.service}
-                          </td>
+                {/* Export bar options */}
+                {rows.length > 0 && (
+                  <div className="mb-6">
+                    <ExportBar
+                      baseName={`port-scan-${result.host}-${filter}`}
+                      rows={rows}
+                    />
+                  </div>
+                )}
+
+                {/* Results Table */}
+                {rows.length > 0 ? (
+                  <div className="overflow-x-auto rounded-xl border border-zinc-800/80 bg-zinc-950/20 backdrop-blur-md">
+                    <table className="min-w-full text-xs font-mono">
+                      <thead className="bg-zinc-900/60 border-b border-zinc-850 text-zinc-400">
+                        <tr>
+                          <th className="px-4 py-3 text-left font-bold uppercase tracking-wider">Port</th>
+                          <th className="px-4 py-3 text-left font-bold uppercase tracking-wider">Status</th>
+                          <th className="px-4 py-3 text-left font-bold uppercase tracking-wider">Service</th>
                           {includeHostnames && (
-                            <td className="px-4 py-3 text-blue-400 font-mono text-xs">
-                              {r.hostname}
-                            </td>
+                            <th className="px-4 py-3 text-left font-bold uppercase tracking-wider">Hostname</th>
                           )}
-                          <td className="px-4 py-3">
-                            {getRiskBadge(r.risk)}
-                          </td>
-                          <td className="px-4 py-3 text-[color:var(--text-muted)] text-xs">
-                            {r.description}
-                          </td>
+                          <th className="px-4 py-3 text-left font-bold uppercase tracking-wider">Risk</th>
+                          <th className="px-4 py-3 text-left font-bold uppercase tracking-wider">Description</th>
                         </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                </div>
-              )}
+                      </thead>
+                      <tbody className="divide-y divide-zinc-900 text-zinc-300">
+                        {rows.map((r, i) => (
+                          <tr
+                            key={`${r.port}-${i}`}
+                            className="hover:bg-zinc-900/20 transition-colors"
+                          >
+                            <td className="px-4 py-3 font-bold text-zinc-100">{r.port}</td>
+                            <td className="px-4 py-3">
+                              <span className={`inline-flex items-center px-2 py-0.5 rounded-lg text-[10px] font-bold border font-mono uppercase tracking-wider ${
+                                r.status === "Open" ? "border-red-500/40 bg-red-500/5 text-red-400" : "border-zinc-800/80 bg-zinc-900/40 text-zinc-500"
+                              }`}>
+                                {r.status}
+                              </span>
+                            </td>
+                            <td className="px-4 py-3 text-zinc-200">{r.service}</td>
+                            {includeHostnames && (
+                              <td className="px-4 py-3 text-red-400 font-bold">{r.hostname}</td>
+                            )}
+                            <td className="px-4 py-3">{getRiskBadge(r.risk)}</td>
+                            <td className="px-4 py-3 text-zinc-450 leading-relaxed max-w-xs break-words">{r.description}</td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                ) : (
+                  <div className="p-8 bg-zinc-900/40 border border-zinc-850 rounded-xl text-center font-mono text-xs text-zinc-400">
+                    <p className="font-semibold text-zinc-300">No ports matched your filter criteria.</p>
+                    <p className="text-zinc-550 mt-1">Try changing the filter option to "All Ports" or check another host.</p>
+                  </div>
+                )}
+              </div>
+            )}
 
-              {/* No Results Message */}
-              {rows.length === 0 && (
-                <div className="p-8 bg-[color:var(--surface-subtle)] border border-[color:var(--border)] rounded-2xl text-center">
-                  <p className="text-[color:var(--text-body)] font-semibold">
-                    No ports matched your filter criteria.
-                  </p>
-                  <p className="text-[color:var(--text-muted)] text-sm mt-1">
-                    Try changing the filter option to "All Ports" or check another IP address.
-                  </p>
-                </div>
-              )}
+          </div>
+
+          {/* Right Column (Guidance) */}
+          <div className="space-y-6">
+            
+            {/* Guidance sidebar card */}
+            <div className="border border-zinc-800/80 bg-zinc-950/20 backdrop-blur-md rounded-2xl p-6 space-y-4 shadow-[0_8px_30px_rgb(0,0,0,0.12)]">
+              <h2 className="text-xs font-mono font-bold uppercase tracking-wider text-zinc-100 flex items-center gap-2">
+                <Info className="text-red-400 w-4 h-4" />
+                Scanner Guidance
+              </h2>
+              <ul className="space-y-3.5 list-none pl-0">
+                <li className="flex items-start gap-2">
+                  <span className="inline-block w-1.5 h-1.5 rounded-full bg-red-500/60 mt-1.5 flex-shrink-0" />
+                  <span className="text-xs text-zinc-400 leading-relaxed font-mono">
+                    Audits target sockets configuration using multi-thread asynchronous validation logic.
+                  </span>
+                </li>
+                <li className="flex items-start gap-2">
+                  <span className="inline-block w-1.5 h-1.5 rounded-full bg-red-500/60 mt-1.5 flex-shrink-0" />
+                  <span className="text-xs text-zinc-400 leading-relaxed font-mono">
+                    Traces open and closed TCP connection statuses across customizable ports or ranges.
+                  </span>
+                </li>
+                <li className="flex items-start gap-2">
+                  <span className="inline-block w-1.5 h-1.5 rounded-full bg-red-500/60 mt-1.5 flex-shrink-0" />
+                  <span className="text-xs text-zinc-400 leading-relaxed font-mono">
+                    Identifies service protocols and flags exposure risks (SSH, Telnet, Database interfaces).
+                  </span>
+                </li>
+              </ul>
             </div>
-          )}
-        </div>
-      </div>
-    </div>
-  );
-}
 
-function StatCard({ label, value, highlight }) {
-  return (
-    <div className="bg-black/30 border border-[color:var(--border)] rounded-xl p-4 transition hover:border-[color:var(--gold)]/30">
-      <div className="text-xs text-[color:var(--text-muted)] uppercase tracking-wider mb-1">
-        {label}
-      </div>
-      <div
-        className={`text-lg font-bold tracking-tight ${
-          highlight ? "text-[color:var(--gold)]" : "text-[color:var(--text-heading)]"
-        }`}
-      >
-        {value ?? "—"}
+          </div>
+
+        </div>
       </div>
     </div>
   );
@@ -559,17 +556,19 @@ function ExportBar({ baseName, rows }) {
     <div className="flex flex-wrap items-center gap-3">
       <button
         onClick={downloadJSON}
-        className="px-4 py-2 text-xs font-mono font-bold uppercase tracking-wider text-black bg-[color:var(--gold)] hover:bg-[color:var(--gold-strong)] rounded-lg transition duration-200 cursor-pointer"
+        className="px-4 py-2.5 bg-zinc-900/40 hover:bg-red-500/5 text-zinc-350 hover:text-red-400 border border-zinc-800/80 hover:border-red-500/30 rounded-xl font-mono font-bold text-xs uppercase transition-all duration-300 flex items-center gap-1.5 cursor-pointer"
       >
-        Export JSON
+        <FileJson className="w-3.5 h-3.5" />
+        JSON Export
       </button>
       <button
         onClick={downloadCSV}
-        className="px-4 py-2 text-xs font-mono font-bold uppercase tracking-wider text-[color:var(--text-heading)] bg-transparent border border-[color:var(--border)] hover:bg-white/5 rounded-lg transition duration-200 cursor-pointer"
+        className="px-4 py-2.5 bg-zinc-900/40 hover:bg-red-500/5 text-zinc-350 hover:text-red-400 border border-zinc-800/80 hover:border-red-500/30 rounded-xl font-mono font-bold text-xs uppercase transition-all duration-300 flex items-center gap-1.5 cursor-pointer"
       >
-        Export CSV
+        <FileSpreadsheet className="w-3.5 h-3.5" />
+        CSV Export
       </button>
-      <div className="text-[color:var(--text-muted)] text-xs font-mono ml-auto">
+      <div className="text-zinc-500 text-xs font-mono ml-auto">
         {rows.length} result{rows.length !== 1 ? "s" : ""} found
       </div>
     </div>
@@ -593,4 +592,3 @@ function triggerDownload(blob, filename) {
   a.click();
   URL.revokeObjectURL(url);
 }
-

@@ -14,12 +14,14 @@ import {
   Unlock,
   FileDown,
   Copy,
+  Globe,
+  Info,
+  Terminal,
+  Activity,
+  ChevronDown
 } from "lucide-react";
 import useProtectedAction from "../UseProtectedAction/UseProtectedAction";
 
-/* ============================== Helpers ============================== */
-
-// Safe API base (falls back to /api if env var is missing)
 const API_BASE = (
   (typeof process !== "undefined" &&
     process.env.NEXT_PUBLIC_PROD_API_URL &&
@@ -35,13 +37,13 @@ const api = axios.create({
 
 const SeverityBadge = ({ level }) => {
   const map = {
-    High: "bg-red-100 text-red-800 border-red-200",
-    Medium: "bg-amber-100 text-amber-800 border-amber-200",
-    Safe: "bg-emerald-100 text-emerald-800 border-emerald-200",
+    High: "border-red-500/40 bg-red-500/5 text-red-400",
+    Medium: "border-orange-500/40 bg-orange-500/5 text-orange-400",
+    Safe: "border-zinc-800 bg-zinc-900/40 text-zinc-350",
   };
   return (
     <span
-      className={`inline-flex items-center px-3 py-1 rounded-full text-sm font-semibold border ${
+      className={`inline-flex items-center px-2.5 py-0.5 rounded-lg text-[10px] font-bold font-mono border uppercase tracking-wider ${
         map[level] || map.Medium
       }`}
     >
@@ -77,13 +79,11 @@ const buildErrorText = (data) => {
   return data.message || "Scan failed.";
 };
 
-/* ============================== Component ============================== */
-
 export default function ClickjackingTester() {
   const [url, setUrl] = useState("");
-  const [result, setResult] = useState(null); // { ok?: boolean, ... } or { error: string }
+  const [result, setResult] = useState(null);
   const [loading, setLoading] = useState(false);
-  const [tab, setTab] = useState("results"); // results | vulns | recs
+  const [tab, setTab] = useState("results");
   const reportRef = useRef(null);
   const protectedAction = useProtectedAction();
 
@@ -154,36 +154,31 @@ export default function ClickjackingTester() {
     };
   }, [result]);
 
-  /* --------------------------- PDF generation -------------------------- */
   const downloadPdf = () => {
     if (!result || result.ok === false) return;
 
     const doc = new jsPDF({ unit: "pt" });
     const now = new Date().toLocaleString();
 
-    // Title
-    doc.setFontSize(18);
-    doc.text("Clickjacking Security Report", 40, 40);
+    // Red Team banner style
+    doc.setFillColor(18, 18, 18);
+    doc.rect(0, 0, 595, 55, "F");
+
+    doc.setTextColor(239, 68, 68);
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(16);
+    doc.text("CLICKJACKING SECURITY REPORT", 40, 35);
+
+    doc.setTextColor(255, 255, 255);
+    doc.setFontSize(9);
+    doc.text(`Target: ${result.url || url} | Generated: ${now}`, 40, 48);
+
+    doc.setTextColor(50, 50, 50);
     doc.setFontSize(11);
-    doc.text(`Target: ${result.url || url}`, 40, 65);
-    doc.text(`Generated: ${now}`, 40, 82);
+    doc.text(`Overall Severity: ${severity || "—"}`, 40, 85);
 
-    // Severity
-    doc.setFontSize(12);
-    doc.text("Overall Severity:", 40, 110);
-    const sevColor =
-      severity === "High"
-        ? [200, 0, 0]
-        : severity === "Medium"
-        ? [180, 120, 0]
-        : [0, 120, 80];
-    doc.setTextColor(...sevColor);
-    doc.text(severity || "—", 160, 110);
-    doc.setTextColor(0, 0, 0);
-
-    // Security headers table
     autoTable(doc, {
-      startY: 130,
+      startY: 105,
       head: [["Check", "Status", "Details"]],
       body: [
         [
@@ -197,38 +192,34 @@ export default function ClickjackingTester() {
           headersInfo.cspFaPresent ? "Directive found" : "—",
         ],
       ],
-      styles: { fontSize: 10 },
-      headStyles: { fillColor: [18, 164, 84] },
+      theme: "grid",
+      styles: { fontSize: 9 },
+      headStyles: { fillColor: [239, 68, 68] },
     });
 
-    // Protection mechanisms
-    const pmY = (doc.lastAutoTable?.finalY || 130) + 20;
-    doc.setFontSize(12);
+    const pmY = (doc.lastAutoTable?.finalY || 105) + 20;
     doc.text("Protection Mechanisms Detected:", 40, pmY);
     const lines = (
       Array.isArray(result?.protectedBy) ? result.protectedBy : ["None"]
     ).join("\n");
-    doc.setFontSize(10);
+    doc.setFontSize(9);
     doc.text(lines || "None", 40, pmY + 18);
 
-    // Recommendations
     const recStart = pmY + 18 + 14 * (lines.split("\n").length || 1) + 20;
-    doc.setFontSize(12);
+    doc.setFontSize(11);
     doc.text("Recommendations:", 40, recStart);
 
-    const recs = Array.isArray(result?.recommendations)
-      ? result.recommendations
-      : [];
+    const recs = Array.isArray(result?.recommendations) ? result.recommendations : [];
     let y = recStart + 18;
     if (recs.length === 0) {
-      doc.setFontSize(10);
+      doc.setFontSize(9);
       doc.text("No recommendations. Site appears protected.", 40, y);
     } else {
       recs.forEach((r, idx) => {
-        doc.setFontSize(11);
+        doc.setFontSize(10);
         doc.text(`${idx + 1}. ${r.title} (${r.priority || "info"})`, 40, y);
         y += 14;
-        doc.setFontSize(10);
+        doc.setFontSize(9);
         const exp = doc.splitTextToSize(r.explain || "", 515);
         doc.text(exp, 50, y);
         y += exp.length * 12 + 6;
@@ -247,10 +238,9 @@ export default function ClickjackingTester() {
       });
     }
 
-    doc.save("clickjacking-report.pdf");
+    doc.save("clickjacking_security_report.pdf");
   };
 
-  /* ------------------------------ Server snippets ----------------------------- */
   const serverSnippets = {
     Apache: `# X-Frame-Options
 Header always append X-Frame-Options SAMEORIGIN
@@ -294,134 +284,179 @@ def frame_headers(get_response):
 
   const [serverTab, setServerTab] = useState("Apache");
 
-  /* ============================== Render ============================== */
-
   return (
-    <div className="tool-detail-page">
-      <div className="tool-detail-shell" ref={reportRef}>
-        {/* Header */}
-        <div className="tool-detail-hero">
-          {/* Logo */}
-          <div className="tool-detail-icon">
-            <img
-              src="/Redteam/lickjacking.png" // <-- apni image ka path dijiye
-              alt="Logo"
-              className="w-full h-full object-cover"
-            />
-          </div>
+    <div 
+      className="tool-detail-page min-h-screen"
+      style={{
+        '--hero-ambient-a': 'rgba(239, 68, 68, 0.08)',
+        '--hero-ambient-b': 'rgba(249, 115, 22, 0.03)',
+        '--glow-primary': '0 0 34px rgba(239, 68, 68, 0.16)',
+        '--gold': '#ef4444',
+        '--gold-strong': '#f87171',
+        '--gold-dark': '#b91c1c',
+        '--ring': 'rgba(239, 68, 68, 0.34)',
+        '--surface-glow': 'rgba(239, 68, 68, 0.14)',
+      }}
+    >
+      <style>{`
+        .tool-detail-page .tool-detail-shell {
+          padding-top: 3.5rem !important;
+        }
+        .tool-detail-page ::-webkit-scrollbar-thumb {
+          background: rgba(239, 68, 68, 0.35) !important;
+        }
+        .tool-detail-page ::-webkit-scrollbar-thumb:hover {
+          background: rgba(239, 68, 68, 0.55) !important;
+        }
+        .tool-detail-page ::selection {
+          background: rgba(239, 68, 68, 0.22) !important;
+          color: #fef2f2 !important;
+        }
+        .tool-detail-page :is(button, [role="button"]):is([class*="bg-red-"], [class*="bg-rose-"]) {
+          color: #000000 !important;
+        }
+        .tool-detail-page :is(button, [role="button"]):is([class*="bg-red-"], [class*="bg-rose-"]) * {
+          color: #000000 !important;
+        }
+      `}</style>
 
-          {/* Title + Description */}
-          <div className="tool-detail-copy">
-            <h1>Clickjacking Security Tester</h1>
-            <p>
-              Test websites for clickjacking by checking frame-busting
-              protections (X-Frame-Options and CSP <code>frame-ancestors</code>
-              ).
+      <div className="tool-detail-shell" ref={reportRef}>
+        {/* Navigation & Header */}
+        <div className="flex justify-end mb-8">
+          <span className="rounded-full border border-red-500/30 px-3 py-1 font-mono text-[0.62rem] uppercase tracking-[0.28em] text-red-400">
+            Red Team
+          </span>
+        </div>
+
+        {/* Title Block */}
+        <div className="mb-10 flex flex-col md:flex-row items-start md:items-center gap-6">
+          <div className="w-16 h-16 rounded-2xl border border-red-500/30 overflow-hidden shadow-lg flex-shrink-0 flex items-center justify-center">
+            <Lock className="h-8 w-8 text-red-400" />
+          </div>
+          <div>
+            <h1 className="text-4xl sm:text-5xl font-mono font-bold text-zinc-100">
+              CLICKJACKING <span className="text-red-400">TESTER</span>
+            </h1>
+            <p className="mt-2 text-zinc-400 max-w-2xl text-base font-normal">
+              Test target domains against framing vulnerabilities. Audits X-Frame-Options parameters and Content Security Policy frame-ancestors compliance.
             </p>
           </div>
         </div>
 
-        {/* Input */}
-        <div className="bg-black rounded-2xl shadow-xl p-8 mb-8 border border-green-100">
-          <div className="mb-6">
-            <label className="block text-xl text-center font-semibold text-white mb-3">
-              Target URL
-            </label>
-            <div className="relative">
-              <input
-                type="text"
-                value={url}
-                onChange={(e) => setUrl(e.target.value)}
-                onKeyDown={(e) => e.key === "Enter" && handleTest()}
-                placeholder="Enter target URL (e.g. https://example.com)"
-                className="w-full border-2 border-red-600 px-4 py-4 pr-12 rounded-xl  focus:outline-none transition-all duration-200 text-gray-800 placeholder-gray-500 text-lg"
-              />
-              <Search className="absolute right-4 top-1/2 transform -translate-y-1/2 w-6 h-6 text-white" />
+        {/* 2-Column Split Layout */}
+        <div className="grid gap-8 lg:grid-cols-[1fr_400px]">
+          
+          {/* Left Column */}
+          <div className="space-y-6">
+            
+            {/* Input Form Card */}
+            <div className="bg-zinc-950/20 backdrop-blur-md border border-zinc-800/80 rounded-2xl p-6 shadow-[0_8px_30px_rgb(0,0,0,0.2)] hover:border-red-500/10 transition-all duration-300 space-y-4">
+              <h2 className="text-lg font-mono font-medium text-zinc-100 mb-2 flex items-center gap-2">
+                <Globe className="h-5 w-5 text-red-400" />
+                Target Verification Scope
+              </h2>
+
+              <div className="space-y-4">
+                <div>
+                  <label className="block text-xs uppercase tracking-wider font-mono text-zinc-400 mb-2 font-semibold">
+                    Website URL
+                  </label>
+                  <div className="relative">
+                    <Globe className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-650" />
+                    <input
+                      type="text"
+                      value={url}
+                      onChange={(e) => setUrl(e.target.value)}
+                      onKeyDown={(e) => e.key === "Enter" && handleTest()}
+                      placeholder="https://example.com"
+                      className="w-full bg-zinc-900/40 text-zinc-100 border border-zinc-800/80 rounded-xl p-3.5 pl-12 text-sm focus:border-red-500/50 focus:ring-1 focus:ring-red-500/30 focus:shadow-[0_0_12px_rgba(239,68,68,0.08)] focus:outline-none transition-all placeholder:text-zinc-600 font-mono"
+                    />
+                  </div>
+                </div>
+
+                <div className="flex flex-col sm:flex-row gap-3">
+                  <button
+                    onClick={handleTest}
+                    disabled={loading || !url.trim()}
+                    className="flex-1 bg-red-500 hover:bg-red-600 text-black rounded-xl font-mono font-bold text-xs uppercase py-4 transition-all duration-300 hover:scale-[1.01] active:scale-[0.99] flex items-center justify-center gap-2 cursor-pointer hover:shadow-[0_0_20px_rgba(239,68,68,0.2)] focus:outline-none disabled:opacity-40"
+                  >
+                    {loading ? (
+                      <>
+                        <div className="w-4 h-4 border-2 border-black border-t-transparent rounded-full animate-spin" />
+                        Scanning framing properties...
+                      </>
+                    ) : (
+                      <>
+                        <Shield className="w-4 h-4 text-black" />
+                        Test for Clickjacking
+                      </>
+                    )}
+                  </button>
+
+                  {result && result.ok !== false && !result.error && (
+                    <button
+                      onClick={downloadPdf}
+                      className="px-4 py-4 rounded-xl bg-zinc-900/40 hover:bg-red-500/5 text-zinc-350 hover:text-red-400 border border-zinc-800/80 hover:border-red-500/30 font-mono font-bold text-xs uppercase transition-all duration-300 flex items-center justify-center gap-2 cursor-pointer"
+                    >
+                      <FileDown className="w-4 h-4" />
+                      PDF Report
+                    </button>
+                  )}
+                </div>
+              </div>
             </div>
-          </div>
 
-          <div className="flex items-center gap-3">
-            <button
-              onClick={handleTest}
-              disabled={loading || !url.trim()}
-              className="flex-1 bg-black border-2 border-red-500 text-white px-8 py-4 rounded-xl hover:bg-red-600 disabled:bg-red-600 disabled:border-red-500 disabled:cursor-not-allowed transition-all duration-200 font-semibold text-lg flex items-center justify-center gap-3 shadow-lg"
-            >
-              {loading ? (
-                <>
-                  <div className="w-6 h-6 border-2 border-white border-t-transparent rounded-full animate-spin" />
-                  Testing Security...
-                </>
-              ) : (
-                <>
-                  <Shield className="w-6 h-6" />
-                  Test for Clickjacking
-                </>
-              )}
-            </button>
-
-            {result && result.ok !== false && !result.error && (
-              <button
-                onClick={downloadPdf}
-                className="px-4 py-4 rounded-xl bg-black border-2 border-green-200 hover:border-green-400 text-green-700 font-semibold flex items-center gap-2"
-              >
-                <FileDown className="w-5 h-5" />
-                Download PDF
-              </button>
-            )}
-          </div>
-        </div>
-
-        {/* Results / Errors */}
-        {result && (
-          <div className="bg-black rounded-2xl shadow-xl border border-green-100 overflow-hidden">
-            {result.ok === false || result.error ? (
-              <div className="p-8">
-                <div className="flex items-center gap-4 mb-4">
-                  <div className="w-12 h-12 bg-red-100 rounded-full flex items-center justify-center">
-                    <XCircle className="w-6 h-6 text-red-600" />
+            {/* Error outcome block */}
+            {result && (result.ok === false || result.error) && (
+              <div className="bg-zinc-950/20 backdrop-blur-md border border-zinc-800/80 rounded-2xl p-6 shadow-[0_8px_30px_rgb(0,0,0,0.2)] space-y-4">
+                <div className="flex items-center gap-3.5">
+                  <div className="w-10 h-10 border border-red-500/20 bg-red-500/5 rounded-xl flex items-center justify-center">
+                    <XCircle className="w-5 h-5 text-red-400" />
                   </div>
                   <div>
-                    <h3 className="text-xl font-bold text-gray-800">
-                      Test Failed
+                    <h3 className="text-sm font-mono font-bold text-zinc-200 uppercase tracking-wider">
+                      Validation Failed
                     </h3>
-                    <p className="text-gray-600">
-                      Unable to complete the security test
+                    <p className="text-xs font-mono text-zinc-550 mt-0.5">
+                      Unable to resolve target framing configs
                     </p>
                   </div>
                 </div>
-                <div className="bg-red-50 border-l-4 border-red-500 p-4 rounded-r-lg">
-                  <p className="text-red-700 font-medium">
-                    {buildErrorText(result)}
-                  </p>
+                <div className="p-4 rounded-xl border border-red-500/20 bg-red-955/10 text-red-400 text-xs font-mono">
+                  {buildErrorText(result)}
                 </div>
               </div>
-            ) : (
-              <>
-                {/* Banner */}
+            )}
+
+            {/* Results Block */}
+            {result && !result.error && result.ok !== false && (
+              <div className="bg-zinc-950/20 backdrop-blur-md border border-zinc-800/80 rounded-2xl shadow-[0_8px_30px_rgb(0,0,0,0.2)] overflow-hidden space-y-6">
+                
+                {/* Result header banner */}
                 <div
-                  className={`p-6 ${
+                  className={`p-6 border-b border-zinc-900 ${
                     result.isProtected
-                      ? "bg-gradient-to-r from-green-600 to-emerald-600"
-                      : "bg-gradient-to-r from-red-600 to-rose-600"
+                      ? "bg-zinc-900/60"
+                      : "bg-red-950/20"
                   }`}
                 >
-                  <div className="flex items-center justify-between gap-4">
+                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                     <div className="flex items-center gap-4">
-                      <div className="w-12 h-12 bg-black bg-opacity-20 rounded-full flex items-center justify-center">
+                      <div className="w-12 h-12 border border-zinc-800/50 bg-zinc-950/40 rounded-xl flex items-center justify-center flex-shrink-0">
                         {result.isProtected ? (
-                          <Lock className="w-6 h-6 text-white" />
+                          <Lock className="w-5 h-5 text-red-400" />
                         ) : (
-                          <Unlock className="w-6 h-6 text-white" />
+                          <Unlock className="w-5 h-5 text-red-400" />
                         )}
                       </div>
                       <div>
-                        <h3 className="text-2xl font-bold text-white">
+                        <h3 className="text-lg font-mono font-bold text-zinc-100 uppercase tracking-wider">
                           {result.isProtected ? "Protected" : "Vulnerable"}
                         </h3>
-                        <p className="text-white text-opacity-90">
+                        <p className="text-xs font-mono text-zinc-450 mt-0.5">
                           {result.isProtected
-                            ? "This website has clickjacking protection"
-                            : "This website is vulnerable to clickjacking attacks"}
+                            ? "Framing capabilities are blocked or safe"
+                            : "Target is vulnerable to UI redress exploits"}
                         </p>
                       </div>
                     </div>
@@ -431,21 +466,21 @@ def frame_headers(get_response):
                   </div>
                 </div>
 
-                {/* Tabs */}
-                <div className="px-6 pt-4">
-                  <div className="flex gap-2 bg-black-50 rounded-lg p-1 w-full md:w-auto">
+                {/* Tabs selection line */}
+                <div className="px-6">
+                  <div className="flex gap-2 border-b border-zinc-900 pb-px">
                     {[
-                      { key: "results", label: "Results" },
-                      { key: "vulns", label: "Vulnerabilities" },
-                      { key: "recs", label: "Recommendations" },
+                      { key: "results", label: "Overview" },
+                      { key: "vulns", label: "Vulnerability Info" },
+                      { key: "recs", label: "Fix Snippets" },
                     ].map((t) => (
                       <button
                         key={t.key}
                         onClick={() => setTab(t.key)}
-                        className={`px-4 py-2 rounded-md text-sm font-semibold ${
+                        className={`px-4 py-2.5 text-xs font-mono font-semibold transition-all ${
                           tab === t.key
-                            ? "bg-black shadow text-gray-900"
-                            : "text-gray-600 hover:text-gray-900"
+                            ? "border-b-2 border-red-500 text-red-400"
+                            : "text-zinc-550 hover:text-zinc-400"
                         }`}
                       >
                         {t.label}
@@ -454,48 +489,45 @@ def frame_headers(get_response):
                   </div>
                 </div>
 
-                {/* Tab content */}
-                <div className="p-6">
+                {/* Tab contents */}
+                <div className="p-6 pt-0">
                   {tab === "results" && (
                     <div className="space-y-6">
-                      <div className="rounded-xl p-6 border-2 bg-black-50">
-                        <div className="text-sm text-gray-700 font-semibold">
-                          Protection Level
+                      <div className="rounded-xl p-5 border border-zinc-850 bg-zinc-900/40 font-mono text-xs">
+                        <div className="text-zinc-550 font-bold uppercase tracking-wider mb-2">
+                          Audit Protection Summary
                         </div>
-                        <div className="mt-2 flex items-center gap-3">
+                        <div className="flex items-center gap-3">
                           <span
-                            className={`text-xs px-2.5 py-1 rounded-full border font-semibold ${
+                            className={`text-[10px] px-2 py-0.5 rounded-lg border font-bold uppercase tracking-wider ${
                               result.isProtected
-                                ? "bg-emerald-50 text-emerald-700 border-emerald-200"
-                                : "bg-rose-50 text-rose-700 border-rose-200"
+                                ? "border-zinc-800 bg-zinc-900/40 text-zinc-350"
+                                : "border-red-500/40 bg-red-500/5 text-red-400"
                             }`}
                           >
-                            {result.isProtected
-                              ? "Protection Found"
-                              : "No Protection"}
+                            {result.isProtected ? "Protected" : "Vulnerable"}
                           </span>
                           {!result.isProtected && (
-                            <span className="text-sm text-gray-700">
-                              No clickjacking protection detected
+                            <span className="text-zinc-400">
+                              No security frame wrappers detected on target index.
                             </span>
                           )}
                         </div>
                       </div>
 
-                      {/* Security Headers */}
-                      <div className="rounded-xl border border-gray-200">
-                        <div className="px-6 py-4 border-b bg-black-50 rounded-t-xl">
-                          <h4 className="font-semibold text-gray-800">
-                            Security Headers
-                          </h4>
-                        </div>
-                        <div className="p-6 grid grid-cols-1 md:grid-cols-2 gap-4">
-                          <div className="flex items-center justify-between border rounded-lg p-4">
+                      {/* Header details check cards */}
+                      <div className="space-y-4">
+                        <h4 className="text-[10px] font-mono text-zinc-500 font-bold uppercase tracking-wider">
+                          Response Header Audit
+                        </h4>
+                        
+                        <div className="grid gap-4 sm:grid-cols-2 font-mono text-xs">
+                          <div className="flex items-center justify-between border border-zinc-850 bg-zinc-900/40 rounded-xl p-4">
                             <div>
-                              <div className="font-medium text-gray-800">
+                              <div className="font-semibold text-zinc-350">
                                 X-Frame-Options
                               </div>
-                              <div className="text-sm text-gray-600">
+                              <div className="text-[11px] text-zinc-500 mt-1 break-all">
                                 {headersInfo.xfoPresent
                                   ? headersInfo.xfoValue
                                   : "Missing"}
@@ -504,9 +536,7 @@ def frame_headers(get_response):
                             <SeverityBadge
                               level={
                                 headersInfo.xfoPresent
-                                  ? headersInfo.xfoValue?.includes(
-                                      "SAMEORIGIN"
-                                    ) || headersInfo.xfoValue?.includes("DENY")
+                                  ? headersInfo.xfoValue?.includes("SAMEORIGIN") || headersInfo.xfoValue?.includes("DENY")
                                     ? "Safe"
                                     : "Medium"
                                   : "High"
@@ -514,20 +544,18 @@ def frame_headers(get_response):
                             />
                           </div>
 
-                          <div className="flex items-center justify-between border rounded-lg p-4">
+                          <div className="flex items-center justify-between border border-zinc-850 bg-zinc-900/40 rounded-xl p-4">
                             <div>
-                              <div className="font-medium text-gray-800">
+                              <div className="font-semibold text-zinc-350">
                                 CSP frame-ancestors
                               </div>
-                              <div className="text-sm text-gray-600">
+                              <div className="text-[11px] text-zinc-500 mt-1">
                                 {headersInfo.cspFaPresent
                                   ? "Present"
                                   : "Missing"}
                               </div>
                             </div>
-                            <SeverityBadge
-                              level={headersInfo.cspFaPresent ? "Safe" : "High"}
-                            />
+                            <SeverityBadge level={headersInfo.cspFaPresent ? "Safe" : "High"} />
                           </div>
                         </div>
                       </div>
@@ -535,71 +563,69 @@ def frame_headers(get_response):
                   )}
 
                   {tab === "vulns" && (
-                    <div className="rounded-xl p-6 border-2 bg-red-50 border-red-200">
-                      <div className="flex items-center gap-3 mb-2">
-                        <AlertTriangle className="w-6 h-6 text-red-600" />
-                        <h4 className="text-lg font-bold text-red-800">
-                          No Clickjacking Protection
+                    <div className="rounded-xl p-5 border border-red-500/20 bg-red-955/10 font-mono text-xs space-y-3">
+                      <div className="flex items-center gap-2.5">
+                        <AlertTriangle className="w-5 h-5 text-red-400 flex-shrink-0" />
+                        <h4 className="font-bold text-red-450 uppercase tracking-wide">
+                          Vulnerability Status: Redress Risk
                         </h4>
                       </div>
-                      <p className="text-red-700">
-                        No <code>X-Frame-Options</code> or CSP{" "}
-                        <code>frame-ancestors</code> directive found.
+                      <p className="text-zinc-300 leading-relaxed">
+                        No active <code>X-Frame-Options</code> parameter or CSP <code>frame-ancestors</code> directive identified in index responses.
                       </p>
-                      <p className="text-red-700 mt-2">
-                        Impact: Website can be embedded in iframes on any
-                        domain.
+                      <p className="text-zinc-400 leading-relaxed border-t border-red-500/10 pt-2">
+                        <strong>Threat Vector:</strong> Malicious actors can frame target pages in transparent wrappers to intercept clicks, hijack user actions, and harvest session parameters.
                       </p>
                     </div>
                   )}
 
                   {tab === "recs" && (
                     <div className="space-y-6">
-                      {/* Smart recommendations from API if present */}
+                      {/* Dynamic recommendations from backend */}
                       {Array.isArray(result.recommendations) &&
                         result.recommendations.length > 0 && (
                           <div className="space-y-4">
                             {result.recommendations.map((rec) => (
                               <div
                                 key={rec.id}
-                                className="rounded-xl border p-4"
+                                className="rounded-xl border border-zinc-850 bg-zinc-900/40 p-5 font-mono text-xs space-y-3"
                               >
                                 <div className="flex items-start justify-between gap-4">
-                                  <div>
-                                    <div className="font-semibold text-gray-900">
+                                  <div className="space-y-1.5">
+                                    <div className="font-bold text-zinc-200">
                                       {rec.title}
                                     </div>
-                                    <p className="text-sm text-gray-600 mt-1">
+                                    <p className="text-zinc-450 leading-relaxed">
                                       {rec.explain}
                                     </p>
                                     {rec.snippet && (
-                                      <div className="mt-3">
-                                        <div className="flex items-center justify-between mb-1">
-                                          <span className="text-xs font-semibold text-gray-500">
-                                            Header snippet
+                                      <div className="mt-3 space-y-1.5">
+                                        <div className="flex items-center justify-between">
+                                          <span className="text-[10px] text-zinc-550 font-bold uppercase tracking-wider">
+                                            Snippet Override
                                           </span>
                                           <button
                                             onClick={() => onCopy(rec.snippet)}
-                                            className="text-gray-600 hover:text-gray-900 text-xs inline-flex items-center gap-1"
+                                            className="text-red-400 hover:text-red-300 text-[10px] uppercase font-bold inline-flex items-center gap-1 cursor-pointer"
                                           >
                                             <Copy className="w-3.5 h-3.5" />
                                             Copy
                                           </button>
                                         </div>
-                                        <pre className="text-sm bg-black-900 text-green-200 rounded-lg p-3 overflow-x-auto">
+                                        <pre className="text-xs bg-zinc-950/65 text-red-400 border border-zinc-900 rounded-lg p-3 overflow-x-auto leading-relaxed">
                                           {rec.snippet}
                                         </pre>
                                       </div>
                                     )}
                                   </div>
                                   <span
-                                    className={`h-7 px-3 inline-flex items-center rounded-full text-xs font-semibold border
+                                    className={`px-2 py-0.5 inline-flex items-center rounded-lg text-[10px] font-bold border font-mono uppercase tracking-wider flex-shrink-0
                                   ${
                                     rec.priority === "high"
-                                      ? "bg-red-50 text-red-700 border-red-200"
+                                      ? "border-red-500/40 bg-red-500/5 text-red-400"
                                       : rec.priority === "medium"
-                                      ? "bg-amber-50 text-amber-700 border-amber-200"
-                                      : "bg-slate-50 text-slate-700 border-slate-200"
+                                      ? "border-orange-500/40 bg-orange-500/5 text-orange-400"
+                                      : "border-zinc-800 bg-zinc-900/40 text-zinc-400"
                                   }`}
                                   >
                                     {rec.priority || "info"}
@@ -610,92 +636,52 @@ def frame_headers(get_response):
                           </div>
                         )}
 
-                      {/* Fixed guidance */}
-                      <div className="rounded-xl border p-4">
+                      {/* Static server snippets fallback */}
+                      <div className="rounded-xl border border-zinc-850 bg-zinc-900/40 p-5 font-mono text-xs space-y-3">
                         <div className="flex items-start justify-between gap-4">
-                          <div>
-                            <div className="font-semibold text-gray-900">
-                              Implement Basic Protection
+                          <div className="space-y-1.5 w-full">
+                            <div className="font-bold text-zinc-200">
+                              Enforce Frame-Busting Protocols
                             </div>
-                            <p className="text-sm text-gray-600 mt-1">
-                              Add X-Frame-Options header
+                            <p className="text-zinc-455">
+                              Configure web servers to reject cross-origin iframe embedding actions.
                             </p>
-                            <div className="mt-3">
-                              <div className="flex items-center justify-between mb-1">
-                                <span className="text-xs font-semibold text-gray-500">
-                                  Copy value
+                            <div className="mt-3 space-y-1.5">
+                              <div className="flex items-center justify-between">
+                                <span className="text-[10px] text-zinc-550 font-bold uppercase tracking-wider">
+                                  Standard Directive
                                 </span>
                                 <button
-                                  onClick={() =>
-                                    onCopy("X-Frame-Options: SAMEORIGIN")
-                                  }
-                                  className="text-gray-600 hover:text-gray-900 text-xs inline-flex items-center gap-1"
+                                  onClick={() => onCopy("X-Frame-Options: SAMEORIGIN")}
+                                  className="text-red-400 hover:text-red-300 text-[10px] uppercase font-bold inline-flex items-center gap-1 cursor-pointer"
                                 >
                                   <Copy className="w-3.5 h-3.5" />
                                   Copy
                                 </button>
                               </div>
-                              <pre className="text-sm bg-black-900 text-green-200 rounded-lg p-3 overflow-x-auto">
+                              <pre className="text-xs bg-zinc-950/65 text-red-400 border border-zinc-900 rounded-lg p-3 overflow-x-auto">
                                 X-Frame-Options: SAMEORIGIN
                               </pre>
                             </div>
                           </div>
-                          <span className="h-7 px-3 inline-flex items-center rounded-full text-xs font-semibold border bg-red-50 text-red-700 border-red-200">
-                            high priority
+                          <span className="px-2 py-0.5 inline-flex items-center rounded-lg text-[10px] font-bold border border-red-500/40 bg-red-500/5 text-red-400 uppercase tracking-wider flex-shrink-0">
+                            High Priority
                           </span>
                         </div>
                       </div>
 
-                      <div className="rounded-xl border p-4">
-                        <div className="flex items-start justify-between gap-4">
-                          <div>
-                            <div className="font-semibold text-gray-900">
-                              Implement CSP Protection
-                            </div>
-                            <p className="text-sm text-gray-600 mt-1">
-                              Add Content-Security-Policy{" "}
-                              <code>frame-ancestors</code> directive
-                            </p>
-                            <div className="mt-3">
-                              <div className="flex items-center justify-between mb-1">
-                                <span className="text-xs font-semibold text-gray-500">
-                                  Copy value
-                                </span>
-                                <button
-                                  onClick={() =>
-                                    onCopy(
-                                      "Content-Security-Policy: frame-ancestors 'self'"
-                                    )
-                                  }
-                                  className="text-gray-600 hover:text-gray-900 text-xs inline-flex items-center gap-1"
-                                >
-                                  <Copy className="w-3.5 h-3.5" />
-                                  Copy
-                                </button>
-                              </div>
-                              <pre className="text-sm bg-black-900 text-green-200 rounded-lg p-3 overflow-x-auto">
-                                Content-Security-Policy: frame-ancestors 'self'
-                              </pre>
-                            </div>
-                          </div>
-                          <span className="h-7 px-3 inline-flex items-center rounded-full text-xs font-semibold border bg-red-50 text-red-700 border-red-200">
-                            high priority
-                          </span>
-                        </div>
-                      </div>
-
-                      {/* Server tabs */}
-                      <div className="rounded-xl border">
-                        <div className="border-b bg-black-50 px-4 pt-3">
+                      {/* Server Config Tab Panel */}
+                      <div className="rounded-xl border border-zinc-850 bg-zinc-900/40 overflow-hidden font-mono text-xs">
+                        <div className="border-b border-zinc-900 bg-zinc-950/20 px-4 pt-3">
                           <div className="flex flex-wrap gap-2">
                             {Object.keys(serverSnippets).map((k) => (
                               <button
                                 key={k}
                                 onClick={() => setServerTab(k)}
-                                className={`px-3 py-1.5 rounded-md text-sm font-medium ${
+                                className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-all cursor-pointer ${
                                   serverTab === k
-                                    ? "bg-black shadow"
-                                    : "text-gray-600 hover:text-gray-900"
+                                    ? "bg-red-500 text-black font-bold"
+                                    : "text-zinc-500 hover:text-zinc-350"
                                 }`}
                               >
                                 {k}
@@ -703,31 +689,68 @@ def frame_headers(get_response):
                             ))}
                           </div>
                         </div>
-                        <div className="p-4">
-                          <div className="flex items-center justify-between mb-2">
-                            <div className="text-sm text-gray-600">
-                              Add to your configuration:
+                        <div className="p-5 space-y-3">
+                          <div className="flex items-center justify-between">
+                            <div className="text-zinc-500 text-[10px] uppercase font-bold tracking-wider">
+                              Config syntax parameter overrides:
                             </div>
                             <button
                               onClick={() => onCopy(serverSnippets[serverTab])}
-                              className="text-gray-600 hover:text-gray-900 text-xs inline-flex items-center gap-1"
+                              className="text-red-450 hover:text-red-350 text-[10px] uppercase font-bold inline-flex items-center gap-1 cursor-pointer"
                             >
                               <Copy className="w-3.5 h-3.5" />
-                              Copy
+                              Copy Config
                             </button>
                           </div>
-                          <pre className="text-sm bg-black-900 text-green-200 rounded-lg p-3 overflow-x-auto">
+                          <pre className="text-xs bg-zinc-950/65 text-red-400 border border-zinc-900 rounded-lg p-3 overflow-x-auto leading-relaxed">
                             {serverSnippets[serverTab]}
                           </pre>
                         </div>
                       </div>
+
                     </div>
                   )}
                 </div>
-              </>
+
+              </div>
             )}
+
           </div>
-        )}
+
+          {/* Right Column (Guidance) */}
+          <div className="space-y-6">
+            
+            {/* Guidance sidebar card */}
+            <div className="border border-zinc-800/80 bg-zinc-950/20 backdrop-blur-md rounded-2xl p-6 space-y-4 shadow-[0_8px_30px_rgb(0,0,0,0.12)]">
+              <h2 className="text-xs font-mono font-bold uppercase tracking-wider text-zinc-100 flex items-center gap-2">
+                <Info className="text-red-400 w-4 h-4" />
+                Tester Guidance
+              </h2>
+              <ul className="space-y-3.5 list-none pl-0">
+                <li className="flex items-start gap-2">
+                  <span className="inline-block w-1.5 h-1.5 rounded-full bg-red-500/60 mt-1.5 flex-shrink-0" />
+                  <span className="text-xs text-zinc-400 leading-relaxed font-mono">
+                    Audits target domain responsiveness inside custom frames and boundaries.
+                  </span>
+                </li>
+                <li className="flex items-start gap-2">
+                  <span className="inline-block w-1.5 h-1.5 rounded-full bg-red-500/60 mt-1.5 flex-shrink-0" />
+                  <span className="text-xs text-zinc-400 leading-relaxed font-mono">
+                    Verifies X-Frame-Options headers presence and resolves value settings.
+                  </span>
+                </li>
+                <li className="flex items-start gap-2">
+                  <span className="inline-block w-1.5 h-1.5 rounded-full bg-red-500/60 mt-1.5 flex-shrink-0" />
+                  <span className="text-xs text-zinc-400 leading-relaxed font-mono">
+                    Checks frame-ancestors parameters in CSP configurations to block overlay leaks.
+                  </span>
+                </li>
+              </ul>
+            </div>
+
+          </div>
+
+        </div>
       </div>
     </div>
   );

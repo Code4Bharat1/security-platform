@@ -12,18 +12,25 @@ import {
   X,
   Lock,
   Download,
+  Globe,
+  Info,
+  Terminal,
+  Activity,
+  Layers,
+  Cpu,
+  ShieldAlert
 } from "lucide-react";
 import useProtectedAction from "../UseProtectedAction/UseProtectedAction";
 
 export default function SessionFixationChecker() {
   const [code, setCode] = useState("");
-  const [report, setReport] = useState(null); // findings[]
-  const [summary, setSummary] = useState(null); // { totalFindings, critical, high, medium, low, overallRisk }
-  const [metrics, setMetrics] = useState(null); // cookie flags etc.
+  const [report, setReport] = useState(null);
+  const [summary, setSummary] = useState(null);
+  const [metrics, setMetrics] = useState(null);
   const [comparison, setComparison] = useState(null);
   const [reportId, setReportId] = useState(null);
   const [loading, setLoading] = useState(false);
-  const [toasts, setToasts] = useState([]); // {id, message, type}
+  const [toasts, setToasts] = useState([]);
   const reportRef = useRef(null);
 
   const protectedAction = useProtectedAction();
@@ -69,7 +76,7 @@ export default function SessionFixationChecker() {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
-            Authorization: `Bearer ${token}`, // ✅ use token for protected access
+            Authorization: `Bearer ${token}`,
           },
           body: JSON.stringify({ code: v }),
         });
@@ -124,7 +131,6 @@ export default function SessionFixationChecker() {
     r.readAsText(f);
   };
 
-  // Exports (server)
   const openExport = (fmt) => {
     if (!reportId) {
       addToast("Analyze first to get a report id", "error");
@@ -143,7 +149,6 @@ export default function SessionFixationChecker() {
     );
   };
 
-  // PDF (client)
   const fileSafe = (s) =>
     s
       .replace(/[^\w\-]+/g, "_")
@@ -156,12 +161,24 @@ export default function SessionFixationChecker() {
       return;
     }
     const doc = new jsPDF({ unit: "pt" });
+
+    // Red Team banner style
+    doc.setFillColor(18, 18, 18);
+    doc.rect(0, 0, 595, 55, "F");
+
+    doc.setTextColor(239, 68, 68);
+    doc.setFont("helvetica", "bold");
     doc.setFontSize(16);
-    doc.text("Session Fixation Security Report", 40, 40);
-    doc.setFontSize(10);
-    doc.text(`Generated: ${new Date().toLocaleString()}`, 40, 58);
+    doc.text("SESSION FIXATION SECURITY REPORT", 40, 35);
+
+    doc.setTextColor(255, 255, 255);
+    doc.setFontSize(9);
+    doc.text(`Generated: ${new Date().toLocaleString()}`, 40, 48);
+
+    doc.setTextColor(50, 50, 50);
+    doc.setFontSize(9);
     if (summary) {
-      doc.text(`Overall Risk: ${summary.overallRisk}`, 40, 74);
+      doc.text(`Overall Risk: ${summary.overallRisk}`, 40, 75);
       doc.text(
         `Findings: ${summary.totalFindings}  |  Critical: ${summary.critical}  High: ${summary.high}  Medium: ${summary.medium}  Low: ${summary.low}`,
         40,
@@ -191,8 +208,9 @@ export default function SessionFixationChecker() {
         it.cvss ?? "",
         (it.locations || []).map((l) => l.line).join(";"),
       ]),
-      styles: { fontSize: 8, cellPadding: 4 },
-      headStyles: { fillColor: [230, 230, 230] },
+      theme: "grid",
+      styles: { fontSize: 7, cellPadding: 4 },
+      headStyles: { fillColor: [239, 68, 68] },
       columnStyles: { 2: { cellWidth: 240 } },
       margin: { left: 40, right: 40 },
     });
@@ -208,7 +226,7 @@ export default function SessionFixationChecker() {
       "Enforce MFA for sensitive actions.",
       "Destroy session on logout; HTTPS only with HSTS enabled.",
     ];
-    doc.setFontSize(10);
+    doc.setFontSize(9);
     let y = 60;
     recs.forEach((t) => {
       doc.text(`• ${t}`, 48, y);
@@ -219,51 +237,104 @@ export default function SessionFixationChecker() {
     addToast("PDF report downloaded", "success");
   };
 
-  // UI helpers
   const getSeverityIcon = (s) => {
     const v = (s || "").toLowerCase();
     if (v === "critical" || v === "high")
       return <AlertTriangle className="w-5 h-5 text-red-400" />;
     if (v === "medium")
-      return <AlertTriangle className="w-5 h-5 text-yellow-400" />;
-    return <Shield className="w-5 h-5 text-green-400" />;
+      return <AlertTriangle className="w-5 h-5 text-orange-400" />;
+    return <Shield className="w-5 h-5 text-zinc-400" />;
   };
+
   const badge = (s) => {
     const v = (s || "").toLowerCase();
-    if (v === "critical") return "bg-red-900/30 text-red-300 border-white-700";
-    if (v === "high") return "bg-red-900/30 text-red-300 border-white-700";
-    if (v === "medium")
-      return "bg-yellow-900/30 text-yellow-300 border-yellow-700";
-    return "bg-green-900/30 text-green-300 border-green-700";
+    const base = "px-2.5 py-0.5 rounded-lg text-[10px] font-bold font-mono border uppercase tracking-wider";
+    if (v === "critical" || v === "high") {
+      return `${base} border-red-500/40 bg-red-500/5 text-red-400`;
+    }
+    if (v === "medium") {
+      return `${base} border-orange-500/40 bg-orange-500/5 text-orange-400`;
+    }
+    return `${base} border-zinc-800 bg-zinc-900/40 text-zinc-350`;
+  };
+
+  const getToastIcon = (type) => {
+    switch (type) {
+      case "success":
+        return <CheckCircle className="w-5 h-5 text-red-400" />;
+      case "error":
+        return <ShieldAlert className="w-5 h-5 text-red-500" />;
+      case "warning":
+        return <AlertTriangle className="w-5 h-5 text-orange-400" />;
+      default:
+        return <Shield className="w-5 h-5 text-zinc-400" />;
+    }
+  };
+
+  const getToastBg = (type) => {
+    switch (type) {
+      case "success":
+        return "bg-zinc-950/90 border-zinc-800 text-zinc-200";
+      case "error":
+        return "bg-zinc-950/90 border-red-900/50 text-red-400";
+      case "warning":
+        return "bg-zinc-950/90 border-orange-900/50 text-orange-400";
+      default:
+        return "bg-zinc-950/90 border-zinc-800 text-zinc-200";
+    }
   };
 
   return (
-    <div className="tool-detail-page min-h-screen bg-black text-white">
-      {/* toasts */}
-      <div className="fixed top-4 right-4 z-50 space-y-2">
+    <div 
+      className="tool-detail-page min-h-screen"
+      style={{
+        '--hero-ambient-a': 'rgba(239, 68, 68, 0.08)',
+        '--hero-ambient-b': 'rgba(249, 115, 22, 0.03)',
+        '--glow-primary': '0 0 34px rgba(239, 68, 68, 0.16)',
+        '--gold': '#ef4444',
+        '--gold-strong': '#f87171',
+        '--gold-dark': '#b91c1c',
+        '--ring': 'rgba(239, 68, 68, 0.34)',
+        '--surface-glow': 'rgba(239, 68, 68, 0.14)',
+      }}
+    >
+      <style>{`
+        .tool-detail-page .tool-detail-shell {
+          padding-top: 3.5rem !important;
+        }
+        .tool-detail-page ::-webkit-scrollbar-thumb {
+          background: rgba(239, 68, 68, 0.35) !important;
+        }
+        .tool-detail-page ::-webkit-scrollbar-thumb:hover {
+          background: rgba(239, 68, 68, 0.55) !important;
+        }
+        .tool-detail-page ::selection {
+          background: rgba(239, 68, 68, 0.22) !important;
+          color: #fef2f2 !important;
+        }
+        .tool-detail-page :is(button, [role="button"]):is([class*="bg-red-"], [class*="bg-rose-"]) {
+          color: #000000 !important;
+        }
+        .tool-detail-page :is(button, [role="button"]):is([class*="bg-red-"], [class*="bg-rose-"]) * {
+          color: #000000 !important;
+        }
+      `}</style>
+
+      {/* Toast Overlay */}
+      <div className="fixed top-4 right-4 z-50 space-y-2 font-mono text-xs">
         {toasts.map((t) => (
           <div
             key={t.id}
-            className={`border rounded-lg p-4 shadow-lg max-w-sm ${
-              t.type === "error"
-                ? "bg-red-900/20 border-white-700 text-red-300"
-                : t.type === "success"
-                ? "bg-green-900/20 border-green-700 text-green-300"
-                : t.type === "warning"
-                ? "bg-yellow-900/20 border-yellow-700 text-yellow-300"
-                : "bg-blue-900/20 border-blue-700 text-blue-300"
-            }`}
+            className={`${getToastBg(
+              t.type
+            )} border rounded-xl p-4 shadow-xl backdrop-blur-md max-w-sm animate-in slide-in-from-right duration-300`}
           >
             <div className="flex items-start gap-3">
-              {t.type === "error" || t.type === "warning" ? (
-                <AlertTriangle className="w-5 h-5 text-red-400" />
-              ) : (
-                <CheckCircle className="w-5 h-5 text-green-400" />
-              )}
-              <p className="text-sm flex-1">{t.message}</p>
+              {getToastIcon(t.type)}
+              <p className="flex-1 text-zinc-300 leading-normal">{t.message}</p>
               <button
                 onClick={() => removeToast(t.id)}
-                className="text-gray-400 hover:text-gray-300"
+                className="text-zinc-500 hover:text-zinc-300 transition-colors"
               >
                 <X className="w-4 h-4" />
               </button>
@@ -272,289 +343,296 @@ export default function SessionFixationChecker() {
         ))}
       </div>
 
-      <div className="tool-detail-shell container mx-auto px-4 py-8 max-w-4xl">
-        {/* Header */}
-        <div className="tool-detail-hero flex items-center gap-4 mb-8">
-          <div className="w-30 h-30 sm:w-30 md:w-30 sm:h-30 md:h-30 rounded-full overflow-hidden border-2 border-red-500 flex-shrink-0">
-            <img
-              src="/Redteam/session fixation.png" // <-- yahan apni image ka path dijiye
-              alt="Logo"
-              className=" object-cover"
-            />
-          </div>
+      <div className="tool-detail-shell">
+        {/* Navigation & Header */}
+        <div className="flex justify-end mb-8">
+          <span className="rounded-full border border-red-500/30 px-3 py-1 font-mono text-[0.62rem] uppercase tracking-[0.28em] text-red-400">
+            Red Team
+          </span>
+        </div>
 
+        {/* Title Block */}
+        <div className="mb-10 flex flex-col md:flex-row items-start md:items-center gap-6">
+          <div className="w-16 h-16 rounded-2xl border border-red-500/30 overflow-hidden shadow-lg flex-shrink-0 flex items-center justify-center">
+            <Lock className="h-8 w-8 text-red-400" />
+          </div>
           <div>
-            <h1 className="text-2xl font-bold text-white">
-              Session Fixation Checker
+            <h1 className="text-4xl sm:text-5xl font-mono font-bold text-zinc-100">
+              SESSION FIXATION <span className="text-red-400">CHECKER</span>
             </h1>
-            <p className="text-gray-400 text-xl">
-              Deep static checks + exports (JSON/CSV/PDF)
+            <p className="mt-2 text-zinc-400 max-w-2xl text-base font-normal">
+              Validate authentication and session codebases. Audits session identifier regeneration triggers and flags insecure cookies configurations.
             </p>
           </div>
         </div>
 
-        {/* Server - Side Code Section */}
-        <div className="mb-6">
-          <div className="bg-gray-900 rounded-lg border border-white-700 p-6">
-            <h2 className="text-white text-lg font-semibold mb-4">
-              Server - Side Code
-            </h2>
+        {/* 2-Column Split Layout */}
+        <div className="grid gap-8 lg:grid-cols-[1fr_400px]">
+          
+          {/* Left Column */}
+          <div className="space-y-6">
+            
+            {/* Input Form Card */}
+            <div className="bg-zinc-950/20 backdrop-blur-md border border-zinc-800/80 rounded-2xl p-6 shadow-[0_8px_30px_rgb(0,0,0,0.2)] hover:border-red-500/10 transition-all duration-300 space-y-4">
+              <h2 className="text-lg font-mono font-medium text-zinc-100 mb-2 flex items-center gap-2">
+                <Terminal className="h-5 w-5 text-red-400" />
+                Session Fixation Audit
+              </h2>
 
-            <div>
-              <textarea
-                rows={8}
-                value={code}
-                onChange={(e) => setCode(e.target.value)}
-                placeholder="Paste your login / session code....."
-                className="w-full bg-black border border-white-600 rounded-lg p-4 text-white font-mono text-sm focus:outline-none focus:border-white-500 resize-none placeholder-gray-500"
-              />
+              <div className="space-y-4">
+                <textarea
+                  rows={8}
+                  value={code}
+                  onChange={(e) => setCode(e.target.value)}
+                  placeholder="Paste login logic, cookie handling routines, or session middlewares here..."
+                  className="w-full bg-zinc-900/40 text-zinc-100 border border-zinc-800/80 rounded-xl p-4 font-mono text-xs focus:outline-none focus:ring-1 focus:ring-red-500/50 focus:border-red-500/50 resize-none placeholder:text-zinc-650"
+                />
 
-              <div className="mt-4 flex justify-center">
-                <button
-                  onClick={handleLookup}
-                  disabled={loading}
-                  className={`px-8 py-2 rounded-lg font-medium transition-all ${
-                    loading
-                      ? "bg-gray-600 cursor-not-allowed"
-                      : "bg-red-600 hover:bg-red-700 text-white"
-                  }`}
-                >
-                  {loading ? "Analyzing..." : "Analyze"}
-                </button>
+                <div className="flex flex-col sm:flex-row gap-3">
+                  <label className="flex-1 cursor-pointer">
+                    <input
+                      type="file"
+                      accept=".js,.jsx,.ts,.tsx,.php,.py,.java,.cs,.rb,.go,.txt"
+                      className="hidden"
+                      onChange={handleFileUpload}
+                    />
+                    <div className="flex items-center justify-center gap-2 px-4 py-4 bg-zinc-900/40 hover:bg-red-50/5 text-zinc-350 hover:text-red-450 border border-zinc-800/80 hover:border-red-500/30 rounded-xl font-mono font-bold text-xs uppercase tracking-wider transition-all duration-300">
+                      <Upload className="w-4 h-4" />
+                      <span>Upload Code File</span>
+                    </div>
+                  </label>
+
+                  <button
+                    onClick={handleLookup}
+                    disabled={loading || !code.trim()}
+                    className="flex-1 bg-red-500 hover:bg-red-600 text-black rounded-xl font-mono font-bold text-xs uppercase py-4 transition-all duration-300 hover:scale-[1.01] active:scale-[0.99] flex items-center justify-center gap-2 cursor-pointer hover:shadow-[0_0_20px_rgba(239,68,68,0.2)] focus:outline-none disabled:opacity-40"
+                  >
+                    {loading ? (
+                      <>
+                        <div className="w-4 h-4 border-2 border-black border-t-transparent rounded-full animate-spin" />
+                        Analyzing signatures...
+                      </>
+                    ) : (
+                      <>
+                        <Lock className="w-4 h-4 text-black" />
+                        Analyze Session Code
+                      </>
+                    )}
+                  </button>
+                </div>
               </div>
             </div>
-          </div>
-        </div>
 
-        {/* Upload Code File Button */}
-        <div className="mb-6">
-          <label className="cursor-pointer bg-red-600 hover:bg-red-700 text-white px-6 py-2 rounded-lg font-medium transition-all inline-flex items-center gap-2">
-            <Upload className="w-4 h-4" />
-            Upload Code File
-            <input
-              type="file"
-              accept=".js,.jsx,.ts,.tsx,.php,.py,.java,.cs,.rb,.go,.txt"
-              className="hidden"
-              onChange={handleFileUpload}
-            />
-          </label>
-          <p className="text-gray-500 text-sm mt-2">
-            Supported: JS/TS, PHP, Python, Java, C#, Ruby, Go, TXT
-          </p>
-        </div>
+            {/* Export buttons row */}
+            {report && (
+              <div className="flex flex-wrap gap-3">
+                <button
+                  onClick={() => openExport("json")}
+                  className="px-4 py-2.5 bg-zinc-900/40 hover:bg-red-500/5 text-zinc-350 hover:text-red-400 border border-zinc-800/80 hover:border-red-500/30 rounded-xl font-mono font-bold text-xs uppercase transition-all duration-300 flex items-center gap-1.5 cursor-pointer"
+                >
+                  <Download className="w-3.5 h-3.5" /> JSON Export
+                </button>
+                <button
+                  onClick={() => openExport("csv")}
+                  className="px-4 py-2.5 bg-zinc-900/40 hover:bg-red-500/5 text-zinc-350 hover:text-red-400 border border-zinc-800/80 hover:border-red-500/30 rounded-xl font-mono font-bold text-xs uppercase transition-all duration-300 flex items-center gap-1.5 cursor-pointer"
+                >
+                  <Download className="w-3.5 h-3.5" /> CSV Export
+                </button>
+                <button
+                  onClick={downloadPDF}
+                  className="px-4 py-2.5 bg-zinc-900/40 hover:bg-red-500/5 text-zinc-350 hover:text-red-400 border border-zinc-800/80 hover:border-red-500/30 rounded-xl font-mono font-bold text-xs uppercase transition-all duration-300 flex items-center gap-1.5 cursor-pointer"
+                >
+                  <Download className="w-3.5 h-3.5" /> PDF Report
+                </button>
+              </div>
+            )}
 
-        {/* Downloads */}
-        {report && (
-          <div className="mb-6 flex flex-wrap items-center gap-3">
-            <button
-              onClick={() => openExport("json")}
-              className="px-4 py-2 rounded-md bg-gray-700 hover:bg-gray-600 text-white flex items-center gap-2"
-            >
-              <Download className="w-4 h-4" /> Download JSON
-            </button>
-            <button
-              onClick={() => openExport("csv")}
-              className="px-4 py-2 rounded-md bg-gray-700 hover:bg-gray-600 text-white flex items-center gap-2"
-            >
-              <Download className="w-4 h-4" /> Download CSV
-            </button>
-            <button
-              onClick={downloadPDF}
-              className="px-4 py-2 rounded-md bg-gray-700 hover:bg-gray-600 text-white flex items-center gap-2"
-            >
-              <Download className="w-4 h-4" /> Download PDF
-            </button>
-          </div>
-        )}
-
-        {/* Results Section */}
-        {report !== null && (
-          <div ref={reportRef} className="space-y-6">
-            {(summary || metrics) && (
-              <div className="bg-gray-900 rounded-lg border border-white-700 p-4">
-                {summary && (
-                  <div className="mb-3 text-sm text-gray-300">
-                    <strong>Overall:</strong> {summary.overallRisk} • Findings:{" "}
-                    {summary.totalFindings} (C:
-                    {summary.critical} H:{summary.high} M:{summary.medium} L:
-                    {summary.low})
+            {/* Results Section */}
+            {report !== null && (
+              <div ref={reportRef} className="space-y-6">
+                
+                {/* Score breakdown metrics card */}
+                {(summary || metrics) && (
+                  <div className="bg-zinc-950/20 backdrop-blur-md border border-zinc-800/80 rounded-2xl p-6 shadow-[0_8px_30px_rgb(0,0,0,0.2)] space-y-4">
+                    {summary && (
+                      <div className="text-sm font-mono text-zinc-350 border-b border-zinc-900 pb-3">
+                        Overall Risk: <span className="text-red-450 font-bold uppercase">{summary.overallRisk}</span> • Findings:{" "}
+                        <span className="text-red-400 font-bold">{summary.totalFindings}</span> (C:
+                        {summary.critical} H:{summary.high} M:{summary.medium} L:
+                        {summary.low})
+                      </div>
+                    )}
+                    {comparison && (
+                      <div className="text-[10px] font-mono text-zinc-550">
+                        {comparison.previousReportId
+                          ? `Compared to previous scan: Δ${
+                              comparison.deltaFindings >= 0 ? "+" : ""
+                            }${comparison.deltaFindings}`
+                          : "No previous scan with matching file identity"}
+                      </div>
+                    )}
+                    {metrics && (
+                      <div className="grid md:grid-cols-2 gap-4 text-xs font-mono text-zinc-450">
+                        <div className="bg-zinc-900/40 border border-zinc-850 p-3 rounded-xl space-y-1">
+                          <span className="text-[9px] text-zinc-550 block font-bold uppercase tracking-wider">Cookie Headers</span>
+                          HttpOnly: <span className="text-zinc-250 font-semibold">{String(metrics.cookieFlags?.httpOnly)}</span>, 
+                          Secure: <span className="text-zinc-250 font-semibold">{String(metrics.cookieFlags?.secure)}</span>, 
+                          SameSite: <span className="text-zinc-250 font-semibold">{String(metrics.cookieFlags?.sameSite || "—")}</span>
+                        </div>
+                        <div className="bg-zinc-900/40 border border-zinc-850 p-3 rounded-xl space-y-1">
+                          <span className="text-[9px] text-zinc-550 block font-bold uppercase tracking-wider">Token Quality</span>
+                          Entropy Hint: <span className="text-zinc-250 font-semibold">{metrics.tokenEntropyHint || "—"}</span> • 
+                          Reuse Risk: <span className="text-red-400 font-semibold">{metrics.tokenReuseRisk || "—"}</span>
+                        </div>
+                        <div className="bg-zinc-900/40 border border-zinc-850 p-3 rounded-xl space-y-1">
+                          <span className="text-[9px] text-zinc-550 block font-bold uppercase tracking-wider">Session Bindings</span>
+                          IP Address: <span className="text-zinc-250 font-semibold">{metrics.ipBinding ? "yes" : "no"}</span> • 
+                          User-Agent: <span className="text-zinc-250 font-semibold">{metrics.uaBinding ? "yes" : "no"}</span>
+                        </div>
+                        <div className="bg-zinc-900/40 border border-zinc-850 p-3 rounded-xl space-y-1">
+                          <span className="text-[9px] text-zinc-550 block font-bold uppercase tracking-wider">MFA / Invalidation</span>
+                          MFA Enabled: <span className="text-zinc-250 font-semibold">{metrics.mfaPresent ? "yes" : "no"}</span> • 
+                          Regen on Escalation: <span className="text-zinc-250 font-semibold">{metrics.regenOnPrivEsc ? "yes" : "no"}</span>
+                        </div>
+                      </div>
+                    )}
                   </div>
                 )}
-                {comparison && (
-                  <div className="mb-3 text-xs text-gray-500">
-                    {comparison.previousReportId
-                      ? `Compared to prev: Δ${
-                          comparison.deltaFindings >= 0 ? "+" : ""
-                        }${comparison.deltaFindings}`
-                      : "No previous report with same code hash"}
+
+                {/* Specific issues list */}
+                {Array.isArray(report) && report.length > 0 ? (
+                  <div className="space-y-4">
+                    <div className="flex items-center gap-3">
+                      <AlertTriangle className="w-5 h-5 text-red-400" />
+                      <h2 className="text-base font-mono font-bold text-zinc-200 uppercase tracking-wider">
+                        Security Scan Report ({report.length} flaws)
+                      </h2>
+                    </div>
+                    {report.map((f, i) => (
+                      <div
+                        key={i}
+                        className="bg-zinc-950/20 backdrop-blur-md border border-zinc-800/80 rounded-2xl p-6 shadow-[0_8px_30px_rgb(0,0,0,0.2)] font-mono text-xs space-y-3"
+                      >
+                        <div className="flex items-center justify-between gap-4 border-b border-zinc-900 pb-3 flex-wrap">
+                          <div className="flex items-center gap-2 flex-wrap">
+                            {getSeverityIcon(f.severity)}
+                            <span className={badge(f.severity)}>
+                              {(f.severity || "").toUpperCase()} • CVSS {f.cvss ?? "—"} • {f.exploitability || "—"} exploitability
+                            </span>
+                          </div>
+                          <span className="text-[10px] text-zinc-550 uppercase tracking-wide font-semibold">
+                            Rule: {f.rule || "—"}
+                          </span>
+                        </div>
+                        
+                        <div className="text-zinc-350 space-y-2">
+                          <p>
+                            <strong className="text-zinc-500">Issue:</strong> {f.message}
+                          </p>
+                          {f.reasoning && (
+                            <p className="text-zinc-400">
+                              <strong className="text-zinc-500">Reasoning:</strong> {f.reasoning}
+                            </p>
+                          )}
+                          {f.attackScenario && (
+                            <p className="text-zinc-400">
+                              <strong className="text-zinc-500">Attack Vectors:</strong> {f.attackScenario}
+                            </p>
+                          )}
+                        </div>
+
+                        {Array.isArray(f.locations) && f.locations.length > 0 && (
+                          <div className="mt-3 border-t border-zinc-900/60 pt-3">
+                            <span className="text-[10px] text-zinc-550 block font-bold uppercase tracking-wider mb-2">Line Locations</span>
+                            <ul className="space-y-1.5 pl-0 list-none text-zinc-400">
+                              {f.locations.slice(0, 5).map((loc, k) => (
+                                <li key={k} className="flex items-start gap-2">
+                                  <code className="text-red-400 font-bold shrink-0">Line {loc.line}:</code>
+                                  <span className="text-zinc-500 break-all">{loc.snippet}</span>
+                                </li>
+                              ))}
+                            </ul>
+                            {f.locations.length > 5 && (
+                              <p className="text-zinc-550 text-[10px] mt-1.5">
+                                + {f.locations.length - 5} more locations...
+                              </p>
+                            )}
+                          </div>
+                        )}
+
+                        {f.suggestion && (
+                          <div className="bg-zinc-900/40 border border-zinc-850 p-4 rounded-xl space-y-1 mt-4">
+                            <span className="text-[10px] text-zinc-550 block font-bold uppercase tracking-wider">Recommended Remediation</span>
+                            <p className="text-red-400 font-semibold">{f.suggestion}</p>
+                          </div>
+                        )}
+                      </div>
+                    ))}
                   </div>
-                )}
-                {metrics && (
-                  <div className="grid md:grid-cols-2 gap-3 text-xs text-gray-400">
-                    <div>
-                      Cookie: HttpOnly {String(metrics.cookieFlags?.httpOnly)},
-                      Secure {String(metrics.cookieFlags?.secure)}, SameSite{" "}
-                      {String(metrics.cookieFlags?.sameSite || "—")}, maxAge{" "}
-                      {metrics.cookieFlags?.maxAgeMs ?? "—"}
-                    </div>
-                    <div>
-                      Entropy: {metrics.tokenEntropyHint || "—"} • Reuse Risk:{" "}
-                      {metrics.tokenReuseRisk || "—"}
-                    </div>
-                    <div>
-                      Binding: IP {metrics.ipBinding ? "yes" : "no"} • UA{" "}
-                      {metrics.uaBinding ? "yes" : "no"}
-                    </div>
-                    <div>
-                      MFA: {metrics.mfaPresent ? "yes" : "no"} • Logout
-                      invalidation: {metrics.logoutInvalidation ? "yes" : "no"}{" "}
-                      • PrivEsc regen: {metrics.regenOnPrivEsc ? "yes" : "no"}
-                    </div>
+                ) : (
+                  <div className="bg-zinc-950/20 backdrop-blur-md border border-zinc-800/80 rounded-2xl p-16 shadow-[0_8px_30px_rgb(0,0,0,0.2)] text-center space-y-4">
+                    <CheckCircle className="w-12 h-12 mx-auto text-red-450 animate-pulse" />
+                    <h2 className="text-lg font-mono font-bold text-zinc-200 uppercase tracking-wider">
+                      Validation Safe
+                    </h2>
+                    <p className="text-zinc-500 font-mono text-xs">
+                      No session fixation vulnerability flags identified in code.
+                    </p>
                   </div>
                 )}
               </div>
             )}
 
-            {Array.isArray(report) && report.length > 0 ? (
-              <>
-                <div className="flex items-center gap-3">
-                  <AlertTriangle className="w-6 h-6 text-red-400" />
-                  <h2 className="text-xl font-semibold text-white">
-                    Security Analysis Report ({report.length} issues)
-                  </h2>
+            {/* Default State */}
+            {report === null && !loading && (
+              <div className="bg-zinc-950/20 backdrop-blur-md border border-zinc-800/80 rounded-2xl p-16 shadow-[0_8px_30px_rgb(0,0,0,0.2)] text-center space-y-4">
+                <div className="w-12 h-12 mx-auto border border-zinc-800/60 bg-zinc-900/40 rounded-xl flex items-center justify-center">
+                  <Lock className="w-5 h-5 text-zinc-500" />
                 </div>
-                {report.map((f, i) => (
-                  <div
-                    key={i}
-                    className="bg-gray-900 border border-white-700 rounded-lg p-6"
-                  >
-                    <div className="flex items-center justify-between mb-2">
-                      <div className="flex items-center gap-3">
-                        {getSeverityIcon(f.severity)}
-                        <span
-                          className={`px-3 py-1 rounded-full text-sm font-semibold border ${badge(
-                            f.severity
-                          )}`}
-                        >
-                          {(f.severity || "").toUpperCase()} • CVSS{" "}
-                          {f.cvss ?? "—"} • {f.exploitability || "—"}{" "}
-                          exploitability
-                        </span>
-                      </div>
-                      <span className="text-xs text-gray-500">
-                        Rule: {f.rule || "—"}
-                      </span>
-                    </div>
-                    <p className="text-gray-200 mb-2">
-                      <strong>Issue:</strong> {f.message}
-                    </p>
-                    {f.reasoning && (
-                      <p className="text-sm text-gray-400 mb-2">
-                        <strong>Reasoning:</strong> {f.reasoning}
-                      </p>
-                    )}
-                    {f.attackScenario && (
-                      <p className="text-sm text-gray-400 mb-2">
-                        <strong>Attack:</strong> {f.attackScenario}
-                      </p>
-                    )}
-                    {Array.isArray(f.locations) && f.locations.length > 0 && (
-                      <div className="mt-3 text-xs">
-                        <p className="font-semibold text-gray-300 mb-1">
-                          Locations:
-                        </p>
-                        <ul className="list-disc ml-5 space-y-1">
-                          {f.locations.slice(0, 5).map((loc, k) => (
-                            <li key={k}>
-                              <code className="text-red-300">
-                                Line {loc.line}
-                              </code>{" "}
-                              —{" "}
-                              <span className="text-gray-500">
-                                {loc.snippet}
-                              </span>
-                            </li>
-                          ))}
-                        </ul>
-                        {f.locations.length > 5 && (
-                          <p className="text-gray-500 mt-1">
-                            + {f.locations.length - 5} more…
-                          </p>
-                        )}
-                      </div>
-                    )}
-                    {f.suggestion && (
-                      <div className="bg-green-900/20 border border-green-700 rounded-lg p-4 mt-4">
-                        <p className="font-semibold text-green-300 mb-1">
-                          Recommended Fix
-                        </p>
-                        <p className="text-sm text-green-400">{f.suggestion}</p>
-                      </div>
-                    )}
-                  </div>
-                ))}
-              </>
-            ) : (
-              <div className="text-center py-16">
-                <CheckCircle className="w-16 h-16 mx-auto mb-4 text-green-400" />
-                <h2 className="text-2xl font-semibold text-green-400 mb-2">
-                  All Clear
+                <h2 className="text-sm font-mono font-bold text-zinc-200 uppercase tracking-wider">
+                  Ready to audit source code
                 </h2>
-                <p className="text-gray-400 text-lg">
-                  No session fixation vulnerabilities detected
+                <p className="text-zinc-550 font-mono text-xs">
+                  Paste server-side routines and trigger "Analyze Session Code" to parse vulnerabilities.
                 </p>
               </div>
             )}
-          </div>
-        )}
 
-        {/* Default State */}
-        {report === null && !loading && (
-          <div className="bg-gray-900 rounded-lg border border-white-700 p-16">
-            <div className="text-center">
-              <div className="w-16 h-16 mx-auto mb-4 bg-gray-800 rounded-full flex items-center justify-center">
-                <Lock className="w-8 h-8 text-gray-400" />
-              </div>
-              <h2 className="text-xl font-semibold text-white mb-2">
-                Ready to analyze your code
+          </div>
+
+          {/* Right Column (Guidance) */}
+          <div className="space-y-6">
+            
+            {/* Guidance sidebar card */}
+            <div className="border border-zinc-800/80 bg-zinc-950/20 backdrop-blur-md rounded-2xl p-6 space-y-4 shadow-[0_8px_30px_rgb(0,0,0,0.12)]">
+              <h2 className="text-xs font-mono font-bold uppercase tracking-wider text-zinc-100 flex items-center gap-2">
+                <Info className="text-red-400 w-4 h-4" />
+                Checker Guidance
               </h2>
-              <p className="text-gray-400">
-                Paste server-side code and click "Analyze"
-              </p>
+              <ul className="space-y-3.5 list-none pl-0">
+                <li className="flex items-start gap-2">
+                  <span className="inline-block w-1.5 h-1.5 rounded-full bg-red-500/60 mt-1.5 flex-shrink-0" />
+                  <span className="text-xs text-zinc-400 leading-relaxed font-mono">
+                    Scans configuration middleware to locate session regeneration calls.
+                  </span>
+                </li>
+                <li className="flex items-start gap-2">
+                  <span className="inline-block w-1.5 h-1.5 rounded-full bg-red-500/60 mt-1.5 flex-shrink-0" />
+                  <span className="text-xs text-zinc-400 leading-relaxed font-mono">
+                    Verifies HttpOnly, SameSite, and Secure flags parameters on cookies.
+                  </span>
+                </li>
+                <li className="flex items-start gap-2">
+                  <span className="inline-block w-1.5 h-1.5 rounded-full bg-red-500/60 mt-1.5 flex-shrink-0" />
+                  <span className="text-xs text-zinc-400 leading-relaxed font-mono">
+                    Checks validation parameters linking sessions to remote client IP and User-Agent headers.
+                  </span>
+                </li>
+              </ul>
             </div>
+
           </div>
-        )}
 
-        {/* Session Security Best Practices */}
-        <div className="mt-8 bg-red-600 rounded-lg p-6 border-white-700 ">
-          <h3 className="text-xl font-bold text-white mb-4 text-center">
-            Session Security Best Practices
-          </h3>
-          <ul className="space-y-2 text-white text-sm">
-            <li>
-              • Regenerate session ID after login and privilege escalation.
-            </li>
-            <li>
-              • Use HttpOnly, Secure, SameSite cookies; set maxAge and rolling
-              policy.
-            </li>
-            <li>• Strong entropy for tokens; avoid Math.random/Date.now.</li>
-            <li>
-              • Validate session on every request; bind to IP/UA where
-              appropriate.
-            </li>
-            <li>• Force HTTPS + HSTS; avoid mixed content.</li>
-            <li>
-              • Invalidate session on logout server-side; enforce MFA for
-              sensitive flows.
-            </li>
-          </ul>
-        </div>
-
-        {/* Footer */}
-        <div className="text-center text-gray-400 text-sm mt-8 flex items-center justify-center gap-2">
-          <Lock className="w-4 h-4" />
-          <span>Report exports: JSON/CSV (server) • PDF (client)</span>
         </div>
       </div>
     </div>

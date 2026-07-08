@@ -1,6 +1,7 @@
 "use client";
 import React, { useEffect, useMemo, useState } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter, usePathname } from "next/navigation";
+
 
 import {
   Loader2,
@@ -25,6 +26,7 @@ import {
   ServerCog,
   Lock,
   Menu,
+  Terminal,
 } from "lucide-react";
 import { generatePDF } from "./generatePDF";
 import useProtectedAction from "../UseProtectedAction/UseProtectedAction";
@@ -1513,99 +1515,154 @@ export default function Vulnscanner() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []); // run once on mount
 
-  return (
-    <div className="vuln-scan-page min-h-screen bg-[#050505] text-white px-4 pb-16 pt-10 sm:px-6 md:px-8 md:pt-14">
-      <div className="mx-auto max-w-6xl">
-        {/* Header */}
-        <div className="grid gap-8 border-b border-white/6 pb-10 lg:grid-cols-[auto_1fr] lg:items-center">
-          <div className="relative flex h-28 w-28 items-center justify-center rounded-full border border-[var(--gold)]/40 bg-[radial-gradient(circle_at_center,rgba(212,166,74,0.14),rgba(10,10,11,0.92)_70%)] shadow-[0_0_50px_rgba(212,166,74,0.12)] sm:h-36 sm:w-36">
-            <div className="absolute inset-3 rounded-full border border-[var(--gold)]/18" />
-            <img
-              src="/RedTeam/vuln_scanner.png"
-              alt="Security Scanner"
-              className="relative z-10 h-24 w-24 object-contain sm:h-28 sm:w-28"
-            />
-          </div>
+  const pathname = usePathname() || "";
+  const isVaTeam = pathname.includes("web-app-audit") || pathname.includes("/va/") || pathname.includes("-scan");
 
-          <div className="flex-1 space-y-4">
-            <p className="eyebrow">Red Team Module</p>
-            <h1 className="mono-heading text-4xl font-semibold leading-[0.95] text-white sm:text-5xl lg:text-6xl">
-              Vulnerability <span className="text-[var(--gold)]">Scanner</span>
-            </h1>
-            <p className="max-w-3xl text-base leading-8 text-[var(--muted)] sm:text-lg">
-              Our advanced security scanner identifies vulnerabilities before
-              attackers can exploit them. Launch the existing assessment
-              workflow with the new command-center UI, richer visibility, and
-              premium reporting treatment.
+  const themeStyles = isVaTeam ? {
+    '--hero-ambient-a': 'rgba(245, 158, 11, 0.08)',
+    '--hero-ambient-b': 'rgba(249, 115, 22, 0.03)',
+    '--glow-primary': '0 0 34px rgba(245, 158, 11, 0.16)',
+    '--gold': '#f59e0b',
+    '--gold-strong': '#fbbf24',
+    '--gold-dark': '#b45309',
+    '--ring': 'rgba(245, 158, 11, 0.34)',
+    '--surface-glow': 'rgba(245, 158, 11, 0.14)',
+  } : {
+    '--hero-ambient-a': 'rgba(239, 68, 68, 0.08)',
+    '--hero-ambient-b': 'rgba(249, 115, 22, 0.03)',
+    '--glow-primary': '0 0 34px rgba(239, 68, 68, 0.16)',
+    '--gold': '#ef4444',
+    '--gold-strong': '#f87171',
+    '--gold-dark': '#b91c1c',
+    '--ring': 'rgba(239, 68, 68, 0.34)',
+    '--surface-glow': 'rgba(239, 68, 68, 0.14)',
+  };
+
+  return (
+    <div 
+      className="tool-detail-page min-h-screen"
+      style={themeStyles}
+    >
+      <style>{`
+        .tool-detail-page .tool-detail-shell {
+          padding-top: 3.5rem !important;
+        }
+        .tool-detail-page ::-webkit-scrollbar-thumb {
+          background: ${isVaTeam ? 'rgba(245, 158, 11, 0.35)' : 'rgba(239, 68, 68, 0.35)'} !important;
+        }
+        .tool-detail-page ::-webkit-scrollbar-thumb:hover {
+          background: ${isVaTeam ? 'rgba(245, 158, 11, 0.55)' : 'rgba(239, 68, 68, 0.55)'} !important;
+        }
+        .tool-detail-page ::selection {
+          background: ${isVaTeam ? 'rgba(245, 158, 11, 0.22)' : 'rgba(239, 68, 68, 0.22)'} !important;
+          color: ${isVaTeam ? '#fffbeb' : '#fef2f2'} !important;
+        }
+        .tool-detail-page :is(button, [role="button"]):is([class*="bg-red-"], [class*="bg-rose-"], [class*="bg-amber-"], [class*="bg-orange-"]) {
+          color: #000000 !important;
+        }
+        .tool-detail-page :is(button, [role="button"]):is([class*="bg-red-"], [class*="bg-rose-"], [class*="bg-amber-"], [class*="bg-orange-"]) * {
+          color: #000000 !important;
+        }
+      `}</style>
+
+      <div className="tool-detail-shell">
+        {/* Navigation & Header */}
+        <div className="flex justify-end mb-8">
+          <span className={`rounded-full border px-3 py-1 font-mono text-[0.62rem] uppercase tracking-[0.28em] ${
+            isVaTeam ? "border-amber-500/30 text-amber-400" : "border-red-500/30 text-red-400"
+          }`}>
+            {isVaTeam ? "Vulnerability Assessment" : "Red Team"}
+          </span>
+        </div>
+
+        {/* Title Block */}
+        <div className="mb-10 flex flex-col md:flex-row items-start md:items-center gap-6">
+          <div className={`w-16 h-16 rounded-2xl border overflow-hidden shadow-lg flex-shrink-0 flex items-center justify-center ${
+            isVaTeam ? "border-amber-500/30" : "border-red-500/30"
+          }`}>
+            <Shield className={`h-8 w-8 ${isVaTeam ? "text-amber-400" : "text-red-400"}`} />
+          </div>
+          <div>
+            {isVaTeam ? (
+              <h1 className="text-4xl sm:text-5xl font-mono font-bold text-zinc-100">
+                WEB APPLICATION <span className="text-amber-400">TEST</span>
+              </h1>
+            ) : (
+              <h1 className="text-4xl sm:text-5xl font-mono font-bold text-zinc-100">
+                VULNERABILITY <span className="text-red-400">SCANNER</span>
+              </h1>
+            )}
+            <p className="mt-2 text-zinc-400 max-w-2xl text-base font-normal">
+              Our advanced security scanner identifies vulnerabilities before attackers can exploit them. Audits headers, cookies, TLS versions, and system weaknesses.
             </p>
-            <div className="flex flex-wrap gap-3 font-mono text-[0.68rem] uppercase tracking-[0.22em] text-white/34">
-              <span className="border border-white/8 bg-white/[0.03] px-3 py-2">
-                Live scan engine
-              </span>
-              <span className="border border-white/8 bg-white/[0.03] px-3 py-2">
-                Authenticated workflow
-              </span>
-              <span className="border border-white/8 bg-white/[0.03] px-3 py-2">
-                PDF reporting
-              </span>
-            </div>
           </div>
         </div>
 
-        <div className="tool-command-panel mt-10 overflow-hidden">
-          <div className="border-b border-white/8 px-4 py-6 sm:px-8 sm:py-8">
-            <h2 className="mono-heading text-2xl font-semibold text-center mb-3 text-white sm:text-4xl">
-              Website Vulnerability Scanner
-            </h2>
-            <p className="mx-auto max-w-2xl text-center text-sm leading-7 text-[var(--muted)] sm:text-base">
-              Scan a public target, review vulnerability posture, inspect
-              headers and TLS configuration, and export the final report without
-              changing the existing backend workflow.
-            </p>
+        {/* 2-Column Split Layout */}
+        <div className="grid gap-8 lg:grid-cols-[1fr_400px]">
+          
+          {/* Left Column */}
+          <div className="space-y-6">
+            
+            {/* Input Form Card */}
+            <div className={`bg-zinc-950/20 backdrop-blur-md border border-zinc-800/80 rounded-2xl p-6 shadow-[0_8px_30px_rgb(0,0,0,0.2)] transition-all duration-300 space-y-4 ${
+              isVaTeam ? "hover:border-amber-500/10" : "hover:border-red-500/10"
+            }`}>
+              <h2 className="text-lg font-mono font-medium text-zinc-100 mb-2 flex items-center gap-2">
+                <Terminal className={`h-5 w-5 ${isVaTeam ? "text-amber-400" : "text-red-400"}`} />
+                Target Environment URL
+              </h2>
 
-            <form onSubmit={handleSubmit} className="mt-6 space-y-4">
-              <div className="flex flex-col gap-3 sm:flex-row">
-                <input
-                  type="url"
-                  id="websiteUrl"
-                  name="websiteUrl"
-                  value={url}
-                  onChange={(e) => setUrl(e.target.value)}
-                  placeholder="https://example.com"
-                  required
-                  className="tool-scan-input flex-1"
-                  autoComplete="off"
-                  spellCheck={false}
+              <form onSubmit={handleSubmit} className="space-y-4">
+                <div className="flex flex-col gap-3 sm:flex-row">
+                  <input
+                    type="url"
+                    id="websiteUrl"
+                    name="websiteUrl"
+                    value={url}
+                    onChange={(e) => setUrl(e.target.value)}
+                    placeholder="https://example.com"
+                    required
+                    className="flex-1 bg-zinc-900/40 text-zinc-100 border border-zinc-800/80 rounded-xl p-3.5 text-sm focus:outline-none transition-all placeholder:text-zinc-650 font-mono focus:ring-1 focus:border-[var(--gold)] focus:ring-[var(--gold)]/30"
+                    autoComplete="off"
+                    spellCheck={false}
+                  />
+                  <button
+                    type="submit"
+                    className={`px-6 py-4 text-black rounded-xl font-mono font-bold text-xs uppercase transition-all duration-300 hover:scale-[1.01] active:scale-[0.99] flex items-center justify-center gap-2 cursor-pointer focus:outline-none disabled:opacity-40 ${
+                      isVaTeam 
+                        ? "bg-amber-500 hover:bg-amber-600 hover:shadow-[0_0_20px_rgba(245,158,11,0.2)]" 
+                        : "bg-red-500 hover:bg-red-600 hover:shadow-[0_0_20px_rgba(239,68,68,0.2)]"
+                    }`}
+                    disabled={loading}
+                  >
+                    {loading ? (
+                      <Loader2 className="h-4 w-4 animate-spin text-black" />
+                    ) : (
+                      <SearchIcon className="h-4 w-4 text-black" />
+                    )}
+                    <span>{loading ? "Scanning..." : "Scan"}</span>
+                  </button>
+                </div>
+
+                <OwnershipVerificationWizard
+                  targetValue={url}
+                  targetLabel="Website URL"
+                  onVerifiedChange={setOwnershipVerified}
                 />
-                <button
-                  type="submit"
-                  className="gold-button w-full justify-center sm:w-auto disabled:cursor-not-allowed disabled:opacity-60"
-                  disabled={loading}
-                >
-                  {loading ? (
-                    <Loader2 className="h-4 w-4 animate-spin" />
-                  ) : (
-                    <SearchIcon className="h-4 w-4" />
-                  )}
-                  <span className="text-sm font-mono uppercase tracking-[0.16em]">
-                    {loading ? "Scanning..." : "Scan"}
-                  </span>
-                </button>
-              </div>
 
-              <OwnershipVerificationWizard
-                targetValue={url}
-                targetLabel="Website URL"
-                onVerifiedChange={setOwnershipVerified}
-              />
+                {error && (
+                  <div className="p-4 rounded-xl border border-red-500/20 bg-red-955/10 text-red-400 text-xs font-mono flex items-start gap-2.5">
+                    <ShieldAlert size={16} className="mt-0.5 flex-shrink-0" />
+                    <div className="space-y-1">
+                      <div className="font-bold uppercase tracking-wider">Scan Error</div>
+                      <p className="text-zinc-300">{error}</p>
+                    </div>
+                  </div>
+                )}
+              </form>
+            </div>
 
-              {error && (
-                <p className="rounded-sm border border-red-500/25 bg-red-500/10 px-4 py-3 text-sm text-red-300 break-words">
-                  {error}
-                </p>
-              )}
-            </form>
-          </div>
 
           {/* Loading indicator */}
           {loading && (
@@ -6379,18 +6436,70 @@ export default function Vulnscanner() {
 
                 {/* Download PDF Button */}
                 {scanData && (
-                  <div className="flex justify-center sm:justify-end mt-6 pt-6 border-t border-white/8">
-                    <button onClick={generatePDF} className="gold-button">
-                      <FileText className="h-4 w-4" />
-                      <span className="text-sm">Download PDF Report</span>
+                  <div className="flex justify-center sm:justify-end mt-6 pt-6 border-t border-zinc-900">
+                    <button 
+                      onClick={generatePDF} 
+                      className={`px-4 py-2.5 text-black rounded-xl font-mono font-bold text-xs uppercase transition-all duration-300 flex items-center justify-center gap-1.5 cursor-pointer shadow-md ${
+                        isVaTeam 
+                          ? "bg-amber-500 hover:bg-amber-600 hover:shadow-[0_0_20px_rgba(245,158,11,0.2)]" 
+                          : "bg-red-500 hover:bg-red-600 hover:shadow-[0_0_20px_rgba(239,68,68,0.2)]"
+                      }`}
+                    >
+                      <FileText className="h-4 w-4 text-black" />
+                      <span>Download PDF Report</span>
                     </button>
                   </div>
                 )}
               </div>
             </div>
           )}
-        </div>
-      </div>
+
+
+
+          </div> {/* End Left Column */}
+
+          {/* Right Column */}
+          <div className="space-y-6">
+            
+            {/* Audit Specs Guidance */}
+            <div className="border border-zinc-800/80 bg-zinc-950/20 backdrop-blur-md rounded-2xl p-6 space-y-4 shadow-[0_8px_30px_rgb(0,0,0,0.12)]">
+              <h2 className="text-xs font-mono font-bold uppercase tracking-wider text-zinc-100 flex items-center gap-2">
+                <Info className={`w-4 h-4 ${isVaTeam ? "text-amber-400" : "text-red-400"}`} />
+                {isVaTeam ? "Scan Specs" : "Scanner Guidance"}
+              </h2>
+              <ul className="space-y-3.5 list-none pl-0">
+                <li className="flex items-start gap-2">
+                  <span className={`inline-block w-1.5 h-1.5 rounded-full mt-1.5 flex-shrink-0 ${
+                    isVaTeam ? "bg-amber-500/60" : "bg-red-500/60"
+                  }`} />
+                  <span className="text-xs text-zinc-400 leading-relaxed font-mono">
+                    Comprehensive active auditing to check missing headers flags.
+                  </span>
+                </li>
+                <li className="flex items-start gap-2">
+                  <span className={`inline-block w-1.5 h-1.5 rounded-full mt-1.5 flex-shrink-0 ${
+                    isVaTeam ? "bg-amber-500/60" : "bg-red-500/60"
+                  }`} />
+                  <span className="text-xs text-zinc-400 leading-relaxed font-mono">
+                    Inspects active host server certificate validity timelines.
+                  </span>
+                </li>
+                <li className="flex items-start gap-2">
+                  <span className={`inline-block w-1.5 h-1.5 rounded-full mt-1.5 flex-shrink-0 ${
+                    isVaTeam ? "bg-amber-500/60" : "bg-red-500/60"
+                  }`} />
+                  <span className="text-xs text-zinc-400 leading-relaxed font-mono">
+                    Audits TLS deprecated ciphers and insecure settings parameters.
+                  </span>
+                </li>
+              </ul>
+            </div>
+
+          </div> {/* End Right Column */}
+
+        </div> {/* End 2-Column Split Layout */}
+      </div> {/* End tool-detail-shell */}
+
       {pdfProgress && (
         <div className="fixed inset-0 z-[9999] flex flex-col items-center justify-center bg-black/85 backdrop-blur-md">
           <Loader2 className="h-12 w-12 animate-spin text-[var(--gold)] mb-4" />
@@ -6401,3 +6510,4 @@ export default function Vulnscanner() {
     </div>
   );
 }
+

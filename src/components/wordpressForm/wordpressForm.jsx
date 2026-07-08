@@ -1,17 +1,28 @@
 "use client";
+
 import { useState } from "react";
 import axios from "axios";
-import { Loader2, Shield, ClipboardPaste } from "lucide-react";
+import {
+  Shield,
+  Globe,
+  Search,
+  Loader2,
+  ShieldAlert,
+  Info,
+  Terminal,
+  Activity,
+  Layers,
+  Settings,
+  Cpu,
+  ChevronRight,
+  HelpCircle,
+  Award
+} from "lucide-react";
 import useProtectedAction from "../UseProtectedAction/UseProtectedAction";
 import OwnershipVerificationWizard from "@/components/ownership/OwnershipVerificationWizard";
 import { toast } from "react-hot-toast";
 
 const WordPressScanner = () => {
-  // ====================================================
-  // TEMPORARILY DISABLED FOR LOCAL TESTING
-  // Purpose: Skip domain ownership verification.
-  // Re-enable before production deployment.
-  // ====================================================
   const SKIP_DOMAIN_VERIFICATION_FOR_TESTING = true;
 
   const [url, setUrl] = useState("");
@@ -19,16 +30,16 @@ const WordPressScanner = () => {
   const [scanData, setScanData] = useState(null);
   const [loading, setLoading] = useState(false);
   const [ownershipVerified, setOwnershipVerified] = useState(false);
-  
+
   const protectedAction = useProtectedAction();
   const API_URL = process.env.NEXT_PUBLIC_PROD_API_URL;
 
-  const validateUrl = (url) => {
+  const validateUrl = (inputUrl) => {
     const urlPattern = new RegExp(
       "^(https?:\\/\\/)?(([a-zA-Z\\d]([a-zA-Z\\d-]*[a-zA-Z\\d])*)\\.)+[a-zA-Z]{2,}(:\\d+)?(\\/.*)?$",
       "i"
     );
-    return !!urlPattern.test(url);
+    return !!urlPattern.test(inputUrl);
   };
 
   const handleSubmit = async (e) => {
@@ -73,152 +84,235 @@ const WordPressScanner = () => {
     });
   };
 
-  const handlePaste = async () => {
-    try {
-      const text = await navigator.clipboard.readText();
-      setUrl(text);
-    } catch {
-      toast.error("Failed to paste from clipboard");
-    }
-  };
-
   return (
-    <div className="tool-detail-page min-h-screen bg-black text-white p-6">
-      <div className="tool-detail-shell max-w-4xl mx-auto">
-        {/* Header */}
-        <div className="tool-detail-hero flex items-center gap-4 mb-8">
-          <img
-            src="/RedTeam/wordpress-secure.png" // <-- apni image ka path yahan daaliye
-            alt="Secure Your WordPress Logo"
-            className="w-30 h-30 rounded-full border-2 border-red-600 object-cover"
-          />
+    <div 
+      className="tool-detail-page min-h-screen"
+      style={{
+        '--hero-ambient-a': 'rgba(239, 68, 68, 0.08)',
+        '--hero-ambient-b': 'rgba(249, 115, 22, 0.03)',
+        '--glow-primary': '0 0 34px rgba(239, 68, 68, 0.16)',
+        '--gold': '#ef4444',
+        '--gold-strong': '#f87171',
+        '--gold-dark': '#b91c1c',
+        '--ring': 'rgba(239, 68, 68, 0.34)',
+        '--surface-glow': 'rgba(239, 68, 68, 0.14)',
+      }}
+    >
+      <style>{`
+        .tool-detail-page .tool-detail-shell {
+          padding-top: 3.5rem !important;
+        }
+        .tool-detail-page ::-webkit-scrollbar-thumb {
+          background: rgba(239, 68, 68, 0.35) !important;
+        }
+        .tool-detail-page ::-webkit-scrollbar-thumb:hover {
+          background: rgba(239, 68, 68, 0.55) !important;
+        }
+        .tool-detail-page ::selection {
+          background: rgba(239, 68, 68, 0.22) !important;
+          color: #fef2f2 !important;
+        }
+        .tool-detail-page :is(button, [role="button"]):is([class*="bg-red-"], [class*="bg-rose-"]) {
+          color: #000000 !important;
+        }
+        .tool-detail-page :is(button, [role="button"]):is([class*="bg-red-"], [class*="bg-rose-"]) * {
+          color: #000000 !important;
+        }
+      `}</style>
+
+      <div className="tool-detail-shell">
+        {/* Navigation & Header */}
+        <div className="flex justify-end mb-8">
+          <span className="rounded-full border border-red-500/30 px-3 py-1 font-mono text-[0.62rem] uppercase tracking-[0.28em] text-red-400">
+            Red Team
+          </span>
+        </div>
+
+        {/* Title Block */}
+        <div className="mb-10 flex flex-col md:flex-row items-start md:items-center gap-6">
+          <div className="w-16 h-16 rounded-2xl border border-red-500/30 overflow-hidden shadow-lg flex-shrink-0 flex items-center justify-center">
+            <Shield className="h-8 w-8 text-red-400" />
+          </div>
           <div>
-            <h1 className="text-2xl font-bold text-white">
-              Secure Your WordPress
+            <h1 className="text-4xl sm:text-5xl font-mono font-bold text-zinc-100">
+              SECURE YOUR <span className="text-red-400">WORDPRESS</span>
             </h1>
-            <p className="text-gray-300 text-sm">
-              Scan for vulnerabilities, outdated plugins, and
-              <br />
-              security misconfigurations in your WordPress site.
+            <p className="mt-2 text-zinc-400 max-w-2xl text-base font-normal">
+              Scan target sites for obsolete CMS core versions, vulnerable plugins database references, active theme disclosures, and critical misconfigurations.
             </p>
           </div>
         </div>
 
-        {/* Tool Title */}
-        <div className="mb-6">
-          <div className="bg-gray-900 border border-white rounded-lg p-10 mb-6 text-center">
-            WordPress Security Scanner
-            {/* Input Section */}
-            <div className="mb-6 space-y-4">
-              <div className="flex gap-2">
-                <input
-                  type="url"
-                  value={url}
-                  onChange={(e) => setUrl(e.target.value.trim())}
-                  placeholder="https://example.com"
-                  required
-                  className="flex-1 p-4 bg-black border-2 border-white rounded-full text-white placeholder-gray-400 text-center focus:outline-none focus:border-red-600"
-                />
-                {/* <button
-                type="button"
-                onClick={handlePaste}
-                title="Paste from clipboard"
-                className="px-3 py-2 border-2 border-white text-white bg-transparent rounded-full hover:bg-white hover:text-black transition-colors"
-              >
-                <ClipboardPaste className="w-5 h-5" />
-              </button> */}
-              </div>
+        {/* 2-Column Split Layout */}
+        <div className="grid gap-8 lg:grid-cols-[1fr_400px]">
+          
+          {/* Left Column */}
+          <div className="space-y-6">
+            
+            {/* Input Form Card */}
+            <div className="bg-zinc-950/20 backdrop-blur-md border border-zinc-800/80 rounded-2xl p-6 shadow-[0_8px_30px_rgb(0,0,0,0.2)] hover:border-red-500/10 transition-all duration-300 space-y-4">
+              <h2 className="text-lg font-mono font-medium text-zinc-100 mb-2 flex items-center gap-2">
+                <Globe className="h-5 w-5 text-red-400" />
+                WordPress Audit Configuration
+              </h2>
 
-              {error && (
-                <p className="text-red-400 text-sm font-semibold text-center">
-                  {error}
-                </p>
-              )}
+              <div className="space-y-4">
+                <div>
+                  <label className="block text-xs uppercase tracking-wider font-mono text-zinc-400 mb-2 font-semibold">
+                    Website URL
+                  </label>
+                  <div className="relative">
+                    <Globe className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-650" />
+                    <input
+                      type="url"
+                      value={url}
+                      onChange={(e) => setUrl(e.target.value.trim())}
+                      placeholder="https://example.com"
+                      required
+                      className="w-full bg-zinc-900/40 text-zinc-100 border border-zinc-800/80 rounded-xl p-3.5 pl-12 text-sm focus:border-red-500/50 focus:ring-1 focus:ring-red-500/30 focus:shadow-[0_0_12px_rgba(239,68,68,0.08)] focus:outline-none transition-all placeholder:text-zinc-600 font-mono"
+                    />
+                  </div>
+                </div>
 
-              <div className="flex justify-center">
                 <button
                   onClick={handleSubmit}
-                  className="px-6 py-3 bg-red-600 text-white rounded hover:bg-red-700 transition-colors duration-300 flex items-center justify-center gap-2 disabled:opacity-60"
-                  disabled={loading}
+                  disabled={loading || !url}
+                  className="w-full bg-red-500 hover:bg-red-600 text-black rounded-xl font-mono font-bold text-xs uppercase py-4 transition-all duration-300 hover:scale-[1.01] active:scale-[0.99] flex items-center justify-center gap-2 cursor-pointer hover:shadow-[0_0_20px_rgba(239,68,68,0.2)] focus:outline-none"
                 >
                   {loading ? (
-                    <Loader2 className="h-5 w-5 animate-spin" />
+                    <>
+                      <Loader2 className="w-4 h-4 animate-spin text-black" />
+                      Scanning Target Configs...
+                    </>
                   ) : (
-                    <Shield className="h-5 w-5" />
+                    <>
+                      <Shield className="w-4 h-4 text-black" />
+                      Scan WordPress Site
+                    </>
                   )}
-                  {loading ? "Scanning..." : "Scan WordPress Site"}
                 </button>
+
+                <OwnershipVerificationWizard
+                  targetValue={url}
+                  targetLabel="Website URL"
+                  onVerifiedChange={setOwnershipVerified}
+                />
               </div>
-              <OwnershipVerificationWizard
-                targetValue={url}
-                targetLabel="Website URL"
-                onVerifiedChange={setOwnershipVerified}
-              />
             </div>
-            {/* Results Display */}
+
+            {/* Error Message */}
+            {error && (
+              <div className="p-4 rounded-xl border border-red-500/20 bg-red-955/10 text-red-400 text-xs font-mono flex items-start gap-2">
+                <ShieldAlert size={16} className="mt-0.5 flex-shrink-0" />
+                <span>Scan Failure: {error}</span>
+              </div>
+            )}
+
+            {/* Loading Indicator */}
+            {loading && (
+              <div className="bg-zinc-950/20 backdrop-blur-md border border-zinc-800/80 rounded-2xl p-8 shadow-[0_8px_30px_rgb(0,0,0,0.2)] text-center space-y-4 font-mono text-xs text-zinc-400">
+                <Loader2 className="h-8 w-8 animate-spin mx-auto text-red-400" />
+                <p>Auditing plugins directory index listings and core config maps...</p>
+              </div>
+            )}
+
+            {/* Results Report Card */}
             {!loading && scanData && (
-              <div className="border-2 border-red-600 rounded p-6 bg-black">
-                <h2 className="text-xl font-bold text-white mb-4 text-center">
-                  Security Report
-                </h2>
-                <div className="space-y-3 text-base text-gray-300">
+              <div className="bg-zinc-950/20 backdrop-blur-md border border-zinc-800/80 rounded-2xl p-6 shadow-[0_8px_30px_rgb(0,0,0,0.2)] space-y-6">
+                
+                <div className="flex justify-between items-center border-b border-zinc-900 pb-4">
                   <div>
-                    <span className="font-bold text-white">Version:</span>{" "}
-                    {scanData.version}
+                    <h3 className="text-lg font-mono font-bold text-zinc-100 uppercase tracking-wider">
+                      WordPress Security Scorecard
+                    </h3>
+                    <p className="text-xs font-mono text-zinc-550 mt-0.5">
+                      Vulnerability telemetry outcome report
+                    </p>
                   </div>
-                  <div>
-                    <span className="font-bold text-white">Theme:</span>{" "}
-                    {scanData.theme?.name || "N/A"}
+                  <div className="bg-zinc-900/40 border border-zinc-800/80 px-4 py-2.5 rounded-xl text-center font-mono">
+                    <span className="text-[9px] text-zinc-500 block uppercase font-bold tracking-wider">Security Score</span>
+                    <span className="text-red-400 font-extrabold text-lg">{scanData.securityScore} / 100</span>
                   </div>
-                  <div>
-                    <span className="font-bold text-white">
-                      Vulnerable Plugins:
-                    </span>{" "}
-                    {scanData.vulnerablePlugins || "None detected"}
+                </div>
+
+                <div className="grid gap-4 sm:grid-cols-2 text-xs font-mono">
+                  <div className="bg-zinc-900/40 border border-zinc-850 p-3.5 rounded-xl">
+                    <span className="text-[10px] text-zinc-550 block mb-1">WordPress Core Version</span>
+                    <span className="text-zinc-200 font-bold">{scanData.version || "Unknown"}</span>
                   </div>
-                  <div>
-                    <span className="font-bold text-white">
-                      Outdated Plugins:
-                    </span>{" "}
-                    {scanData.outdatedPlugins || "None"}
+                  <div className="bg-zinc-900/40 border border-zinc-850 p-3.5 rounded-xl">
+                    <span className="text-[10px] text-zinc-550 block mb-1">Active Theme Identity</span>
+                    <span className="text-zinc-200 font-bold">{scanData.theme?.name || "N/A"}</span>
                   </div>
-                  <div>
-                    <span className="font-bold text-white">
-                      Security Score:
-                    </span>
-                    <span className="font-semibold text-green-400 ml-1">
-                      {scanData.securityScore}/100
-                    </span>
+                  <div className="bg-zinc-900/40 border border-zinc-850 p-3.5 rounded-xl">
+                    <span className="text-[10px] text-zinc-550 block mb-1">Vulnerable Plugins</span>
+                    <span className="text-zinc-200 font-bold break-words">{scanData.vulnerablePlugins || "None detected"}</span>
                   </div>
-                  <div>
-                    <span className="font-bold text-white">Issues:</span>
-                    <ul className="list-disc list-inside ml-4 mt-2">
-                      {scanData.issues?.length > 0 ? (
-                        scanData.issues.map((issue, index) => (
-                          <li key={index} className="text-red-400">
-                            {issue}
-                          </li>
-                        ))
-                      ) : (
-                        <li className="text-green-400">
-                          No major issues found
+                  <div className="bg-zinc-900/40 border border-zinc-850 p-3.5 rounded-xl">
+                    <span className="text-[10px] text-zinc-550 block mb-1">Outdated Plugins</span>
+                    <span className="text-zinc-200 font-bold break-words">{scanData.outdatedPlugins || "None"}</span>
+                  </div>
+                </div>
+
+                {/* Specific issues list */}
+                <div className="bg-zinc-900/40 border border-zinc-800/80 p-5 rounded-xl font-mono text-xs space-y-3">
+                  <h4 className="text-[10px] text-zinc-550 font-bold uppercase tracking-wider mb-2">
+                    Identified Vulnerability Flags
+                  </h4>
+                  <ul className="list-none pl-0 space-y-3">
+                    {scanData.issues?.length > 0 ? (
+                      scanData.issues.map((issue, index) => (
+                        <li key={index} className="flex items-start gap-2.5 text-red-400">
+                          <span className="inline-block w-1.5 h-1.5 rounded-full bg-red-500/60 mt-1.5 flex-shrink-0" />
+                          <span className="leading-relaxed font-semibold">{issue}</span>
                         </li>
-                      )}
-                    </ul>
-                  </div>
+                      ))
+                    ) : (
+                      <li className="flex items-center gap-2 text-zinc-400 italic">
+                        <CheckCircle2 className="w-4 h-4 text-red-400" />
+                        No critical misconfiguration issues identified.
+                      </li>
+                    )}
+                  </ul>
                 </div>
               </div>
             )}
-            {/* Loading State */}
-            {loading && (
-              <div className="border-2 border-red-600 rounded p-6 bg-black text-center">
-                <Loader2 className="h-8 w-8 animate-spin mx-auto mb-4 text-red-600" />
-                <p className="text-white">
-                  Scanning your WordPress site for security issues...
-                </p>
-              </div>
-            )}
+
           </div>
+
+          {/* Right Column (Specs & Guidance) */}
+          <div className="space-y-6">
+            
+            {/* Guidance sidebar card */}
+            <div className="border border-zinc-800/80 bg-zinc-950/20 backdrop-blur-md rounded-2xl p-6 space-y-4 shadow-[0_8px_30px_rgb(0,0,0,0.12)]">
+              <h2 className="text-xs font-mono font-bold uppercase tracking-wider text-zinc-100 flex items-center gap-2">
+                <Info className="text-red-400 w-4 h-4" />
+                Audit Scope Info
+              </h2>
+              <ul className="space-y-3.5 list-none pl-0">
+                <li className="flex items-start gap-2">
+                  <span className="inline-block w-1.5 h-1.5 rounded-full bg-red-500/60 mt-1.5 flex-shrink-0" />
+                  <span className="text-xs text-zinc-400 leading-relaxed font-mono">
+                    Resolves version headers to cross-reference against known WordPress core vulnerabilities.
+                  </span>
+                </li>
+                <li className="flex items-start gap-2">
+                  <span className="inline-block w-1.5 h-1.5 rounded-full bg-red-500/60 mt-1.5 flex-shrink-0" />
+                  <span className="text-xs text-zinc-400 leading-relaxed font-mono">
+                    Fingerprints active plugins directories to audit outdated or exploit-susceptible code.
+                  </span>
+                </li>
+                <li className="flex items-start gap-2">
+                  <span className="inline-block w-1.5 h-1.5 rounded-full bg-red-500/60 mt-1.5 flex-shrink-0" />
+                  <span className="text-xs text-zinc-400 leading-relaxed font-mono">
+                    Audits common file exposures (wp-config.php backup files, readme.html disclosures).
+                  </span>
+                </li>
+              </ul>
+            </div>
+
+          </div>
+
         </div>
       </div>
     </div>
