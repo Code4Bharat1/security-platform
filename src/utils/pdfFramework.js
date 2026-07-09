@@ -80,8 +80,13 @@ export const getAuditorInfo = () => {
     const storedUser = localStorage.getItem("user");
     if (storedUser) {
       const parsed = JSON.parse(storedUser);
-      if (parsed.name) employeeName = parsed.name;
       if (parsed.email) employeeMail = parsed.email;
+      // Use name if set; otherwise derive a display name from the email prefix
+      if (parsed.name && parsed.name.trim()) {
+        employeeName = parsed.name.trim();
+      } else if (parsed.email) {
+        employeeName = parsed.email.split("@")[0];
+      }
     }
   } catch (_) {}
   return { employeeName, employeeMail };

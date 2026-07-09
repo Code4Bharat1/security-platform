@@ -13,10 +13,10 @@ import {
   XCircle,
   Globe,
   List,
+  FileText,
 } from "lucide-react";
-import { jsPDF } from "jspdf";
-import autoTable from "jspdf-autotable";
 import useProtectedAction from "../UseProtectedAction/UseProtectedAction";
+import { generateLinkDetectorPDF } from "./generateLinkDetectorPDF";
 
 const prettyDate = (iso) => (iso ? new Date(iso).toLocaleString() : "-");
 
@@ -33,6 +33,7 @@ export default function LinkDetector() {
   const [result, setResult] = useState(null);
   const [bulkResults, setBulkResults] = useState([]);
   const [error, setError] = useState("");
+  const [pdfProgress, setPdfProgress] = useState(null);
   const protectedAction = useProtectedAction();
 
   const handleScan = async () => {
@@ -166,79 +167,11 @@ export default function LinkDetector() {
     return lines.join("\n");
   };
 
-  const downloadPdf = (r, fileName = "link_report.pdf") => {
-    const doc = new jsPDF({ unit: "pt" });
-
-    // Header Banner
-    doc.setFillColor(18, 18, 18);
-    doc.rect(0, 0, doc.internal.pageSize.width, 40, "F");
-    doc.setTextColor(16, 185, 129);
-    doc.setFont("Helvetica", "bold");
-    doc.setFontSize(18);
-    doc.text("NEXCORE SECURITY PLATFORM", 15, 20);
-    doc.setTextColor(255, 255, 255);
-    doc.setFontSize(10);
-    doc.text("LINK DETECTOR SCAN REPORT", 15, 30);
-
-    doc.setDrawColor(16, 185, 129);
-    doc.setLineWidth(0.5);
-    doc.line(15, 48, doc.internal.pageSize.width - 15, 48);
-
-    const summary = [
-      ["URL", r.url],
-      ["Final URL", r.finalUrl || "-"],
-      ["Status", `${r.status} (Trust Index: ${r.trustIndex ?? "-"})`],
-      ["Message", r.message || "-"],
-      ["HTTPS", r.ssl?.isHttps ? "Yes" : "No"],
-      ["Onion", r.onion ? "Yes" : "No"],
-      ["IP / Country", `${r.geo?.ip || "-"} / ${r.geo?.country || "-"}`],
-      ["Scanned At", prettyDate(r.scannedAt)],
-    ];
-
-    autoTable(doc, {
-      startY: 58,
-      head: [["Field", "Value"]],
-      body: summary,
-      styles: { fontSize: 9, cellPadding: 4 },
-      headStyles: { fillColor: [16, 185, 129], textColor: [255, 255, 255] },
-    });
-
-    autoTable(doc, {
-      startY: doc.lastAutoTable.finalY + 14,
-      head: [["Redirect Chain"]],
-      body: (r.redirectChain || []).map((u, i) => [`${i + 1}. ${u}`]),
-      styles: { fontSize: 8, cellPadding: 3 },
-      headStyles: { fillColor: [16, 185, 129], textColor: [255, 255, 255] },
-    });
-
-    const suspRows = [
-      ["Keywords", (r.suspicious?.keywordsFound || []).join(", ") || "Not Found"],
-      ["Typosquat of", r.suspicious?.typosquatOf || "-"],
-      ["Shortener Expanded", r.suspicious?.shortenerExpanded ? "Yes" : "No"],
-      ["Suspicious Domain", r.suspicious?.suspiciousDomain ? "Yes" : "No"],
-      ["CNAME Chain", (r.suspicious?.cnameChain || []).length ? r.suspicious.cnameChain.join(" -> ") : "-"],
-      ["Blacklist Matches", (r.suspicious?.blacklistMatches || []).join(", ") || "-"],
-    ];
-    autoTable(doc, {
-      startY: doc.lastAutoTable.finalY + 14,
-      head: [["Suspicious Indicators", "Value"]],
-      body: suspRows,
-      styles: { fontSize: 8, cellPadding: 3 },
-      headStyles: { fillColor: [16, 185, 129], textColor: [255, 255, 255] },
-    });
-
-    const contentRows = r.contentFindings
-      ? Object.entries(r.contentFindings).map(([k, v]) => [k, String(v)])
-      : [["-", "-"]];
-    autoTable(doc, {
-      startY: doc.lastAutoTable.finalY + 14,
-      head: [["Content Findings", "Value"]],
-      body: contentRows,
-      styles: { fontSize: 8, cellPadding: 3 },
-      headStyles: { fillColor: [16, 185, 129], textColor: [255, 255, 255] },
-    });
-
-    doc.save(fileName);
+  const handleDownloadPdf = () => {
+    generateLinkDetectorPDF(
+      { result, bulkResults },
+      setPdfProgress
+    );
   };
 
   const bulkToCsv = (items) => {
@@ -524,10 +457,12 @@ export default function LinkDetector() {
                   </div>
                   <div className="flex gap-2">
                     <button
-                      onClick={() => downloadPdf(result, "link_report.pdf")}
-                      className="bg-emerald-500/5 hover:bg-emerald-500/10 text-emerald-400 border border-emerald-500/25 hover:border-emerald-500/50 px-3.5 py-2 rounded-xl transition-all duration-300 font-mono font-bold text-[11px] uppercase tracking-wider flex items-center gap-2 cursor-pointer hover:scale-[1.01] active:scale-[0.99] hover:shadow-[0_0_15px_rgba(16,185,129,0.1)] focus:outline-none"
+                      onClick={handleDownloadPdf}
+                      disabled={!!pdfProgress}
+                      className="bg-emerald-500/5 hover:bg-emerald-500/10 text-emerald-400 border border-emerald-500/25 hover:border-emerald-500/50 px-3.5 py-2 rounded-xl transition-all duration-300 font-mono font-bold text-[11px] uppercase tracking-wider flex items-center gap-2 cursor-pointer hover:scale-[1.01] active:scale-[0.99] hover:shadow-[0_0_15px_rgba(16,185,129,0.1)] focus:outline-none disabled:opacity-50 disabled:pointer-events-none"
                     >
-                      <Download size={14} /> PDF
+                      {pdfProgress ? <Loader2 size={14} className="animate-spin" /> : <FileText size={14} />}
+                      {pdfProgress ? "Generating..." : "PDF Report"}
                     </button>
                     <button
                       onClick={() => downloadTxt(buildTxtReport(result))}
