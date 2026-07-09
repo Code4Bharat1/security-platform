@@ -437,11 +437,11 @@ export const vaTools = [
   {
     name: "Basic Network Scanning",
     description: "Check target surfaces for foundational exposure and weak services.",
-    slug: "web-app-audit",
+    slug: "basic-network-scan",
     buttonLabel: "Launch Tool",
     team: "va",
     teamLabel: "VA",
-    status: "passive",
+    status: "active",
   },
   {
     name: "Credential Validation",

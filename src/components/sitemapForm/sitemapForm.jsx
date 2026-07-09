@@ -198,25 +198,25 @@ export default function SitemapForm() {
           border-color: rgba(16, 185, 129, 0.12) !important;
         }
 
-        /* Prevent global [class*="bg-emerald-"] override from turning stats card into solid bright green */
-        .tool-detail-page .grid > div {
+        /* Target only stats cards to prevent global overrides */
+        .tool-detail-page .sitemap-stats-grid > div {
           background: rgba(16, 185, 129, 0.08) !important;
           border-color: rgba(16, 185, 129, 0.2) !important;
           color: #10b981 !important;
           box-shadow: inset 0 0 12px rgba(16, 185, 129, 0.02) !important;
         }
-        .tool-detail-page .grid > div.border-rose-500\/20 {
+        .tool-detail-page .sitemap-stats-grid > div.border-rose-500\/20 {
           background: rgba(244, 63, 94, 0.08) !important;
           border-color: rgba(244, 63, 94, 0.2) !important;
           color: #f43f5e !important;
         }
-        .tool-detail-page .grid > div.border-amber-500\/20 {
+        .tool-detail-page .sitemap-stats-grid > div.border-amber-500\/20 {
           background: rgba(245, 158, 11, 0.08) !important;
           border-color: rgba(245, 158, 11, 0.2) !important;
           color: #f59e0b !important;
         }
         /* Make stat labels readable grey/zinc */
-        .tool-detail-page .grid > div .text-zinc-400 {
+        .tool-detail-page .sitemap-stats-grid > div .text-zinc-400 {
           color: #a1a1aa !important;
         }
         /* Fix action button background and text contrast */
@@ -392,7 +392,7 @@ export default function SitemapForm() {
             )}
 
             {/* Summary Grid */}
-            <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
+            <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4 sitemap-stats-grid">
               <Stat
                 label="Total Pages"
                 value={sitemapData.summary?.totalPages ?? sitemapData.pagesFound ?? 0}
@@ -453,12 +453,12 @@ export default function SitemapForm() {
                             </a>
                           </div>
                           {u.finalUrl && u.finalUrl !== u.url && (
-                            <div className="text-[10px] text-zinc-500 ml-2 mt-1 flex items-center gap-1.5">
-                              <span>→</span>
-                              <span className="text-zinc-400 truncate max-w-md" title={u.finalUrl}>{u.finalUrl}</span>
-                              <span className="text-zinc-650 font-semibold">(Hops: {u.redirectHops})</span>
-                            </div>
-                          )}
+                             <div className="text-[10px] text-zinc-400 ml-2 mt-1 flex items-center gap-1.5">
+                               <span>→</span>
+                               <span className="text-zinc-300 truncate max-w-md" title={u.finalUrl}>{u.finalUrl}</span>
+                               <span className="text-emerald-400 font-semibold">(Hops: {u.redirectHops})</span>
+                             </div>
+                           )}
                         </li>
                       );
                     })}
