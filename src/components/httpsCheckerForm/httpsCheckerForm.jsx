@@ -14,7 +14,8 @@ import {
   Rows,
   Loader2,
   Lock,
-  ArrowRight
+  ArrowRight,
+  Terminal
 } from "lucide-react";
 import { jsPDF } from "jspdf";
 import autoTable from "jspdf-autotable";
