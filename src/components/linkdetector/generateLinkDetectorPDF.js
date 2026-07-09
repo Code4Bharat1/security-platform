@@ -572,7 +572,12 @@ export const generateLinkDetectorPDF = async (scanData, setPdfProgress) => {
 
     // ── Save ──────────────────────────────────────────────────────────────
     setPdfProgress("Saving PDF...");
-    doc.save(`LinkDetector-Report-${Date.now()}.pdf`);
+    
+    // Format timestamp nicely: YYYY-MM-DD_HHMMSS
+    const pad = (n) => String(n).padStart(2, "0");
+    const dStr = `${now.getFullYear()}-${pad(now.getMonth() + 1)}-${pad(now.getDate())}_${pad(now.getHours())}${pad(now.getMinutes())}${pad(now.getSeconds())}`;
+    
+    doc.save(`LinkDetector-Report-${dStr}.pdf`);
 
   } catch (err) {
     console.error("Failed to generate Link Detector PDF:", err);

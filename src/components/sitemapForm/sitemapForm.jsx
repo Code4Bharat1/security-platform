@@ -197,6 +197,47 @@ export default function SitemapForm() {
             0 0 40px rgba(16, 185, 129, 0.04) !important;
           border-color: rgba(16, 185, 129, 0.12) !important;
         }
+
+        /* Prevent global [class*="bg-emerald-"] override from turning stats card into solid bright green */
+        .tool-detail-page .grid > div {
+          background: rgba(16, 185, 129, 0.08) !important;
+          border-color: rgba(16, 185, 129, 0.2) !important;
+          color: #10b981 !important;
+          box-shadow: inset 0 0 12px rgba(16, 185, 129, 0.02) !important;
+        }
+        .tool-detail-page .grid > div.border-rose-500\/20 {
+          background: rgba(244, 63, 94, 0.08) !important;
+          border-color: rgba(244, 63, 94, 0.2) !important;
+          color: #f43f5e !important;
+        }
+        .tool-detail-page .grid > div.border-amber-500\/20 {
+          background: rgba(245, 158, 11, 0.08) !important;
+          border-color: rgba(245, 158, 11, 0.2) !important;
+          color: #f59e0b !important;
+        }
+        /* Make stat labels readable grey/zinc */
+        .tool-detail-page .grid > div .text-zinc-400 {
+          color: #a1a1aa !important;
+        }
+        /* Fix action button background and text contrast */
+        .tool-detail-page .grid-cols-2.sm\:grid-cols-4 button {
+          background: rgba(16, 185, 129, 0.05) !important;
+          color: #10b981 !important;
+          border-color: rgba(16, 185, 129, 0.25) !important;
+          transform: none !important;
+          box-shadow: none !important;
+        }
+        .tool-detail-page .grid-cols-2.sm\:grid-cols-4 button:hover {
+          background: rgba(16, 185, 129, 0.1) !important;
+          color: #34d399 !important;
+          border-color: rgba(16, 185, 129, 0.5) !important;
+          transform: translateY(-1px) !important;
+          box-shadow: 0 0 15px rgba(16, 185, 129, 0.15) !important;
+        }
+        .tool-detail-page .grid-cols-2.sm\:grid-cols-4 button * {
+          color: inherit !important;
+        }
+
       `}</style>
       <div className="tool-detail-shell">
         {/* Navigation & Header */}

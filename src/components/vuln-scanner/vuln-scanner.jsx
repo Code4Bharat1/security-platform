@@ -1516,7 +1516,7 @@ export default function Vulnscanner() {
   }, []); // run once on mount
 
   const pathname = usePathname() || "";
-  const isVaTeam = pathname.includes("web-app-audit") || pathname.includes("/va/") || pathname.includes("-scan");
+  const isVaTeam = (pathname.includes("web-app-audit") || pathname.includes("/va/") || pathname.includes("-scan")) && !pathname.includes("vuln-scanner");
 
   const themeStyles = isVaTeam ? {
     '--hero-ambient-a': 'rgba(245, 158, 11, 0.08)',
