@@ -350,7 +350,7 @@ export default function XssTester() {
   };
 
   return (
-    <div 
+    <div
       className="tool-detail-page min-h-screen"
       style={{
         '--hero-ambient-a': 'rgba(239, 68, 68, 0.08)',
@@ -410,10 +410,10 @@ export default function XssTester() {
 
         {/* 2-Column Split Layout */}
         <div className="grid gap-8 lg:grid-cols-[1fr_400px]">
-          
+
           {/* Left Column */}
           <div className="space-y-6">
-            
+
             {/* Input Form Card */}
             <div className="bg-zinc-950/20 backdrop-blur-md border border-zinc-800/80 rounded-2xl p-6 shadow-[0_8px_30px_rgb(0,0,0,0.2)] hover:border-red-500/10 transition-all duration-300 space-y-4">
               <h2 className="text-lg font-mono font-medium text-zinc-100 mb-2 flex items-center gap-2">
@@ -426,8 +426,8 @@ export default function XssTester() {
                   <label htmlFor="xss-url-input" className="block text-xs uppercase tracking-wider font-mono text-zinc-400 mb-2 font-semibold">
                     Target Website URL
                   </label>
-                  <div className="relative">
-                    <Globe className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-650" />
+                  <div className="relative flex items-center">
+                    <Globe className="absolute left-4 w-4 h-4 text-zinc-650" />
                     <input
                       id="xss-url-input"
                       type="url"
@@ -514,7 +514,7 @@ export default function XssTester() {
             {/* Scan Results details report */}
             {result && (
               <div className="bg-zinc-950/20 backdrop-blur-md border border-zinc-800/80 rounded-2xl p-6 shadow-[0_8px_30px_rgb(0,0,0,0.2)] space-y-6">
-                
+
                 <h3 className="text-sm font-mono font-bold text-zinc-200 flex items-center gap-2 border-b border-zinc-850 pb-2.5">
                   <Activity className="w-4 h-4 text-red-400" />
                   XSS Injection Results
@@ -522,7 +522,7 @@ export default function XssTester() {
 
                 {!result.error ? (
                   <div className="space-y-5 font-mono text-xs">
-                    
+
                     {/* Tested parameters badge strip */}
                     {result.detectedParams?.length > 0 && (
                       <div className="flex flex-wrap gap-2 items-center">
@@ -656,7 +656,7 @@ export default function XssTester() {
 
           {/* Right Column (Guidance) */}
           <div className="space-y-6">
-            
+
             {/* Guidance sidebar card */}
             <div className="border border-zinc-800/80 bg-zinc-950/20 backdrop-blur-md rounded-2xl p-6 space-y-4 shadow-[0_8px_30px_rgb(0,0,0,0.12)]">
               <h2 className="text-xs font-mono font-bold uppercase tracking-wider text-zinc-100 flex items-center gap-2">

@@ -1,8 +1,6 @@
 "use client";
 
-import React from "react";
-import { jsPDF } from "jspdf";
-import autoTable from "jspdf-autotable";
+import React, { useState } from "react";
 import { 
   FileText, 
   FileDown, 
@@ -11,10 +9,13 @@ import {
   CheckCircle2, 
   Link2,
   Terminal,
-  Download
+  Download,
+  Loader2
 } from "lucide-react";
+import { generateWafPDF } from "../waf_form/generateWafPDF";
 
 export default function FirewallDashboard({ data }) {
+  const [pdfProgress, setPdfProgress] = useState(null);
   const matchedHeaders = data?.matchedHeaders ?? [];
   const securityHeadersDetected = data?.securityHeadersDetected ?? [];
 
@@ -43,87 +44,7 @@ export default function FirewallDashboard({ data }) {
 
   const handleDownloadPdf = () => {
     if (!data) return;
-    const {
-      url = "-",
-      statusCode = "-",
-      protectionLevel = "None",
-      detected = false,
-      firewallName = "None",
-      serverHeader = "N/A",
-    } = data;
-
-    const doc = new jsPDF({ unit: "pt", format: "a4" });
-    const M = 40;
-    let y = 56;
-
-    const line = (t, size = 12, style = "normal") => {
-      doc.setFont("helvetica", style);
-      doc.setFontSize(size);
-      doc.text(String(t), M, y);
-      y += 18;
-    };
-
-    // Header Banner
-    doc.setFillColor(18, 18, 18);
-    doc.rect(0, 0, doc.internal.pageSize.width, 80, "F");
-    
-    doc.setTextColor(59, 130, 246);
-    doc.setFont("helvetica", "bold");
-    doc.setFontSize(18);
-    doc.text("NEXCORE SECURITY PLATFORM", M, 35);
-    
-    doc.setTextColor(255, 255, 255);
-    doc.setFontSize(11);
-    doc.text("WAF SECURITY AUDIT REPORT", M, 55);
-    y = 110;
-
-    doc.setTextColor(50, 50, 50);
-    doc.setFont("helvetica", "normal");
-    doc.setFontSize(10);
-    doc.text(`Generated: ${new Date().toLocaleString()}`, M, y);
-    y += 18;
-
-    autoTable(doc, {
-      startY: y,
-      head: [["Field", "Value"]],
-      body: [
-        ["URL Target", url],
-        ["HTTP Status Code", String(statusCode)],
-        ["Protection Level", protectionLevel],
-        ["Firewall Vendor", detected ? firewallName : "None"],
-        ["Server Response Header", serverHeader || "N/A"],
-      ],
-      styles: { fontSize: 10 },
-      headStyles: { fillColor: [59, 130, 246], textColor: [255, 255, 255] },
-      margin: { left: M, right: M },
-    });
-    y = doc.lastAutoTable.finalY + 16;
-
-    if (matchedHeaders.length) {
-      autoTable(doc, {
-        startY: y,
-        head: [["Header Key", "Response Value"]],
-        body: matchedHeaders.map((h) => [h.header ?? "-", String(h.value ?? "")]),
-        styles: { fontSize: 9 },
-        headStyles: { fillColor: [59, 130, 246], textColor: [255, 255, 255] },
-        columnStyles: { 0: { cellWidth: 180 }, 1: { cellWidth: 320 } },
-        margin: { left: M, right: M },
-      });
-      y = doc.lastAutoTable.finalY + 16;
-    }
-
-    autoTable(doc, {
-      startY: y,
-      head: [["Security Headers Detected"]],
-      body: securityHeadersDetected.length
-        ? securityHeadersDetected.map((h) => [h])
-        : [["None"]],
-      styles: { fontSize: 10 },
-      headStyles: { fillColor: [59, 130, 246], textColor: [255, 255, 255] },
-      margin: { left: M, right: M },
-    });
-
-    doc.save(`Firewall_Report_${safeNameFromUrl(url)}.pdf`);
+    generateWafPDF(data, setPdfProgress);
   };
 
   const handleDownloadTxt = () => {
@@ -221,13 +142,28 @@ export default function FirewallDashboard({ data }) {
           </p>
         </div>
         
-        <div className="flex gap-2">
+        <div className="flex gap-2 items-center">
+          {pdfProgress && (
+            <span className="text-[10px] font-mono text-blue-400 animate-pulse hidden sm:inline">
+              {pdfProgress}
+            </span>
+          )}
           <button
             onClick={handleDownloadPdf}
-            className="px-4 py-2.5 bg-zinc-900/40 hover:bg-blue-500/5 text-zinc-300 hover:text-blue-400 border border-zinc-800/80 hover:border-blue-500/30 rounded-xl font-mono font-bold text-xs uppercase transition-all duration-300 hover:scale-[1.01] active:scale-[0.99] flex items-center justify-center gap-1.5"
+            disabled={pdfProgress !== null}
+            className="px-4 py-2.5 bg-zinc-900/40 hover:bg-blue-500/5 text-zinc-300 hover:text-blue-400 border border-zinc-800/80 hover:border-blue-500/30 rounded-xl font-mono font-bold text-xs uppercase transition-all duration-300 hover:scale-[1.01] active:scale-[0.99] flex items-center justify-center gap-1.5 disabled:opacity-50 disabled:pointer-events-none"
           >
-            <Download className="w-3.5 h-3.5" />
-            PDF Report
+            {pdfProgress ? (
+              <>
+                <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                Generating...
+              </>
+            ) : (
+              <>
+                <Download className="w-3.5 h-3.5" />
+                PDF Report
+              </>
+            )}
           </button>
           <button
             onClick={handleDownloadTxt}
@@ -285,6 +221,33 @@ export default function FirewallDashboard({ data }) {
           ) : (
             <span className="text-zinc-550 italic">None Detected</span>
           )}
+        </div>
+
+        <div className="bg-zinc-900/40 border border-zinc-800/80 p-4 rounded-xl font-mono text-xs">
+          <span className="text-[10px] uppercase font-mono tracking-widest text-zinc-400 font-semibold mb-1 block">
+            WAF Detected
+          </span>
+          <span className={`font-bold ${detected ? "text-emerald-400" : "text-red-400"}`}>
+            {detected ? "YES" : "NO"}
+          </span>
+        </div>
+
+        <div className="bg-zinc-900/40 border border-zinc-800/80 p-4 rounded-xl font-mono text-xs">
+          <span className="text-[10px] uppercase font-mono tracking-widest text-zinc-400 font-semibold mb-1 block">
+            WAF Verdict
+          </span>
+          <span className="font-semibold text-zinc-200">
+            {detected ? "WAF Present" : (firewallName === "Protected or Obfuscated" ? "Protected or Obfuscated" : "WAF Not Detected")}
+          </span>
+        </div>
+
+        <div className="bg-zinc-900/40 border border-zinc-800/80 p-4 rounded-xl font-mono text-xs sm:col-span-2">
+          <span className="text-[10px] uppercase font-mono tracking-widest text-zinc-400 font-semibold mb-1 block">
+            WAF Detection Method
+          </span>
+          <span className="font-semibold text-zinc-200">
+            {detected ? "Header Inspection / Cookie Analysis" : "Passive Header Inspection"}
+          </span>
         </div>
 
         <div className="bg-zinc-900/40 border border-zinc-800/80 p-4 rounded-xl font-mono text-xs sm:col-span-2">

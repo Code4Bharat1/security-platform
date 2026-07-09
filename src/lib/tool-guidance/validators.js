@@ -161,7 +161,7 @@ function validateUrlField(field, value) {
       );
     }
 
-    return ok("URL format looks ready for scanning.", field);
+    return ok("", field);
   } catch {
     return error(
       "This does not look like a valid web URL.",
