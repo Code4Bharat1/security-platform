@@ -13,6 +13,7 @@ export const AuthProvider = ({ children }) => {
   
   // Centralized Environment-driven Session Inactivity Timers
   const idleTimerRef = useRef(null);
+  const refreshPromiseRef = useRef(null);
   const WARNING_TIMEOUT = Number(process.env.NEXT_PUBLIC_WARNING_TIMEOUT) || (14 * 60 * 1000); // 14m default
   const LOGOUT_TIMEOUT = Number(process.env.NEXT_PUBLIC_LOGOUT_TIMEOUT) || (15 * 60 * 1000);   // 15m default
 
@@ -46,39 +47,54 @@ export const AuthProvider = ({ children }) => {
       return null;
     }
 
-    try {
-      console.log("🔄 [AuthContext] Attempting silent token refresh...");
-      const res = await fetch(
-        `${process.env.NEXT_PUBLIC_PROD_API_URL}/auth/refresh-token`,
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({ refreshToken: currentRefreshToken }),
-        }
-      );
-
-      if (!res.ok) {
-        throw new Error("Token refresh endpoint returned non-ok status");
-      }
-
-      const data = await res.json();
-      if (data.accessToken && data.refreshToken) {
-        console.log("✅ [AuthContext] Silent token refresh succeeded");
-        localStorage.setItem("token", data.accessToken);
-        localStorage.setItem("refreshToken", data.refreshToken);
-        setToken(data.accessToken);
-        return data.accessToken;
-      } else {
-        throw new Error("Missing tokens in refresh payload");
-      }
-    } catch (err) {
-      console.error("💥 [AuthContext] Silent refresh failed:", err.message);
-      toast.error("Session expired. Please log in again.");
-      logout();
-      return null;
+    // Reuse existing refresh request promise if one is already in progress
+    if (refreshPromiseRef.current) {
+      console.log("🔄 [AuthContext] Reusing active refresh token request promise...");
+      return refreshPromiseRef.current;
     }
+
+    const apiBase = (process.env.NEXT_PUBLIC_PROD_API_URL || "").replace(/\/+$/, "");
+
+    refreshPromiseRef.current = (async () => {
+      try {
+        console.log("🔄 [AuthContext] Attempting silent token refresh...");
+        const res = await fetch(
+          `${apiBase}/auth/refresh-token`,
+          {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({ refreshToken: currentRefreshToken }),
+          }
+        );
+
+        if (!res.ok) {
+          throw new Error("Token refresh endpoint returned non-ok status");
+        }
+
+        const data = await res.json();
+        if (data.accessToken && data.refreshToken) {
+          console.log("✅ [AuthContext] Silent token refresh succeeded");
+          localStorage.setItem("token", data.accessToken);
+          localStorage.setItem("refreshToken", data.refreshToken);
+          setToken(data.accessToken);
+          return data.accessToken;
+        } else {
+          throw new Error("Missing tokens in refresh payload");
+        }
+      } catch (err) {
+        console.error("💥 [AuthContext] Silent refresh failed:", err.message);
+        toast.error("Session expired. Please log in again.");
+        logout();
+        return null;
+      } finally {
+        // Clear active promise reference when completed
+        refreshPromiseRef.current = null;
+      }
+    })();
+
+    return refreshPromiseRef.current;
   }, [logout]);
 
   // Session verification wrapper

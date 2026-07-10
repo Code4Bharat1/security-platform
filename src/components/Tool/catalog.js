@@ -464,7 +464,7 @@ export const vaTools = [
   {
     name: "Advanced Dynamic Scan",
     description: "Search applications for exposed secrets and live weaknesses.",
-    slug: "secret-key-scanner",
+    slug: "advanced-dynamic-scan",
     buttonLabel: "Launch Tool",
     team: "va",
     teamLabel: "VA",

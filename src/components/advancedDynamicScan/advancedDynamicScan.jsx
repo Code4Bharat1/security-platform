@@ -1,35 +1,32 @@
 "use client";
 
 import React, { useState, useEffect, useRef, useMemo } from "react";
-import { useRouter } from "next/navigation";
 import { 
+  Globe, 
   Terminal, 
   Download, 
-  ShieldCheck, 
-  Award, 
-  FileText, 
+  ShieldAlert, 
+  Info, 
+  Activity, 
   Loader2, 
-  Cloud,
-  Key,
-  Info,
-  Globe,
-  Settings,
+  CheckCircle2, 
   AlertTriangle,
-  Lock,
-  CheckCircle,
+  ArrowRight,
   Eye,
-  Filter
+  Filter,
+  FileText
 } from "lucide-react";
-import jsPDF from "jspdf";
-import "jspdf-autotable";
-import useProtectedAction from "@/components/UseProtectedAction/UseProtectedAction";
+import { jsPDF } from "jspdf";
+import autoTable from "jspdf-autotable";
+import useProtectedAction from "../UseProtectedAction/UseProtectedAction";
 
 /* ─────────────── Severity Badge styling ─────────────── */
 const SEV_STYLES = {
   Critical: "bg-red-500/15 text-red-400 border-red-500/30",
   High: "bg-orange-500/15 text-orange-400 border-orange-500/30",
   Medium: "bg-amber-500/15 text-amber-400 border-amber-500/30",
-  Low: "bg-emerald-500/15 text-emerald-400 border-emerald-500/30",
+  Low: "bg-blue-500/15 text-blue-400 border-blue-500/30",
+  Info: "bg-zinc-800 text-zinc-400 border border-zinc-700",
   Unknown: "bg-zinc-800 text-zinc-400 border border-zinc-700",
 };
 
@@ -46,35 +43,33 @@ function SeverityBadge({ severity }) {
 function StatusBadge({ status }) {
   if (status === "Pass") {
     return (
-      <span className="inline-flex items-center gap-1 text-emerald-400 font-mono text-xs font-semibold">
-        <CheckCircle className="h-3.5 w-3.5" />
+      <span className="inline-flex items-center gap-1 text-emerald-450 font-mono text-xs font-semibold">
+        <CheckCircle2 className="h-3.5 w-3.5" />
         PASS
       </span>
     );
   }
   return (
-    <span className="inline-flex items-center gap-1 text-red-400 font-mono text-xs font-semibold">
+    <span className="inline-flex items-center gap-1 text-red-450 font-mono text-xs font-semibold">
       <AlertTriangle className="h-3.5 w-3.5" />
       FAIL
     </span>
   );
 }
 
-export default function CloudSecurityPage() {
-  const router = useRouter();
+export default function AdvancedDynamicScan() {
   const protectedAction = useProtectedAction();
 
-  // Connection fields
-  const [target, setTarget] = useState("AWS-Production-Profile");
-  const [provider, setProvider] = useState("AWS");
-  const [awsAccessKeyId, setAwsAccessKeyId] = useState("");
-  const [awsSecretAccessKey, setAwsSecretAccessKey] = useState("");
-  const [awsSessionToken, setAwsSessionToken] = useState("");
+  // State parameters
+  const [targetUrl, setTargetUrl] = useState("https://example.com");
+  const [crawlingEnabled, setCrawlingEnabled] = useState(true);
+  const [fuzzingEnabled, setFuzzingEnabled] = useState(true);
 
-  const [scanning, setScanning] = useState(false);
+  const [loading, setLoading] = useState(false);
   const [consoleLogs, setConsoleLogs] = useState([]);
   const [reportReady, setReportReady] = useState(false);
   const [results, setResults] = useState([]);
+  const [urlsCrawled, setUrlsCrawled] = useState([]);
   const [summaryText, setSummaryText] = useState("");
   const [riskScore, setRiskScore] = useState(0);
   const [errorMsg, setErrorMsg] = useState("");
@@ -89,15 +84,17 @@ export default function CloudSecurityPage() {
     }
   }, [consoleLogs]);
 
-  // Handle audit execution
+  // Execute Dynamic Scan
   const handleStartScan = async (e) => {
     e.preventDefault();
-    if (!target.trim()) return;
+    if (!targetUrl.trim()) return;
 
-    setScanning(true);
+    setLoading(true);
     setReportReady(false);
     setErrorMsg("");
     setConsoleLogs([]);
+    setResults([]);
+    setUrlsCrawled([]);
 
     const addLog = (msg, delay = 0) => {
       return new Promise((resolve) => {
@@ -108,79 +105,82 @@ export default function CloudSecurityPage() {
       });
     };
 
-    // Client side progress updates
-    await addLog("[INFO] Starting Cloud Credential Validation audit workspace...", 100);
-    await addLog(`[INFO] Selected cloud target: ${target} [Provider: ${provider}]`, 150);
+    await addLog("[INFO] Initializing Advanced Dynamic Application Security Scan (DAST)...", 100);
+    await addLog(`[INFO] Targeted Host URL: ${targetUrl}`, 150);
 
-    if (awsAccessKeyId) {
-      await addLog("[INFO] Programmatic credentials supplied. Initializing active Signature V4 signer...", 200);
-      await addLog("[INFO] Generating query credentials payload...", 200);
-    } else {
-      await addLog("[INFO] No access keys supplied. Executing audit in sandbox/simulation mode...", 200);
-      await addLog("[INFO] Initializing sandbox environment profiles...", 200);
+    if (crawlingEnabled) {
+      await addLog("[INFO] Crawling & spidering configuration: ENABLED (Domain scope locked).", 100);
+    }
+    if (fuzzingEnabled) {
+      await addLog("[INFO] Input parameter fuzzing: ENABLED (Reflected XSS / SQL Injection checks).", 100);
     }
 
     const API_BASE = (process.env.NEXT_PUBLIC_PROD_API_URL || "").replace(/\/+$/, "");
 
     await protectedAction(async (token) => {
       try {
-        await addLog("[INFO] Establishing connection to backend audit engine...", 100);
+        await addLog("[INFO] Connecting to dynamic audit cluster...", 100);
         
-        const res = await fetch(`${API_BASE}/cloud-security/audit`, {
+        const res = await fetch(`${API_BASE}/advanced-dynamic-scan/scan`, {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
             Authorization: `Bearer ${token}`
           },
           body: JSON.stringify({
-            target: target.trim(),
-            awsAccessKeyId: awsAccessKeyId.trim() || undefined,
-            awsSecretAccessKey: awsSecretAccessKey.trim() || undefined,
-            awsSessionToken: awsSessionToken.trim() || undefined
+            targetUrl: targetUrl.trim(),
+            crawlingEnabled,
+            fuzzingEnabled
           })
         });
 
         const data = await res.json();
 
         if (!res.ok) {
-          throw new Error(data.error || "Failed to complete credential audit.");
+          throw new Error(data.error || "Failed to run dynamic vulnerability scan.");
         }
 
-        await addLog("[INFO] Backend responded. Processing AWS service output logs...", 150);
-        await addLog("[INFO] Parsing IAM credential report CSV data...", 150);
-        
-        // Dynamic logs based on results
-        const hasRootKeys = data.findings.some(f => f.control === 'Root Access Keys' && f.status === 'Fail');
-        const hasRootMfa = data.findings.some(f => f.control === 'Root Account MFA' && f.status === 'Fail');
-        const hasUserMfa = data.findings.some(f => f.control === 'MFA Enforcement (IAM)' && f.status === 'Fail');
-        
-        if (hasRootMfa) await addLog("[ALERT] Root account lacks active Multi-Factor Authentication device!", 100);
-        if (hasRootKeys) await addLog("[ALERT] Found programmatic access keys active on Root account!", 100);
-        if (hasUserMfa) await addLog("[WARNING] Found IAM users with console login permissions lacking MFA!", 100);
-        
-        await addLog("[INFO] Validating policy rotation configurations...", 100);
-        await addLog("[INFO] Resolving least privilege boundary maps...", 150);
-        await addLog("[SUCCESS] Compliance scorecard and reports generated.", 150);
+        await addLog("[INFO] Connection established. Fetching remote response streams...", 150);
+        await addLog("[INFO] Analyzing HTTP headers, secure cookies, and CORS scopes...", 150);
 
-        setResults(data.findings || []);
+        if (crawlingEnabled && data.urlsCrawled?.length > 1) {
+          await addLog(`[INFO] Found ${data.urlsCrawled.length - 1} nested subpages during crawl spidering.`, 100);
+          for (let i = 1; i < data.urlsCrawled.length; i++) {
+            await addLog(`[CRAWLER] Discovered: ${data.urlsCrawled[i]}`, 80);
+          }
+        }
+
+        if (fuzzingEnabled) {
+          await addLog("[INFO] Executing dynamic injection fuzzers on query inputs...", 100);
+          const hasCriticals = data.vulnerabilities?.some(v => v.severity === "Critical" && v.status === "Fail");
+          const hasHighs = data.vulnerabilities?.some(v => v.severity === "High" && v.status === "Fail");
+          
+          if (hasCriticals) await addLog("[ALERT] SQL Injection indicators detected on parsed form inputs!", 100);
+          if (hasHighs) await addLog("[ALERT] XSS script tags successfully reflected in response parameters!", 100);
+        }
+
+        await addLog("[SUCCESS] Dynamic audit complete. Mapping results metrics...", 150);
+
+        setResults(data.vulnerabilities || []);
+        setUrlsCrawled(data.urlsCrawled || []);
         setSummaryText(data.summary || "");
         setRiskScore(data.riskScore || 0);
         setReportReady(true);
       } catch (err) {
-        await addLog(`[ERROR] Audit process failed: ${err.message}`, 100);
+        await addLog(`[ERROR] Audit process stopped: ${err.message}`, 100);
         setErrorMsg(err.message);
       } finally {
-        setScanning(false);
+        setLoading(false);
       }
     });
   };
 
-  // Filtered findings list
-  const filteredFindings = useMemo(() => {
-    return showOnlyFailures ? results.filter(f => f.status === "Fail") : results;
+  // Filtered vulnerabilities
+  const filteredVulnerabilities = useMemo(() => {
+    return showOnlyFailures ? results.filter(v => v.status === "Fail") : results;
   }, [results, showOnlyFailures]);
 
-  // Dynamic PDF report generation matching standard layout guidelines
+  // Export PDF Report
   const handleDownloadPDF = () => {
     const doc = new jsPDF({ unit: "pt", format: "a4" });
     const M = 40;
@@ -197,18 +197,17 @@ export default function CloudSecurityPage() {
     
     doc.setTextColor(255, 255, 255);
     doc.setFontSize(11);
-    doc.text("CLOUD SECURITY - CREDENTIAL VALIDATION REPORT", M, 55);
+    doc.text("VULNERABILITY ASSESSMENT - ADVANCED DYNAMIC SCAN REPORT", M, 55);
     y = 110;
     
     // Scan Meta Info
     doc.setTextColor(50, 50, 50);
     doc.setFont("helvetica", "normal");
     doc.setFontSize(9);
-    doc.text(`Target Target: ${target}`, M, y);
-    doc.text(`Cloud Provider: ${provider}`, M, y + 15);
-    doc.text(`Audit Date: ${new Date().toLocaleString()}`, M, y + 30);
-    doc.text(`Consolidated Risk Score: ${riskScore}/100`, M, y + 45);
-    y += 70;
+    doc.text(`Target URL: ${targetUrl}`, M, y);
+    doc.text(`Scan Date:  ${new Date().toLocaleString()}`, M, y + 15);
+    doc.text(`Risk Score: ${riskScore}/100`, M, y + 30);
+    y += 55;
     
     doc.setDrawColor(245, 158, 11);
     doc.setLineWidth(0.5);
@@ -223,24 +222,21 @@ export default function CloudSecurityPage() {
     
     doc.setFont("helvetica", "normal");
     doc.setFontSize(9.5);
-    const splitSummary = doc.splitTextToSize(
-      summaryText || "Assessment evaluated the cloud environment configuration, identity profiles, and credential access keys against standard CIS Cloud Benchmarks.", 
-      doc.internal.pageSize.width - (M * 2)
-    );
+    const splitSummary = doc.splitTextToSize(summaryText || "Assessment evaluated the target application dynamically against standard OWASP and CIS configuration benchmarks.", doc.internal.pageSize.width - (M * 2));
     doc.text(splitSummary, M, y);
     y += splitSummary.length * 12 + 15;
 
     // Findings Table
-    const headers = [["Control Checked", "Status", "Severity", "Details", "Remediation Guide"]];
-    const tableData = results.map(finding => [
-      finding.control,
-      finding.status,
-      finding.severity,
-      finding.details,
-      finding.remediation
+    const headers = [["Vulnerability / Control", "Status", "Severity", "Details", "Remediation Guide"]];
+    const tableData = results.map(v => [
+      v.control,
+      v.status,
+      v.severity,
+      v.details,
+      v.remediation
     ]);
 
-    doc.autoTable({
+    autoTable(doc, {
       head: headers,
       body: tableData,
       startY: y,
@@ -250,7 +246,7 @@ export default function CloudSecurityPage() {
       margin: { left: M, right: M }
     });
     
-    doc.save(`Nexcore-credential-validation-report-${Date.now()}.pdf`);
+    doc.save(`Nexcore-dynamic-scan-report-${Date.now()}.pdf`);
   };
 
   return (
@@ -274,23 +270,12 @@ export default function CloudSecurityPage() {
         .tool-detail-page ::-webkit-scrollbar-thumb {
           background: rgba(245, 158, 11, 0.35) !important;
         }
-        .tool-detail-page ::-webkit-scrollbar-thumb:hover {
-          background: rgba(245, 158, 11, 0.55) !important;
-        }
         .tool-detail-page ::selection {
           background: rgba(245, 158, 11, 0.22) !important;
           color: #fffbeb !important;
         }
         .bns-loading-card p, .bns-loading-card span {
           color: #f4f4f5 !important;
-        }
-        .bns-preset-btn.active {
-          border-color: rgba(245, 158, 11, 0.6) !important;
-          background: rgba(245, 158, 11, 0.08) !important;
-          color: #f4f4f5 !important;
-        }
-        .bns-preset-btn.active * {
-          color: inherit !important;
         }
         .bns-submit-btn {
           background-color: rgba(245, 158, 11, 0.05) !important;
@@ -306,7 +291,7 @@ export default function CloudSecurityPage() {
       `}</style>
 
       <div className="tool-detail-shell">
-        {/* Navigation & Header */}
+        {/* Navigation Header */}
         <div className="flex justify-end mb-8">
           <span className="rounded-full border border-amber-500/30 px-3 py-1 font-mono text-[0.62rem] uppercase tracking-[0.28em] text-amber-400">
             Vulnerability Assessment
@@ -316,133 +301,86 @@ export default function CloudSecurityPage() {
         {/* Title Block */}
         <div className="mb-10 flex flex-col md:flex-row items-start md:items-center gap-6">
           <div className="w-16 h-16 rounded-2xl flex-shrink-0 flex items-center justify-center bg-zinc-950/20" style={{ border: '1px solid rgba(245, 158, 11, 0.3)' }}>
-            <Cloud className="h-8 w-8 text-amber-400" />
+            <Globe className="h-8 w-8 text-amber-400" />
           </div>
           <div>
             <h1 className="text-4xl sm:text-5xl font-mono font-bold text-zinc-100">
-              CREDENTIAL <span className="text-amber-400">VALIDATION</span>
+              ADVANCED DYNAMIC <span className="text-amber-400">SCAN</span>
             </h1>
             <p className="mt-2 text-zinc-400 max-w-2xl text-base font-normal">
-              Audit cloud access keys, user profiles, MFA enforcement, and IAM policies. Supports secure programmatic AWS scans using temporary credentials.
+              Execute dynamic vulnerability scanner crawls on applications. Inspects security headers, cookie flags, and runs passive fuzzers to map XSS / SQL Injection exposures.
             </p>
           </div>
         </div>
 
-        {/* 2-Column Layout */}
+        {/* Grid layout */}
         <div className="grid gap-8 lg:grid-cols-[1fr_380px]">
           
           {/* Left Column */}
           <div className="space-y-6">
             
-            {/* Form card */}
+            {/* Control Config Card */}
             <div className="bg-zinc-950/20 backdrop-blur-md border border-zinc-800/80 rounded-2xl p-6 shadow-[0_8px_30px_rgb(0,0,0,0.2)] hover:border-amber-500/10 transition-all duration-300">
               <h2 className="text-lg font-mono font-medium text-zinc-100 mb-6 flex items-center gap-2">
-                <Settings className="h-5 w-5 text-amber-400" />
-                Connection Profile & API Keys
+                <Terminal className="h-5 w-5 text-amber-400" />
+                Target Configurations
               </h2>
               
               <form onSubmit={handleStartScan} className="space-y-4">
-                <div className="grid grid-cols-2 gap-4">
-                  <div>
-                    <label className="block text-xs uppercase tracking-wider font-mono text-zinc-400 mb-2 font-semibold">
-                      Cloud Provider
-                    </label>
-                    <select
-                      value={provider}
-                      onChange={(e) => setProvider(e.target.value)}
-                      disabled={scanning}
-                      className="w-full bg-zinc-900/40 text-zinc-100 border border-zinc-800/80 rounded-xl p-3 text-sm focus:border-amber-500/50 focus:outline-none transition-all font-mono"
-                    >
-                      <option value="AWS" className="bg-zinc-950 text-zinc-100">AWS (Amazon Web Services)</option>
-                    </select>
-                  </div>
-
-                  <div>
-                    <label className="block text-xs uppercase tracking-wider font-mono text-zinc-400 mb-2 font-semibold">
-                      Profile / Environment Name
-                    </label>
-                    <input 
-                      type="text" 
-                      value={target}
-                      onChange={(e) => setTarget(e.target.value)}
-                      disabled={scanning}
-                      placeholder="e.g. AWS-Production"
-                      className="w-full bg-zinc-900/40 text-zinc-100 border border-zinc-800/80 rounded-xl p-3 text-sm focus:border-amber-500/50 focus:outline-none transition-all font-mono"
-                      required
-                    />
-                  </div>
+                <div>
+                  <label className="block text-xs uppercase tracking-wider font-mono text-zinc-400 mb-2 font-semibold">
+                    Scan Target URL
+                  </label>
+                  <input 
+                    type="text" 
+                    value={targetUrl}
+                    onChange={(e) => setTargetUrl(e.target.value)}
+                    disabled={loading}
+                    placeholder="https://example.com"
+                    className="w-full bg-zinc-900/40 text-zinc-100 border border-zinc-800/80 rounded-xl p-3 text-sm focus:border-amber-500/50 focus:outline-none transition-all font-mono"
+                    required
+                  />
                 </div>
 
-                <div className="border-t border-zinc-800/40 my-3 pt-3 space-y-4">
-                  <div className="bg-amber-500/5 border border-amber-500/10 p-3.5 rounded-xl">
-                    <p className="text-[0.68rem] text-zinc-400 font-mono leading-relaxed flex items-start gap-2">
-                      <Lock className="h-4.5 w-4.5 text-amber-400 flex-shrink-0 mt-0.5" />
-                      <span>
-                        <b>Optional:</b> Enter temporary AWS Access Keys below to query a live AWS account. Credentials are not stored on disk and are only used in memory for Signature V4 request signing. Leave blank for simulated sandbox audits.
-                      </span>
-                    </p>
-                  </div>
-
-                  <div className="grid grid-cols-2 gap-4">
-                    <div>
-                      <label className="block text-[0.62rem] uppercase tracking-wider font-mono text-zinc-400 mb-1.5 font-bold">
-                        AWS Access Key ID
-                      </label>
-                      <input 
-                        type="text"
-                        value={awsAccessKeyId}
-                        onChange={(e) => setAwsAccessKeyId(e.target.value)}
-                        disabled={scanning}
-                        placeholder="AKIA..."
-                        className="w-full bg-zinc-900/40 text-zinc-100 border border-zinc-800/80 rounded-xl p-2.5 text-xs focus:border-amber-500/50 focus:outline-none font-mono"
-                      />
-                    </div>
-
-                    <div>
-                      <label className="block text-[0.62rem] uppercase tracking-wider font-mono text-zinc-400 mb-1.5 font-bold">
-                        AWS Secret Access Key
-                      </label>
-                      <input 
-                        type="password"
-                        value={awsSecretAccessKey}
-                        onChange={(e) => setAwsSecretAccessKey(e.target.value)}
-                        disabled={scanning}
-                        placeholder="••••••••••••••••"
-                        className="w-full bg-zinc-900/40 text-zinc-100 border border-zinc-800/80 rounded-xl p-2.5 text-xs focus:border-amber-500/50 focus:outline-none font-mono"
-                      />
-                    </div>
-                  </div>
-
-                  <div>
-                    <label className="block text-[0.62rem] uppercase tracking-wider font-mono text-zinc-400 mb-1.5 font-bold">
-                      AWS Session Token (Optional)
-                    </label>
+                <div className="grid grid-cols-2 gap-4 pt-2">
+                  <label className="flex items-center gap-2 text-xs font-mono text-zinc-350 cursor-pointer">
                     <input 
-                      type="text"
-                      value={awsSessionToken}
-                      onChange={(e) => setAwsSessionToken(e.target.value)}
-                      disabled={scanning}
-                      placeholder="IQoJb3JpZ2luX2Vj..."
-                      className="w-full bg-zinc-900/40 text-zinc-100 border border-zinc-800/80 rounded-xl p-2.5 text-xs focus:border-amber-500/50 focus:outline-none font-mono"
+                      type="checkbox"
+                      checked={crawlingEnabled}
+                      onChange={(e) => setCrawlingEnabled(e.target.checked)}
+                      disabled={loading}
+                      className="w-4 h-4 rounded text-amber-500 focus:ring-amber-500/40"
                     />
-                  </div>
+                    <span>Spider Crawl Subpages</span>
+                  </label>
+
+                  <label className="flex items-center gap-2 text-xs font-mono text-zinc-350 cursor-pointer">
+                    <input 
+                      type="checkbox"
+                      checked={fuzzingEnabled}
+                      onChange={(e) => setFuzzingEnabled(e.target.checked)}
+                      disabled={loading}
+                      className="w-4 h-4 rounded text-amber-500 focus:ring-amber-500/40"
+                    />
+                    <span>Fuzz Query Inputs</span>
+                  </label>
                 </div>
 
-                <div className="pt-2">
+                <div className="pt-4">
                   <button 
                     type="submit"
-                    disabled={scanning}
+                    disabled={loading}
                     className="w-full bns-submit-btn rounded-xl font-mono font-bold text-xs uppercase py-4 transition-all duration-300 hover:scale-[1.01] active:scale-[0.99] flex items-center justify-center gap-2 focus:outline-none disabled:opacity-40 disabled:pointer-events-none"
                   >
-                    {scanning ? (
+                    {loading ? (
                       <>
                         <Loader2 className="h-4 w-4 animate-spin" />
-                        Auditing IAM Credentials...
+                        Fuzzing URL Targets...
                       </>
                     ) : (
                       <>
-                        <Key className="h-4 w-4" />
-                        Run Credential Validation Audit
+                        <Globe className="h-4 w-4" />
+                        Run Advanced Dynamic Scan
                       </>
                     )}
                   </button>
@@ -450,26 +388,26 @@ export default function CloudSecurityPage() {
               </form>
             </div>
 
-            {/* Error Message */}
+            {/* Error alerts */}
             {errorMsg && (
               <div className="border border-red-500/30 bg-red-500/10 rounded-2xl p-4 flex items-start gap-3">
-                <AlertTriangle className="h-5 w-5 text-red-400 flex-shrink-0 mt-0.5" />
+                <AlertTriangle className="h-5 w-5 text-red-450 flex-shrink-0 mt-0.5" />
                 <div>
-                  <p className="text-sm font-mono font-semibold text-red-400">Scan Execution Error</p>
-                  <p className="text-xs text-red-300/70 mt-1 leading-relaxed">{errorMsg}</p>
+                  <p className="text-sm font-mono font-semibold text-red-400">Scan Connection Fail</p>
+                  <p className="text-xs text-red-300/75 mt-1 leading-relaxed">{errorMsg}</p>
                 </div>
               </div>
             )}
 
-            {/* Console Output */}
-            {(scanning || consoleLogs.length > 0) && (
+            {/* Logger Box */}
+            {(loading || consoleLogs.length > 0) && (
               <div className="border border-zinc-800/80 bg-zinc-950/20 backdrop-blur-md rounded-2xl p-6 font-mono text-xs text-white/80 space-y-4 shadow-[0_8px_30px_rgb(0,0,0,0.12)]">
                 <div className="flex items-center justify-between border-b border-zinc-800/40 pb-3">
                   <span className="flex items-center gap-2 font-bold text-amber-400">
                     <Terminal className="h-4 w-4" />
-                    AUDIT LOG STREAM
+                    DYNAMIC CONSOLE OUTPUT
                   </span>
-                  {scanning && <span className="text-amber-400 animate-pulse">● RUNNING</span>}
+                  {loading && <span className="text-amber-400 animate-pulse">● SPIDER RUNNING</span>}
                 </div>
                 
                 <div 
@@ -481,6 +419,7 @@ export default function CloudSecurityPage() {
                     if (log.includes("[SUCCESS]")) color = "text-amber-400";
                     if (log.includes("[WARNING]")) color = "text-orange-400";
                     if (log.includes("[ALERT]")) color = "text-red-500 font-bold";
+                    if (log.includes("[CRAWLER]")) color = "text-blue-400";
                     
                     return (
                       <div key={index} className={`leading-relaxed ${color}`}>
@@ -492,14 +431,29 @@ export default function CloudSecurityPage() {
               </div>
             )}
 
-            {/* Detailed Findings Table */}
-            {reportReady && results.length > 0 && !scanning && (
+            {/* Sitemap section */}
+            {reportReady && urlsCrawled.length > 0 && !loading && (
+              <div className="bg-zinc-950/20 border border-zinc-800/80 rounded-2xl p-6 space-y-3">
+                <h3 className="text-xs uppercase font-mono font-bold text-zinc-300">Pages Discovered ({urlsCrawled.length})</h3>
+                <div className="max-h-[120px] overflow-y-auto divide-y divide-zinc-850">
+                  {urlsCrawled.map((url, idx) => (
+                    <div key={idx} className="py-2 text-[0.68rem] font-mono text-zinc-400 truncate flex items-center gap-2">
+                      <ArrowRight className="h-3.5 w-3.5 text-amber-400 flex-shrink-0" />
+                      <span>{url}</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* Findings List */}
+            {reportReady && results.length > 0 && !loading && (
               <div className="space-y-4">
                 <div className="flex items-center justify-between px-1">
-                  <span className="text-xs uppercase font-mono font-bold text-zinc-300">Compliance Audit Controls</span>
+                  <span className="text-xs uppercase font-mono font-bold text-zinc-300">Dynamic Scan Findings</span>
                   <button
                     onClick={() => setShowOnlyFailures(prev => !prev)}
-                    className={`flex items-center gap-1.5 text-[0.65rem] font-mono px-2.5 py-1.2 rounded-lg border transition-all ${
+                    className={`flex items-center gap-1.5 text-[0.65rem] font-mono px-2.5 py-1 rounded-lg border transition-all ${
                       showOnlyFailures
                         ? "border-amber-500/40 text-amber-400 bg-amber-500/10"
                         : "border-zinc-700/60 text-zinc-500 hover:border-zinc-650"
@@ -512,20 +466,40 @@ export default function CloudSecurityPage() {
 
                 <div className="border border-zinc-800/80 rounded-2xl overflow-hidden">
                   <div className="divide-y divide-zinc-850 max-h-[500px] overflow-y-auto">
-                    {filteredFindings.map((finding, idx) => (
-                      <div key={idx} className="p-4 bg-zinc-950/10 space-y-2 hover:bg-amber-500/[0.02] transition-all">
+                    {filteredVulnerabilities.map((vuln, idx) => (
+                      <div key={idx} className="p-4 bg-zinc-950/10 space-y-2 transition-all">
                         <div className="flex items-center justify-between flex-wrap gap-2">
-                          <span className="font-mono text-sm font-bold text-zinc-200">{finding.control}</span>
+                          <span className="font-mono text-sm font-bold text-zinc-200">{vuln.control}</span>
                           <div className="flex items-center gap-2">
-                            <StatusBadge status={finding.status} />
-                            <SeverityBadge severity={finding.severity} />
+                            <StatusBadge status={vuln.status} />
+                            <SeverityBadge severity={vuln.severity} />
                           </div>
                         </div>
-                        <p className="text-xs text-zinc-400 font-mono leading-relaxed">{finding.details}</p>
-                        {finding.status === "Fail" && (
+                        <p className="text-xs text-zinc-400 font-mono leading-relaxed">{vuln.details}</p>
+                        
+                        {vuln.evidence && (
+                          <div className="bg-zinc-900/60 border border-zinc-850 p-2.5 rounded-lg overflow-x-auto my-1">
+                            <code className="text-[10px] break-all block font-mono text-zinc-500">{vuln.evidence}</code>
+                          </div>
+                        )}
+
+                        <div className="flex gap-4 text-[10px] font-mono text-zinc-550 border-t border-zinc-900 pt-2">
+                          {vuln.owaspMapping && (
+                            <div>
+                              <span className="text-zinc-600 font-bold">OWASP:</span> {vuln.owaspMapping}
+                            </div>
+                          )}
+                          {vuln.cweMapping && (
+                            <div>
+                              <span className="text-zinc-600 font-bold">CWE:</span> {vuln.cweMapping}
+                            </div>
+                          )}
+                        </div>
+
+                        {vuln.status === "Fail" && (
                           <div className="border-t border-dashed border-zinc-850 pt-2 text-[0.68rem] font-mono text-zinc-500">
                             <span className="text-amber-500 font-semibold uppercase">Remediation Guide: </span>
-                            {finding.remediation}
+                            {vuln.remediation}
                           </div>
                         )}
                       </div>
@@ -538,32 +512,32 @@ export default function CloudSecurityPage() {
 
           {/* Right Column */}
           <div className="space-y-6">
-            {reportReady && !scanning ? (
+            {reportReady && !loading ? (
               <div className="border border-amber-500/30 bg-zinc-950/20 backdrop-blur-md rounded-2xl p-6 space-y-6 shadow-[0_8px_30px_rgb(0,0,0,0.15)] animate-[fadeIn_0.3s_ease-out]">
                 <div className="text-center space-y-2">
                   <div className="inline-flex h-12 w-12 items-center justify-center border border-amber-500/25 text-amber-400 rounded-full bg-amber-500/10 mb-2">
                     {riskScore > 30 ? (
-                      <AlertTriangle className="h-6 w-6" />
+                      <ShieldAlert className="h-6 w-6" />
                     ) : (
-                      <ShieldCheck className="h-6 w-6" />
+                      <CheckCircle2 className="h-6 w-6" />
                     )}
                   </div>
-                  <h3 className="text-xl font-mono font-bold text-zinc-100">Audit Complete</h3>
-                  <p className="text-xs text-zinc-400">{target}</p>
+                  <h3 className="text-xl font-mono font-bold text-zinc-100">Scan Complete</h3>
+                  <p className="text-[10px] text-zinc-400 truncate font-mono">{targetUrl}</p>
                 </div>
 
                 <div className="border-t border-zinc-800/40 pt-4 space-y-3 font-mono text-xs">
                   <div className="flex justify-between">
-                    <span className="text-zinc-400">Total Controls:</span>
+                    <span className="text-zinc-400">Total Checked:</span>
                     <span className="text-zinc-200 font-bold">{results.length}</span>
                   </div>
                   <div className="flex justify-between">
-                    <span className="text-zinc-400">Controls Failed:</span>
+                    <span className="text-zinc-400">Vulnerabilities:</span>
                     <span className="text-orange-400 font-bold">{results.filter(f => f.status === 'Fail').length}</span>
                   </div>
                   <div className="flex justify-between">
-                    <span className="text-zinc-400">Risk Score:</span>
-                    <span className={`font-bold ${riskScore > 50 ? "text-red-500" : riskScore > 20 ? "text-amber-400" : "text-emerald-400"}`}>{riskScore}/100</span>
+                    <span className="text-zinc-400">Risk score:</span>
+                    <span className={`font-bold ${riskScore > 50 ? "text-red-500" : riskScore > 20 ? "text-amber-400" : "text-emerald-405"}`}>{riskScore}/100</span>
                   </div>
                 </div>
 
@@ -580,26 +554,26 @@ export default function CloudSecurityPage() {
             ) : (
               <div className="border border-zinc-800/80 bg-zinc-950/20 backdrop-blur-md rounded-2xl p-6 text-center py-16 text-zinc-400 space-y-3 shadow-sm">
                 <FileText className="h-12 w-12 mx-auto text-zinc-700" />
-                <p className="text-sm font-mono uppercase tracking-wider font-semibold text-zinc-200">No Audit Executed</p>
+                <p className="text-sm font-mono uppercase tracking-wider font-semibold text-zinc-200">No Scan Executed</p>
                 <p className="text-xs max-w-[240px] mx-auto leading-relaxed">
-                  Specify target credentials and run the validation audit to generate consolidated assessment findings.
+                  Provide a web URL target to trigger crawl spidering and dynamic fuzzer assessments.
                 </p>
               </div>
             )}
 
-            {/* Specs & Guidance sidebar card */}
+            {/* Guidance sidebar card */}
             <div className="border border-zinc-800/80 bg-zinc-950/20 backdrop-blur-md rounded-2xl p-6 space-y-4 shadow-[0_8px_30px_rgb(0,0,0,0.12)]">
               <h2 className="text-xs font-mono font-bold uppercase tracking-wider text-zinc-100 flex items-center gap-2">
                 <Info className="text-amber-400 w-4 h-4" />
-                Audit Scope (CIS Benchmarks)
+                DAST Coverage
               </h2>
               <ul className="space-y-3.5 list-none pl-0">
                 {[
-                  "Root MFA Device: Check dual-factor authentication on root account.",
-                  "Root Access Keys: Flags dangerous programmatic access keys enabled on root.",
-                  "User MFA Audits: Assesses group mappings for console users lacking MFA setup.",
-                  "Credential Rotations: Identifies active IAM profile access keys exceeding 90-day lifespans.",
-                  "Account Inactivity: Spotlights active credential patterns dormant for 120+ days."
+                  "SQL Injection Check: Probes parameters with quotes to detect query syntax errors.",
+                  "Reflected XSS Test: Attempts script injection to verify unsanitized output reflection.",
+                  "Security Headers: Audits CSP, Strict-Transport-Security, X-Frame-Options configurations.",
+                  "Secure Cookies: Checks HttpOnly/Secure flags on Set-Cookie fields.",
+                  "Sitemap Crawler: Traces local href maps dynamically up to 10 nodes deep."
                 ].map((text, i) => (
                   <li key={i} className="flex items-start gap-2">
                     <span className="inline-block w-1.5 h-1.5 rounded-full bg-amber-500/60 mt-1.5 flex-shrink-0" />
