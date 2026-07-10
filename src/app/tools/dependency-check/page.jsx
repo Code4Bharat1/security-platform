@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect, useRef, useMemo } from "react";
 import { useRouter } from "next/navigation";
 import { 
   Terminal, 
@@ -8,13 +8,40 @@ import {
   Award, 
   FileText, 
   Loader2, 
-  FileCode,
-  Upload,
-  Info
+  FileCode, 
+  Upload, 
+  Info,
+  AlertTriangle,
+  CheckCircle2,
+  ShieldAlert,
+  ArrowRight,
+  Filter
 } from "lucide-react";
-import jsPDF from "jspdf";
-import "jspdf-autotable";
+import { jsPDF } from "jspdf";
+import autoTable from "jspdf-autotable";
 import useProtectedAction from "@/components/UseProtectedAction/UseProtectedAction";
+
+/* ─────────────── Severity Badge styling ─────────────── */
+const SEV_STYLES = {
+  Critical: "bg-red-500/15 text-red-400 border-red-500/30",
+  High: "bg-orange-500/15 text-orange-400 border-orange-500/30",
+  Medium: "bg-amber-500/15 text-amber-400 border-amber-500/30",
+  Low: "bg-emerald-500/15 text-emerald-400 border-emerald-500/30",
+  Unknown: "bg-zinc-800 text-zinc-400 border border-zinc-700",
+};
+
+function SeverityBadge({ severity }) {
+  const norm = severity ? severity.charAt(0).toUpperCase() + severity.slice(1).toLowerCase() : "Unknown";
+  const isHigh = norm === "High";
+  return (
+    <span 
+      className={`inline-flex items-center px-2.5 py-0.5 rounded-full border text-[0.62rem] font-mono font-bold uppercase tracking-wider ${SEV_STYLES[norm] || SEV_STYLES.Unknown}`}
+      style={isHigh ? { color: "#000000" } : {}}
+    >
+      {norm}
+    </span>
+  );
+}
 
 export default function DependencyCheckPage() {
   const router = useRouter();
@@ -28,49 +55,24 @@ export default function DependencyCheckPage() {
 }`);
   const [fileName, setFileName] = useState("package.json");
   const [scanning, setScanning] = useState(false);
-  const [scanStep, setScanStep] = useState(0);
   const [consoleLogs, setConsoleLogs] = useState([]);
   const [reportReady, setReportReady] = useState(false);
   const [results, setResults] = useState([]);
+  const [riskScore, setRiskScore] = useState(0);
+  const [summaryText, setSummaryText] = useState("");
+  const [errorMsg, setErrorMsg] = useState("");
+  const [showOnlyFailures, setShowOnlyFailures] = useState(false);
+
   const logContainerRef = useRef(null);
 
-  const logs = [
-    "[INFO] Initializing Malwave Dependency Scan...",
-    `[INFO] Reading target manifest: ${fileName}`,
-    "[INFO] Parsing dependency tree from package.json...",
-    "[INFO] Detected 3 direct dependencies and 42 transitive dependencies.",
-    "[INFO] Querying National Vulnerability Database (NVD) & GitHub Advisory Database...",
-    "[INFO] Auditing 'lodash' (^4.17.15)...",
-    "[WARNING] lodash@4.17.15: Found High Severity vulnerability (Prototype Pollution, CVE-2020-8203).",
-    "[INFO] Auditing 'colors-checker' (^1.0.2)...",
-    "[ALERT] colors-checker@1.0.2: Critical threat! Package flagged for potential Typosquatting / Malicious Code Risk.",
-    "[INFO] Auditing 'minimist' (^1.2.0)...",
-    "[WARNING] minimist@1.2.0: Found Medium Severity vulnerability (Prototype Pollution, CVE-2021-3918).",
-    "[INFO] Verifying package licenses...",
-    "[SUCCESS] All package licenses are compliant (MIT / Apache-2.0).",
-    "[INFO] Compiling dependency risk scorecard...",
-    "[SUCCESS] Malwave Scan completed successfully."
-  ];
-
-  useEffect(() => {
-    if (scanning && scanStep < logs.length) {
-      const timer = setTimeout(() => {
-        setConsoleLogs((prev) => [...prev, logs[scanStep]]);
-        setScanStep((prev) => prev + 1);
-      }, 300 + Math.random() * 250);
-      return () => clearTimeout(timer);
-    } else if (scanning && scanStep === logs.length) {
-      setScanning(false);
-      setReportReady(true);
-    }
-  }, [scanning, scanStep]);
-
+  // Auto-scroll logs
   useEffect(() => {
     if (logContainerRef.current) {
       logContainerRef.current.scrollTop = logContainerRef.current.scrollHeight;
     }
   }, [consoleLogs]);
 
+  // File Upload Helper
   const handleFileUpload = (e) => {
     const file = e.target.files[0];
     if (!file) return;
@@ -82,16 +84,36 @@ export default function DependencyCheckPage() {
     reader.readAsText(file);
   };
 
+  // Run Dependency Audit Scan
   const handleStartScan = async (e) => {
     e.preventDefault();
+    if (!packageJsonText.trim()) return;
+
     setScanning(true);
     setReportReady(false);
-    setScanStep(0);
+    setErrorMsg("");
     setConsoleLogs([]);
+    setResults([]);
+
+    const addLog = (msg, delay = 0) => {
+      return new Promise((resolve) => {
+        setTimeout(() => {
+          setConsoleLogs((prev) => [...prev, msg]);
+          resolve();
+        }, delay);
+      });
+    };
+
+    await addLog("[INFO] Initializing Malwave dependency scan workspace...", 100);
+    await addLog(`[INFO] Targeted manifest file: ${fileName}`, 150);
+    await addLog("[INFO] Validating JSON syntax baseline...", 150);
 
     const API_BASE = (process.env.NEXT_PUBLIC_PROD_API_URL || "").replace(/\/+$/, "");
+
     await protectedAction(async (token) => {
       try {
+        await addLog("[INFO] Transmitting manifest data to SCA scan engine...", 100);
+        
         const res = await fetch(`${API_BASE}/dependency-check/analyze`, {
           method: "POST",
           headers: {
@@ -104,77 +126,122 @@ export default function DependencyCheckPage() {
           })
         });
 
-        if (!res.ok) {
-          throw new Error("Failed to run dependency check on backend.");
-        }
-        
         const data = await res.json();
+
+        if (!res.ok) {
+          throw new Error(data.error || "Failed to complete dependency analysis.");
+        }
+
+        await addLog("[INFO] Manifest loaded. Resolving dependency configurations...", 100);
+        await addLog("[INFO] Querying OSV.dev vulnerability database in parallel...", 150);
+
+        if (data.issues?.length > 0) {
+          const criticalCount = data.issues.filter(i => i.severity === "Critical").length;
+          const highCount = data.issues.filter(i => i.severity === "High").length;
+          
+          if (criticalCount > 0) {
+            await addLog(`[ALERT] Flagged ${criticalCount} Critical vulnerabilities / supply-chain exposures!`, 100);
+          }
+          if (highCount > 0) {
+            await addLog(`[WARNING] Detected ${highCount} High severity CVE references!`, 100);
+          }
+          
+          data.issues.forEach(issue => {
+            if (issue.severity === "Critical") {
+              setConsoleLogs(prev => [...prev, `[ALERT] typosquatting: ${issue.name} mimicking popular packages.`]);
+            } else {
+              setConsoleLogs(prev => [...prev, `[WARNING] ${issue.name} (${issue.currentVersion}) -> ${issue.vulnerability}`]);
+            }
+          });
+        } else {
+          await addLog("[SUCCESS] No vulnerable dependencies found in manifest.", 100);
+        }
+
+        await addLog("[INFO] Audit scorecard generated.", 100);
+        await addLog("[SUCCESS] Malwave Scan completed successfully.", 150);
+
         setResults(data.issues || []);
+        setRiskScore(data.riskScore || 0);
+        setSummaryText(data.summary || "");
+        setReportReady(true);
       } catch (err) {
-        console.error("Backend scan failed:", err);
+        await addLog(`[ERROR] Audit process failed: ${err.message}`, 100);
+        setErrorMsg(err.message);
+      } finally {
+        setScanning(false);
       }
     });
   };
 
+  // Filtered issues list
+  const filteredIssues = useMemo(() => {
+    return showOnlyFailures ? results.filter(i => i.severity === "Critical" || i.severity === "High") : results;
+  }, [results, showOnlyFailures]);
+
+  // Export PDF Report
   const handleDownloadPDF = () => {
-    const doc = new jsPDF();
+    const doc = new jsPDF({ unit: "pt", format: "a4" });
+    const M = 40;
+    let y = 56;
     
     // Header Banner
     doc.setFillColor(18, 18, 18);
-    doc.rect(0, 0, doc.internal.pageSize.width, 40, "F");
+    doc.rect(0, 0, doc.internal.pageSize.width, 80, "F");
     
     doc.setTextColor(245, 158, 11); // Warm Amber
-    doc.setFont("Helvetica", "bold");
-    doc.setFontSize(22);
-    doc.text("NEXCORE SECURITY PLATFORM", 15, 20);
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(20);
+    doc.text("NEXCORE SECURITY PLATFORM", M, 35);
     
     doc.setTextColor(255, 255, 255);
-    doc.setFontSize(12);
-    doc.text("MALWAVE SCAN - DEPENDENCY SECURITY REPORT", 15, 30);
+    doc.setFontSize(11);
+    doc.text("MALWAVE SCAN - DEPENDENCY SECURITY REPORT", M, 55);
+    y = 110;
     
     // Scan Meta Info
     doc.setTextColor(50, 50, 50);
-    doc.setFontSize(10);
-    doc.text(`Manifest File: ${fileName}`, 15, 50);
-    doc.text(`Date: ${new Date().toLocaleString()}`, 15, 55);
-    doc.text("Status: Completed / Sec-Verified", 15, 60);
+    doc.setFont("helvetica", "normal");
+    doc.setFontSize(9);
+    doc.text(`Manifest File: ${fileName}`, M, y);
+    doc.text(`Scan Date:     ${new Date().toLocaleString()}`, M, y + 15);
+    doc.text(`Risk Score:    ${riskScore}/100`, M, y + 30);
+    y += 55;
     
     doc.setDrawColor(245, 158, 11);
     doc.setLineWidth(0.5);
-    doc.line(15, 67, doc.internal.pageSize.width - 15, 67);
+    doc.line(M, y, doc.internal.pageSize.width - M, y);
+    y += 20;
 
     // Summary
-    doc.setFontSize(14);
-    doc.text("Executive Summary", 15, 77);
-    doc.setFont("Helvetica", "normal");
-    doc.setFontSize(10);
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(12);
+    doc.text("Executive Summary", M, y);
+    y += 15;
     
-    const summaryText = `This dependency security assessment analyzed package declarations in '${fileName}' against known vulnerability databases and typosquatting blacklists. Three high/critical security issues were identified and require immediate remediation to prevent downstream supply-chain compromise.`;
-    
-    const splitSummary = doc.splitTextToSize(summaryText, doc.internal.pageSize.width - 30);
-    doc.text(splitSummary, 15, 85);
+    doc.setFont("helvetica", "normal");
+    doc.setFontSize(9.5);
+    const splitSummary = doc.splitTextToSize(summaryText || "Assessment evaluated the target codebase dependencies against known vulnerability advisories.", doc.internal.pageSize.width - (M * 2));
+    doc.text(splitSummary, M, y);
+    y += splitSummary.length * 12 + 15;
 
     // Findings Table
-    const headers = [["Package", "Current", "Latest", "Severity", "Vulnerability Details"]];
+    const headers = [["Package", "Current Version", "Safe Version", "Severity", "Vulnerability Details"]];
     const tableData = results.map(issue => [
       issue.name,
       issue.currentVersion,
-      issue.latestVersion,
+      issue.latestVersion || "N/A",
       issue.severity,
       issue.vulnerability
     ]);
 
-    doc.autoTable({
+    autoTable(doc, {
       head: headers,
-      body: tableData.length > 0 ? tableData : [
-        ["lodash", "4.17.15", "4.17.21", "High", "Prototype Pollution (CVE-2020-8203)"],
-        ["colors-checker", "1.0.2", "1.0.2", "Critical", "Potential Typosquatting / Malicious Package Risk"],
-        ["minimist", "1.2.0", "1.2.8", "Medium", "Prototype Pollution (CVE-2021-3918)"]
-      ],
-      startY: 105,
+      body: tableData,
+      startY: y,
       theme: "striped",
+      styles: { fontSize: 8 },
       headStyles: { fillColor: [245, 158, 11], textColor: [255, 255, 255] },
-      margin: { top: 105 }
+      margin: { left: M, right: M }
     });
     
     doc.save(`Nexcore-dependency-report-${Date.now()}.pdf`);
@@ -201,18 +268,23 @@ export default function DependencyCheckPage() {
         .tool-detail-page ::-webkit-scrollbar-thumb {
           background: rgba(245, 158, 11, 0.35) !important;
         }
-        .tool-detail-page ::-webkit-scrollbar-thumb:hover {
-          background: rgba(245, 158, 11, 0.55) !important;
-        }
         .tool-detail-page ::selection {
           background: rgba(245, 158, 11, 0.22) !important;
           color: #fffbeb !important;
         }
-        .tool-detail-page :is(button, [role="button"]):is([class*="bg-amber-"], [class*="bg-orange-"]) {
-          color: #000000 !important;
+        .bns-loading-card p, .bns-loading-card span {
+          color: #f4f4f5 !important;
         }
-        .tool-detail-page :is(button, [role="button"]):is([class*="bg-amber-"], [class*="bg-orange-"]) * {
-          color: #000000 !important;
+        .bns-submit-btn {
+          background-color: rgba(245, 158, 11, 0.05) !important;
+          color: #f59e0b !important;
+          border: 1px solid rgba(245, 158, 11, 0.2) !important;
+        }
+        .bns-submit-btn:hover:not(:disabled) {
+          background-color: rgba(245, 158, 11, 0.1) !important;
+          border-color: rgba(245, 158, 11, 0.5) !important;
+          color: #fbbf24 !important;
+          box-shadow: 0 0 20px rgba(245, 158, 11, 0.15) !important;
         }
       `}</style>
 
@@ -220,13 +292,13 @@ export default function DependencyCheckPage() {
         {/* Navigation & Header */}
         <div className="flex justify-end mb-8">
           <span className="rounded-full border border-amber-500/30 px-3 py-1 font-mono text-[0.62rem] uppercase tracking-[0.28em] text-amber-400">
-            Vulnerability Assessment Team
+            Vulnerability Assessment
           </span>
         </div>
 
         {/* Title Block */}
         <div className="mb-10 flex flex-col md:flex-row items-start md:items-center gap-6">
-          <div className="w-16 h-16 rounded-2xl border border-amber-500/30 overflow-hidden shadow-lg flex-shrink-0 flex items-center justify-center">
+          <div className="w-16 h-16 rounded-2xl flex-shrink-0 flex items-center justify-center bg-zinc-950/20" style={{ border: '1px solid rgba(245, 158, 11, 0.3)' }}>
             <FileCode className="h-8 w-8 text-amber-400" />
           </div>
           <div>
@@ -234,13 +306,13 @@ export default function DependencyCheckPage() {
               MALWAVE <span className="text-amber-400">SCAN</span>
             </h1>
             <p className="mt-2 text-zinc-400 max-w-2xl text-base font-normal">
-              Review dependencies, third-party packages, and libraries for CVE vulnerabilities, typosquatting risks, and malicious packages.
+              Software Composition Analysis (SCA). Upload manifest declarations to query OSV.dev APIs for known CVEs, and run typosquatting checking algorithms.
             </p>
           </div>
         </div>
 
         {/* 2-Column Layout */}
-        <div className="grid gap-8 lg:grid-cols-[1fr_400px]">
+        <div className="grid gap-8 lg:grid-cols-[1fr_380px]">
           
           {/* Left Column */}
           <div className="space-y-6">
@@ -249,30 +321,28 @@ export default function DependencyCheckPage() {
             <div className="bg-zinc-950/20 backdrop-blur-md border border-zinc-800/80 rounded-2xl p-6 shadow-[0_8px_30px_rgb(0,0,0,0.2)] hover:border-amber-500/10 transition-all duration-300">
               <h2 className="text-lg font-mono font-medium text-zinc-100 mb-6 flex items-center gap-2">
                 <FileCode className="h-5 w-5 text-amber-400" />
-                Select Manifest File
+                Manifest Declaration Configs
               </h2>
               
               <form onSubmit={handleStartScan} className="space-y-4">
-                <div className="flex flex-col sm:flex-row gap-4 items-center">
-                  <div className="w-full">
-                    <label className="block text-xs uppercase tracking-wider font-mono text-zinc-400 mb-2 font-semibold">
-                      Paste package.json
-                    </label>
-                    <textarea 
-                      value={packageJsonText}
-                      onChange={(e) => setPackageJsonText(e.target.value)}
-                      disabled={scanning}
-                      rows={6}
-                      className="w-full bg-zinc-900/40 text-zinc-100 border border-zinc-800/80 rounded-xl p-3.5 text-xs focus:border-amber-500/50 focus:ring-1 focus:ring-amber-500/30 focus:shadow-[0_0_12px_rgba(245,158,11,0.08)] focus:outline-none transition-all placeholder:text-zinc-600 font-mono"
-                    />
-                  </div>
+                <div>
+                  <label className="block text-xs uppercase tracking-wider font-mono text-zinc-400 mb-2 font-semibold">
+                    package.json file contents
+                  </label>
+                  <textarea 
+                    value={packageJsonText}
+                    onChange={(e) => setPackageJsonText(e.target.value)}
+                    disabled={scanning}
+                    rows={8}
+                    className="w-full bg-zinc-900/40 text-zinc-100 border border-zinc-800/80 rounded-xl p-3.5 text-xs focus:border-amber-500/50 focus:outline-none transition-all placeholder:text-zinc-600 font-mono"
+                  />
                 </div>
 
-                <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+                <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 border-t border-zinc-900 pt-4">
                   <div className="flex items-center gap-2">
-                    <label className="cursor-pointer bg-zinc-900/40 border border-zinc-800/80 hover:border-amber-500/35 hover:bg-amber-500/5 px-4 py-2.5 rounded-xl text-xs text-zinc-300 hover:text-amber-400 transition flex items-center gap-2 font-semibold font-mono">
+                    <label className="cursor-pointer bg-zinc-900/40 border border-zinc-800/80 hover:border-amber-500/35 hover:bg-amber-500/5 px-4 py-2.5 rounded-xl text-xs text-zinc-350 hover:text-amber-400 transition flex items-center gap-2 font-semibold font-mono">
                       <Upload className="h-4 w-4 text-amber-400" />
-                      Upload package.json
+                      Choose Manifest
                       <input 
                         type="file" 
                         accept=".json"
@@ -281,23 +351,23 @@ export default function DependencyCheckPage() {
                         disabled={scanning}
                       />
                     </label>
-                    <span className="text-xs text-zinc-400 font-mono">Current: {fileName}</span>
+                    <span className="text-xs text-zinc-500 font-mono truncate max-w-[120px]">File: {fileName}</span>
                   </div>
 
                   <button 
                     type="submit"
-                    disabled={scanning}
-                    className="w-full sm:w-auto bg-amber-500 hover:bg-amber-600 text-black rounded-xl font-mono font-bold text-xs uppercase px-8 py-4 transition-all duration-300 hover:scale-[1.01] active:scale-[0.99] flex items-center justify-center gap-2 cursor-pointer hover:shadow-[0_0_20px_rgba(245,158,11,0.2)] focus:outline-none focus:ring-2 focus:ring-amber-500/40 focus:ring-offset-2 focus:ring-offset-black/20 disabled:opacity-40 disabled:pointer-events-none"
+                    disabled={scanning || !packageJsonText.trim()}
+                    className="w-full sm:w-auto bns-submit-btn rounded-xl font-mono font-bold text-xs uppercase px-8 py-4 transition-all duration-300 hover:scale-[1.01] active:scale-[0.99] flex items-center justify-center gap-2 focus:outline-none disabled:opacity-40 disabled:pointer-events-none"
                   >
                     {scanning ? (
                       <>
-                        <Loader2 className="h-4 w-4 animate-spin text-black" />
-                        Scanning Packages...
+                        <Loader2 className="h-4 w-4 animate-spin" />
+                        Auditing...
                       </>
                     ) : (
                       <>
-                        <Terminal className="h-4 w-4 text-black" />
-                        Run Audit
+                        <Terminal className="h-4 w-4" />
+                        Run Package Audit
                       </>
                     )}
                   </button>
@@ -305,20 +375,31 @@ export default function DependencyCheckPage() {
               </form>
             </div>
 
-            {/* Console Output */}
+            {/* Parse Errors alerts */}
+            {errorMsg && (
+              <div className="border border-red-500/30 bg-red-500/10 rounded-2xl p-4 flex items-start gap-3">
+                <AlertTriangle className="h-5 w-5 text-red-450 flex-shrink-0 mt-0.5" />
+                <div>
+                  <p className="text-sm font-mono font-semibold text-red-400">Parsing Failure</p>
+                  <p className="text-xs text-red-300/75 mt-1 leading-relaxed">{errorMsg}</p>
+                </div>
+              </div>
+            )}
+
+            {/* Console Log outputs */}
             {(scanning || consoleLogs.length > 0) && (
               <div className="border border-zinc-800/80 bg-zinc-950/20 backdrop-blur-md rounded-2xl p-6 font-mono text-xs text-white/80 space-y-4 shadow-[0_8px_30px_rgb(0,0,0,0.12)]">
                 <div className="flex items-center justify-between border-b border-zinc-800/40 pb-3">
                   <span className="flex items-center gap-2 font-bold text-amber-400">
                     <Terminal className="h-4 w-4" />
-                    AUDIT CONSOLE OUTPUT
+                    AUDIT LOG STREAM
                   </span>
                   {scanning && <span className="text-amber-400 animate-pulse">● RUNNING</span>}
                 </div>
                 
                 <div 
                   ref={logContainerRef}
-                  className="h-64 overflow-y-auto space-y-2 pr-2 custom-scrollbar text-zinc-400"
+                  className="h-44 overflow-y-auto space-y-2 pr-2 custom-scrollbar text-zinc-400 font-mono"
                 >
                   {consoleLogs.map((log, index) => {
                     let color = "text-zinc-400";
@@ -335,51 +416,108 @@ export default function DependencyCheckPage() {
                 </div>
               </div>
             )}
+
+            {/* Findings Lists */}
+            {reportReady && results.length > 0 && !scanning && (
+              <div className="space-y-4">
+                <div className="flex items-center justify-between px-1">
+                  <span className="text-xs uppercase font-mono font-bold text-zinc-300">Package Security Risks</span>
+                  <button
+                    onClick={() => setShowOnlyFailures(prev => !prev)}
+                    className={`flex items-center gap-1.5 text-[0.65rem] font-mono px-2.5 py-1 rounded-lg border transition-all ${
+                      showOnlyFailures
+                        ? "border-amber-500/40 text-amber-400 bg-amber-500/10"
+                        : "border-zinc-700/60 text-zinc-500 hover:border-zinc-650"
+                    }`}
+                  >
+                    <Filter className="h-3 w-3" />
+                    {showOnlyFailures ? "High & Critical Only" : "Show All Risks"}
+                  </button>
+                </div>
+
+                <div className="border border-zinc-800/80 rounded-2xl overflow-hidden">
+                  <div className="divide-y divide-zinc-850 max-h-[500px] overflow-y-auto">
+                    {filteredIssues.map((issue, idx) => (
+                      <div key={idx} className="p-4 bg-zinc-950/10 space-y-2 transition-all">
+                        <div className="flex items-center justify-between flex-wrap gap-2">
+                          <span className="font-mono text-sm font-bold text-zinc-200">{issue.name}</span>
+                          <SeverityBadge severity={issue.severity} />
+                        </div>
+                        
+                        <p className="text-xs text-zinc-400 font-mono leading-relaxed">{issue.vulnerability}</p>
+
+                        <div className="flex gap-4 text-[10px] font-mono text-zinc-550 border-t border-zinc-900/60 pt-2">
+                          <div>
+                            <span className="text-zinc-600 font-bold">Installed Version:</span> {issue.currentVersion}
+                          </div>
+                          {issue.latestVersion && issue.latestVersion !== "N/A" && (
+                            <div>
+                              <span className="text-zinc-600 font-bold">Safe Version:</span> {issue.latestVersion}
+                            </div>
+                          )}
+                        </div>
+
+                        {issue.remediation && (
+                          <div className="border-t border-dashed border-zinc-850 pt-2 text-[0.68rem] font-mono text-zinc-550">
+                            <span className="text-amber-500 font-semibold uppercase">Remediation: </span>
+                            {issue.remediation}
+                          </div>
+                        )}
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </div>
+            )}
           </div>
 
           {/* Right Column */}
           <div className="space-y-6">
-            {reportReady ? (
-              <div className="border border-amber-500/30 bg-zinc-950/20 backdrop-blur-md rounded-2xl p-6 space-y-6 shadow-[0_8px_30px_rgb(0,0,0,0.15)]">
+            {reportReady && !scanning ? (
+              <div className="border border-amber-500/30 bg-zinc-950/20 backdrop-blur-md rounded-2xl p-6 space-y-6 shadow-[0_8px_30px_rgb(0,0,0,0.15)] animate-[fadeIn_0.3s_ease-out]">
                 <div className="text-center space-y-2">
                   <div className="inline-flex h-12 w-12 items-center justify-center border border-amber-500/25 text-amber-400 rounded-full bg-amber-500/10 mb-2">
-                    <Award className="h-6 w-6" />
+                    {riskScore > 35 ? (
+                      <ShieldAlert className="h-6 w-6" />
+                    ) : (
+                      <CheckCircle2 className="h-6 w-6" />
+                    )}
                   </div>
                   <h3 className="text-xl font-mono font-bold text-zinc-100">Scan Complete</h3>
-                  <p className="text-xs text-zinc-400">Risks found in {fileName}</p>
+                  <p className="text-xs text-zinc-400">{fileName}</p>
                 </div>
 
                 <div className="border-t border-zinc-800/40 pt-4 space-y-3 font-mono text-xs">
                   <div className="flex justify-between">
-                    <span className="text-zinc-400">Vulnerabilities:</span>
-                    <span className="text-amber-400 font-bold font-mono">3 Packages</span>
+                    <span className="text-zinc-400">Total Checked:</span>
+                    <span className="text-zinc-200 font-bold">{results.length} Issues</span>
                   </div>
                   <div className="flex justify-between">
-                    <span className="text-zinc-400">Typosquatting Risk:</span>
-                    <span className="text-red-500 font-bold">1 Flagged</span>
+                    <span className="text-zinc-400">Critical Threats:</span>
+                    <span className="text-red-500 font-bold">{results.filter(r => r.severity === 'Critical').length}</span>
                   </div>
                   <div className="flex justify-between">
-                    <span className="text-zinc-400">Risk Band:</span>
-                    <span className="text-red-500 font-bold">Critical</span>
+                    <span className="text-zinc-400">Risk index:</span>
+                    <span className={`font-bold ${riskScore > 50 ? "text-red-500" : riskScore > 20 ? "text-amber-400" : "text-emerald-450"}`}>{riskScore}/100</span>
                   </div>
                 </div>
 
                 <div className="space-y-2">
                   <button 
                     onClick={handleDownloadPDF}
-                    className="w-full bg-amber-500 hover:bg-amber-600 text-black rounded-xl font-mono font-bold text-xs uppercase py-4 transition-all duration-300 hover:scale-[1.01] active:scale-[0.99] flex items-center justify-center gap-2 cursor-pointer hover:shadow-[0_0_20px_rgba(245,158,11,0.2)] focus:outline-none focus:ring-2 focus:ring-amber-500/40 focus:ring-offset-2 focus:ring-offset-black/20 disabled:opacity-40 disabled:pointer-events-none"
+                    className="w-full bg-amber-500/5 hover:bg-amber-500/10 text-amber-400 border border-amber-500/20 hover:border-amber-500/50 rounded-xl font-mono font-bold text-xs uppercase py-4 transition-all duration-300 hover:scale-[1.01] active:scale-[0.99] flex items-center justify-center gap-2 cursor-pointer hover:shadow-[0_0_20px_rgba(245,158,11,0.15)] focus:outline-none"
                   >
-                    <Download className="h-4 w-4 text-black" />
+                    <Download className="h-4 w-4" />
                     Download PDF Report
                   </button>
                 </div>
               </div>
             ) : (
               <div className="border border-zinc-800/80 bg-zinc-950/20 backdrop-blur-md rounded-2xl p-6 text-center py-16 text-zinc-400 space-y-3 shadow-sm">
-                <FileText className="h-12 w-12 mx-auto text-zinc-650" />
+                <FileText className="h-12 w-12 mx-auto text-zinc-700" />
                 <p className="text-sm font-mono uppercase tracking-wider font-semibold text-zinc-200">No Scan Executed</p>
                 <p className="text-xs max-w-[240px] mx-auto leading-relaxed">
-                  Provide package specifications and start the audit to retrieve vulnerability metrics.
+                  Provide package specifications and start the audit to retrieve Software Composition Analysis (SCA) metrics.
                 </p>
               </div>
             )}
@@ -388,30 +526,24 @@ export default function DependencyCheckPage() {
             <div className="border border-zinc-800/80 bg-zinc-950/20 backdrop-blur-md rounded-2xl p-6 space-y-4 shadow-[0_8px_30px_rgb(0,0,0,0.12)]">
               <h2 className="text-xs font-mono font-bold uppercase tracking-wider text-zinc-100 flex items-center gap-2">
                 <Info className="text-amber-400 w-4 h-4" />
-                Scan Scope
+                SCA Scope
               </h2>
               <ul className="space-y-3.5 list-none pl-0">
-                <li className="flex items-start gap-2">
-                  <span className="inline-block w-1.5 h-1.5 rounded-full bg-amber-500/60 mt-1.5 flex-shrink-0" />
-                  <span className="text-xs text-zinc-400 leading-relaxed font-mono">
-                    Typosquatting checks flag packages matching known typosquat libraries designed to steal tokens.
-                  </span>
-                </li>
-                <li className="flex items-start gap-2">
-                  <span className="inline-block w-1.5 h-1.5 rounded-full bg-amber-500/60 mt-1.5 flex-shrink-0" />
-                  <span className="text-xs text-zinc-400 leading-relaxed font-mono">
-                    Transitive dependencies are analyzed down to 5 sub-levels for nested vulnerabilities.
-                  </span>
-                </li>
-                <li className="flex items-start gap-2">
-                  <span className="inline-block w-1.5 h-1.5 rounded-full bg-amber-500/60 mt-1.5 flex-shrink-0" />
-                  <span className="text-xs text-zinc-400 leading-relaxed font-mono">
-                    Scans verify compliance with license criteria (e.g. GPL exposure risks).
-                  </span>
-                </li>
+                {[
+                  "Typosquatting Check: Identifies package names designed to mimic popular libraries.",
+                  "OSV.dev Vulnerabilities: Queries OSV APIs to detect open CVEs and security advisories.",
+                  "Remediation Patches: Recommends secure fixed version numbers for package.json.",
+                  "Dependencies Inventory: Scans direct packages inside node projects."
+                ].map((text, i) => (
+                  <li key={i} className="flex items-start gap-2">
+                    <span className="inline-block w-1.5 h-1.5 rounded-full bg-amber-500/60 mt-1.5 flex-shrink-0" />
+                    <span className="text-xs text-zinc-400 leading-relaxed font-mono">{text}</span>
+                  </li>
+                ))}
               </ul>
             </div>
           </div>
+          
         </div>
       </div>
     </div>
