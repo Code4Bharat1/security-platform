@@ -13,7 +13,8 @@ import {
   AlertTriangle,
   Upload,
   RefreshCw,
-  Code
+  Code,
+  Loader2
 } from "lucide-react";
 import useProtectedAction from "../UseProtectedAction/UseProtectedAction";
 
@@ -735,7 +736,7 @@ function PreviewList({ title, items = [], kFrom }) {
     return (
       <div className="font-mono text-xs">
         <div className="font-bold text-zinc-400 mb-2">{title}</div>
-        <div className="text-zinc-650 font-mono">None</div>
+        <div className="text-zinc-500 font-mono">None</div>
       </div>
     );
   }
