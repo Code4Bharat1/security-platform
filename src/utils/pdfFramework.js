@@ -48,6 +48,7 @@ export const drawSectionHeader = (doc, title, y) => {
 // Shared Helper: Render standard autoTables
 export const renderTable = (doc, opts) => {
   autoTable(doc, {
+    theme: "grid",
     styles: {
       fontSize: 8,
       cellPadding: { top: 3.5, right: 4, bottom: 3.5, left: 4 },

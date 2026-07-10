@@ -8,9 +8,11 @@ import {
   Activity,
   AlertTriangle,
   CheckCircle,
-  Loader2
+  Loader2,
+  Download
 } from "lucide-react";
 import useProtectedAction from "../UseProtectedAction/UseProtectedAction";
+import { generateMdrPDF } from "./generateMdrPDF";
 
 export default function MdrMonitor() {
   const [url, setUrl] = useState("");
@@ -46,6 +48,14 @@ export default function MdrMonitor() {
 
       setLoading(false);
     });
+  };
+
+  const stripEmojis = (str) => {
+    if (typeof str !== "string") return str;
+    return str
+      .replace(/\p{Extended_Pictographic}/gu, "")
+      .replace(/[\u{1F300}-\u{1F9FF}\u{2600}-\u{26FF}\u{2700}-\u{27BF}]/gu, "")
+      .trim();
   };
 
   const isAlert = data && (
@@ -137,7 +147,7 @@ export default function MdrMonitor() {
                     placeholder="Enter website URL (e.g. https://example.com)..."
                     value={url}
                     onChange={(e) => setUrl(e.target.value.trim())}
-                    className="w-full bg-zinc-900/40 text-zinc-100 border border-zinc-800/80 rounded-xl p-3.5 text-sm focus:border-blue-500/50 focus:ring-1 focus:ring-blue-500/30 focus:shadow-[0_0_12px_rgba(59,130,246,0.08)] focus:outline-none transition-all placeholder:text-zinc-600 font-mono"
+                    className="w-full bg-zinc-900/40 text-zinc-100 border border-zinc-800/80 rounded-xl p-3.5 text-sm focus:border-blue-500/50 focus:ring-1 focus:ring-blue-500/30 focus:shadow-[0_0_12px_rgba(59,130,246,0.08)] focus:outline-none transition-all placeholder:text-zinc-650 font-mono"
                   />
                 </div>
 
@@ -168,6 +178,21 @@ export default function MdrMonitor() {
             {data && (
               <div className="bg-zinc-950/20 backdrop-blur-md border border-zinc-800/80 rounded-2xl p-6 shadow-[0_8px_30px_rgb(0,0,0,0.2)] hover:border-blue-500/10 transition-all duration-300 space-y-5">
                 
+                <div className="flex items-center justify-between gap-4 flex-wrap border-b border-zinc-800/40 pb-4">
+                  <div>
+                    <h3 className="text-lg font-mono font-bold text-zinc-100 uppercase tracking-wider">
+                      MDR Scan Status Resolution
+                    </h3>
+                  </div>
+                  <button
+                    onClick={() => generateMdrPDF(data, url)}
+                    className="px-4 py-2.5 bg-zinc-900/40 hover:bg-blue-500/5 text-zinc-300 hover:text-blue-400 border border-zinc-800/80 hover:border-blue-500/30 rounded-xl font-mono font-bold text-xs uppercase transition-all duration-300 hover:scale-[1.01] active:scale-[0.99] flex items-center justify-center gap-1.5"
+                  >
+                    <Download className="w-3.5 h-3.5" />
+                    PDF Report
+                  </button>
+                </div>
+                
                 {/* Alert panel header */}
                 <div className={`border rounded-xl p-4 flex items-start gap-3 font-mono text-xs ${
                   isAlert
@@ -184,7 +209,7 @@ export default function MdrMonitor() {
                       {isAlert ? "Anomalies/Errors Logged" : "System Reputable"}
                     </h2>
                     <p className="text-[11px] font-mono text-zinc-400 mt-1">
-                      {data.summary}
+                      {stripEmojis(data.summary)}
                     </p>
                   </div>
                 </div>
@@ -201,7 +226,7 @@ export default function MdrMonitor() {
                         <li key={i} className="flex items-start gap-2">
                           <span className="inline-block w-1.5 h-1.5 rounded-full bg-blue-500/60 mt-1.5 flex-shrink-0" />
                           <span className="text-xs text-zinc-300 leading-relaxed font-mono">
-                            {item}
+                            {stripEmojis(item)}
                           </span>
                         </li>
                       ))}

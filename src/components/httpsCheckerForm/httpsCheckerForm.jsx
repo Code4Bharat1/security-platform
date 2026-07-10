@@ -17,10 +17,9 @@ import {
   ArrowRight,
   Terminal
 } from "lucide-react";
-import { jsPDF } from "jspdf";
-import autoTable from "jspdf-autotable";
 import useProtectedAction from "../UseProtectedAction/UseProtectedAction";
 import OwnershipVerificationWizard from "@/components/ownership/OwnershipVerificationWizard";
+import { generateHttpsPDF } from "./generateHttpsPDF";
 
 function Badge({ ok, yesText = "Enabled", noText = "Disabled" }) {
   return (
@@ -61,6 +60,8 @@ export default function HttpsCheckerPage() {
   const [result, setResult] = useState(null);
   const [error, setError] = useState("");
   const [ownershipVerified, setOwnershipVerified] = useState(false);
+  const [pdfProgress, setPdfProgress] = useState(null);
+
   const protectedAction = useProtectedAction();
 
   const handleCheck = async () => {
@@ -244,103 +245,7 @@ export default function HttpsCheckerPage() {
 
   const handleDownloadPDF = () => {
     if (!result) return;
-    const doc = new jsPDF({ unit: "pt", format: "a4" });
-    const M = 40;
-    let y = 56;
-
-    // Header Banner
-    doc.setFillColor(18, 18, 18);
-    doc.rect(0, 0, doc.internal.pageSize.width, 80, "F");
-    
-    doc.setTextColor(59, 130, 246);
-    doc.setFont("helvetica", "bold");
-    doc.setFontSize(18);
-    doc.text("NEXCORE SECURITY PLATFORM", M, 35);
-    
-    doc.setTextColor(255, 255, 255);
-    doc.setFontSize(11);
-    doc.text("HTTPS SECURITY AUDIT REPORT", M, 55);
-    y = 110;
-
-    doc.setTextColor(50, 50, 50);
-    doc.setFont("helvetica", "normal");
-    doc.setFontSize(10);
-    doc.text(`Generated: ${new Date().toLocaleString()}`, M, y);
-    doc.text(`Target Host: ${result.target}`, M, y + 16);
-    y += 36;
-
-    autoTable(doc, {
-      startY: y,
-      head: [["Field", "Value"]],
-      body: buildSummaryRows(result),
-      headStyles: { fillColor: [59, 130, 246], textColor: [255, 255, 255] },
-      styles: { fontSize: 10 },
-      margin: { left: M, right: M },
-    });
-    y = doc.lastAutoTable.finalY + 16;
-
-    autoTable(doc, {
-      startY: y,
-      head: [["Missing Recommended Headers"]],
-      body: (result.missingHeaders?.length
-        ? result.missingHeaders
-        : ["None"]
-      ).map((h) => [h]),
-      headStyles: { fillColor: [59, 130, 246], textColor: [255, 255, 255] },
-      styles: { fontSize: 10 },
-      margin: { left: M, right: M },
-    });
-    y = doc.lastAutoTable.finalY + 16;
-
-    autoTable(doc, {
-      startY: y,
-      head: [["Upcoming / Modern Hardening Headers"]],
-      body: (result.upcomingHeaders?.length
-        ? result.upcomingHeaders
-        : ["None"]
-      ).map((h) => [h]),
-      headStyles: { fillColor: [59, 130, 246], textColor: [255, 255, 255] },
-      styles: { fontSize: 10 },
-      margin: { left: M, right: M },
-    });
-    y = doc.lastAutoTable.finalY + 16;
-
-    autoTable(doc, {
-      startY: y,
-      head: [["Additional Host Information", "Value"]],
-      body: buildAdditionalRows(result.additionalInfo),
-      headStyles: { fillColor: [59, 130, 246], textColor: [255, 255, 255] },
-      styles: { fontSize: 10 },
-      margin: { left: M, right: M },
-      columnStyles: { 0: { cellWidth: 180 }, 1: { cellWidth: 320 } },
-    });
-    y = doc.lastAutoTable.finalY + 16;
-
-    const raw = result.rawHeaders || {};
-    const entries = Object.entries(raw);
-    const MAX_RAW = 40;
-    
-    autoTable(doc, {
-      startY: y,
-      head: [["Raw Response Header", "Value"]],
-      body: (entries.length ? entries.slice(0, MAX_RAW) : [["—", "—"]]).map(
-        ([k, v]) => [k, String(v)]
-      ),
-      headStyles: { fillColor: [59, 130, 246], textColor: [255, 255, 255] },
-      styles: { fontSize: 9 },
-      margin: { left: M, right: M },
-      columnStyles: { 0: { cellWidth: 180 }, 1: { cellWidth: 320 } },
-    });
-    if (entries.length > MAX_RAW) {
-      const lastY = doc.lastAutoTable.finalY + 14;
-      doc.setFontSize(10);
-      doc.text(
-        `…and ${entries.length - MAX_RAW} more headers truncated.`,
-        M,
-        lastY
-      );
-    }
-    doc.save(`HTTPS_Report_${safeName(result.target)}.pdf`);
+    generateHttpsPDF(result, setPdfProgress);
   };
 
   const handleDownloadTXT = () => {

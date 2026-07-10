@@ -1,8 +1,6 @@
 "use client";
 
 import React, { useCallback, useMemo, useState } from "react";
-import { jsPDF } from "jspdf";
-import autoTable from "jspdf-autotable";
 import { 
   Shield, 
   Download, 
@@ -17,6 +15,7 @@ import {
   Loader2
 } from "lucide-react";
 import useProtectedAction from "../UseProtectedAction/UseProtectedAction";
+import { generateObfuscationPDF } from "./generateObfuscationPDF";
 
 const apiBase = (process.env.NEXT_PUBLIC_PROD_API_URL || "").replace(/\/$/, "");
 const useApiPrefix = !/\/api$/i.test(apiBase);
@@ -171,93 +170,10 @@ export default function CodeObfuscationChecker() {
     a.remove();
   };
 
+  const [pdfProgress, setPdfProgress] = useState(null);
+
   const exportPdfAll = () => {
-    if (!result?.results?.length) return;
-    const doc = new jsPDF({ unit: "pt", format: "a4" });
-    const M = 40;
-    const newPage = () => {
-      doc.addPage();
-      y = 56;
-      doc.setFont("helvetica", "normal");
-    };
-    let y = 56;
-
-    result.results.forEach((r, idx) => {
-      if (idx !== 0) newPage();
-      
-      // Header Banner
-      doc.setFillColor(18, 18, 18);
-      doc.rect(0, y - 56, doc.internal.pageSize.width, 80, "F");
-      
-      doc.setTextColor(59, 130, 246); // Blue Accent
-      doc.setFont("helvetica", "bold");
-      doc.setFontSize(18);
-      doc.text("NEXCORE SECURITY PLATFORM", M, y - 20);
-      
-      doc.setTextColor(255, 255, 255);
-      doc.setFontSize(11);
-      doc.text(`OBFUSCATION DETECTION REPORT - ${r.name.toUpperCase()}`, M, y);
-      
-      y += 50;
-
-      doc.setTextColor(50, 50, 50);
-      doc.setFont("helvetica", "normal");
-      doc.setFontSize(10);
-      doc.text(`Score: ${r.score}/100  Severity: ${r.severity}`, M, y);
-      y += 18;
-
-      autoTable(doc, {
-        startY: y,
-        head: [["Metric", "Value"]],
-        body: Object.entries(r.metrics || {}).map(([k, v]) => [k, String(v)]),
-        styles: { fontSize: 10 },
-        headStyles: { fillColor: [59, 130, 246], textColor: [255, 255, 255] },
-        margin: { left: M, right: M },
-      });
-      y = doc.lastAutoTable.finalY + 16;
-
-      const highlightsTbl = (r.highlights || [])
-        .filter((h) => h.level !== "none")
-        .slice(0, 25)
-        .map((h) => [String(h.line), h.level, h.reasons.join("; ")]);
-      autoTable(doc, {
-        startY: y,
-        head: [["Line", "Level", "Reason"]],
-        body: highlightsTbl.length ? highlightsTbl : [["—", "—", "(no highlights)"]],
-        styles: { fontSize: 10 },
-        headStyles: { fillColor: [59, 130, 246], textColor: [255, 255, 255] },
-        margin: { left: M, right: M },
-      });
-      y = doc.lastAutoTable.finalY + 16;
-
-      const prev = [];
-      (r.deobfuscationPreview?.base64Decoded || [])
-        .slice(0, 10)
-        .forEach((d) =>
-          prev.push([`L${d.line}`, "base64", `${d.original} -> ${d.decoded}`])
-        );
-      (r.deobfuscationPreview?.unicodeDecoded || [])
-        .slice(0, 10)
-        .forEach((d) =>
-          prev.push([`L${d.line}`, "unicode", `${d.original} -> ${d.decoded}`])
-        );
-      (r.deobfuscationPreview?.collapsedStrings || [])
-        .slice(0, 10)
-        .forEach((d) =>
-          prev.push([`L${d.line}`, "concat", `${d.original} -> ${d.collapsed}`])
-        );
-      autoTable(doc, {
-        startY: y,
-        head: [["Line", "Type", "Preview"]],
-        body: prev.length ? prev : [["—", "—", "(none)"]],
-        styles: { fontSize: 9 },
-        headStyles: { fillColor: [59, 130, 246], textColor: [255, 255, 255] },
-        margin: { left: M, right: M },
-      });
-      y = doc.lastAutoTable.finalY + 16;
-    });
-
-    doc.save(`obfuscation_report_${Date.now()}.pdf`);
+    generateObfuscationPDF(result, setPdfProgress);
   };
 
   return (
@@ -542,54 +458,7 @@ function FileResult({
   };
 
   const exportPdf = () => {
-    const doc = new jsPDF({ unit: "pt", format: "a4" });
-    const M = 40;
-    let y = 56;
-
-    // Header Banner
-    doc.setFillColor(18, 18, 18);
-    doc.rect(0, 0, doc.internal.pageSize.width, 80, "F");
-    
-    doc.setTextColor(59, 130, 246);
-    doc.setFont("helvetica", "bold");
-    doc.setFontSize(18);
-    doc.text("NEXCORE SECURITY PLATFORM", M, 35);
-    
-    doc.setTextColor(255, 255, 255);
-    doc.setFontSize(11);
-    doc.text(`OBFUSCATION REPORT - ${name.toUpperCase()}`, M, 55);
-    y = 110;
-
-    doc.setTextColor(50, 50, 50);
-    doc.setFont("helvetica", "normal");
-    doc.setFontSize(10);
-    doc.text(`Score: ${score}/100  Severity: ${severity}`, M, y);
-    y += 18;
-
-    autoTable(doc, {
-      startY: y,
-      head: [["Metric", "Value"]],
-      body: Object.entries(metrics).map(([k, v]) => [k, String(v)]),
-      styles: { fontSize: 10 },
-      headStyles: { fillColor: [59, 130, 246], textColor: [255, 255, 255] },
-      margin: { left: M, right: M },
-    });
-    y = doc.lastAutoTable.finalY + 16;
-
-    const linesTbl = highlights
-      .filter((h) => h.level !== "none")
-      .slice(0, 30)
-      .map((h) => [String(h.line), h.level, h.reasons.join("; ")]);
-    autoTable(doc, {
-      startY: y,
-      head: [["Line", "Level", "Reason"]],
-      body: linesTbl.length ? linesTbl : [["—", "—", "(no highlights)"]],
-      styles: { fontSize: 10 },
-      headStyles: { fillColor: [59, 130, 246], textColor: [255, 255, 255] },
-      margin: { left: M, right: M },
-    });
-
-    doc.save(`obfuscation_${safeName(name)}.pdf`);
+    generateObfuscationPDF({ results: [{ name, score, severity, metrics, highlights, issues, deobfuscationPreview }] });
   };
 
   return (

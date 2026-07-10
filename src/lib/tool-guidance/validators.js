@@ -328,10 +328,7 @@ function validateFileField(field, value, allValues) {
     field.atLeastOneOf.some((key) => normalizeString(allValues?.[key]).length > 0);
 
   if (!raw && hasSiblingValue) {
-    return info(
-      "No file selected. The tool will rely on the pasted input instead.",
-      field
-    );
+    return null;
   }
 
   if (!raw) {

@@ -21,6 +21,7 @@ import {
 import { jsPDF } from "jspdf";
 import autoTable from "jspdf-autotable";
 import useProtectedAction from "../UseProtectedAction/UseProtectedAction";
+import { generateReverseDnsPDF } from "./generateReverseDnsPDF";
 
 function isValidIP(ip) {
   const ipv4 =
@@ -232,146 +233,8 @@ export default function ReverseDNSLookup() {
 
   function downloadPDF() {
     if (!data) return;
-    const doc = new jsPDF({ unit: "pt", format: "a4" });
-    const M = 40;
-    let y = 56;
-
-    // Header Banner
-    doc.setFillColor(18, 18, 18);
-    doc.rect(0, 0, doc.internal.pageSize.width, 80, "F");
-    
-    doc.setTextColor(59, 130, 246);
-    doc.setFont("helvetica", "bold");
-    doc.setFontSize(18);
-    doc.text("NEXCORE SECURITY PLATFORM", M, 35);
-    
-    doc.setTextColor(255, 255, 255);
-    doc.setFontSize(11);
-    doc.text("REVERSE DNS RESOLUTION REPORT", M, 55);
-    y = 110;
-
-    doc.setTextColor(50, 50, 50);
-    doc.setFont("helvetica", "normal");
-    doc.setFontSize(10);
-    doc.text(`Generated: ${new Date().toLocaleString()}`, M, y);
-    y += 18;
-
-    autoTable(doc, {
-      startY: y,
-      head: [["Field", "Value"]],
-      body: [
-        ["Type", human(data.type, "PTR")],
-        ["IP", `${data.ip}${data.displayName ? " " + data.displayName : ""}`],
-        ["PTR Records", data.ptr?.length ? data.ptr.join(", ") : "(none)"],
-        ["Reverse name", human(data.reverseName)],
-        ["TTL", human(data.ttlHuman)],
-        ["Result", human(data.result)],
-        ["Test Type", human(data.test, "public")],
-        ["Lookup latency (ms)", human(data.timespan)],
-      ],
-      headStyles: { fillColor: [59, 130, 246], textColor: [255, 255, 255] },
-      styles: { fontSize: 10 },
-      margin: { left: M, right: M },
-    });
-
-    // Geolocation / ASN
-    autoTable(doc, {
-      startY: doc.lastAutoTable.finalY + 16,
-      head: [["Geolocation Details", "Value"]],
-      body: data.geo
-        ? [
-            ["Country", human(data.geo.country)],
-            ["Region", human(data.geo.region)],
-            ["City", human(data.geo.city)],
-            ["Timezone", human(data.geo.timezone)],
-            ["Coordinates (Lat/Lon)", human(data.geo.ll?.join(", "))],
-          ]
-        : [["(not available)", ""]],
-      headStyles: { fillColor: [59, 130, 246], textColor: [255, 255, 255] },
-      styles: { fontSize: 10 },
-      margin: { left: M, right: M },
-    });
-
-    autoTable(doc, {
-      startY: doc.lastAutoTable.finalY + 12,
-      head: [["ASN / WHOIS Metadata", "Value"]],
-      body: data.asn
-        ? [
-            ["Autonomous System Number", human(data.asn.asn)],
-            ["Organization", human(data.asn.org)],
-            ["Internet Service Provider", human(data.asn.isp)],
-            ["CIDR Routing Prefix", human(data.asn.cidr)],
-          ]
-        : [["(not available)", ""]],
-      headStyles: { fillColor: [59, 130, 246], textColor: [255, 255, 255] },
-      styles: { fontSize: 10 },
-      margin: { left: M, right: M },
-    });
-
-    // Blacklist / Reputation
-    autoTable(doc, {
-      startY: doc.lastAutoTable.finalY + 16,
-      head: [["IP Threat Intelligence Summary", "Value"]],
-      body: [
-        ["Abuse Score", `${blacklistSummary.reputationScore} / 100`],
-        ["Detection Count", `${blacklistSummary.flagged} / ${blacklistSummary.checked} lists flagged`],
-        ["Risk Assessment", blacklistSummary.riskLevel],
-        ["Action Guide", blacklistSummary.recommendedAction]
-      ],
-      headStyles: { fillColor: [59, 130, 246], textColor: [255, 255, 255] },
-      styles: { fontSize: 10 },
-      margin: { left: M, right: M },
-    });
-
-    const blRows = blacklists.map((bl) => [
-      bl.name,
-      bl.status,
-      bl.severity,
-      bl.confidence,
-      bl.reason,
-      bl.lastSeen
-    ]);
-    autoTable(doc, {
-      startY: doc.lastAutoTable.finalY + 12,
-      head: [["Blacklist Database", "Status", "Severity", "Confidence", "Intel details", "Last Seen"]],
-      body: blRows.length ? blRows : [["(none)", "", "", "", "", ""]],
-      headStyles: { fillColor: [59, 130, 246], textColor: [255, 255, 255] },
-      styles: { fontSize: 8.5 },
-      columnStyles: {
-        4: { cellWidth: 180 }
-      },
-      didParseCell: (parsed) => {
-        if (parsed.column.index === 1 && parsed.section === "body") {
-          if (parsed.cell.raw === "Listed") {
-            parsed.cell.styles.textColor = [220, 53, 69];
-            parsed.cell.styles.fontStyle = "bold";
-          } else if (parsed.cell.raw === "Clear") {
-            parsed.cell.styles.textColor = [16, 185, 129];
-          }
-        }
-      },
-      margin: { left: M, right: M },
-    });
-
-    // Forward validation
-    const fRows = (data.forwardValidation || []).map((f) => [
-      f.domain,
-      f.matches ? "VERIFIED" : "SUSPICIOUS",
-      `A=[${(f.resolved?.A || []).join(", ")}] AAAA=[${(
-        f.resolved?.AAAA || []
-      ).join(", ")}]`,
-    ]);
-    autoTable(doc, {
-      startY: doc.lastAutoTable.finalY + 12,
-      head: [["Hostname Domain", "Forward Check", "DNS Resolves"]],
-      body: fRows.length ? fRows : [["(none)", "", ""]],
-      headStyles: { fillColor: [59, 130, 246], textColor: [255, 255, 255] },
-      styles: { fontSize: 9 },
-      margin: { left: M, right: M },
-    });
-
-    doc.save(`reverse_dns_${data.ip}.pdf`);
-  }
+    generateReverseDnsPDF(data, blacklistSummary, blacklists);
+  };
 
   return (
     <div 
@@ -465,7 +328,7 @@ export default function ReverseDNSLookup() {
                       }`}
                     />
                     <Globe
-                      className={`absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 transition-colors ${
+                      className={`absolute left-4 top-[24px] -translate-y-1/2 w-5 h-5 transition-colors ${
                         validationMsg
                           ? "text-red-400"
                           : valid
@@ -474,7 +337,7 @@ export default function ReverseDNSLookup() {
                       }`}
                     />
                     {valid && (
-                      <CheckCircle className="absolute right-4 top-1/2 -translate-y-1/2 w-4 h-4 text-emerald-500" />
+                      <CheckCircle className="absolute right-4 top-[24px] -translate-y-1/2 w-4 h-4 text-emerald-500" />
                     )}
                   </div>
                   {validationMsg && (
@@ -559,72 +422,7 @@ export default function ReverseDNSLookup() {
                   </div>
                 </div>
 
-                {/* Threat Intel panel */}
-                <div className="bg-zinc-900/40 border border-zinc-800/80 rounded-xl p-5 shadow-lg space-y-4">
-                  <div className="flex items-center justify-between border-b border-zinc-800/40 pb-3">
-                    <h3 className="text-sm font-mono font-bold text-zinc-200 flex items-center gap-2">
-                      <Shield className="w-4 h-4 text-blue-400" />
-                      IP Reputation & Threat Assessment
-                    </h3>
-                    <span className={`px-2.5 py-0.5 rounded-full text-[10px] font-mono font-bold uppercase tracking-wider ${
-                      blacklistSummary.riskLevel === "Critical"
-                        ? "bg-red-500/10 text-red-450 border border-red-500/20"
-                        : blacklistSummary.riskLevel === "High"
-                        ? "bg-orange-500/10 text-orange-450 border border-orange-500/20"
-                        : blacklistSummary.riskLevel === "Medium"
-                        ? "bg-yellow-500/10 text-yellow-450 border border-yellow-500/20"
-                        : "bg-emerald-500/10 text-emerald-450 border border-emerald-500/20"
-                    }`}>
-                      {blacklistSummary.riskLevel} Risk
-                    </span>
-                  </div>
 
-                  <div className="grid md:grid-cols-3 gap-6 items-center">
-                    
-                    {/* Score SVG */}
-                    <div className="flex flex-col items-center justify-center p-3 bg-zinc-950/20 border border-zinc-850 rounded-xl text-center">
-                      <span className="text-[9px] uppercase tracking-wider text-zinc-450 font-bold mb-1 font-mono">Reputation Score</span>
-                      <div className="relative flex items-center justify-center">
-                        <svg className="w-20 h-20 transform -rotate-90">
-                          <circle cx="40" cy="40" r="34" className="stroke-current text-zinc-800" strokeWidth="5" fill="transparent" />
-                          <circle cx="40" cy="40" r="34" className={`stroke-current ${
-                            blacklistSummary.reputationScore >= 75 ? "text-red-500" : blacklistSummary.reputationScore >= 40 ? "text-orange-500" : blacklistSummary.reputationScore >= 11 ? "text-yellow-500" : "text-blue-500"
-                          }`} strokeWidth="5" fill="transparent"
-                          strokeDasharray={213.6}
-                          strokeDashoffset={213.6 - (213.6 * blacklistSummary.reputationScore) / 100}
-                          strokeLinecap="round" />
-                        </svg>
-                        <div className="absolute text-lg font-bold text-zinc-100 font-mono">
-                          {blacklistSummary.reputationScore}
-                        </div>
-                      </div>
-                      <span className="text-[8px] text-zinc-550 mt-1 font-mono">max 100 (clean = 0)</span>
-                    </div>
-
-                    {/* Detections Counter */}
-                    <div className="space-y-1 text-center md:text-left font-mono">
-                      <span className="text-[10px] uppercase tracking-wider text-zinc-450 font-bold font-mono">Spam Lists Checked</span>
-                      <div className="text-3xl font-extrabold text-zinc-100">
-                        {blacklistSummary.flagged} <span className="text-xs font-normal text-zinc-500">/ {blacklistSummary.checked} listed</span>
-                      </div>
-                      <p className="text-[10px] text-zinc-500 leading-normal">
-                        IP queried from active dnsbl blacklists.
-                      </p>
-                    </div>
-
-                    {/* Recommendations block */}
-                    <div className="p-3.5 bg-zinc-950/20 border border-zinc-850 rounded-xl space-y-1 text-left font-mono">
-                      <span className="text-[10px] font-semibold text-blue-400 flex items-center gap-1.5 font-mono">
-                        <CheckCircle className="w-3.5 h-3.5 text-blue-400" />
-                        Security Guidance:
-                      </span>
-                      <p className="text-[10px] text-zinc-350 leading-relaxed">
-                        {blacklistSummary.recommendedAction}
-                      </p>
-                    </div>
-
-                  </div>
-                </div>
 
                 {/* Grid details cards */}
                 <div className="grid gap-4 sm:grid-cols-3">

@@ -298,7 +298,7 @@ export default function SecurityToolGuidanceFrame({ toolSlug, children }) {
               ])
             )
           );
-          if (currentValidation.status === "error" || currentValidation.status === "warning") {
+          if (currentValidation && (currentValidation.status === "error" || currentValidation.status === "warning")) {
             hasBlockingGuidance = true;
           }
         });
