@@ -2,8 +2,7 @@
 
 import { useState } from "react";
 import axios from "axios";
-import jsPDF from "jspdf";
-import autoTable from "jspdf-autotable";
+import { generateSubdomainPDF } from "./generateSubdomainPDF";
 import useProtectedAction from "../UseProtectedAction/UseProtectedAction";
 import OwnershipVerificationWizard from "@/components/ownership/OwnershipVerificationWizard";
 import {
@@ -100,58 +99,30 @@ export default function SubdomainScanner() {
     });
   };
 
-  const downloadPDF = () => {
+  const downloadPDF = async () => {
     if (!results || results.length === 0) return;
-
-    const doc = new jsPDF();
-    const tableColumn = ["#", "Subdomain Hostname"];
-    const tableRows = [];
-
-    results.forEach((item, index) => {
-      const subdomainData = [index + 1, item.subdomain];
-      tableRows.push(subdomainData);
-    });
-
-    // Header Banner
-    doc.setFillColor(18, 18, 18);
-    doc.rect(0, 0, doc.internal.pageSize.width, 80, "F");
+    const cleanDomain = domain.trim().toLowerCase();
     
-    doc.setTextColor(239, 68, 68);
-    doc.setFont("helvetica", "bold");
-    doc.setFontSize(18);
-    doc.text("NEXCORE RED TEAM SECURITY AUDIT", 14, 35);
-    
-    doc.setTextColor(255, 255, 255);
-    doc.setFontSize(10);
-    doc.text("SUBDOMAIN ENUMERATION DISCOVERY LOG", 14, 55);
+    // Import toast if not already in context
+    const { toast } = await import("react-hot-toast");
+    toast.loading("Generating PDF Report...", { id: "pdf-gen" });
 
-    // Metadata
-    doc.setFontSize(10);
-    doc.setTextColor(50, 50, 50);
-    const date = new Date().toLocaleString();
-    doc.text(`Target Domain: ${domain}`, 14, 100);
-    doc.text(`Total Subdomains: ${stats?.total || results.length}`, 14, 115);
-    doc.text(`Scan Date: ${date}`, 14, 130);
-    if (stats?.durationMs) {
-      doc.text(`Scan Duration: ${formatDuration(stats.durationMs)}`, 14, 145);
+    try {
+      await generateSubdomainPDF(
+        results,
+        stats,
+        cleanDomain,
+        (msg) => {
+          if (msg) {
+            toast.loading(msg, { id: "pdf-gen" });
+          }
+        }
+      );
+      toast.success("PDF report downloaded!", { id: "pdf-gen" });
+    } catch (err) {
+      console.error(err);
+      toast.error("Failed to generate PDF report", { id: "pdf-gen" });
     }
-
-    // Table
-    autoTable(doc, {
-      startY: 160,
-      head: [tableColumn],
-      body: tableRows,
-      theme: "grid",
-      headStyles: { fillColor: [239, 68, 68], textColor: [255, 255, 255] },
-      styles: { fontSize: 9, cellPadding: 4 },
-      columnStyles: {
-        0: { cellWidth: 20 },
-        1: { cellWidth: "auto" },
-      },
-    });
-
-    const fileName = `subdomain_scan_${domain.replace(/[^a-z0-9]/gi, "_")}.pdf`;
-    doc.save(fileName);
   };
 
   const handleSubdomainClick = (subdomain) => {
