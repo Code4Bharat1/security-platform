@@ -52,6 +52,7 @@ export default function DarkThemeOpenRedirectTester() {
   const [error, setError] = useState("");
   const [report, setReport] = useState(null);
   const reportRef = useRef(null);
+  const [currentPage, setCurrentPage] = useState(1);
 
   const protectedAction = useProtectedAction();
 
@@ -68,6 +69,7 @@ export default function DarkThemeOpenRedirectTester() {
     e?.preventDefault?.();
     setError("");
     setReport(null);
+    setCurrentPage(1);
 
     if (!inputUrl) {
       setError("Please enter a URL.");
@@ -114,78 +116,35 @@ export default function DarkThemeOpenRedirectTester() {
     }`;
   }
 
-  function exportPDF() {
+  const exportPDF = async () => {
     if (!report) return;
-    const doc = new jsPDF();
-    const pad = 12;
+    
+    const { toast } = await import("react-hot-toast");
+    toast.loading("Generating PDF Report...", { id: "pdf-gen" });
 
-    // Header Red Team
-    doc.setFillColor(18, 18, 18);
-    doc.rect(0, 0, 210, 55, "F");
-
-    doc.setTextColor(239, 68, 68);
-    doc.setFont("helvetica", "bold");
-    doc.setFontSize(16);
-    doc.text("OPEN REDIRECT TEST REPORT", pad, 25);
-
-    doc.setTextColor(255, 255, 255);
-    doc.setFontSize(9);
-    doc.text(`Target: ${report.originalUrl}`, pad, 40);
-
-    doc.setTextColor(50, 50, 50);
-    doc.setFontSize(9);
-    doc.text(`Original Domain: ${report.originalDomain}`, pad, 70);
-    doc.text(
-      `Overall Verdict: ${
-        report.summary?.vulnerable ? "VULNERABLE" : "NOT VULNERABLE"
-      }`,
-      pad,
-      82
-    );
-    doc.text(`Severity: ${report.summary?.severity}`, pad, 94);
-
-    autoTable(doc, {
-      startY: 110,
-      head: [
-        [
-          "Param",
-          "Payload",
-          "Final URL",
-          "Final Domain",
-          "Changed eTLD+1",
-          "Status Codes",
-          "Vuln?",
-        ],
-      ],
-      body: (report.tests || []).map((t) => [
-        t.param,
-        t.payloadName,
-        t.finalUrl,
-        t.finalDomain,
-        t.changedETLD ? "Yes" : "No",
-        (t.chain || []).map((h) => h.status).join(" → "),
-        t.vulnerable ? "Yes" : "No",
-      ]),
-      theme: "grid",
-      styles: { fontSize: 8, cellWidth: "wrap" },
-      columnStyles: { 2: { cellWidth: 80 } },
-      headStyles: { fillColor: [239, 68, 68] },
-    });
-
-    if (report.summary?.reasons?.length) {
-      const y = doc.lastAutoTable?.finalY ? doc.lastAutoTable.finalY + 12 : 110;
-      doc.setFontSize(10);
-      doc.text("Verdict Notes:", pad, y);
-      let yy = y + 12;
-      report.summary.reasons.forEach((r) => {
-        doc.text(`• ${r}`, pad, yy);
-        yy += 10;
-      });
+    try {
+      const { generateOpenRedirectPDF } = await import("./generateOpenRedirectPDF");
+      await generateOpenRedirectPDF(
+        report,
+        (msg) => {
+          if (msg) {
+            toast.loading(msg, { id: "pdf-gen" });
+          }
+        }
+      );
+      toast.success("PDF report downloaded!", { id: "pdf-gen" });
+    } catch (err) {
+      console.error(err);
+      toast.error("Failed to generate PDF report", { id: "pdf-gen" });
     }
+  };
 
-    const fname = `open-redirect-report-${Date.now()}.pdf`;
-    doc.save(fname);
-  }
+  const itemsPerPage = 5;
+  const totalPages = Math.ceil((report?.tests || []).length / itemsPerPage);
+  const paginatedTests = useMemo(() => {
+    const start = (currentPage - 1) * itemsPerPage;
+    return (report?.tests || []).slice(start, start + itemsPerPage);
+  }, [report?.tests, currentPage]);
 
   return (
     <div 
@@ -376,10 +335,13 @@ export default function DarkThemeOpenRedirectTester() {
                   </div>
                   <div className="text-left sm:text-right font-mono flex-shrink-0">
                     <div className="mb-2.5">
-                      {badgeClass(
+                      <span className={badgeClass(
                         report.summary?.severity ||
                           (report.summary?.vulnerable ? "High" : "Safe")
-                      )}
+                      )}>
+                        {report.summary?.severity ||
+                          (report.summary?.vulnerable ? "High" : "Safe")}
+                      </span>
                     </div>
                     <div
                       className={`text-xs font-bold uppercase tracking-wider flex items-center gap-1.5 ${
@@ -405,7 +367,7 @@ export default function DarkThemeOpenRedirectTester() {
                 <div className="space-y-3 font-mono text-xs">
                   <h4 className="text-[10px] text-zinc-500 font-bold uppercase tracking-wider">Redirection Parameter Tests</h4>
                   <div className="space-y-3">
-                    {(report.tests || []).map((t, idx) => (
+                    {paginatedTests.map((t, idx) => (
                       <details key={idx} className="rounded-xl border border-zinc-850 overflow-hidden bg-zinc-900/10">
                         <summary className="cursor-pointer p-4 flex items-center justify-between gap-3 bg-zinc-900/40 hover:bg-zinc-900/60 select-none">
                           <div className="flex items-center gap-2">
@@ -436,7 +398,7 @@ export default function DarkThemeOpenRedirectTester() {
                             <span className="text-zinc-600 font-bold">Resolved Final URL:</span>{" "}
                             <span className="break-all font-semibold block text-zinc-350">{t.finalUrl}</span>
                           </div>
-                          <div className="text-[10px] text-zinc-500">
+                          <div className="text-[10px] text-zinc-550">
                             Final Domain: <span className="text-zinc-300 font-bold">{t.finalDomain}</span>
                             <span className="mx-2">•</span>
                             Changed eTLD+1: <span className="text-zinc-300 font-bold">{t.changedETLD ? "Yes" : "No"}</span>
@@ -462,9 +424,36 @@ export default function DarkThemeOpenRedirectTester() {
                       </details>
                     ))}
                   </div>
+
+                  {totalPages > 1 && (
+                    <div className="flex items-center justify-between border border-zinc-850 p-4 rounded-xl bg-zinc-900/10 text-zinc-450 font-mono text-xs select-none">
+                      <div>
+                        Showing <span className="text-zinc-300 font-bold">{((currentPage - 1) * itemsPerPage) + 1}</span> to <span className="text-zinc-300 font-bold">{Math.min(currentPage * itemsPerPage, (report?.tests || []).length)}</span> of <span className="text-zinc-300 font-bold">{(report?.tests || []).length}</span> parameters
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <button
+                          onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
+                          disabled={currentPage === 1}
+                          className="px-3 py-1.5 rounded-lg border border-zinc-800 hover:border-red-500/30 bg-zinc-950/40 hover:bg-red-500/5 text-zinc-400 hover:text-red-400 font-bold transition-all disabled:opacity-40 disabled:pointer-events-none cursor-pointer"
+                        >
+                          Prev
+                        </button>
+                        <span className="text-zinc-300">
+                          Page <span className="font-bold text-red-400">{currentPage}</span> of {totalPages}
+                        </span>
+                        <button
+                          onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))}
+                          disabled={currentPage === totalPages}
+                          className="px-3 py-1.5 rounded-lg border border-zinc-800 hover:border-red-500/30 bg-zinc-950/40 hover:bg-red-500/5 text-zinc-400 hover:text-red-400 font-bold transition-all disabled:opacity-40 disabled:pointer-events-none cursor-pointer"
+                        >
+                          Next
+                        </button>
+                      </div>
+                    </div>
+                  )}
                 </div>
 
-                {/* Verdict notes reasons */}
+                {/* Verdict notes audit logs reasons */}
                 {report.summary?.reasons?.length ? (
                   <div className="space-y-3 font-mono text-xs border-t border-zinc-900 pt-4">
                     <h4 className="text-[10px] text-zinc-500 font-bold uppercase tracking-wider">Verdict Audit Notes</h4>

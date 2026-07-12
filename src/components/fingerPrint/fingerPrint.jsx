@@ -17,7 +17,8 @@ import {
   Server,
   Calendar,
   Clock,
-  ExternalLink
+  ExternalLink,
+  Download
 } from 'lucide-react';
 
 export default function TechnologyFingerprinter() {
@@ -30,6 +31,7 @@ export default function TechnologyFingerprinter() {
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
   const [ownershipVerified, setOwnershipVerified] = useState(false);
+  const [currentPage, setCurrentPage] = useState(1);
 
   const formatDate = (iso) => {
     if (!iso) return '-';
@@ -63,6 +65,7 @@ export default function TechnologyFingerprinter() {
       setError('');
       setResults([]);
       setMeta(null);
+      setCurrentPage(1);
 
       try {
         const res = await fetch(`${process.env.NEXT_PUBLIC_PROD_API_URL}/fingerprint/fingerprint-scan`, {
@@ -86,6 +89,32 @@ export default function TechnologyFingerprinter() {
     });
   };
 
+  const downloadPDF = async () => {
+    if (!results || results.length === 0) return;
+    const cleanUrl = url.trim().toLowerCase();
+    
+    const { toast } = await import("react-hot-toast");
+    toast.loading("Generating PDF Report...", { id: "pdf-gen" });
+
+    try {
+      const { generateFingerprintPDF } = await import("./generateFingerprintPDF");
+      await generateFingerprintPDF(
+        results,
+        meta,
+        cleanUrl,
+        (msg) => {
+          if (msg) {
+            toast.loading(msg, { id: "pdf-gen" });
+          }
+        }
+      );
+      toast.success("PDF report downloaded!", { id: "pdf-gen" });
+    } catch (err) {
+      console.error(err);
+      toast.error("Failed to generate PDF report", { id: "pdf-gen" });
+    }
+  };
+
   // Quick categorization on the client by keyword
   const categorized = useMemo(() => {
     const buckets = {
@@ -99,18 +128,37 @@ export default function TechnologyFingerprinter() {
       'Other Libraries': [],
     };
     for (const t of results) {
-      const s = t.toLowerCase();
-      if (s.includes('website builder')) buckets['Website Builder'].push(t);
-      else if (s.startsWith('📝 cms') || s.includes(' cms:') || s.includes('magento') || s.includes('opencart')) buckets['CMS'].push(t);
-      else if (s.includes('analytics') || s.includes('tag manager') || s.includes('pixel')) buckets['Analytics / Tag Manager'].push(t);
-      else if (s.includes('hosting') || s.includes('cdn') || s.includes('server') || s.includes('x-powered-by')) buckets['Hosting / CDN'].push(t);
-      else if (s.includes('javascript') || s.includes('react') || s.includes('vue') || s.includes('angular') || s.includes('jquery')) buckets['JavaScript Frameworks'].push(t);
-      else if (s.includes('css framework')) buckets['CSS Frameworks'].push(t);
-      else if (s.includes('payment') || s.includes('razorpay') || s.includes('stripe') || s.includes('paypal')) buckets['Payments Integration'].push(t);
-      else buckets['Other Libraries'].push(t);
+      const displayStr = t.version !== "Not Disclosed" ? `${t.name} (${t.version})` : t.name;
+      const cat = t.category || "";
+      const lowerName = (t.name || "").toLowerCase();
+
+      if (cat === 'CMS') {
+        buckets['CMS'].push(displayStr);
+      } else if (cat === 'Analytics') {
+        buckets['Analytics / Tag Manager'].push(displayStr);
+      } else if (cat === 'CDN') {
+        buckets['Hosting / CDN'].push(displayStr);
+      } else if (cat === 'Server' || cat === 'Backend') {
+        buckets['Hosting / CDN'].push(displayStr);
+      } else if (cat === 'Frontend' && (lowerName.includes('react') || lowerName.includes('vue') || lowerName.includes('angular') || lowerName.includes('jquery'))) {
+        buckets['JavaScript Frameworks'].push(displayStr);
+      } else if (cat === 'Frontend' && (lowerName.includes('bootstrap') || lowerName.includes('tailwind'))) {
+        buckets['CSS Frameworks'].push(displayStr);
+      } else if (lowerName.includes('stripe') || lowerName.includes('paypal') || lowerName.includes('razorpay')) {
+        buckets['Payments Integration'].push(displayStr);
+      } else {
+        buckets['Other Libraries'].push(displayStr);
+      }
     }
     return buckets;
   }, [results]);
+
+  const itemsPerPage = 10;
+  const totalPages = Math.ceil(results.length / itemsPerPage);
+  const paginatedResults = useMemo(() => {
+    const start = (currentPage - 1) * itemsPerPage;
+    return results.slice(start, start + itemsPerPage);
+  }, [results, currentPage]);
 
   return (
     <div 
@@ -265,13 +313,23 @@ export default function TechnologyFingerprinter() {
             {/* Categorized results listing */}
             {results.length > 0 && (
               <div className="bg-zinc-950/20 backdrop-blur-md border border-zinc-800/80 rounded-2xl p-6 shadow-[0_8px_30px_rgb(0,0,0,0.2)] space-y-6">
-                <div>
-                  <h3 className="text-lg font-mono font-bold text-zinc-100 uppercase tracking-wider">
-                    Fingerprinted Technologies
-                  </h3>
-                  <p className="text-xs font-mono text-zinc-500 mt-0.5">
-                    Stack categories resolved from host headers and scripts
-                  </p>
+                <div className="flex justify-between items-center gap-4 flex-wrap border-b border-zinc-800/40 pb-4">
+                  <div>
+                    <h3 className="text-lg font-mono font-bold text-zinc-100 uppercase tracking-wider">
+                      Fingerprinted Technologies
+                    </h3>
+                    <p className="text-xs font-mono text-zinc-500 mt-0.5">
+                      Stack categories resolved from host headers and scripts
+                    </p>
+                  </div>
+
+                  <button
+                    onClick={downloadPDF}
+                    className="px-4 py-2.5 bg-zinc-900/40 hover:bg-red-500/5 text-zinc-300 hover:text-red-400 border border-zinc-800/80 hover:border-red-500/30 rounded-xl font-mono font-bold text-xs uppercase transition-all duration-300 flex items-center justify-center gap-1.5 cursor-pointer"
+                  >
+                    <Download className="w-3.5 h-3.5" />
+                    Download PDF
+                  </button>
                 </div>
 
                 <div className="grid gap-4 sm:grid-cols-2">
@@ -292,6 +350,77 @@ export default function TechnologyFingerprinter() {
                         </ul>
                       </div>
                     ) : null
+                  )}
+                </div>
+
+                <div className="border border-zinc-800/80 rounded-xl overflow-hidden bg-zinc-900/20 max-h-96 overflow-y-auto mt-6">
+                  <div className="overflow-x-auto">
+                    <table className="w-full text-left border-collapse font-mono text-xs">
+                      <thead>
+                        <tr className="border-b border-zinc-800/60 bg-zinc-900/60 text-zinc-450 uppercase tracking-wider text-[10px] sticky top-0 backdrop-blur-md">
+                          <th className="p-4 font-semibold">Technology</th>
+                          <th className="p-4 font-semibold">Category</th>
+                          <th className="p-4 font-semibold">Version</th>
+                          <th className="p-4 font-semibold">Method</th>
+                          <th className="p-4 font-semibold">Evidence</th>
+                          <th className="p-4 font-semibold font-bold">Confidence</th>
+                        </tr>
+                      </thead>
+                      <tbody className="divide-y divide-zinc-850">
+                        {paginatedResults.map((item, idx) => (
+                          <tr key={idx} className="hover:bg-zinc-900/30 transition-colors">
+                            <td className="p-4 font-semibold text-red-400 whitespace-nowrap">
+                              {item.name}
+                            </td>
+                            <td className="p-4 text-zinc-300 whitespace-nowrap">
+                              {item.category}
+                            </td>
+                            <td className="p-4 text-zinc-300 whitespace-nowrap">
+                              <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-zinc-800/60 border border-zinc-700/50 text-zinc-300">
+                                {item.version || "Not Disclosed"}
+                              </span>
+                            </td>
+                            <td className="p-4 text-zinc-400 whitespace-nowrap">
+                              {item.method}
+                            </td>
+                            <td className="p-4 text-zinc-450 max-w-[220px] truncate" title={item.evidence}>
+                              {item.evidence || "-"}
+                            </td>
+                            <td className="p-4 whitespace-nowrap">
+                              <span className="px-2 py-0.5 rounded border border-emerald-500/20 bg-emerald-500/5 text-emerald-400 text-[10px] font-bold">
+                                {item.confidence || 100}%
+                              </span>
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                  {totalPages > 1 && (
+                    <div className="flex items-center justify-between border-t border-zinc-800/60 p-4 bg-zinc-900/40 text-zinc-450 font-mono text-xs select-none">
+                      <div>
+                        Showing <span className="text-zinc-300 font-bold">{((currentPage - 1) * itemsPerPage) + 1}</span> to <span className="text-zinc-300 font-bold">{Math.min(currentPage * itemsPerPage, results.length)}</span> of <span className="text-zinc-300 font-bold">{results.length}</span> technologies
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <button
+                          onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
+                          disabled={currentPage === 1}
+                          className="px-3 py-1.5 rounded-lg border border-zinc-800 hover:border-red-500/30 bg-zinc-950/40 hover:bg-red-500/5 text-zinc-400 hover:text-red-400 font-bold transition-all disabled:opacity-40 disabled:pointer-events-none cursor-pointer"
+                        >
+                          Prev
+                        </button>
+                        <span className="text-zinc-300">
+                          Page <span className="font-bold text-red-400">{currentPage}</span> of {totalPages}
+                        </span>
+                        <button
+                          onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))}
+                          disabled={currentPage === totalPages}
+                          className="px-3 py-1.5 rounded-lg border border-zinc-800 hover:border-red-500/30 bg-zinc-950/40 hover:bg-red-500/5 text-zinc-400 hover:text-red-400 font-bold transition-all disabled:opacity-40 disabled:pointer-events-none cursor-pointer"
+                        >
+                          Next
+                        </button>
+                      </div>
+                    </div>
                   )}
                 </div>
               </div>

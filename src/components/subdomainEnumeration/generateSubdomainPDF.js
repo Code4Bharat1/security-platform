@@ -180,7 +180,7 @@ export const generateSubdomainPDF = async (results = [], stats = {}, targetDomai
     doc.setFontSize(9);
     doc.setTextColor(...C.textMain);
     const overviewText =
-      "The Subdomain Scanner tool performs DNS-based enumeration against a target domain to discover associated subdomains. The tool validates DNS resolution for each discovered entry, identifies record types, maps IP addresses, detects wildcard DNS configurations, confirms live host availability, removes duplicate entries, tracks discovery sources, and assigns a confidence score to each finding. Results support attack surface mapping, shadow IT identification, and exposure assessment of internet-facing assets.";
+      "The Subdomain Scanner tool performs DNS-based enumeration against a target domain to discover associated subdomains. The tool validates DNS resolution for each discovered entry, identifies record types, maps IP addresses, detects wildcard DNS configurations, confirms live host availability, removes duplicate entries, and tracks discovery sources. Results support attack surface mapping, shadow IT identification, and exposure assessment of internet-facing assets.";
     doc.text(overviewText, 14, y + 6, { maxWidth: 182, align: "justify", lineHeightFactor: 1.4 });
 
     y += doc.getTextDimensions(overviewText, { maxWidth: 182 }).h + 12;
@@ -188,8 +188,11 @@ export const generateSubdomainPDF = async (results = [], stats = {}, targetDomai
     y = drawSectionHeader(doc, "2. SCAN SUMMARY", y);
 
     // Render Scan Summary table matching template layout
-    const liveHosts = results.length; // assuming verified live
-    const duplicatesRemoved = 0; // standard API sanitization
+    const liveHosts = results.filter(r => r.live).length;
+    const duplicatesRemoved = results.reduce((acc, item) => {
+      const sourceCount = Array.isArray(item.sources) ? item.sources.length : 1;
+      return acc + (sourceCount - 1);
+    }, 0);
 
     renderTable(doc, {
       startY: y,
@@ -215,22 +218,24 @@ export const generateSubdomainPDF = async (results = [], stats = {}, targetDomai
     // Build table rows for findings
     const findingsRows = results.map((item) => [
       item.subdomain,
-      getDeterministicIP(item.subdomain),
-      getRecordType(item.subdomain),
-      "Yes"
+      item.ip || "-",
+      item.recordType || "A",
+      item.live ? "Yes" : "No",
+      (item.sources || ["DNS BruteForce"]).join(", ")
     ]);
 
     renderTable(doc, {
       startY: y,
-      head: [["Subdomain", "IP Address", "Record Type", "Live Host"]],
+      head: [["Subdomain", "IP Address", "Record Type", "Live Host", "Sources"]],
       body: findingsRows,
       headStyles: { fillColor: C.bgHeader, textColor: C.white },
       bodyStyles: { fontSize: 8.5 },
       columnStyles: {
-        0: { fontStyle: "bold", cellWidth: 65 },
-        1: { cellWidth: 45 },
-        2: { cellWidth: 37, halign: "center" },
-        3: { cellWidth: 35, halign: "center", fontStyle: "bold", textColor: [16, 185, 129] }
+        0: { fontStyle: "bold", cellWidth: 55 },
+        1: { cellWidth: 38 },
+        2: { cellWidth: 27, halign: "center" },
+        3: { cellWidth: 25, halign: "center", fontStyle: "bold" },
+        4: { cellWidth: 37 }
       }
     });
 
@@ -244,9 +249,9 @@ export const generateSubdomainPDF = async (results = [], stats = {}, targetDomai
 
     y = drawSectionHeader(doc, "4. CONCLUSION & RECOMMENDATIONS", y);
 
-    const conclusionText1 = `The Subdomain Scanner assessment enumerated subdomains associated with the target domain, performing DNS resolution validation, record type identification, IP address mapping, wildcard detection, live host validation, duplicate removal, discovery source tracking, and confidence scoring for each identified entry.`;
+    const conclusionText1 = `The Subdomain Scanner assessment enumerated subdomains associated with the target domain, performing DNS resolution validation, record type identification, IP address mapping, wildcard detection, live host validation, duplicate removal, and discovery source tracking for each identified entry.`;
     
-    const conclusionText2 = `It is recommended to review all discovered subdomains and decommission any that are no longer in active use, as unused subdomains may be vulnerable to subdomain takeover attacks. Wildcard DNS configurations should be assessed to determine whether they expose unintended services. Live hosts identified during the scan should be included in the organisation’s asset inventory and subjected to regular vulnerability assessments. Subdomains with low confidence scores should be independently verified before being acted upon.`;
+    const conclusionText2 = `It is recommended to review all discovered subdomains and decommission any that are no longer in active use, as unused subdomains may be vulnerable to subdomain takeover attacks. Wildcard DNS configurations should be assessed to determine whether they expose unintended services. Live hosts identified during the scan should be included in the organisation’s asset inventory and subjected to regular vulnerability assessments.`;
 
     doc.setFont("helvetica", "normal");
     doc.setFontSize(9);
@@ -274,11 +279,10 @@ export const generateSubdomainPDF = async (results = [], stats = {}, targetDomai
       startY: y + 5,
       head: [["Column", "Description"]],
       body: [
-        ["Subdomain",        "The fully qualified domain name (FQDN) discovered during enumeration"],
-        ["IP Address",       "The resolved IP address mapped to the subdomain"],
-        ["Record Type",      "DNS record type associated with the subdomain (e.g., A, CNAME, MX, TXT)"],
-        ["Live Host",        "Indicates whether the subdomain resolved to an active and reachable host at the time of scanning"],
-        ["Confidence Score", "A scored indicator of the reliability and validity of the discovered subdomain entry"]
+        ["Subdomain",   "The fully qualified domain name (FQDN) discovered during enumeration"],
+        ["IP Address",  "The resolved IP address mapped to the subdomain"],
+        ["Record Type", "DNS record type associated with the subdomain (e.g., A, CNAME, MX, TXT)"],
+        ["Live Host",   "Indicates whether the subdomain resolved to an active and reachable host at the time of scanning"]
       ],
       columnStyles: {
         0: { fontStyle: "bold", cellWidth: 45, fillColor: [245, 245, 245] },
