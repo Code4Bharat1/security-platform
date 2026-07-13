@@ -20,6 +20,7 @@ import { jsPDF } from "jspdf";
 import autoTable from "jspdf-autotable";
 import toast, { Toaster } from "react-hot-toast";
 import useProtectedAction from "../UseProtectedAction/UseProtectedAction";
+import { generateKeywordPDF } from "./generateKeywordPDF";
 
 export default function KeywordPage() {
   const [url, setUrl] = useState("");
@@ -80,200 +81,14 @@ export default function KeywordPage() {
   };
 
   /* ---------- Exports ---------- */
-  const exportPDF = () => {
+  const exportPDF = async () => {
     if (!report) return;
-    const doc = new jsPDF({ unit: "pt", format: "a4" });
-
-    // Header Banner
-    doc.setFillColor(18, 18, 18);
-    doc.rect(0, 0, doc.internal.pageSize.width, 40, "F");
-
-    doc.setTextColor(16, 185, 129); // Emerald Green
-    doc.setFont("Helvetica", "bold");
-    doc.setFontSize(20);
-    doc.text("NEXCORE SECURITY PLATFORM", 15, 20);
-
-    doc.setTextColor(255, 255, 255);
-    doc.setFontSize(11);
-    doc.text("KEYWORD DENSITY AUDIT REPORT", 15, 30);
-
-    // Scan Meta Info
-    doc.setTextColor(50, 50, 50);
-    doc.setFontSize(10);
-    doc.text(`Target: ${url}`, 15, 52);
-    if (report.title) doc.text(`Title: ${report.title}`, 15, 62);
-    if (report.metaDescription)
-      doc.text(
-        `Meta Description: ${trim(report.metaDescription, 120)}`,
-        15,
-        72
-      );
-    doc.text(`Date: ${new Date().toLocaleString()}`, 15, 82);
-
-    doc.setDrawColor(16, 185, 129);
-    doc.setLineWidth(0.5);
-    doc.line(15, 90, doc.internal.pageSize.width - 15, 90);
-
-    // Summary
-    doc.setFontSize(12);
-    doc.text("Summary Metrics", 15, 105);
-    autoTable(doc, {
-      startY: 112,
-      head: [["Metric", "Value"]],
-      body: [
-        ["Total Words", String(report.totalWords ?? 0)],
-        ["Top Keywords (count)", String(report.singleWords?.length ?? 0)],
-        ["Top Phrases (count)", String(report.phrases?.length ?? 0)],
-      ],
-      styles: { fontSize: 9 },
-      headStyles: { fillColor: [16, 185, 129], textColor: [255, 255, 255] },
-      columnStyles: { 0: { cellWidth: 180 }, 1: { cellWidth: 340 } },
-      theme: "grid",
-    });
-
-    // Top Single Keywords
-    autoTable(doc, {
-      startY: doc.lastAutoTable.finalY + 18,
-      head: [["Keyword", "Count", "Density (%)"]],
-      body: (report.singleWords || []).map((k) => [
-        k.phrase,
-        String(k.count),
-        String(k.percentage),
-      ]),
-      styles: { fontSize: 9 },
-      columnStyles: {
-        0: { cellWidth: 280 },
-        1: { cellWidth: 100 },
-        2: { cellWidth: 140 },
-      },
-      headStyles: { fillColor: [16, 185, 129], textColor: [255, 255, 255] },
-      theme: "striped",
-    });
-
-    // Top Two-word Phrases
-    autoTable(doc, {
-      startY: doc.lastAutoTable.finalY + 18,
-      head: [["Two-word Phrase", "Count", "Density (%)"]],
-      body: (report.phrases || []).map((k) => [
-        k.phrase,
-        String(k.count),
-        String(k.percentage),
-      ]),
-      styles: { fontSize: 9 },
-      columnStyles: {
-        0: { cellWidth: 280 },
-        1: { cellWidth: 100 },
-        2: { cellWidth: 140 },
-      },
-      headStyles: { fillColor: [16, 185, 129], textColor: [255, 255, 255] },
-      theme: "striped",
-    });
-
-    doc.save(`keyword-report-${safeHostname(url)}.pdf`);
+    await generateKeywordPDF(report, url);
   };
 
-  const exportInsightPDF = () => {
-    const i = report?.insights;
-    if (!i) return;
-    const doc = new jsPDF({ unit: "pt", format: "a4" });
-
-    // Header Banner
-    doc.setFillColor(18, 18, 18);
-    doc.rect(0, 0, doc.internal.pageSize.width, 40, "F");
-
-    doc.setTextColor(16, 185, 129); // Emerald Green
-    doc.setFont("Helvetica", "bold");
-    doc.setFontSize(20);
-    doc.text("NEXCORE SECURITY PLATFORM", 15, 20);
-
-    doc.setTextColor(255, 255, 255);
-    doc.setFontSize(11);
-    doc.text("KEYWORD INTELLIGENCE INSIGHT REPORT", 15, 30);
-
-    // Scan Meta Info
-    doc.setTextColor(50, 50, 50);
-    doc.setFontSize(10);
-    doc.text(`Website: ${i.header?.website || safeHostname(url)}`, 15, 52);
-    doc.text(`Total Keywords Extracted: ${i.totals?.totalExtracted ?? 0}`, 15, 62);
-    doc.text(`Filtered SEO Keywords: ${i.totals?.filteredSEOKeywords ?? 0}`, 15, 72);
-    doc.text(`Date: ${new Date().toLocaleString()}`, 15, 82);
-
-    doc.setDrawColor(16, 185, 129);
-    doc.setLineWidth(0.5);
-    doc.line(15, 90, doc.internal.pageSize.width - 15, 90);
-
-    // High Priority
-    doc.setFontSize(12);
-    doc.text("High-Priority Keywords", 15, 105);
-    autoTable(doc, {
-      startY: 112,
-      head: [
-        [
-          "Keyword",
-          "Search Volume",
-          "CPC (USD)",
-          "Difficulty (%)",
-          "Trend (6 mo)",
-          "Intent",
-        ],
-      ],
-      body: (i.highPriority || []).map((row) => [
-        row.keyword,
-        row.searchVolume ?? "-",
-        row.cpc ?? "-",
-        row.difficulty ?? "-",
-        row.trend ?? "—",
-        row.intent ?? "-",
-      ]),
-      styles: { fontSize: 9, cellPadding: 4 },
-      headStyles: { fillColor: [16, 185, 129], textColor: [255, 255, 255] },
-      theme: "striped",
-    });
-
-    // Long-tail
-    autoTable(doc, {
-      startY: doc.lastAutoTable.finalY + 18,
-      head: [["Keyword", "Search Volume", "Difficulty (%)", "CTR Potential"]],
-      body: (i.longTail || []).map((row) => [
-        row.keyword,
-        row.searchVolume ?? "-",
-        row.difficulty ?? "-",
-        row.ctrPotential ?? "-",
-      ]),
-      styles: { fontSize: 9 },
-      headStyles: { fillColor: [52, 211, 153], textColor: [255, 255, 255] },
-      theme: "striped",
-    });
-
-    // Competitor Overlap
-    autoTable(doc, {
-      startY: doc.lastAutoTable.finalY + 18,
-      head: [
-        ["Keyword", "Rank on Your Site", "Rank on Competitor", "Competitor"],
-      ],
-      body: (i.competitorOverlap || []).map((row) => [
-        row.keyword,
-        String(row.rankOnYourSite ?? "-"),
-        String(row.rankOnCompetitor ?? "-"),
-        row.competitorUrl ? row.competitorUrl.replace(/^https?:\/\//, "") : "-",
-      ]),
-      styles: { fontSize: 9 },
-      headStyles: { fillColor: [4, 120, 87], textColor: [255, 255, 255] },
-      theme: "grid",
-    });
-
-    // Suggested Actions
-    const actions = (i.suggestedActions || [])
-      .map((a, idx) => `${idx + 1}. ${a}`)
-      .join("\n");
-    const startY = doc.lastAutoTable.finalY + 24;
-    doc.setFontSize(12);
-    doc.text("Suggested Actions", 15, startY);
-    doc.setFontSize(10);
-    const lines = doc.splitTextToSize(actions || "—", 515);
-    doc.text(lines, 15, startY + 16);
-
-    doc.save(`insight-report-${safeHostname(url)}.pdf`);
+  const exportInsightPDF = async () => {
+    if (!report) return;
+    await generateKeywordPDF(report, url);
   };
 
   const exportTXT = () => {
@@ -381,8 +196,8 @@ export default function KeywordPage() {
               <BarChart3 className="text-emerald-400 w-8 h-8" />
             </div>
             <div>
-              <h1 className="font-mono font-bold text-2xl md:text-3xl text-zinc-100 tracking-tight">
-                KEYWORD <span className="text-emerald-400">INTELLIGENCE</span>
+              <h1 className="text-4xl sm:text-5xl font-mono font-bold text-zinc-100 tracking-tight">
+                KEYWORD DENSITY <span className="text-emerald-400">AUDITOR</span>
               </h1>
               <p className="text-sm text-zinc-350 mt-2 max-w-2xl font-mono leading-relaxed">
                 Analyze keyword density, extract single/phrase frequencies, and access keyword intelligence metrics.

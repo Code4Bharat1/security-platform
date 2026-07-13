@@ -18,6 +18,14 @@ const getVerdictColor = (status) => {
   }
 };
 
+const getSeverity = (status, trustIndex) => {
+  const st = (status || "").toLowerCase();
+  if (st === "malicious") return "High";
+  if (st === "suspicious") return "Medium";
+  if (st === "safe") return "Low";
+  return "Informational";
+};
+
 // ── Static trust index → risk label ──────────────────────────────────────────
 const trustToRisk = (idx) => {
   if (idx === null || idx === undefined) return "Unknown";
@@ -106,11 +114,11 @@ export const generateLinkDetectorPDF = async (scanData, setPdfProgress) => {
     doc.setFont("helvetica", "bold");
     doc.setFontSize(24);
     doc.setTextColor(...C.bluePrimary);
-    doc.text("NEXCORE ALLIANCE", 14, 30);
+    doc.text("NEXCORE ALLIANCE", 105, 30, { align: "center" });
 
-    doc.setFont("helvetica", "oblique");
+    doc.setFont("helvetica", "italic");
     doc.setFontSize(10);
-    doc.text("AI-Powered Cybersecurity & Information Security Solutions", 14, 36);
+    doc.text("AI-Powered Cybersecurity & Information Security Solutions", 105, 36, { align: "center" });
 
     // Divider
     doc.setDrawColor(...C.bluePrimary);
@@ -119,31 +127,24 @@ export const generateLinkDetectorPDF = async (scanData, setPdfProgress) => {
 
     // Tool title
     doc.setFont("helvetica", "bold");
-    doc.setFontSize(22);
+    doc.setFontSize(16);
     doc.setTextColor(...C.bluePrimary);
-    doc.text("LINK DETECTOR", 105, 58, { align: "center" });
-
-    doc.setFontSize(13);
-    doc.text("SECURITY ASSESSMENT REPORT", 105, 65, { align: "center" });
+    doc.text("LINK DETECTOR SECURITY ASSESSMENT REPORT", 105, 54, { align: "center" });
 
     // Double rule
     doc.setDrawColor(...C.bluePrimary);
     doc.setLineWidth(0.25);
-    doc.line(14, 70, 196, 70);
-    doc.line(14, 71, 196, 71);
+    doc.line(14, 60, 196, 60);
 
     // Assessment Info table
     renderTable(doc, {
-      startY: 78,
+      startY: 68,
       head: [],
       body: [
         ["Assessment Performed by", employeeMail],
         ["Employee Name",           employeeName],
         ["Employee Mail ID",        employeeMail],
-        ["Analysed URL / Target",   analyzedUrl],
-        ["Verdict",                 verdict.toUpperCase()],
-        ["Trust Index",             `${trustIndex} / 100`],
-        ["Risk Classification",     riskLabel],
+        ["Scanned URL",             analyzedUrl],
         ["Assessment Date",         scannedAt],
         ["Assessment Time",         scanTime],
         ["Classification",          "Confidential"],
@@ -165,7 +166,7 @@ export const generateLinkDetectorPDF = async (scanData, setPdfProgress) => {
     doc.text("www.nexcorealliance.com | ISO/IEC 27001 Certified | AICPA SOC Compliant", 105, 267, { align: "center" });
 
     // ════════════════════════════════════════════════════════════════════════
-    // PAGE 2 — ASSESSMENT INFORMATION
+    // PAGE 2 — ASSESSMENT INFORMATION & DETAILED FINDINGS
     // ════════════════════════════════════════════════════════════════════════
     setPdfProgress("Building assessment information...");
     doc.addPage();
@@ -177,11 +178,11 @@ export const generateLinkDetectorPDF = async (scanData, setPdfProgress) => {
       head: [],
       body: [
         ["Tool Name",             "Link Detector"],
-        ["Tool Category",         "Threat Intelligence / URL Safety Analysis"],
-        ["Methodology Alignment", "VirusTotal Correlation / PhishTank / Google Safe Browsing / Blacklist Matching"],
+        ["Tool Category",         "URL Analysis / Trust & Reachability Assessment"],
+        ["Methodology Alignment", "OWASP WSTG – OTG-CONFIG / URL Validation / SSL/TLS Verification"],
         ["Compliance Alignment",  "ISO/IEC 27001 | AICPA SOC Frameworks"],
-        ["Analysed Target",       analyzedUrl],
-        ["Assessment Mode",       "Passive / API-based URL Safety Lookup"],
+        ["Scanned URL",           analyzedUrl],
+        ["Assessment Mode",       "Non-Intrusive / Automated URL Analysis"],
       ],
       columnStyles: {
         0: { fontStyle: "bold", cellWidth: 55, fillColor: [245, 245, 245] },
@@ -189,360 +190,236 @@ export const generateLinkDetectorPDF = async (scanData, setPdfProgress) => {
       },
     });
 
-    y = doc.lastAutoTable.finalY + 12;
+    y = doc.lastAutoTable.finalY + 8;
 
     doc.setFont("helvetica", "bold");
-    doc.setFontSize(11);
+    doc.setFontSize(10);
     doc.setTextColor(...C.bluePrimary);
     doc.text("Tool Overview", 14, y);
 
     doc.setFont("helvetica", "normal");
-    doc.setFontSize(9);
+    doc.setFontSize(8.5);
     doc.setTextColor(...C.textMain);
     const overviewText =
-      "The Link Detector tool performs comprehensive URL safety analysis by following redirect chains, resolving final destination URLs, and cross-referencing targets against multiple threat intelligence feeds. The tool evaluates TLS/SSL certificate validity, detects typosquatting attempts against known brand domains, expands shortened URLs to reveal real destinations, performs CNAME chain traversal to uncover hidden hosting infrastructure, and inspects page content for cryptominers, suspicious eval calls, and form patterns. Each scan produces a Trust Index score (0–100) and a verdict of Safe, Suspicious, Malicious, or Invalid. Geolocation and ASN data are resolved for the destination IP to support threat attribution.";
-    doc.text(overviewText, 14, y + 6, { maxWidth: 182, align: "justify", lineHeightFactor: 1.4 });
+      "The Link Detector tool analyses a submitted URL to evaluate its trustworthiness, reachability, and security posture. The tool performs reachability checks, resolves redirect chains, inspects SSL status, and evaluates suspicious indicators including typosquatting, blacklist matches, URL shortener expansion, and suspicious domain classification. Content findings including crypto miner presence, inline eval usage, external JavaScript count, and form count are reported. Each analysis produces a Trust Index score and an overall status verdict. Results support identification of suspicious, malicious, or misconfigured URLs prior to user interaction or system integration.";
+    doc.text(overviewText, 14, y + 5, { maxWidth: 182, align: "justify", lineHeightFactor: 1.35 });
 
-    // ════════════════════════════════════════════════════════════════════════
-    // PAGE 3 — URL ANALYSIS RESULTS
-    // ════════════════════════════════════════════════════════════════════════
-    setPdfProgress("Building analysis results...");
-    doc.addPage();
+    y += 35;
+
+    y = drawSectionHeader(doc, "2. SCAN SUMMARY", y);
+
+    // Calculate scan summary counts
+    const totalCount = isBulk ? bulk.length : 1;
+    const safeCount = isBulk ? bulk.filter(item => (item.status || "").toLowerCase() === "safe").length : (verdict.toLowerCase() === "safe" ? 1 : 0);
+    const suspiciousCount = isBulk ? bulk.filter(item => (item.status || "").toLowerCase() === "suspicious").length : (verdict.toLowerCase() === "suspicious" ? 1 : 0);
+    const unsafeCount = isBulk ? bulk.filter(item => (item.status || "").toLowerCase() === "malicious").length : (verdict.toLowerCase() === "malicious" ? 1 : 0);
+
+    renderTable(doc, {
+      startY: y,
+      head: [["Total URLs Analyzed", "Safe", "Suspicious", "Unsafe"]],
+      body: [[String(totalCount), String(safeCount), String(suspiciousCount), String(unsafeCount)]],
+      headStyles: { fillColor: C.bgHeader, textColor: C.white, halign: "center" },
+      bodyStyles: { halign: "center", fontStyle: "bold", fontSize: 9 },
+      columnStyles: {
+        0: { textColor: C.textMain },
+        1: { textColor: [22, 163, 74] },
+        2: { textColor: C.amber },
+        3: { textColor: C.red },
+      }
+    });
+
+    y = doc.lastAutoTable.finalY + 8;
+
+    y = drawSectionHeader(doc, "3. DETAILED FINDINGS", y);
 
     if (!isBulk) {
-      // ── Single scan ────────────────────────────────────────────────────
-      y = drawSectionHeader(doc, "2. URL ANALYSIS RESULTS", 25);
+      // Single scan detailed finding row headers start
+      const st = r.status || "Unknown";
+      const sev = getSeverity(st, r.trustIndex);
+      const remediationVal = REMEDIATION_MAP[st.toLowerCase()] || REMEDIATION_MAP.safe;
+      const impactVal = SECURITY_IMPACT_MAP[st.toLowerCase()] || SECURITY_IMPACT_MAP.safe;
 
-      // Core info table
       renderTable(doc, {
         startY: y,
-        head: [],
+        head: [["Finding 1", ""]],
         body: [
-          ["Analysed URL",        safe(r.url)],
-          ["Final Resolved URL",  safe(r.finalUrl)],
-          ["Verdict",             verdict.toUpperCase()],
-          ["Trust Index",         `${trustIndex} / 100`],
-          ["Risk Level",          riskLabel],
-          ["Scan Message",        safe(r.message)],
-          ["HTTPS / SSL",         r.ssl?.isHttps ? "Yes — Secure" : "No — Not Secure"],
-          ["Onion / Tor Link",    r.onion ? "Yes" : "No"],
-          ["Server IP",           safe(r.geo?.ip)],
-          ["Country",             safe(r.geo?.country)],
-          ["Region",              safe(r.geo?.region)],
-          ["City",                safe(r.geo?.city)],
-          ["Scanned At",          r.scannedAt ? new Date(r.scannedAt).toLocaleString() : "—"],
+          ["Severity",           sev],
+          ["URL",                safe(r.url)],
+          ["Final URL",          safe(r.finalUrl)],
+          ["Status",             `${st.toUpperCase()} (Trust Index: ${trustIndex})`],
+          ["Message",            safe(r.message)],
+          ["HTTPS",              r.ssl?.isHttps ? "Yes — Secure" : "No — Not Secure"],
+          ["Onion",              r.onion ? "Yes" : "No"],
+          ["IP / Country",       `${safe(r.geo?.ip)} / ${safe(r.geo?.country)}`],
+          ["Scanned At",         r.scannedAt ? new Date(r.scannedAt).toLocaleString() : "—"],
+          ["Redirect Chain",     (r.redirectChain || []).length > 0 ? (r.redirectChain || []).join(" -> ") : "No redirects"],
+          ["Keywords",           safe((r.suspicious?.keywordsFound || []).join(", ") || "None")],
+          ["Typosquat of",       safe(r.suspicious?.typosquatOf || "No typosquatting detected")],
+          ["Shortener Expanded", r.suspicious?.shortenerExpanded ? "Yes" : "No"],
+          ["Suspicious Domain",  r.suspicious?.suspiciousDomain ? "Yes" : "No"],
+          ["CNAME Chain",        (r.suspicious?.cnameChain || []).length ? r.suspicious.cnameChain.join(" -> ") : "—"],
+          ["Blacklist Matches",  safe((r.suspicious?.blacklistMatches || []).join(", ") || "None")],
+          ["hasCryptoMiner",     r.contentFindings?.hasCryptoMiner ? "true" : "false"],
+          ["suspiciousInlineEval", r.contentFindings?.suspiciousInlineEval ? "true" : "false"],
+          ["externalJsCount",    String(r.contentFindings?.externalJsCount ?? 0)],
+          ["formsCount",         String(r.contentFindings?.formsCount ?? 0)],
+          ["Impact",             impactVal],
+          ["Recommendation",     remediationVal],
         ],
         columnStyles: {
-          0: { fontStyle: "bold", cellWidth: 55, fillColor: [245, 245, 245] },
-          1: { cellWidth: 127 },
-        },
-      });
-
-      y = doc.lastAutoTable.finalY + 12;
-
-      // ── Redirect chain ─────────────────────────────────────────────────
-      y = drawSectionHeader(doc, "3. REDIRECT CHAIN", y);
-
-      const redirectRows = (r.redirectChain || []).length > 0
-        ? (r.redirectChain || []).map((u, i) => [String(i + 1), u])
-        : [["—", "No redirects detected"]];
-
-      renderTable(doc, {
-        startY: y,
-        head: [["#", "URL Hop"]],
-        body: redirectRows,
-        columnStyles: {
-          0: { cellWidth: 12, halign: "center", fontStyle: "bold" },
-          1: { cellWidth: 170 },
-        },
-      });
-
-      y = doc.lastAutoTable.finalY + 12;
-
-      // ── Suspicious indicators ──────────────────────────────────────────
-      if (297 - y < 55) { doc.addPage(); y = 25; }
-      y = drawSectionHeader(doc, "4. SUSPICIOUS INDICATORS", y);
-
-      renderTable(doc, {
-        startY: y,
-        head: [["Indicator", "Value"]],
-        body: [
-          ["Suspicious Keywords Found",  safe((r.suspicious?.keywordsFound || []).join(", ") || "None")],
-          ["Typosquat Of",               safe(r.suspicious?.typosquatOf)],
-          ["Shortener Expanded",         r.suspicious?.shortenerExpanded ? "Yes" : "No"],
-          ["Suspicious Domain",          r.suspicious?.suspiciousDomain  ? "Yes" : "No"],
-          ["CNAME Chain",                (r.suspicious?.cnameChain || []).length
-            ? r.suspicious.cnameChain.join(" → ")
-            : "—"],
-          ["Blacklist Matches",          safe((r.suspicious?.blacklistMatches || []).join(", ") || "None")],
-        ],
-        columnStyles: {
-          0: { fontStyle: "bold", cellWidth: 60, fillColor: [245, 245, 245] },
-          1: { cellWidth: 122 },
-        },
-      });
-
-      y = doc.lastAutoTable.finalY + 12;
-
-      // ── Content findings ───────────────────────────────────────────────
-      if (297 - y < 55) { doc.addPage(); y = 25; }
-      y = drawSectionHeader(doc, "5. CONTENT ANALYSIS FINDINGS", y);
-
-      renderTable(doc, {
-        startY: y,
-        head: [["Content Indicator", "Detected Value"]],
-        body: [
-          ["CryptoMiner Detected",      r.contentFindings?.hasCryptoMiner        ? "YES — Cryptominer script found" : "No"],
-          ["Suspicious Inline Eval",    r.contentFindings?.suspiciousInlineEval  ? "YES — Suspicious eval() detected" : "No"],
-          ["External JS Scripts Count", safe(r.contentFindings?.externalJsCount)],
-          ["Forms Count",               safe(r.contentFindings?.formsCount)],
-        ],
-        columnStyles: {
-          0: { fontStyle: "bold", cellWidth: 70, fillColor: [245, 245, 245] },
-          1: { cellWidth: 112 },
+          0: { fontStyle: "bold", cellWidth: 45, fillColor: [245, 245, 245] },
+          1: { cellWidth: 137 },
         },
         didParseCell: (data) => {
-          if (data.section === "body" && data.column.index === 1) {
-            const val = String(data.cell.raw || "");
-            if (val.startsWith("YES")) {
-              data.cell.styles.textColor = C.red;
+          if (data.row.index === 0 && data.column.index === 1 && data.section === "body") {
+            data.cell.styles.textColor = getVerdictColor(st);
+            data.cell.styles.fontStyle = "bold";
+          }
+        }
+      });
+    } else {
+      // Bulk scan detailed findings loop
+      let findingIndex = 1;
+      bulk.forEach((item, idx) => {
+        const itemSt = item.status || "Unknown";
+        const itemSev = getSeverity(itemSt, item.trustIndex);
+        const itemRemed = REMEDIATION_MAP[itemSt.toLowerCase()] || REMEDIATION_MAP.safe;
+        const itemImp = SECURITY_IMPACT_MAP[itemSt.toLowerCase()] || SECURITY_IMPACT_MAP.safe;
+
+        // Add page break if we are near the bottom of the page
+        if (y > 220) {
+          doc.addPage();
+          y = 25;
+        }
+
+        renderTable(doc, {
+          startY: y,
+          head: [[`Finding ${findingIndex}`, ""]],
+          body: [
+            ["Severity",           itemSev],
+            ["URL",                safe(item.url)],
+            ["Final URL",          safe(item.finalUrl)],
+            ["Status",             `${itemSt.toUpperCase()} (Trust Index: ${safe(item.trustIndex)})`],
+            ["Message",            safe(item.message)],
+            ["HTTPS",              item.ssl?.isHttps ? "Yes — Secure" : "No — Not Secure"],
+            ["Onion",              item.onion ? "Yes" : "No"],
+            ["IP / Country",       `${safe(item.geo?.ip)} / ${safe(item.geo?.country)}`],
+            ["Scanned At",         item.scannedAt ? new Date(item.scannedAt).toLocaleString() : "—"],
+            ["Redirect Chain",     (item.redirectChain || []).length > 0 ? (item.redirectChain || []).join(" -> ") : "No redirects"],
+            ["Keywords",           safe((item.suspicious?.keywordsFound || []).join(", ") || "None")],
+            ["Typosquat of",       safe(item.suspicious?.typosquatOf || "No typosquatting detected")],
+            ["Shortener Expanded", item.suspicious?.shortenerExpanded ? "Yes" : "No"],
+            ["Suspicious Domain",  item.suspicious?.suspiciousDomain ? "Yes" : "No"],
+            ["CNAME Chain",        (item.suspicious?.cnameChain || []).length ? item.suspicious.cnameChain.join(" -> ") : "—"],
+            ["Blacklist Matches",  safe((item.suspicious?.blacklistMatches || []).join(", ") || "None")],
+            ["hasCryptoMiner",     item.contentFindings?.hasCryptoMiner ? "true" : "false"],
+            ["suspiciousInlineEval", item.contentFindings?.suspiciousInlineEval ? "true" : "false"],
+            ["externalJsCount",    String(item.contentFindings?.externalJsCount ?? 0)],
+            ["formsCount",         String(item.contentFindings?.formsCount ?? 0)],
+            ["Impact",             itemImp],
+            ["Recommendation",     itemRemed],
+          ],
+          columnStyles: {
+            0: { fontStyle: "bold", cellWidth: 45, fillColor: [245, 245, 245] },
+            1: { cellWidth: 137 },
+          },
+          didParseCell: (data) => {
+            if (data.row.index === 0 && data.column.index === 1 && data.section === "body") {
+              data.cell.styles.textColor = getVerdictColor(itemSt);
               data.cell.styles.fontStyle = "bold";
             }
           }
-        },
-      });
-
-    } else {
-      // ── Bulk scan table ────────────────────────────────────────────────
-      y = drawSectionHeader(doc, "2. BULK SCAN RESULTS", 25);
-
-      doc.setFont("helvetica", "normal");
-      doc.setFontSize(9);
-      doc.setTextColor(...C.textMain);
-      doc.text(`Total URLs scanned: ${bulk.length}`, 14, y);
-      y += 8;
-
-      const bulkRows = bulk.map((item, i) => [
-        String(i + 1),
-        safe(item.url),
-        safe(item.status, "—").toUpperCase(),
-        safe(item.trustIndex, "—"),
-        item.ssl?.isHttps ? "Yes" : "No",
-        safe(item.geo?.ip),
-        safe(item.geo?.country),
-      ]);
-
-      renderTable(doc, {
-        startY: y,
-        head: [["#", "URL", "Verdict", "Trust", "HTTPS", "IP", "Country"]],
-        body: bulkRows,
-        columnStyles: {
-          0: { cellWidth: 8,  halign: "center" },
-          1: { cellWidth: 68 },
-          2: { cellWidth: 22, fontStyle: "bold" },
-          3: { cellWidth: 14, halign: "center" },
-          4: { cellWidth: 14, halign: "center" },
-          5: { cellWidth: 28 },
-          6: { cellWidth: 28 },
-        },
-        didParseCell: (data) => {
-          if (data.column.index === 2 && data.section === "body") {
-            const txt = String(data.cell.raw || "").toLowerCase();
-            data.cell.styles.textColor = getVerdictColor(txt);
-          }
-        },
-      });
-
-      y = doc.lastAutoTable.finalY + 12;
-
-      // summary counts for bulk
-      const counts = { safe: 0, suspicious: 0, malicious: 0, invalid: 0, unknown: 0 };
-      bulk.forEach((item) => {
-        const s = (item.status || "unknown").toLowerCase();
-        if (counts[s] !== undefined) counts[s]++;
-        else counts.unknown++;
-      });
-
-      if (297 - y < 45) { doc.addPage(); y = 25; }
-      y = drawSectionHeader(doc, "3. BULK SCAN SUMMARY", y);
-
-      renderTable(doc, {
-        startY: y,
-        head: [["Safe", "Suspicious", "Malicious", "Invalid", "Total"]],
-        body: [[
-          String(counts.safe),
-          String(counts.suspicious),
-          String(counts.malicious),
-          String(counts.invalid),
-          String(bulk.length),
-        ]],
-        headStyles: { fillColor: C.bgHeader, textColor: C.white, halign: "center" },
-        bodyStyles: { halign: "center", fontStyle: "bold", fontSize: 10 },
-        columnStyles: {
-          0: { textColor: [22, 163, 74] },
-          1: { textColor: C.amber },
-          2: { textColor: C.red },
-          3: { textColor: C.gray },
-          4: { textColor: C.textMain },
-        },
+        });
+        y = doc.lastAutoTable.finalY + 10;
+        findingIndex++;
       });
     }
 
     // ════════════════════════════════════════════════════════════════════════
-    // PAGE 4 — SECURITY RISK ASSESSMENT & THREAT INTELLIGENCE
+    // PAGE 3 — CONCLUSION & RECOMMENDATIONS
     // ════════════════════════════════════════════════════════════════════════
-    setPdfProgress("Building security risk assessment...");
     doc.addPage();
+    y = 25;
 
-    y = drawSectionHeader(doc, isBulk ? "4. THREAT INTELLIGENCE OVERVIEW" : "6. SECURITY RISK ASSESSMENT", 25);
+    y = drawSectionHeader(doc, "4. CONCLUSION & RECOMMENDATIONS", y);
 
-    // Verdict verdict → impact table
-    renderTable(doc, {
-      startY: y,
-      head: [["Verdict", "Security Impact", "Recommended Action"]],
-      body: [
-        ["MALICIOUS",   SECURITY_IMPACT_MAP.malicious,   REMEDIATION_MAP.malicious],
-        ["SUSPICIOUS",  SECURITY_IMPACT_MAP.suspicious,  REMEDIATION_MAP.suspicious],
-        ["SAFE",        SECURITY_IMPACT_MAP.safe,        REMEDIATION_MAP.safe],
-        ["INVALID",     SECURITY_IMPACT_MAP.invalid,     REMEDIATION_MAP.invalid],
-      ],
-      columnStyles: {
-        0: { cellWidth: 22, fontStyle: "bold" },
-        1: { cellWidth: 76 },
-        2: { cellWidth: 84 },
-      },
-      didParseCell: (data) => {
-        if (data.column.index === 0 && data.section === "body") {
-          const txt = String(data.cell.raw || "").toLowerCase();
-          data.cell.styles.textColor = getVerdictColor(txt);
-        }
-      },
-    });
+    const findingsCount = isBulk ? bulk.filter(item => (item.status || "").toLowerCase() !== "safe").length : (verdict.toLowerCase() !== "safe" ? 1 : 0);
+    const scoreVal = isBulk ? "Bulk Scan N/A" : `${trustIndex}/100`;
+    const redirectHops = isBulk ? "Bulk Scan N/A" : String((r.redirectChain || []).length);
 
-    y = doc.lastAutoTable.finalY + 12;
-
-    // ── Threat Intelligence Source Reference ──────────────────────────────
-    if (297 - y < 60) { doc.addPage(); y = 25; }
-    y = drawSectionHeader(doc, isBulk ? "5. THREAT INTELLIGENCE SOURCES" : "7. THREAT INTELLIGENCE SOURCES", y);
-
-    renderTable(doc, {
-      startY: y,
-      head: [["Intelligence Source", "What It Checks", "Coverage"]],
-      body: [
-        [
-          "VirusTotal Correlation",
-          "Cross-references URL against 70+ antivirus and URL scanning engines. Flags malicious, phishing, and malware-distributing URLs.",
-          "Global / Multi-engine",
-        ],
-        [
-          "PhishTank",
-          "Community-verified phishing URL database. Identifies credential-harvesting pages and brand impersonation attacks.",
-          "Global / Phishing-focused",
-        ],
-        [
-          "Google Safe Browsing",
-          "Google's threat intelligence feed covering malware, unwanted software, and social engineering pages.",
-          "Global / Google ecosystem",
-        ],
-        [
-          "Blacklist Matching",
-          "Matches the domain and IP against curated DNS-based blacklists (DNSBL) and threat reputation feeds.",
-          "Multi-source / Real-time",
-        ],
-        [
-          "Typosquat Detection",
-          "Compares the domain name against a database of known brands to identify lookalike / typosquatted domains.",
-          "Brand-specific",
-        ],
-        [
-          "Redirect Chain Analysis",
-          "Follows all HTTP redirects to the final destination, exposing cloaked or multi-hop malicious URLs.",
-          "Per-scan / Real-time",
-        ],
-        [
-          "Content Inspection",
-          "Analyses page source for cryptomining scripts, suspicious eval() patterns, external JS sources, and HTML forms.",
-          "Per-page / Real-time",
-        ],
-        [
-          "GeoIP / ASN Resolution",
-          "Resolves the destination IP to a geographic region and Autonomous System Number for threat attribution.",
-          "Global / Network-level",
-        ],
-      ],
-      columnStyles: {
-        0: { cellWidth: 48, fontStyle: "bold", fillColor: [245, 245, 245] },
-        1: { cellWidth: 80 },
-        2: { cellWidth: 54 },
-      },
-    });
-
-    // ════════════════════════════════════════════════════════════════════════
-    // PAGE 5 — CONCLUSION & RECOMMENDATIONS
-    // ════════════════════════════════════════════════════════════════════════
-    setPdfProgress("Building conclusion...");
-    doc.addPage();
-
-    y = drawSectionHeader(doc, isBulk ? "6. CONCLUSION & RECOMMENDATIONS" : "8. CONCLUSION & RECOMMENDATIONS", 25);
-
-    let conclusionText = "";
-    if (isBulk) {
-      const safeCount      = bulk.filter((i) => (i.status || "").toLowerCase() === "safe").length;
-      const suspCount      = bulk.filter((i) => (i.status || "").toLowerCase() === "suspicious").length;
-      const malCount       = bulk.filter((i) => (i.status || "").toLowerCase() === "malicious").length;
-      const invalidCount   = bulk.filter((i) => (i.status || "").toLowerCase() === "invalid").length;
-      conclusionText = `The Link Detector bulk scan analysed ${bulk.length} URLs and returned the following verdicts: ${safeCount} Safe, ${suspCount} Suspicious, ${malCount} Malicious, and ${invalidCount} Invalid.\n\n` +
-        (malCount > 0
-          ? `${malCount} URL(s) were classified as Malicious. These must be immediately blocked at the organisation's web proxy, DNS filter, or email gateway. Any users who may have accessed these URLs should be investigated for indicators of compromise.\n\n`
-          : "") +
-        (suspCount > 0
-          ? `${suspCount} URL(s) returned Suspicious signals and should be manually reviewed or submitted for sandboxed detonation before being permitted in the environment.\n\n`
-          : "") +
-        "All flagged URLs should be reported to the relevant threat intelligence platform to contribute to community protection. Regular URL scanning of inbound links — particularly from email, messaging, and third-party integrations — is strongly recommended as part of a proactive security posture.";
+    let activeThreats = [];
+    if (!isBulk) {
+      if (r.onion) activeThreats.push("Onion domain");
+      if (r.suspicious?.suspiciousDomain) activeThreats.push("Suspicious registration");
+      if (r.suspicious?.typosquatOf) activeThreats.push("Typosquatting attempt");
+      if (r.contentFindings?.hasCryptoMiner) activeThreats.push("Cryptominer script");
+      if (r.contentFindings?.suspiciousInlineEval) activeThreats.push("Eval obfuscation");
+      if ((r.suspicious?.blacklistMatches || []).length > 0) activeThreats.push("Blacklist matches");
     } else {
-      conclusionText = `The Link Detector assessment analysed the target URL and returned a verdict of ${verdict.toUpperCase()} with a Trust Index of ${trustIndex}/100 (${riskLabel}).\n\n` +
-        `${SECURITY_IMPACT_MAP[(verdict || "").toLowerCase()] || ""}\n\n` +
-        `${REMEDIATION_MAP[(verdict || "").toLowerCase()] || ""}\n\n` +
-        "Organisations should enforce a URL reputation filtering policy at the email gateway, web proxy, and DNS resolver layers to reduce exposure to malicious links. Threat intelligence feeds should be updated regularly to ensure accurate classification of emerging threats. Users should be trained to report suspicious links through an established security awareness programme.";
+      activeThreats.push("Bulk scan anomalies");
     }
+    const indicatorSummaryText = activeThreats.length > 0 ? activeThreats.join(", ") : "No Issues Found";
+
+    const conclusionPara1 =
+      `The Link Detector assessment analysed a total of ${totalCount} URL(s) and identified ${findingsCount} finding(s). The overall Trust Index for the scanned target was ${scoreVal}, with a status verdict of ${verdict.toLowerCase()}. Redirect chain analysis confirmed ${redirectHops} hop(s). Suspicious indicator checks identified (${indicatorSummaryText}). Content analysis reported (${isBulk ? "Bulk Scan N/A" : (r.contentFindings?.externalJsCount ?? 0)}) external JavaScript files and (${isBulk ? "Bulk Scan N/A" : (r.contentFindings?.formsCount ?? 0)}) form(s) on the target page.`;
+
+    const conclusionPara2 =
+      "It is recommended that all URLs with a Trust Index below the acceptable threshold be blocked or flagged for manual review prior to use. Suspicious indicators including blacklist matches, typosquatting, and URL shortener expansion must be investigated and confirmed before the URL is permitted in production systems or user-facing communications. High external JavaScript counts should be reviewed for third-party dependency risks. Where HTTPS is absent, secure transport must be enforced. All redirect chains should be validated to ensure no intermediate hops introduce risk.";
 
     doc.setFont("helvetica", "normal");
-    doc.setFontSize(9);
+    doc.setFontSize(9.5);
     doc.setTextColor(...C.textMain);
-    doc.text(conclusionText, 14, y, { maxWidth: 182, align: "justify", lineHeightFactor: 1.45 });
+    doc.text(conclusionPara1, 14, y, { maxWidth: 182, align: "justify", lineHeightFactor: 1.45 });
 
     // ════════════════════════════════════════════════════════════════════════
-    // PAGE 6 — APPENDIX
+    // PAGE 4 — APPENDIX (COLUMN REFERENCE GUIDE)
     // ════════════════════════════════════════════════════════════════════════
-    setPdfProgress("Building appendix...");
     doc.addPage();
+    y = 25;
 
-    y = drawSectionHeader(doc, "9. APPENDIX", 25);
+    doc.setFont("helvetica", "normal");
+    doc.setFontSize(9.5);
+    doc.setTextColor(...C.textMain);
+    doc.text(conclusionPara2, 14, y, { maxWidth: 182, align: "justify", lineHeightFactor: 1.45 });
+
+    y += 28;
+
+    y = drawSectionHeader(doc, "5. APPENDIX", y);
 
     doc.setFont("helvetica", "bold");
-    doc.setFontSize(11);
+    doc.setFontSize(10);
     doc.setTextColor(...C.bluePrimary);
     doc.text("Column Reference Guide", 14, y);
+    y += 5;
 
     renderTable(doc, {
-      startY: y + 5,
-      head: [["Column / Field", "Description"]],
+      startY: y,
+      head: [["Column", "Description"]],
       body: [
-        ["Verdict",              "Overall safety classification: Safe | Suspicious | Malicious | Invalid."],
-        ["Trust Index",          "A numeric score from 0 to 100 indicating the safety confidence of the URL. Higher scores indicate a safer link."],
-        ["Risk Level",           "Human-readable risk classification derived from the Trust Index: Low Risk (80–100), Medium Risk (50–79), High Risk (20–49), Critical Risk (0–19)."],
-        ["Final Resolved URL",   "The actual destination URL after all HTTP redirects have been followed. Useful for detecting cloaking and redirect-based evasion."],
-        ["HTTPS / SSL",          "Indicates whether the final destination uses a valid TLS/SSL certificate (HTTPS). Non-HTTPS sites transmit data in plaintext."],
-        ["Onion / Tor Link",     "Flags whether the URL resolves to a .onion Tor hidden service. Onion links are commonly associated with dark web activity."],
-        ["Redirect Chain",       "The sequence of URL hops encountered between the original URL and the final destination."],
-        ["Suspicious Keywords",  "Words or phrases commonly found in phishing or scam URLs (e.g., 'login', 'verify', 'bank', 'update') detected in the URL path or domain."],
-        ["Typosquat Of",         "If the domain closely mimics a well-known brand domain (e.g., 'g00gle.com' vs 'google.com'), the legitimate domain it is impersonating is listed here."],
-        ["CNAME Chain",          "The sequence of CNAME DNS records followed to resolve the domain. Long CNAME chains can be used to obscure the true hosting provider."],
-        ["Blacklist Matches",    "Threat intelligence blacklists that have flagged this domain or IP as malicious or suspicious."],
-        ["CryptoMiner",          "Indicates whether the page source contains scripts associated with browser-based cryptocurrency mining."],
-        ["Suspicious Eval",      "Flags the presence of obfuscated JavaScript using eval() which is a common technique in malware delivery and XSS attacks."],
-        ["External JS Count",    "Number of external JavaScript sources loaded by the page. A high count may indicate supply-chain risk."],
-        ["Forms Count",          "Number of HTML forms detected on the page. High form counts on unknown sites may indicate phishing or data-harvesting pages."],
+        ["Severity", "Risk level assigned to the finding: Critical / High / Medium / Low / Informational."],
+        ["URL", "The original URL submitted for analysis."],
+        ["Final URL", "The resolved destination URL after all redirects have been followed."],
+        ["Status", "Overall verdict returned by the tool: safe / suspicious / unsafe, along with the Trust Index score in parentheses (e.g., safe (Trust Index: 80))."],
+        ["Message", "Human-readable summary of the analysis result based on evaluated heuristics."],
+        ["HTTPS", "Indicates whether the URL uses HTTPS (secure transport): Yes / No."],
+        ["Onion", "Indicates whether the URL resolves to a Tor hidden service (.onion domain): Yes / No."],
+        ["IP / Country", "The resolved IP address of the target host and the associated country code."],
+        ["Scanned At", "The date and time at which the URL analysis was performed."],
+        ["Redirect Chain", "The ordered sequence of URLs traversed from the original URL to the final destination."],
+        ["Keywords", "Suspicious keywords detected in the URL or page content that may indicate phishing or malicious intent: Found / Not Found."],
+        ["Typosquat of", "Indicates whether the domain is a typographical variant of a known legitimate domain: detected domain name or No typosquatting detected."],
+        ["Shortener Expanded", "Indicates whether the URL was identified as a shortened URL and expanded to its destination: Yes / No."],
+        ["Suspicious Domain", "Indicates whether the domain exhibits characteristics associated with suspicious or malicious registration patterns: Yes / No."],
+        ["CNAME Chain", "The CNAME resolution chain for the target domain, if applicable. Displayed as - when not present."],
+        ["Blacklist Matches", "Indicates whether the URL or domain appears on known threat intelligence blacklists. Displayed as - when no matches are found."],
+        ["hasCryptoMiner", "Indicates whether a cryptocurrency mining script was detected on the target page: true / false."],
+        ["suspiciousInlineEval", "Indicates whether suspicious inline JavaScript eval() usage was detected on the target page: true / false."],
+        ["externalJsCount", "The number of external JavaScript files loaded by the target page. High counts may indicate elevated third-party dependency risk."],
+        ["formsCount", "The number of HTML forms present on the target page. May indicate credential harvesting risk when combined with other suspicious indicators."],
+        ["Risk Level", "Overall risk classification assigned to the URL based on all evaluated indicators: Low / Medium / High."],
+        ["Trust Index", "A numeric score (0–100) representing the overall trustworthiness of the URL based on all evaluated heuristics and indicators."],
+        ["Impact", "Potential security consequence if the identified URL is accessed or integrated without remediation."],
+        ["Recommendation", "Specific, actionable guidance to address the identified URL risk or trust finding."],
       ],
       columnStyles: {
         0: { fontStyle: "bold", cellWidth: 50, fillColor: [245, 245, 245] },
@@ -550,33 +427,36 @@ export const generateLinkDetectorPDF = async (scanData, setPdfProgress) => {
       },
     });
 
+    // ════════════════════════════════════════════════════════════════════════
+    // PAGE 5 — ACKNOWLEDGEMENT (rendered automatically by page breaks if guide overlaps)
+    // ════════════════════════════════════════════════════════════════════════
     y = doc.lastAutoTable.finalY + 12;
-
-    if (297 - y < 40) { doc.addPage(); y = 25; }
+    if (297 - y < 45) {
+      doc.addPage();
+      y = 25;
+    }
 
     doc.setFont("helvetica", "bold");
-    doc.setFontSize(11);
+    doc.setFontSize(10);
     doc.setTextColor(...C.bluePrimary);
     doc.text("Acknowledgement", 14, y);
+    y += 6;
 
     const ackText =
-      "The findings presented in this report are based on observations made during the assessment period and represent the URL safety posture at the time of scanning. Threat intelligence classifications may change as new indicators are published. This report contains confidential and proprietary information intended solely for the authorised recipient. Unauthorised disclosure, distribution, or reproduction of this report is prohibited without prior written consent from Nexcore Alliance.";
+      "The findings presented in this report are based on observations made during the assessment period and represent the URL trust and reachability posture of the submitted target at the time of analysis. This report contains confidential and proprietary information intended solely for the authorised recipient. Unauthorised disclosure, distribution, or reproduction of this report is prohibited without prior written consent from Nexcore Alliance.";
 
     doc.setFont("helvetica", "normal");
-    doc.setFontSize(9);
+    doc.setFontSize(8.5);
     doc.setTextColor(...C.textMain);
-    doc.text(ackText, 14, y + 6, { maxWidth: 182, align: "justify", lineHeightFactor: 1.4 });
+    doc.text(ackText, 14, y, { maxWidth: 182, align: "justify", lineHeightFactor: 1.4 });
 
-    // ── Apply header / footer decorator on all pages ───────────────────────
+    // Apply header/footer decorators
     applyHeaderFooterDecorator(doc, "Link Detector");
 
-    // ── Save ──────────────────────────────────────────────────────────────
+    // Save
     setPdfProgress("Saving PDF...");
-    
-    // Format timestamp nicely: YYYY-MM-DD_HHMMSS
     const pad = (n) => String(n).padStart(2, "0");
     const dStr = `${now.getFullYear()}-${pad(now.getMonth() + 1)}-${pad(now.getDate())}_${pad(now.getHours())}${pad(now.getMinutes())}${pad(now.getSeconds())}`;
-    
     doc.save(`LinkDetector-Report-${dStr}.pdf`);
 
   } catch (err) {

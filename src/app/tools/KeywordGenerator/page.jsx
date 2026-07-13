@@ -25,6 +25,7 @@ import {
 } from "lucide-react";
 import useProtectedAction from "@/components/UseProtectedAction/UseProtectedAction";
 import toast from "react-hot-toast";
+import { generateKeywordPDF } from "@/components/KeywordForm/generateKeywordPDF";
 
 const API_BASE =
   process.env.NEXT_PUBLIC_PROD_API_URL ||
@@ -43,6 +44,9 @@ export default function KeywordIntelligencePage() {
   const [highPriority, setHighPriority] = useState([]);
   const [longTail, setLongTail] = useState([]);
   const [overlap, setOverlap] = useState([]);
+  const [totalWords, setTotalWords] = useState(0);
+  const [overOptimization, setOverOptimization] = useState([]);
+  const [readability, setReadability] = useState(null);
 
   // Advanced SEO and Audit State
   const [overallSeoScore, setOverallSeoScore] = useState(0);
@@ -124,15 +128,21 @@ export default function KeywordIntelligencePage() {
         const kws = Array.isArray(data.keywords) ? data.keywords : [];
         setRaw(kws);
 
-        if (Array.isArray(data.highPriority)) setHighPriority(data.highPriority);
-        if (Array.isArray(data.longTail)) setLongTail(data.longTail);
-        if (Array.isArray(data.overlap)) setOverlap(data.overlap);
+        const highPri = data.highPriority || data.insights?.highPriority || [];
+        const lTail = data.longTail || data.insights?.longTail || [];
+        const over = data.overlap || data.insights?.competitorOverlap || [];
+        setHighPriority(highPri);
+        setLongTail(lTail);
+        setOverlap(over);
 
         setOverallSeoScore(data.overallSeoScore || 0);
         setSeoAudit(data.seoAudit || null);
         setRecommendations(data.recommendations || []);
         setCompetitorAnalysis(data.competitorAnalysis || null);
-        setSummary(data.summary || null);
+        setSummary(data.summary || data.insights || null);
+        setTotalWords(data.totalWords || 0);
+        setOverOptimization(data.overOptimization || []);
+        setReadability(data.readability || null);
 
         toast.success("Keyword intelligence report generated!");
       } catch (e) {
@@ -227,162 +237,16 @@ export default function KeywordIntelligencePage() {
     URL.revokeObjectURL(a.href);
   }
 
-  function exportPDF() {
-    const doc = new jsPDF({ unit: "pt", format: "a4" });
-    const marginX = 40;
-
-    // Header Banner
-    doc.setFillColor(18, 18, 18);
-    doc.rect(0, 0, doc.internal.pageSize.width, 60, "F");
-    doc.setTextColor(16, 185, 129);
-    doc.setFont("Helvetica", "bold");
-    doc.setFontSize(18);
-    doc.text("NEXCORE SECURITY PLATFORM", 40, 28);
-    doc.setTextColor(255, 255, 255);
-    doc.setFontSize(10);
-    doc.text("KEYWORD INTELLIGENCE & AUDIT ASSESSMENT", 40, 44);
-
-    doc.setDrawColor(16, 185, 129);
-    doc.setLineWidth(1);
-    doc.line(15, 68, doc.internal.pageSize.width - 15, 68);
-
-    // Page 1: Overview
-    doc.setTextColor(40, 40, 40);
-    doc.setFont("Helvetica", "bold");
-    doc.setFontSize(13);
-    doc.text("1. EXECUTIVE ASSESSMENT SUMMARY", marginX, 90);
-
-    doc.setFont("Helvetica", "normal");
-    doc.setFontSize(9);
-    doc.text(`Target URL:      ${url}`, marginX, 110);
-    if (summary?.competitor) doc.text(`Competitor URL:  ${summary.competitor}`, marginX, 122);
-    doc.text(`Scan Date:       ${new Date().toLocaleString()}`, marginX, 134);
-    doc.text(`SEO Score:       ${overallSeoScore}/100 (Grade: ${summary?.overallGrade || "B"})`, marginX, 146);
-
-    doc.setFont("Helvetica", "bold");
-    doc.text("Overview & Strategic Insights:", marginX, 170);
-    doc.setFont("Helvetica", "normal");
-    const splitText = doc.splitTextToSize(summary?.executiveSummary || "N/A", doc.internal.pageSize.width - marginX * 2);
-    doc.text(splitText, marginX, 184);
-
-    // On-Page Checklist
-    doc.setFont("Helvetica", "bold");
-    doc.text("On-Page SEO Checklist Audit:", marginX, 245);
-    doc.setFont("Helvetica", "normal");
-    if (seoAudit) {
-      doc.text(`• Title Tag: ${seoAudit.titleStatus} (${seoAudit.titleLength} chars)`, marginX + 10, 260);
-      doc.text(`• Meta Description: ${seoAudit.metaDescStatus} (${seoAudit.metaDescLength} chars)`, marginX + 10, 272);
-      doc.text(`• H1 Headers: ${seoAudit.h1Count} present (${seoAudit.h1Status})`, marginX + 10, 284);
-      doc.text(`• Viewport View (Mobile): ${seoAudit.mobileFriendly ? "Friendly" : "Missing Tag"}`, marginX + 10, 296);
-      doc.text(`• Structured Schema Data: ${seoAudit.hasStructuredData ? "Present" : "Missing"}`, marginX + 10, 308);
-      doc.text(`• Canonical Redirects: ${seoAudit.hasCanonical ? "Configured" : "Missing"}`, marginX + 10, 320);
-    }
-
-    // Add Page 2: Keywords
-    doc.addPage();
-    doc.setFillColor(18, 18, 18);
-    doc.rect(0, 0, doc.internal.pageSize.width, 40, "F");
-    doc.setTextColor(16, 185, 129);
-    doc.setFont("Helvetica", "bold");
-    doc.setFontSize(14);
-    doc.text("NEXCORE KEYWORD ANALYTICS", 40, 24);
-
-    doc.setTextColor(40, 40, 40);
-    doc.text("2. HIGH-PRIORITY KEYWORD MATRIX", marginX, 65);
-    autoTable(doc, {
-      startY: 75,
-      head: [["Keyword", "Volume", "CPC (USD)", "Difficulty", "Intent (Confidence)", "Opportunity"]],
-      body: highPriority.map((r) => [
-        r.keyword,
-        r.volume || "—",
-        r.cpc ? `$${r.cpc}` : "—",
-        r.difficulty ? `${r.difficulty}%` : "—",
-        `${r.intent || "—"} (${r.intentConfidence}%)`,
-        r.opportunityScore || "—",
-      ]),
-      styles: { fontSize: 8 },
-      headStyles: { fillColor: [16, 185, 129], textColor: [255, 255, 255] },
-      margin: { left: marginX, right: marginX },
-      theme: "grid",
-    });
-
-    doc.setFont("Helvetica", "bold");
-    doc.text("3. LONG-TAIL OPPORTUNITIES", marginX, doc.lastAutoTable.finalY + 25);
-    autoTable(doc, {
-      startY: doc.lastAutoTable.finalY + 35,
-      head: [["Keyword", "Volume", "Difficulty", "Category", "Priority", "Opportunity"]],
-      body: longTail.map((r) => [
-        r.keyword,
-        r.volume || "—",
-        r.difficulty ? `${r.difficulty}%` : "—",
-        r.category || "Long-tail",
-        r.priority || "—",
-        r.opportunityScore || "—",
-      ]),
-      styles: { fontSize: 8 },
-      headStyles: { fillColor: [16, 185, 129], textColor: [255, 255, 255] },
-      margin: { left: marginX, right: marginX },
-      theme: "grid",
-    });
-
-    // Add Page 3: Competitors & Action plan
-    doc.addPage();
-    doc.setFillColor(18, 18, 18);
-    doc.rect(0, 0, doc.internal.pageSize.width, 40, "F");
-    doc.setTextColor(16, 185, 129);
-    doc.setFont("Helvetica", "bold");
-    doc.setFontSize(14);
-    doc.text("NEXCORE COMPETITOR & ACTION PLAN", 40, 24);
-
-    doc.setTextColor(40, 40, 40);
-    doc.text("4. COMPETITOR GAP OVERLAP", marginX, 65);
-    autoTable(doc, {
-      startY: 75,
-      head: [["Keyword", "Your Rank", "Competitor Rank", "Gap Status"]],
-      body: overlap.map((r) => [
-        r.keyword || "—",
-        r.yours || "—",
-        r.competitor || "—",
-        r.gap || "—",
-      ]),
-      styles: { fontSize: 8 },
-      headStyles: { fillColor: [16, 185, 129], textColor: [255, 255, 255] },
-      margin: { left: marginX, right: marginX },
-      theme: "grid",
-    });
-
-    doc.setFont("Helvetica", "bold");
-    doc.text("5. RECOMMENDATIONS & WORKFLOW ACTION PLAN", marginX, doc.lastAutoTable.finalY + 25);
-    autoTable(doc, {
-      startY: doc.lastAutoTable.finalY + 35,
-      head: [["Priority", "Title", "Recommendation / Description", "Action Layer"]],
-      body: recommendations.map((r) => [
-        r.type,
-        r.title,
-        r.description,
-        r.action
-      ]),
-      styles: { fontSize: 8 },
-      headStyles: { fillColor: [16, 185, 129], textColor: [255, 255, 255] },
-      margin: { left: marginX, right: marginX },
-      theme: "grid",
-    });
-
-    // Draw page numbers & disclaimers
-    const totalPages = doc.internal.getNumberOfPages();
-    for (let i = 1; i <= totalPages; i++) {
-      doc.setPage(i);
-      doc.setFontSize(7);
-      doc.setTextColor(120, 120, 120);
-      doc.text(
-        `Page ${i} of ${totalPages} | Confidential Keyword Intelligence Assessment | Generated by Nexcore`,
-        doc.internal.pageSize.width / 2,
-        doc.internal.pageSize.height - 20,
-        { align: "center" }
-      );
-    }
-
-    doc.save("keyword-intel-report.pdf");
+  async function exportPDF() {
+    await generateKeywordPDF({
+      url,
+      totalWords,
+      overOptimization,
+      readability,
+      highPriority,
+      longTail,
+      overlap
+    }, url);
   }
 
   const hasData = highPriority.length + longTail.length > 0;

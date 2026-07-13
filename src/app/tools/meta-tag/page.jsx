@@ -1,6 +1,7 @@
 import MetaForm from "@/components/MetaForm/MetaForm";
 
-export default function PageSpeedWrapper() {
+// Touch to trigger Next.js route recompilation
+export default function MetaTagPage() {
   return (
       <MetaForm />
   );

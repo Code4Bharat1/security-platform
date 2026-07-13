@@ -1,5 +1,5 @@
 "use client";
-
+// Trigger compiler refresh
 import { useMemo, useState, useCallback } from "react";
 import {
   Search as SearchIcon,
@@ -17,13 +17,14 @@ import {
 import { jsPDF } from "jspdf";
 import autoTable from "jspdf-autotable";
 import useProtectedAction from "../UseProtectedAction/UseProtectedAction";
+import { generateMetaPDF } from "./generateMetaPDF";
 
 const badge = (tone) =>
   ({
-    good: "border-emerald-500/20 bg-emerald-500/5 text-emerald-450 shadow-[inset_0_0_12px_rgba(16,185,129,0.02)]",
-    warn: "border-amber-500/20 bg-amber-500/5 text-amber-400 shadow-[inset_0_0_12px_rgba(245,158,11,0.02)]",
-    bad: "border-rose-500/20 bg-rose-500/5 text-rose-450 shadow-[inset_0_0_12px_rgba(244,63,94,0.02)]",
-    info: "border-sky-500/20 bg-sky-500/5 text-sky-400 shadow-[inset_0_0_12px_rgba(14,165,233,0.02)]",
+    good: "border-emerald-500/20 !bg-transparent text-emerald-450 shadow-[inset_0_0_12px_rgba(16,185,129,0.02)]",
+    warn: "border-amber-500/20 !bg-transparent text-amber-400 shadow-[inset_0_0_12px_rgba(245,158,11,0.02)]",
+    bad: "border-rose-500/20 !bg-transparent text-rose-450 shadow-[inset_0_0_12px_rgba(244,63,94,0.02)]",
+    info: "border-sky-500/20 !bg-transparent text-sky-400 shadow-[inset_0_0_12px_rgba(14,165,233,0.02)]",
   }[tone] || "border-zinc-800 bg-zinc-900/30 text-zinc-400");
 
 const chip = (tone) =>
@@ -252,103 +253,8 @@ table{border-collapse:collapse;width:100%;font-size:13px} td,th{border:1px solid
   }
   async function downloadPDF() {
     if (!report) return;
-    const doc = new jsPDF({ unit: "pt", format: "a4" });
-
-    // Header Banner
-    doc.setFillColor(18, 18, 18);
-    doc.rect(0, 0, doc.internal.pageSize.width, 40, "F");
-
-    doc.setTextColor(16, 185, 129); // Emerald Green
-    doc.setFont("Helvetica", "bold");
-    doc.setFontSize(20);
-    doc.text("NEXCORE SECURITY PLATFORM", 15, 20);
-
-    doc.setTextColor(255, 255, 255);
-    doc.setFontSize(11);
-    doc.text("META TAGS & CORS AUDIT REPORT", 15, 30);
-
-    // Scan Meta Info
-    doc.setTextColor(50, 50, 50);
-    doc.setFontSize(10);
-    doc.text(`Domain: ${report.targetUrl}`, 15, 52);
-    if (report.fetchedUrl) doc.text(`Fetched URL: ${report.fetchedUrl}`, 15, 62);
-    doc.text(`Date: ${new Date().toLocaleString()}`, 15, 72);
-
-    doc.setDrawColor(16, 185, 129);
-    doc.setLineWidth(0.5);
-    doc.line(15, 80, doc.internal.pageSize.width - 15, 80);
-
-    // Summary Block
-    doc.setFontSize(12);
-    doc.text("Executive Summary", 15, 95);
-    doc.setFont("Helvetica", "normal");
-    doc.setFontSize(9);
-
-    const summaryText = `This report lists the meta-tags checks and CORS analysis for the host domain '${report.targetUrl}'. SEO Score: ${report.scores?.seo}/10. Security Score: ${report.scores?.security}/10. Total Score: ${report.scores?.total}/10.`;
-    const splitSummary = doc.splitTextToSize(summaryText, doc.internal.pageSize.width - 30);
-    doc.text(splitSummary, 15, 108);
-
-    // Security Table
-    autoTable(doc, {
-      startY: 135,
-      head: [["Header/Meta", "Status/Value", "Severity", "Note"]],
-      body: (report.security?.checks || []).map((c) => [
-        c.key,
-        c.exists ? c.value || "Present" : "Missing",
-        c.severity || "",
-        c.note || "",
-      ]),
-      styles: { fontSize: 8, cellWidth: "wrap" },
-      headStyles: { fillColor: [16, 185, 129], textColor: [255, 255, 255] },
-      columnStyles: { 1: { cellWidth: 180 }, 3: { cellWidth: 160 } },
-    });
-
-    // SEO Table
-    autoTable(doc, {
-      startY: doc.lastAutoTable.finalY + 20,
-      head: [["SEO Item", "Status", "Detail"]],
-      body: (report.seo?.checks || []).map((c) => [
-        c.key,
-        c.status,
-        c.detail || "",
-      ]),
-      styles: { fontSize: 8, cellWidth: "wrap" },
-      headStyles: { fillColor: [16, 185, 129], textColor: [255, 255, 255] },
-      columnStyles: { 2: { cellWidth: 260 } },
-    });
-
-    // CORS Table
-    const corsStart = doc.lastAutoTable.finalY + 20;
-    doc.setFontSize(12);
-    doc.setTextColor(50, 50, 50);
-    doc.text("CORS Configuration Info", 15, corsStart);
-    if (report.cors?.error) {
-      doc.setFontSize(9);
-      doc.text(`Error: ${report.cors.error}`, 15, corsStart + 15);
-    } else {
-      autoTable(doc, {
-        startY: corsStart + 10,
-        head: [["Header", "Value"]],
-        body: [
-          ["Allow-Origin", report.cors?.headers?.allow_origin || "Not Present"],
-          ["Allow-Credentials", report.cors?.headers?.allow_credentials || "Not Present"],
-          ["Allow-Methods", report.cors?.headers?.allow_methods || "Not Present"],
-          ["Allow-Headers", report.cors?.headers?.allow_headers || "Not Present"],
-          ["Expose-Headers", report.cors?.headers?.expose_headers || "Not Present"],
-          ["Verdict", report.cors?.verdict || "-"],
-        ],
-        styles: { fontSize: 8, cellWidth: "wrap" },
-        headStyles: { fillColor: [16, 185, 129], textColor: [255, 255, 255] },
-        columnStyles: { 1: { cellWidth: 360 } },
-      });
-      const recs = (report.cors?.recommendations || []).join("; ");
-      if (recs) {
-        doc.setFontSize(8);
-        doc.text(`Recommendations: ${recs}`, 15, doc.lastAutoTable.finalY + 14);
-      }
-    }
-    doc.save(`meta-report-${report.targetUrl}.pdf`);
-  };
+    await generateMetaPDF(report, url);
+  }
   return (
     <div className="tool-detail-page min-h-screen" style={{
       '--hero-ambient-a': 'rgba(16, 185, 129, 0.08)',
@@ -833,7 +739,7 @@ table{border-collapse:collapse;width:100%;font-size:13px} td,th{border:1px solid
 
 function ScoreCard({ label, value }) {
   return (
-    <div className="p-4.5 rounded-xl border border-emerald-500/20 bg-emerald-950/10 text-emerald-400 shadow-[inset_0_0_12px_rgba(16,185,129,0.02)] transition-all duration-300 hover:scale-[1.01]">
+    <div className="p-4.5 rounded-xl border border-emerald-500/20 !bg-transparent text-emerald-400 shadow-[inset_0_0_12px_rgba(16,185,129,0.02)] transition-all duration-300 hover:scale-[1.01]">
       <div className="text-[10px] uppercase tracking-widest text-zinc-400 mb-1.5 font-medium">{label}</div>
       <div className="text-2xl font-bold tracking-tight">{value}</div>
     </div>
