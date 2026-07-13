@@ -1,10 +1,9 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import jsPDF from "jspdf";
-import autoTable from "jspdf-autotable";
 import useProtectedAction from "../UseProtectedAction/UseProtectedAction";
-import { generateWebreconPDF } from "./generateWebreconPDF";
+import { generateWebsiteReconPDF } from "./generateWebsiteReconPDF";
+import { generateDnsPDF } from "./generateDnsPDF";
 import OwnershipVerificationWizard from "@/components/ownership/OwnershipVerificationWizard";
 import {
   Globe,
@@ -223,7 +222,7 @@ export default function Webrecon() {
 
   const downloadPDF = () => {
     if (!scan) return;
-    generateWebreconPDF(scan, domain);
+    generateWebsiteReconPDF(scan, null);
   };
 
   return (
@@ -369,10 +368,19 @@ export default function Webrecon() {
             {/* DNS lookup results display */}
             {result && (
               <div className="bg-zinc-950/20 backdrop-blur-md border border-zinc-800/80 rounded-2xl p-6 shadow-[0_8px_30px_rgb(0,0,0,0.2)]">
-                <h3 className="text-sm font-mono font-bold text-zinc-200 flex items-center gap-2 border-b border-zinc-850 pb-2.5 mb-4">
-                  <Terminal className="w-4 h-4 text-red-400" />
-                  Resolved DNS Results ({recordType})
-                </h3>
+                <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 border-b border-zinc-850 pb-2.5 mb-4">
+                  <h3 className="text-sm font-mono font-bold text-zinc-200 flex items-center gap-2">
+                    <Terminal className="w-4 h-4 text-red-400" />
+                    Resolved DNS Results ({recordType})
+                  </h3>
+                  <button
+                    onClick={() => generateDnsPDF(result, domain, recordType)}
+                    className="px-3 py-1.5 bg-zinc-900/40 hover:bg-red-500/5 text-zinc-350 hover:text-red-400 border border-zinc-800/80 hover:border-red-500/30 rounded-xl font-mono font-bold text-xs uppercase transition-all duration-300 flex items-center justify-center gap-1.5 cursor-pointer"
+                  >
+                    <Download className="w-3.5 h-3.5" />
+                    Download DNS PDF
+                  </button>
+                </div>
                 {Array.isArray(result.Answer) && result.Answer.length > 0 ? (
                   <div className="space-y-4">
                     {result.Answer.map((rec, i) => (
