@@ -3,8 +3,7 @@
 import { useState, useMemo, useRef } from "react";
 import useProtectedAction from "@/components/UseProtectedAction/UseProtectedAction";
 import { toast } from "react-hot-toast";
-import { jsPDF } from "jspdf";
-import autoTable from "jspdf-autotable";
+import { generateSourceCodePDF } from "@/components/codeAnalysis/generateSourceCodePDF";
 import { 
   Code2, 
   Upload, 
@@ -20,7 +19,8 @@ import {
   BookOpen,
   Info,
   Terminal,
-  FileDown
+  FileDown,
+  Loader2
 } from "lucide-react";
 
 export default function SourceCodeAnalyzer() {
@@ -76,13 +76,13 @@ export default function SourceCodeAnalyzer() {
   const loadSample = (kind) => {
     const samples = {
       jsxss: `function displayUserInput() {\n  const userInput = document.getElementById('userInput').value;\n  document.getElementById('out').innerHTML = userInput; // ❌ Vulnerable to DOM XSS\n}`,
-      react: `export default function Post({ html }) {\n  // ❌ Danger: raw rendering\n  return <div dangerouslySetInnerHTML={{ __html: html }} />;\n}`,
-      vue: `<template>\n  <div v-html="rawHtml"></div> <!-- ❌ Unsanitized Vue output -->\n</template>`,
-      php: `<?php\n$userId = $_GET['id'];\n// ❌ SQLi concatenation pattern\n$query = "SELECT * FROM users WHERE id = " . $userId;\n$result = mysqli_query($conn, $query);\n?>`,
+      react: `export default function Post({ html }) {\n  // Danger: raw rendering\n  return <div dangerouslySetInnerHTML={{ __html: html }} />;\n}`,
+      vue: `<template>\n  <div v-html="rawHtml"></div> <!-- Unsanitized Vue output -->\n</template>`,
+      php: `<?php\n$userId = $_GET['id'];\n// SQLi concatenation pattern\n$query = "SELECT * FROM users WHERE id = " . $userId;\n$result = mysqli_query($conn, $query);\n?>`,
       evaldanger: `const code = prompt('Enter mathematical formula:');\neval(code); // ❌ Dangerous eval runtime injection`,
-      domclobber: `const config = {};\nwindow.config = config; // ⚠️ Variable declaration can clobber globals`,
-      prototype: `const obj = {};\nobj.__proto__.malicious = true; // ⚠️ Unrestricted prototype assignments`,
-      safe: `const el = document.getElementById('out');\n// ✅ Secure text nodes usage\nel.textContent = userInput;\n\n// ✅ Parameterized statement placeholder query\n$stmt = $conn->prepare("SELECT * FROM users WHERE id = ?");\n$stmt->bind_param("i", $userId);`,
+      domclobber: `const config = {};\nwindow.config = config; // Variable declaration can clobber globals`,
+      prototype: `const obj = {};\nobj.__proto__.malicious = true; // Unrestricted prototype assignments`,
+      safe: `const el = document.getElementById('out');\n// Secure text nodes usage\nel.textContent = userInput;\n\n// ✅ Parameterized statement placeholder query\n$stmt = $conn->prepare("SELECT * FROM users WHERE id = ?");\n$stmt->bind_param("i", $userId);`,
     };
     setCode(samples[kind] || "");
     setFile(null);
@@ -279,77 +279,31 @@ export default function SourceCodeAnalyzer() {
   };
 
   // Report Exporters
-  const exportPDF = () => {
-    const doc = new jsPDF("l", "mm", "a4");
-    
-    // Cover banner decor
-    doc.setFillColor(18, 18, 18);
-    doc.rect(0, 0, 297, 40, "F");
-    
-    doc.setTextColor(239, 68, 68);
-    doc.setFont("helvetica", "bold");
-    doc.setFontSize(18);
-    doc.text("NEXCORE RED TEAM SECURITY AUDIT", 14, 20);
-    
-    doc.setTextColor(255, 255, 255);
-    doc.setFontSize(9);
-    doc.text(`Generated: ${new Date().toLocaleString()} | Rating: ${riskBand} (Score: ${riskScore}/100) | Lang: ${detectedLanguage}`, 14, 32);
-
-    // Summary statistics
-    let yPos = 50;
-    doc.setTextColor(0, 0, 0);
-    doc.setFont("helvetica", "bold");
-    doc.setFontSize(12);
-    doc.text("Executive Summary Statistics", 14, yPos);
-    yPos += 8;
-
-    const statsData = [
-      ["Parameter", "Count / Value", "Breakdown Details"],
-      ["Total Flaws Found", analytics.totalIssues, `Critical: ${analytics.bySeverity.Critical} | High: ${analytics.bySeverity.High} | Medium: ${analytics.bySeverity.Medium} | Low: ${analytics.bySeverity.Low}`],
-      ["Scan Language", detectedLanguage, "Automated parser heuristics mapping"],
-      ["Vulnerabilities Types", "", `XSS: ${analytics.byType.XSS || 0} | SQLi: ${analytics.byType.SQLi || 0} | Eval: ${analytics.byType.Eval || 0}`]
-    ];
-
-    autoTable(doc, {
-      startY: yPos,
-      head: [statsData[0]],
-      body: statsData.slice(1),
-      theme: "grid",
-      headStyles: { fillColor: [239, 68, 68], textColor: [255, 255, 255] },
-      styles: { fontSize: 9 }
-    });
-
-    // Detailed Findings
-    yPos = doc.lastAutoTable.finalY + 12;
-    doc.setFontSize(12);
-    doc.text("Detailed Security Observations", 14, yPos);
-
-    const findingsRows = filteredIssues.map((it, i) => [
-      i + 1,
-      it.line,
-      it.severity,
-      it.type,
-      it.message,
-      it.snippet,
-      it.fix
-    ]);
-
-    autoTable(doc, {
-      startY: yPos + 4,
-      head: [["#", "Line", "Severity", "Type", "Finding Description", "Trigger Code", "Remediation Strategy"]],
-      body: findingsRows,
-      theme: "striped",
-      headStyles: { fillColor: [239, 68, 68], textColor: [255, 255, 255] },
-      styles: { fontSize: 8, cellPadding: 2 },
-      columnStyles: {
-        4: { cellWidth: 50 },
-        5: { cellWidth: 55 },
-        6: { cellWidth: 65 }
+  const exportPDF = async () => {
+    if (!result) {
+      toast.error("Please run a scan first to generate a report.");
+      return;
+    }
+    toast.loading("Generating PDF Report...", { id: "pdf-gen" });
+    try {
+      let finalCode = code;
+      if (file) {
+        finalCode = await readFileAsText(file);
       }
-    });
-
-    doc.save("source_code_analysis_report.pdf");
-    toast.success("PDF report downloaded!");
+      await generateSourceCodePDF(
+        result,
+        { code: finalCode, fileName: file ? file.name : "Code Snippet" },
+        (msg) => {
+          if (msg) {
+            toast.loading(msg, { id: "pdf-gen" });
+          }
+        }
+      );
+      toast.success("PDF report downloaded!", { id: "pdf-gen" });
+    } catch (err) {
+      console.error(err);
+      toast.error("Failed to generate PDF report", { id: "pdf-gen" });
+    }
   };
 
   const exportTXT = () => {
@@ -642,14 +596,17 @@ export default function SourceCodeAnalyzer() {
                       Flaws By Type
                     </span>
                     <div className="grid grid-cols-2 gap-1.5 text-[11px]">
-                      {Object.entries(analytics.byType).map(([type, val]) => (
-                        <div key={type} className="flex justify-between items-center text-zinc-300">
-                          <span>{type}:</span>
-                          <span className={`font-bold ${val > 0 ? "text-red-400" : "text-zinc-650"}`}>
-                            {val}
-                          </span>
-                        </div>
-                      ))}
+                      {Object.entries(analytics.byType).map(([type, val]) => {
+                        const displayName = type === "PrototypePollution" ? "Prototype" : type === "DOMClobber" ? "DOMClobber" : type;
+                        return (
+                          <div key={type} className="flex justify-between items-center text-zinc-300">
+                            <span>{displayName}:</span>
+                            <span className={`font-bold ${val > 0 ? "text-red-400" : "text-zinc-650"}`}>
+                              {val}
+                            </span>
+                          </div>
+                        );
+                      })}
                     </div>
                   </div>
 
@@ -679,10 +636,10 @@ export default function SourceCodeAnalyzer() {
                 </div>
 
                 {/* Filter and export toolbar */}
-                <div className="grid gap-4 md:grid-cols-3">
+                <div className="flex flex-col lg:flex-row gap-4 justify-between items-stretch lg:items-center">
                   
                   {/* Search */}
-                  <div className="relative">
+                  <div className="relative flex-1 min-w-[200px]">
                     <Search size={14} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-zinc-550" />
                     <input
                       value={q}
@@ -693,14 +650,14 @@ export default function SourceCodeAnalyzer() {
                   </div>
 
                   {/* Severity Checkboxes */}
-                  <div className="bg-zinc-900/40 border border-zinc-800/80 rounded-xl px-4 py-2 flex items-center justify-between font-mono text-xs">
-                    <span className="text-[9px] uppercase font-bold text-zinc-400 flex items-center gap-1">
+                  <div className="bg-zinc-900/40 border border-zinc-800/80 rounded-xl px-4 py-3 flex items-center justify-between font-mono text-xs flex-shrink-0">
+                    <span className="text-[9px] uppercase font-bold text-zinc-400 flex items-center gap-1 mr-3">
                       <Filter size={11} className="text-red-400" />
                       Filter:
                     </span>
-                    <div className="flex gap-2.5 text-[9px] font-bold">
+                    <div className="flex gap-3 text-[9px] font-bold">
                       {['Low', 'Medium', 'High', 'Critical'].map((sev) => (
-                        <label key={sev} className="flex items-center gap-1 cursor-pointer text-zinc-400 hover:text-white transition">
+                        <label key={sev} className="flex items-center gap-1.5 cursor-pointer text-zinc-400 hover:text-white transition">
                           <input
                             type="checkbox"
                             checked={sevFilter[sev]}
@@ -714,10 +671,10 @@ export default function SourceCodeAnalyzer() {
                   </div>
 
                   {/* Exporter triggers */}
-                  <div className="flex gap-2 items-center justify-end">
+                  <div className="flex gap-2 items-center justify-end flex-shrink-0">
                     <button
                       onClick={exportTXT}
-                      className="px-3 py-2.5 bg-zinc-900/40 hover:bg-red-500/5 text-zinc-300 hover:text-red-400 border border-zinc-800/80 hover:border-red-500/30 rounded-xl font-mono font-bold text-xs uppercase transition-all duration-300 flex items-center justify-center gap-1.5 cursor-pointer"
+                      className="px-4 py-3 bg-zinc-900/40 hover:bg-red-500/5 text-zinc-300 hover:text-red-400 border border-zinc-800/80 hover:border-red-500/30 rounded-xl font-mono font-bold text-xs uppercase transition-all duration-300 flex items-center justify-center gap-1.5 cursor-pointer"
                       title="TXT Export"
                     >
                       <Download size={12} />
@@ -725,7 +682,7 @@ export default function SourceCodeAnalyzer() {
                     </button>
                     <button
                       onClick={exportJSON}
-                      className="px-3 py-2.5 bg-zinc-900/40 hover:bg-red-500/5 text-zinc-300 hover:text-red-400 border border-zinc-800/80 hover:border-red-500/30 rounded-xl font-mono font-bold text-xs uppercase transition-all duration-300 flex items-center justify-center gap-1.5 cursor-pointer"
+                      className="px-4 py-3 bg-zinc-900/40 hover:bg-red-500/5 text-zinc-300 hover:text-red-400 border border-zinc-800/80 hover:border-red-500/30 rounded-xl font-mono font-bold text-xs uppercase transition-all duration-300 flex items-center justify-center gap-1.5 cursor-pointer"
                       title="JSON Export"
                     >
                       <Download size={12} />
@@ -733,7 +690,7 @@ export default function SourceCodeAnalyzer() {
                     </button>
                     <button
                       onClick={exportPDF}
-                      className="px-3 py-2.5 bg-zinc-900/40 hover:bg-red-500/5 text-zinc-300 hover:text-red-400 border border-zinc-800/80 hover:border-red-500/30 rounded-xl font-mono font-bold text-xs uppercase transition-all duration-300 flex items-center justify-center gap-1.5 cursor-pointer"
+                      className="px-4 py-3 bg-zinc-900/40 hover:bg-red-500/5 text-zinc-300 hover:text-red-400 border border-zinc-800/80 hover:border-red-500/30 rounded-xl font-mono font-bold text-xs uppercase transition-all duration-300 flex items-center justify-center gap-1.5 cursor-pointer"
                       title="PDF Download Report"
                     >
                       <FileDown size={12} />
@@ -760,7 +717,7 @@ export default function SourceCodeAnalyzer() {
                           <th className="p-4 w-28">Severity</th>
                           <th className="p-4 w-28">Type</th>
                           <th className="p-4">Message</th>
-                          <th className="p-4">Trigger Snippet</th>
+                          <th className="p-4 w-72 md:w-80">Trigger Snippet</th>
                           <th className="p-4 w-32 text-center">Remediation</th>
                         </tr>
                       </thead>
@@ -798,9 +755,9 @@ export default function SourceCodeAnalyzer() {
                               <td className="p-4 text-zinc-300 leading-relaxed max-w-[240px]">
                                 {it.message}
                               </td>
-                              <td className="p-4">
+                              <td className="p-4 w-72 md:w-80">
                                 <div className="relative group">
-                                  <div className="font-mono text-[10px] bg-black/60 p-2.5 rounded-lg border border-zinc-850 max-w-[320px] whitespace-pre-wrap break-all overflow-x-auto max-h-24 text-zinc-400">
+                                  <div className="font-mono text-[10px] bg-black/60 p-2.5 rounded-lg border border-zinc-850 w-64 md:w-72 whitespace-pre overflow-x-auto max-h-24 text-zinc-400">
                                     {it.snippet}
                                   </div>
                                   <button

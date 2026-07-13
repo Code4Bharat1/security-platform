@@ -1,9 +1,8 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import axios from "axios";
-import jsPDF from "jspdf";
-import autoTable from "jspdf-autotable";
+import { generateSubdomainPDF } from "./generateSubdomainPDF";
 import useProtectedAction from "../UseProtectedAction/UseProtectedAction";
 import OwnershipVerificationWizard from "@/components/ownership/OwnershipVerificationWizard";
 import {
@@ -29,6 +28,7 @@ export default function SubdomainScanner() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [ownershipVerified, setOwnershipVerified] = useState(false);
+  const [currentPage, setCurrentPage] = useState(1);
 
   const API_URL = process.env.NEXT_PUBLIC_PROD_API_URL;
 
@@ -58,6 +58,7 @@ export default function SubdomainScanner() {
       setError("");
       setResults([]);
       setStats(null);
+      setCurrentPage(1);
 
       const cleanDomain = domain.trim().toLowerCase();
       if (!cleanDomain) {
@@ -100,63 +101,42 @@ export default function SubdomainScanner() {
     });
   };
 
-  const downloadPDF = () => {
+  const downloadPDF = async () => {
     if (!results || results.length === 0) return;
-
-    const doc = new jsPDF();
-    const tableColumn = ["#", "Subdomain Hostname"];
-    const tableRows = [];
-
-    results.forEach((item, index) => {
-      const subdomainData = [index + 1, item.subdomain];
-      tableRows.push(subdomainData);
-    });
-
-    // Header Banner
-    doc.setFillColor(18, 18, 18);
-    doc.rect(0, 0, doc.internal.pageSize.width, 80, "F");
+    const cleanDomain = domain.trim().toLowerCase();
     
-    doc.setTextColor(239, 68, 68);
-    doc.setFont("helvetica", "bold");
-    doc.setFontSize(18);
-    doc.text("NEXCORE RED TEAM SECURITY AUDIT", 14, 35);
-    
-    doc.setTextColor(255, 255, 255);
-    doc.setFontSize(10);
-    doc.text("SUBDOMAIN ENUMERATION DISCOVERY LOG", 14, 55);
+    // Import toast if not already in context
+    const { toast } = await import("react-hot-toast");
+    toast.loading("Generating PDF Report...", { id: "pdf-gen" });
 
-    // Metadata
-    doc.setFontSize(10);
-    doc.setTextColor(50, 50, 50);
-    const date = new Date().toLocaleString();
-    doc.text(`Target Domain: ${domain}`, 14, 100);
-    doc.text(`Total Subdomains: ${stats?.total || results.length}`, 14, 115);
-    doc.text(`Scan Date: ${date}`, 14, 130);
-    if (stats?.durationMs) {
-      doc.text(`Scan Duration: ${formatDuration(stats.durationMs)}`, 14, 145);
+    try {
+      await generateSubdomainPDF(
+        results,
+        stats,
+        cleanDomain,
+        (msg) => {
+          if (msg) {
+            toast.loading(msg, { id: "pdf-gen" });
+          }
+        }
+      );
+      toast.success("PDF report downloaded!", { id: "pdf-gen" });
+    } catch (err) {
+      console.error(err);
+      toast.error("Failed to generate PDF report", { id: "pdf-gen" });
     }
-
-    // Table
-    autoTable(doc, {
-      startY: 160,
-      head: [tableColumn],
-      body: tableRows,
-      theme: "grid",
-      headStyles: { fillColor: [239, 68, 68], textColor: [255, 255, 255] },
-      styles: { fontSize: 9, cellPadding: 4 },
-      columnStyles: {
-        0: { cellWidth: 20 },
-        1: { cellWidth: "auto" },
-      },
-    });
-
-    const fileName = `subdomain_scan_${domain.replace(/[^a-z0-9]/gi, "_")}.pdf`;
-    doc.save(fileName);
   };
 
   const handleSubdomainClick = (subdomain) => {
     window.open(`https://${subdomain}`, "_blank");
   };
+
+  const itemsPerPage = 10;
+  const totalPages = Math.ceil(results.length / itemsPerPage);
+  const paginatedResults = useMemo(() => {
+    const start = (currentPage - 1) * itemsPerPage;
+    return results.slice(start, start + itemsPerPage);
+  }, [results, currentPage]);
 
   return (
     <div 
@@ -342,20 +322,92 @@ export default function SubdomainScanner() {
                   </button>
                 </div>
 
-                <div className="bg-zinc-900/40 border border-zinc-800/80 p-4 rounded-xl max-h-80 overflow-y-auto font-mono text-xs">
-                  <ul className="space-y-3.5 list-none pl-0">
-                    {results.map(({ subdomain }, idx) => (
-                      <li key={idx} className="flex items-start gap-2">
-                        <span className="inline-block w-1.5 h-1.5 rounded-full bg-red-500/60 mt-1.5 flex-shrink-0" />
+                <div className="border border-zinc-800/80 rounded-xl overflow-hidden bg-zinc-900/20 max-h-96 overflow-y-auto">
+                  <div className="overflow-x-auto">
+                    <table className="w-full text-left border-collapse font-mono text-xs">
+                      <thead>
+                        <tr className="border-b border-zinc-800/60 bg-zinc-900/60 text-zinc-450 uppercase tracking-wider text-[10px] sticky top-0 backdrop-blur-md">
+                          <th className="p-4 font-semibold">Subdomain</th>
+                          <th className="p-4 font-semibold">IP Address</th>
+                          <th className="p-4 font-semibold">Record</th>
+                          <th className="p-4 font-semibold font-bold">Live</th>
+                          <th className="p-4 font-semibold">Sources</th>
+                        </tr>
+                      </thead>
+                      <tbody className="divide-y divide-zinc-850">
+                        {paginatedResults.map((item, idx) => {
+                          return (
+                            <tr key={idx} className="hover:bg-zinc-900/30 transition-colors">
+                              <td className="p-4 whitespace-nowrap">
+                                <button
+                                  onClick={() => handleSubdomainClick(item.subdomain)}
+                                  className="text-red-400 hover:text-red-300 hover:underline font-semibold break-all text-left"
+                                >
+                                  {item.subdomain}
+                                </button>
+                              </td>
+                              <td className="p-4 text-zinc-300 whitespace-nowrap">
+                                {item.ip || "-"}
+                              </td>
+                              <td className="p-4 whitespace-nowrap">
+                                <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-zinc-800/60 border border-zinc-700/50 text-zinc-300">
+                                  {item.recordType || "A"}
+                                </span>
+                              </td>
+                              <td className="p-4 whitespace-nowrap">
+                                {item.live ? (
+                                  <span className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full text-[10px] font-bold text-emerald-400 bg-emerald-500/10 border border-emerald-500/20">
+                                    <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
+                                    Active
+                                  </span>
+                                ) : (
+                                  <span className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full text-[10px] font-bold text-zinc-400 bg-zinc-800/40 border border-zinc-750">
+                                    <span className="w-1.5 h-1.5 rounded-full bg-zinc-550" />
+                                    Inactive
+                                  </span>
+                                )}
+                              </td>
+                              <td className="p-4 whitespace-nowrap">
+                                <div className="flex flex-wrap gap-1">
+                                  {(item.sources || ['DNS BruteForce']).map((src, sIdx) => (
+                                    <span key={sIdx} className="px-1.5 py-0.5 rounded bg-zinc-950/60 text-zinc-400 border border-zinc-850 text-[9px] uppercase font-bold">
+                                      {src}
+                                    </span>
+                                  ))}
+                                </div>
+                              </td>
+                            </tr>
+                          );
+                        })}
+                      </tbody>
+                    </table>
+                  </div>
+                  {totalPages > 1 && (
+                    <div className="flex items-center justify-between border-t border-zinc-800/60 p-4 bg-zinc-900/40 text-zinc-450 font-mono text-xs select-none">
+                      <div>
+                        Showing <span className="text-zinc-300 font-bold">{((currentPage - 1) * itemsPerPage) + 1}</span> to <span className="text-zinc-300 font-bold">{Math.min(currentPage * itemsPerPage, results.length)}</span> of <span className="text-zinc-300 font-bold">{results.length}</span> subdomains
+                      </div>
+                      <div className="flex items-center gap-2">
                         <button
-                          onClick={() => handleSubdomainClick(subdomain)}
-                          className="text-red-400 hover:text-red-300 hover:underline break-all text-left font-mono font-semibold"
+                          onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
+                          disabled={currentPage === 1}
+                          className="px-3 py-1.5 rounded-lg border border-zinc-800 hover:border-red-500/30 bg-zinc-950/40 hover:bg-red-500/5 text-zinc-400 hover:text-red-400 font-bold transition-all disabled:opacity-40 disabled:pointer-events-none cursor-pointer"
                         >
-                          {subdomain}
+                          Prev
                         </button>
-                      </li>
-                    ))}
-                  </ul>
+                        <span className="text-zinc-300">
+                          Page <span className="font-bold text-red-400">{currentPage}</span> of {totalPages}
+                        </span>
+                        <button
+                          onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))}
+                          disabled={currentPage === totalPages}
+                          className="px-3 py-1.5 rounded-lg border border-zinc-800 hover:border-red-500/30 bg-zinc-950/40 hover:bg-red-500/5 text-zinc-400 hover:text-red-400 font-bold transition-all disabled:opacity-40 disabled:pointer-events-none cursor-pointer"
+                        >
+                          Next
+                        </button>
+                      </div>
+                    </div>
+                  )}
                 </div>
               </div>
             )}
