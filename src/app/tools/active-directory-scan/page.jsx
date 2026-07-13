@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState, useEffect, useRef } from "react";
+import { useRouter } from "next/navigation";
 import {
   Terminal,
   Download,
@@ -14,52 +15,28 @@ import {
   Network,
 } from "lucide-react";
 import jsPDF from "jspdf";
-import "jspdf-autotable";
+import autoTable from "jspdf-autotable";
 import useProtectedAction from "@/components/UseProtectedAction/UseProtectedAction";
 
 export default function ActiveDirectoryScanPage() {
   const protectedAction = useProtectedAction();
   const [domain, setDomain] = useState("corp.local");
   const [scope, setScope] = useState("full");
+  
+  // Advanced Configuration states
+  const [dcIp, setDcIp] = useState("");
+  const [username, setUsername] = useState("");
+  const [password, setPassword] = useState("");
+  const [showAdvanced, setShowAdvanced] = useState(false);
+
   const [scanning, setScanning] = useState(false);
-  const [scanStep, setScanStep] = useState(0);
   const [consoleLogs, setConsoleLogs] = useState([]);
   const [reportReady, setReportReady] = useState(false);
+  const [results, setResults] = useState([]);
+  const [statusFilter, setStatusFilter] = useState("All");
+  const [severityFilter, setSeverityFilter] = useState("All");
+  const [expandedRow, setExpandedRow] = useState(null);
   const logContainerRef = useRef(null);
-
-  const adLogs = [
-    "[INFO] Initializing Active Directory Security Scan...",
-    "[INFO] Querying DNS SRV records for Domain Controllers...",
-    `[SUCCESS] Detected Primary Domain Controller: DC01.${domain} (IP: 10.0.0.10)`,
-    "[INFO] Establishing LDAP connection (LDAPS preferred)...",
-    "[WARNING] LDAPS connection failed. Falling back to LDAP with signing required.",
-    "[INFO] Enumerating Active Directory Domain Controllers...",
-    `[INFO] Target Domain: ${domain} (Functional Level: Windows Server 2016)`,
-    "[INFO] Querying Kerberos ticket settings & Krbtgt account status...",
-    "[WARNING] Krbtgt password has not been changed in 1,280 days! (High Risk)",
-    "[INFO] Auditing Password Policy settings...",
-    "[INFO] Checking for weak service principal names (SPN) - potential Kerberoasting target...",
-    "[WARNING] Found 14 accounts susceptible to Kerberoasting (including high-privilege service accounts).",
-    "[INFO] Analyzing Group Policy Objects (GPOs) for secure configuration...",
-    "[WARNING] GPO 'Default Domain Policy' contains insecure SMB signing requirements.",
-    "[INFO] Scanning for Unconstrained and Constrained Delegation issues...",
-    "[ALERT] Constrained Delegation enabled on DC01 without SPN verification.",
-    "[INFO] Compiling Active Directory security posture scorecard...",
-    "[SUCCESS] Active Directory Security Scan completed successfully.",
-  ];
-
-  useEffect(() => {
-    if (scanning && scanStep < adLogs.length) {
-      const timer = setTimeout(() => {
-        setConsoleLogs((prev) => [...prev, adLogs[scanStep]]);
-        setScanStep((prev) => prev + 1);
-      }, 400 + Math.random() * 300);
-      return () => clearTimeout(timer);
-    } else if (scanning && scanStep === adLogs.length) {
-      setScanning(false);
-      setReportReady(true);
-    }
-  }, [scanning, scanStep]);
 
   useEffect(() => {
     if (logContainerRef.current) {
@@ -70,24 +47,56 @@ export default function ActiveDirectoryScanPage() {
   const handleStartScan = async (e) => {
     e.preventDefault();
     if (!domain.trim()) return;
+
     setScanning(true);
     setReportReady(false);
-    setScanStep(0);
     setConsoleLogs([]);
+    setResults([]);
+    setExpandedRow(null);
 
     const API_BASE = (process.env.NEXT_PUBLIC_PROD_API_URL || "").replace(/\/+$/, "");
     await protectedAction(async (token) => {
       try {
-        await fetch(`${API_BASE}/report-generator/generate`, {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${token}`,
-          },
-          body: JSON.stringify({ reportType: "active-directory", domain, scope }),
-        });
+        const streamUrl = `${API_BASE}/active-directory/scan-stream?domain=${encodeURIComponent(
+          domain
+        )}&dcIp=${encodeURIComponent(dcIp)}&scope=${scope}&username=${encodeURIComponent(
+          username
+        )}&password=${encodeURIComponent(password)}&token=${encodeURIComponent(token)}`;
+
+        const es = new EventSource(streamUrl);
+
+        es.onmessage = (event) => {
+          const data = JSON.parse(event.data || "{}");
+
+          if (data.type === "log") {
+            setConsoleLogs((prev) => [...prev, data.message]);
+          } else if (data.type === "results") {
+            setResults(data.findings || []);
+          } else if (data.type === "summary") {
+            setScanning(false);
+            setReportReady(true);
+            es.close();
+          } else if (data.type === "done") {
+            setScanning(false);
+            setReportReady(true);
+            es.close();
+          } else if (data.type === "error") {
+            setConsoleLogs((prev) => [...prev, `[ALERT] Audit failed: ${data.message}`]);
+            setScanning(false);
+            es.close();
+          }
+        };
+
+        es.onerror = () => {
+          console.error("SSE stream connection error.");
+          setConsoleLogs((prev) => [...prev, "[ALERT] Connection to backend scanning queue was lost."]);
+          setScanning(false);
+          es.close();
+        };
       } catch (err) {
-        console.error("Failed to log scan on backend:", err);
+        console.error("Failed to establish scan stream:", err);
+        setConsoleLogs((prev) => [...prev, `[ALERT] Failed to initialize scan: ${err.message}`]);
+        setScanning(false);
       }
     });
   };
@@ -127,16 +136,18 @@ export default function ActiveDirectoryScanPage() {
     doc.text(splitSummary, 15, 90);
 
     const headers = [["Security Domain", "Severity", "Finding Status", "Remediation"]];
-    const tableData = [
-      ["Krbtgt Password Age", "High", "Outdated (1,280 days)", "Reset Krbtgt password twice using script."],
-      ["Kerberoasting SPNs", "Medium", "14 accounts vulnerable", "Enforce strong password policy for service accounts."],
-      ["LDAP Communication", "Medium", "No channel binding / signing", "Enforce LDAP signing and LDAPS globally."],
-      ["Domain Controller SMB", "Low", "SMB Signing optional", "Require SMB signing on all Domain Controllers."],
-    ];
+    const tableData = results.map(finding => [
+      finding.control,
+      finding.severity,
+      finding.status,
+      finding.remediation || finding.details
+    ]);
 
-    doc.autoTable({
+    autoTable(doc, {
       head: headers,
-      body: tableData,
+      body: tableData.length > 0 ? tableData : [
+        ["No findings compiled", "N/A", "N/A", "Scan completed with no active targets or findings."]
+      ],
       startY: 110,
       theme: "striped",
       headStyles: { fillColor: [245, 158, 11], textColor: [0, 0, 0] },
@@ -145,6 +156,30 @@ export default function ActiveDirectoryScanPage() {
 
     doc.save(`Nexcore-active-directory-scan-${Date.now()}.pdf`);
   };
+
+  const checksFailed = results.filter(r => r.status === 'Fail').length;
+  const checksPassed = results.filter(r => r.status === 'Pass').length;
+  const highRisks = results.filter(r => r.status === 'Fail' && r.severity === 'High').length;
+  const mediumRisks = results.filter(r => r.status === 'Fail' && r.severity === 'Medium').length;
+
+  let riskBand = "Low Risk";
+  let riskColor = "text-emerald-450";
+  if (highRisks > 0) {
+    riskBand = "High Risk";
+    riskColor = "text-red-500";
+  } else if (mediumRisks > 0) {
+    riskBand = "Medium Risk";
+    riskColor = "text-orange-400";
+  } else if (results.length > 0) {
+    riskBand = "Secure";
+    riskColor = "text-emerald-400";
+  }
+
+  const filteredResults = results.filter(r => {
+    if (statusFilter !== "All" && r.status !== statusFilter) return false;
+    if (severityFilter !== "All" && r.severity !== severityFilter) return false;
+    return true;
+  });
 
   return (
     <div
@@ -224,7 +259,7 @@ export default function ActiveDirectoryScanPage() {
                 {/* Target Domain */}
                 <div>
                   <label className="block text-xs uppercase tracking-wider font-mono text-zinc-500 mb-2 font-semibold">
-                    Target Domain / Controller
+                    Target Domain
                   </label>
                   <input
                     type="text"
@@ -233,6 +268,7 @@ export default function ActiveDirectoryScanPage() {
                     disabled={scanning}
                     placeholder="e.g. corp.local"
                     className="w-full bg-zinc-900/40 text-zinc-100 border border-zinc-800/80 rounded-xl p-3.5 text-sm focus:outline-none transition-all placeholder:text-zinc-600 font-mono focus:ring-1 focus:border-amber-500 focus:ring-amber-500/30 disabled:opacity-50"
+                    required
                   />
                 </div>
 
@@ -243,10 +279,10 @@ export default function ActiveDirectoryScanPage() {
                   </label>
                   <div className="grid gap-3 sm:grid-cols-2">
                     <label
-                      className={`flex items-center gap-3 text-sm cursor-pointer group p-3.5 rounded-xl border transition-all ${
+                      className={`flex items-center gap-3 text-sm cursor-pointer group p-3.5 rounded-xl border transition-all bg-transparent ${
                         scope === "full"
-                          ? "border-amber-500/50 bg-amber-500/5 text-white"
-                          : "border-zinc-800/80 bg-white/[0.01] text-zinc-300 hover:bg-white/[0.03] hover:border-zinc-700"
+                          ? "border-amber-500/50 text-white"
+                          : "border-zinc-800/80 text-zinc-300 hover:border-zinc-700"
                       }`}
                     >
                       <input
@@ -261,10 +297,10 @@ export default function ActiveDirectoryScanPage() {
                       <span>Full Domain Audit</span>
                     </label>
                     <label
-                      className={`flex items-center gap-3 text-sm cursor-pointer group p-3.5 rounded-xl border transition-all ${
+                      className={`flex items-center gap-3 text-sm cursor-pointer group p-3.5 rounded-xl border transition-all bg-transparent ${
                         scope === "quick"
-                          ? "border-amber-500/50 bg-amber-500/5 text-white"
-                          : "border-zinc-800/80 bg-white/[0.01] text-zinc-300 hover:bg-white/[0.03] hover:border-zinc-700"
+                          ? "border-amber-500/50 text-white"
+                          : "border-zinc-800/80 text-zinc-300 hover:border-zinc-700"
                       }`}
                     >
                       <input
@@ -281,11 +317,69 @@ export default function ActiveDirectoryScanPage() {
                   </div>
                 </div>
 
+                {/* Collapsible Advanced Credentials Block */}
+                <div className="border border-zinc-900 rounded-xl overflow-hidden">
+                  <button
+                    type="button"
+                    onClick={() => setShowAdvanced(!showAdvanced)}
+                    className="w-full flex items-center justify-between p-3.5 bg-zinc-900/20 text-zinc-400 font-mono text-xs uppercase tracking-wider font-bold hover:text-zinc-300 transition-colors"
+                  >
+                    <span>Advanced Scan Settings (Credentialed Bind)</span>
+                    <ChevronDown className={`w-4 h-4 transition-transform duration-200 ${showAdvanced ? 'rotate-180' : ''}`} />
+                  </button>
+
+                  {showAdvanced && (
+                    <div className="p-4 bg-zinc-950/40 space-y-4 border-t border-zinc-900">
+                      <div>
+                        <label className="block text-[10px] uppercase tracking-wider font-mono text-zinc-500 mb-1.5">
+                          Domain Controller IP/Host (Optional)
+                        </label>
+                        <input
+                          type="text"
+                          value={dcIp}
+                          onChange={(e) => setDcIp(e.target.value)}
+                          disabled={scanning}
+                          placeholder="e.g. 10.0.0.10"
+                          className="w-full bg-zinc-900/40 text-zinc-100 border border-zinc-800/80 rounded-xl p-3 text-xs focus:outline-none placeholder:text-zinc-700 font-mono"
+                        />
+                      </div>
+                      <div className="grid gap-3 sm:grid-cols-2">
+                        <div>
+                          <label className="block text-[10px] uppercase tracking-wider font-mono text-zinc-500 mb-1.5">
+                            LDAP Bind Username
+                          </label>
+                          <input
+                            type="text"
+                            value={username}
+                            onChange={(e) => setUsername(e.target.value)}
+                            disabled={scanning}
+                            placeholder="e.g. administrator"
+                            className="w-full bg-zinc-900/40 text-zinc-100 border border-zinc-800/80 rounded-xl p-3 text-xs focus:outline-none placeholder:text-zinc-700 font-mono"
+                          />
+                        </div>
+                        <div>
+                          <label className="block text-[10px] uppercase tracking-wider font-mono text-zinc-500 mb-1.5">
+                            LDAP Bind Password
+                          </label>
+                          <input
+                            type="password"
+                            value={password}
+                            onChange={(e) => setPassword(e.target.value)}
+                            disabled={scanning}
+                            placeholder="••••••••••••"
+                            className="w-full bg-zinc-900/40 text-zinc-100 border border-zinc-800/80 rounded-xl p-3 text-xs focus:outline-none placeholder:text-zinc-700 font-mono"
+                          />
+                        </div>
+                      </div>
+                    </div>
+                  )}
+                </div>
+
                 {/* Submit Button */}
                 <button
                   type="submit"
                   disabled={scanning || !domain.trim()}
-                  className="w-full bg-amber-500 hover:bg-amber-600 text-black rounded-xl font-mono font-bold text-xs uppercase py-4 transition-all duration-300 hover:scale-[1.01] active:scale-[0.99] flex items-center justify-center gap-2 cursor-pointer hover:shadow-[0_0_20px_rgba(245,158,11,0.2)] focus:outline-none focus:ring-2 focus:ring-amber-500/40 focus:ring-offset-2 focus:ring-offset-black/20 disabled:opacity-40 disabled:pointer-events-none"
+                  className="w-full bg-amber-500 hover:bg-amber-600 text-black rounded-xl font-mono font-bold text-xs uppercase py-4 transition-all duration-300 hover:scale-[1.01] active:scale-[0.99] flex items-center justify-center gap-2 cursor-pointer hover:shadow-[0_0_20px_rgba(245,158,11,0.2)] focus:outline-none disabled:opacity-40"
                 >
                   {scanning ? (
                     <>
@@ -322,7 +416,7 @@ export default function ActiveDirectoryScanPage() {
                     let colorClass = "text-zinc-400";
                     if (log.includes("[SUCCESS]")) colorClass = "text-emerald-400";
                     if (log.includes("[WARNING]")) colorClass = "text-amber-400";
-                    if (log.includes("[ALERT]")) colorClass = "text-red-400 font-bold";
+                    if (log.includes("[ALERT]")) colorClass = "text-red-500 font-bold";
                     if (log.includes("[INFO]")) colorClass = "text-zinc-300";
                     return (
                       <div key={index} className={`leading-relaxed ${colorClass}`}>
@@ -330,12 +424,120 @@ export default function ActiveDirectoryScanPage() {
                       </div>
                     );
                   })}
-                  {scanning && (
-                    <div className="flex items-center gap-1.5 text-amber-400/60">
-                      <Loader2 className="h-3 w-3 animate-spin" />
-                      <span>Processing...</span>
-                    </div>
-                  )}
+                </div>
+              </div>
+            )}
+
+            {/* Interactive Findings Table */}
+            {reportReady && results.length > 0 && (
+              <div className="border border-zinc-800/80 bg-zinc-950/20 backdrop-blur-md rounded-2xl p-6 space-y-4 shadow-lg">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between border-b border-zinc-900 pb-4 gap-4">
+                  <div>
+                    <h2 className="text-lg font-mono font-medium text-zinc-100 flex items-center gap-2">
+                      <ShieldCheck className="h-5 w-5 text-amber-400" />
+                      AD Compliance Findings
+                    </h2>
+                    <p className="text-xs text-zinc-400 mt-1 font-mono">
+                      Showing {filteredResults.length} of {results.length} checks resolved.
+                    </p>
+                  </div>
+                  
+                  {/* Filters */}
+                  <div className="flex flex-wrap gap-2">
+                    <select
+                      value={statusFilter}
+                      onChange={(e) => {
+                        setStatusFilter(e.target.value);
+                        setExpandedRow(null);
+                      }}
+                      className="bg-zinc-900/60 border border-zinc-800 text-zinc-300 text-xs rounded-lg px-2.5 py-1.5 focus:outline-none focus:border-amber-500 font-mono cursor-pointer"
+                    >
+                      <option value="All">All Statuses</option>
+                      <option value="Pass">Pass</option>
+                      <option value="Fail">Fail</option>
+                    </select>
+                    <select
+                      value={severityFilter}
+                      onChange={(e) => {
+                        setSeverityFilter(e.target.value);
+                        setExpandedRow(null);
+                      }}
+                      className="bg-zinc-900/60 border border-zinc-800 text-zinc-300 text-xs rounded-lg px-2.5 py-1.5 focus:outline-none focus:border-amber-500 font-mono cursor-pointer"
+                    >
+                      <option value="All">All Severities</option>
+                      <option value="High">High</option>
+                      <option value="Medium">Medium</option>
+                      <option value="Low">Low</option>
+                    </select>
+                  </div>
+                </div>
+
+                <div className="overflow-x-auto">
+                  <table className="w-full min-w-full table-fixed text-left font-mono text-xs border-collapse">
+                    <thead>
+                      <tr className="border-b border-zinc-900 text-zinc-400 uppercase tracking-wider text-[10px]">
+                        <th className="py-3 px-2 w-[45%]">Control Policy Check</th>
+                        <th className="py-3 px-2 w-[15%] text-center">Status</th>
+                        <th className="py-3 px-2 w-[20%] text-center">Severity</th>
+                        <th className="py-3 px-2 w-[20%] text-right">Details</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {filteredResults.map((finding, idx) => {
+                        const isExpanded = expandedRow === idx;
+                        const statusColor = finding.status === 'Pass' 
+                          ? 'text-emerald-400 border-emerald-500/20 bg-emerald-500/5' 
+                          : 'text-red-450 border-red-500/20 bg-red-500/5';
+                        const severityColor = finding.severity === 'High' 
+                          ? 'text-red-400 font-bold' 
+                          : finding.severity === 'Medium' 
+                            ? 'text-orange-400' 
+                            : 'text-zinc-500';
+                        return (
+                          <React.Fragment key={idx}>
+                            <tr 
+                              onClick={() => setExpandedRow(isExpanded ? null : idx)}
+                              className="border-b border-zinc-900 hover:bg-zinc-900/10 cursor-pointer transition-colors"
+                            >
+                              <td className="py-4 px-2 text-zinc-200 font-semibold">{finding.control}</td>
+                              <td className="py-4 px-2 text-center">
+                                <span className={`inline-block px-2.5 py-0.5 rounded-lg border text-[10px] uppercase font-bold tracking-wider ${statusColor}`}>
+                                  {finding.status}
+                                </span>
+                              </td>
+                              <td className={`py-4 px-2 text-center font-bold uppercase ${severityColor}`}>{finding.severity}</td>
+                              <td className="py-4 px-2 text-right text-amber-400 text-[10px] hover:underline select-none">
+                                {isExpanded ? 'Collapse ▲' : 'Inspect ▼'}
+                              </td>
+                            </tr>
+                            {isExpanded && (
+                              <tr>
+                                <td colSpan="4" className="bg-zinc-900/20 px-4 py-4 border-b border-zinc-900 space-y-3.5 leading-relaxed text-zinc-350">
+                                  <div>
+                                    <h4 className="text-[10px] uppercase tracking-wider text-zinc-400 font-bold mb-1.5">Detailed Discovery Evidence:</h4>
+                                    <p className="text-xs font-mono bg-zinc-950/40 border border-zinc-900 rounded-xl p-3 text-zinc-300">
+                                      {finding.details}
+                                    </p>
+                                  </div>
+                                  <div>
+                                    <h4 className="text-[10px] uppercase tracking-wider text-zinc-400 font-bold mb-1.5">Actionable Remediation Guidance:</h4>
+                                    <div className={`flex gap-2 items-start text-xs font-mono border rounded-xl p-3 text-zinc-300 bg-transparent ${
+                                      finding.status === 'Pass'
+                                        ? 'border-zinc-800/80'
+                                        : 'border-amber-500/10'
+                                    }`}>
+                                      <ShieldCheck className="w-4 h-4 text-amber-400 mt-0.5 flex-shrink-0" />
+                                      <div>{finding.remediation}</div>
+                                    </div>
+                                  </div>
+                                </td>
+                              </tr>
+                            )}
+                          </React.Fragment>
+                        );
+                      })}
+                    </tbody>
+                  </table>
                 </div>
               </div>
             )}
@@ -345,7 +547,7 @@ export default function ActiveDirectoryScanPage() {
           <div className="space-y-6">
             {/* Report Ready Card */}
             {reportReady && (
-              <div className="border border-amber-500/20 bg-amber-500/5 backdrop-blur-md rounded-2xl p-6 space-y-5 shadow-[0_8px_30px_rgb(0,0,0,0.15)]">
+              <div className="border border-zinc-800/80 bg-transparent rounded-2xl p-6 space-y-5 shadow-[0_8px_30px_rgb(0,0,0,0.15)]">
                 <div className="text-center space-y-2">
                   <div className="inline-flex h-12 w-12 items-center justify-center border border-amber-500/25 text-amber-400 rounded-full bg-amber-500/10 mb-2">
                     <Award className="h-6 w-6" />
@@ -361,17 +563,17 @@ export default function ActiveDirectoryScanPage() {
                   </div>
                   <div className="flex justify-between items-center">
                     <span className="text-zinc-500">Total Findings:</span>
-                    <span className="text-amber-400 font-bold">4 Warnings</span>
+                    <span className="text-red-400 font-bold">{checksFailed} {checksFailed === 1 ? 'Warning' : 'Warnings'}</span>
                   </div>
                   <div className="flex justify-between items-center">
                     <span className="text-zinc-500">Risk Band:</span>
-                    <span className="text-red-400 font-bold">High Risk</span>
+                    <span className={`${riskColor} font-bold`}>{riskBand}</span>
                   </div>
                 </div>
 
                 <button
                   onClick={handleDownloadPDF}
-                  className="w-full bg-amber-500 hover:bg-amber-600 text-black font-mono font-bold text-xs uppercase py-3.5 rounded-xl transition-all duration-300 hover:scale-[1.01] active:scale-[0.99] flex items-center justify-center gap-2 cursor-pointer hover:shadow-[0_0_20px_rgba(245,158,11,0.2)]"
+                  className="w-full bg-amber-500 hover:bg-amber-600 text-black font-mono font-bold text-xs uppercase py-3.5 rounded-xl transition-all duration-300 hover:scale-[1.01] active:scale-[0.99] flex items-center justify-center gap-2 cursor-pointer hover:shadow-[0_0_20px_rgba(245,158,11,0.2)] border-none"
                 >
                   <Download className="h-4 w-4 text-black" />
                   Download PDF Report
@@ -388,25 +590,25 @@ export default function ActiveDirectoryScanPage() {
               <ul className="space-y-3.5 list-none pl-0">
                 <li className="flex items-start gap-2">
                   <span className="inline-block w-1.5 h-1.5 rounded-full bg-amber-500/60 mt-1.5 flex-shrink-0" />
-                  <span className="text-xs text-zinc-400 leading-relaxed">
+                  <span className="text-xs text-zinc-400 leading-relaxed font-mono">
                     Reviews LDAP parameters, SPN configurations, password policies, and domain trust flags.
                   </span>
                 </li>
                 <li className="flex items-start gap-2">
                   <span className="inline-block w-1.5 h-1.5 rounded-full bg-amber-500/60 mt-1.5 flex-shrink-0" />
-                  <span className="text-xs text-zinc-400 leading-relaxed">
+                  <span className="text-xs text-zinc-400 leading-relaxed font-mono">
                     Audits Kerberos delegation settings, Krbtgt account age, and AS-REP roastable users.
                   </span>
                 </li>
                 <li className="flex items-start gap-2">
                   <span className="inline-block w-1.5 h-1.5 rounded-full bg-amber-500/60 mt-1.5 flex-shrink-0" />
-                  <span className="text-xs text-zinc-400 leading-relaxed">
+                  <span className="text-xs text-zinc-400 leading-relaxed font-mono">
                     Validates GPO configurations and SMB signing enforcement on domain controllers.
                   </span>
                 </li>
                 <li className="flex items-start gap-2">
                   <span className="inline-block w-1.5 h-1.5 rounded-full bg-amber-500/60 mt-1.5 flex-shrink-0" />
-                  <span className="text-xs text-zinc-400 leading-relaxed">
+                  <span className="text-xs text-zinc-400 leading-relaxed font-mono">
                     Report findings comply with CIS Benchmarks for Active Directory security hardening.
                   </span>
                 </li>
@@ -422,13 +624,13 @@ export default function ActiveDirectoryScanPage() {
               <ul className="space-y-3 list-none pl-0">
                 <li className="flex items-start gap-2">
                   <span className="inline-block w-1.5 h-1.5 rounded-full bg-amber-500/60 mt-1.5 flex-shrink-0" />
-                  <span className="text-xs text-zinc-400 leading-relaxed">
+                  <span className="text-xs text-zinc-400 leading-relaxed font-mono">
                     <span className="text-zinc-200 font-semibold">Full Domain Audit</span> — comprehensive review of all AD objects, GPOs, trusts, and Kerberos settings.
                   </span>
                 </li>
                 <li className="flex items-start gap-2">
                   <span className="inline-block w-1.5 h-1.5 rounded-full bg-amber-500/60 mt-1.5 flex-shrink-0" />
-                  <span className="text-xs text-zinc-400 leading-relaxed">
+                  <span className="text-xs text-zinc-400 leading-relaxed font-mono">
                     <span className="text-zinc-200 font-semibold">Quick Config Audit</span> — targeted check of password policies, LDAP signing, and high-risk SPNs.
                   </span>
                 </li>
