@@ -4,6 +4,7 @@ import { Loader2, Search as SearchIcon, FileText, Eye, X, Award, Info } from "lu
 import { jsPDF } from "jspdf";
 import autoTable from "jspdf-autotable";
 import useProtectedAction from "../UseProtectedAction/UseProtectedAction";
+import { generateSitemapPDF } from "./generateSitemapPDF";
 
 const classNames = (...xs) => xs.filter(Boolean).join(" ");
 
@@ -93,65 +94,7 @@ export default function SitemapForm() {
 
   const downloadPDF = async () => {
     if (!sitemapData) return;
-    const doc = new jsPDF({ unit: "pt", format: "a4" });
-
-    // Header Banner
-    doc.setFillColor(18, 18, 18);
-    doc.rect(0, 0, doc.internal.pageSize.width, 40, "F");
-
-    doc.setTextColor(16, 185, 129); // Emerald Green
-    doc.setFont("Helvetica", "bold");
-    doc.setFontSize(20);
-    doc.text("NEXCORE SECURITY PLATFORM", 15, 20);
-
-    doc.setTextColor(255, 255, 255);
-    doc.setFontSize(11);
-    doc.text("WEBSITE SITEMAP AUDIT REPORT", 15, 30);
-
-    // Scan Meta Info
-    doc.setTextColor(50, 50, 50);
-    doc.setFontSize(10);
-    doc.text(`Domain: ${extractHostname(url)}`, 15, 52);
-    doc.text(`Crawl Depth: ${sitemapData.summary?.crawlDepth ?? depth}`, 15, 62);
-    doc.text(`Date: ${new Date().toLocaleString()}`, 15, 72);
-
-    doc.setDrawColor(16, 185, 129);
-    doc.setLineWidth(0.5);
-    doc.line(15, 80, doc.internal.pageSize.width - 15, 80);
-
-    // Summary Block
-    doc.setFontSize(12);
-    doc.text("Executive Summary", 15, 95);
-    doc.setFont("Helvetica", "normal");
-    doc.setFontSize(9);
-
-    const s = sitemapData.summary || {};
-    const summaryText = `This crawl evaluated the host domain '${extractHostname(url)}' up to depth ${s.crawlDepth ?? depth}. Total pages mapped: ${s.totalPages ?? sitemapData.pagesFound ?? 0}. Redirections found: ${s.redirected ?? 0}. Broken URLs found: ${s.broken ?? 0}.`;
-    const splitSummary = doc.splitTextToSize(summaryText, doc.internal.pageSize.width - 30);
-    doc.text(splitSummary, 15, 108);
-
-    // Table
-    const rows = (sitemapData.urlDetails || []).map((u) => [
-      trim(u.url, 120),
-      u.status,
-      u.statusText || "",
-      u.redirectHops || 0,
-      u.finalUrl && u.finalUrl !== u.url ? trim(u.finalUrl, 120) : "-",
-    ]);
-
-    autoTable(doc, {
-      startY: 135,
-      head: [["URL", "Status", "Text", "Hops", "Final URL"]],
-      body: rows,
-      styles: { fontSize: 8, cellWidth: "wrap" },
-      headStyles: { fillColor: [16, 185, 129], textColor: [255, 255, 255] },
-      columnStyles: {
-        0: { cellWidth: 220 },
-        4: { cellWidth: 220 },
-      },
-    });
-
-    doc.save(`sitemap-${extractHostname(url)}.pdf`);
+    await generateSitemapPDF(sitemapData, url, depth);
   };
 
   return (

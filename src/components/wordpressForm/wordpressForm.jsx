@@ -16,7 +16,8 @@ import {
   Cpu,
   ChevronRight,
   HelpCircle,
-  Award
+  Award,
+  CheckCircle2
 } from "lucide-react";
 import useProtectedAction from "../UseProtectedAction/UseProtectedAction";
 import OwnershipVerificationWizard from "@/components/ownership/OwnershipVerificationWizard";
