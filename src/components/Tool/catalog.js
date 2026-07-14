@@ -329,15 +329,15 @@ export const greenTools = [
     teamLabel: "Green Team",
     status: "passive",
   },
-  // {
-  //   name: "Email Attachment Analyzer",
-  //   description: "Review email attachments for risky file indicators.",
-  //   slug: "email-attachment-analyzer",
-  //   buttonLabel: "Launch Tool",
-  //   team: "green",
-  //   teamLabel: "Green Team",
-  //   status: "passive",
-  // },
+  {
+    name: "Email Phishing & Threat Analyzer",
+    description: "Audit email authentication headers, body links, and attachments for phishing indicators.",
+    slug: "email-attachment-analyzer",
+    buttonLabel: "Launch Tool",
+    team: "green",
+    teamLabel: "Green Team",
+    status: "passive",
+  },
   {
     name: "IP Address Info Finder",
     description: "Fetch location and network details for an IP address.",
@@ -425,15 +425,15 @@ export const purpleTools = [
 ];
 
 export const vaTools = [
-  {
-    name: "Port Scanner",
-    description: "Perform a complete network sweep to enumerate open ports and services.",
-    slug: "portScannerForm",
-    buttonLabel: "Launch Tool",
-    team: "va",
-    teamLabel: "VA",
-    status: "active",
-  },
+  // {
+  //   name: "Port Scanner",
+  //   description: "Perform a complete network sweep to enumerate open ports and services.",
+  //   slug: "portScannerForm",
+  //   buttonLabel: "Launch Tool",
+  //   team: "va",
+  //   teamLabel: "VA",
+  //   status: "active",
+  // },
   {
     name: "Basic Network Scanning",
     description: "Check target surfaces for foundational exposure and weak services.",

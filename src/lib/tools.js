@@ -296,9 +296,9 @@ export const tools = [
     type: "non-tech"
   },
   {
-    name: "Email Attachment Analyzer",
+    name: "Email Phishing & Threat Analyzer",
     image: "/tools/card-images/email.png",
-    description: "Scans email attachments for malware or hidden threats.",
+    description: "Audits email authentication headers, body links, and attachments for phishing indicators.",
     slug: "email-attachment-analyzer",
     buttonLabel: "Analyze File",
     type: "non-tech"

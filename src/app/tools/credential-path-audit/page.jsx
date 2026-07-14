@@ -13,8 +13,7 @@ import {
   Key,
   ChevronDown,
 } from "lucide-react";
-import jsPDF from "jspdf";
-import autoTable from "jspdf-autotable";
+import { generateCredentialPathPDF } from "@/components/credentialPath/generateCredentialPathPDF";
 import useProtectedAction from "@/components/UseProtectedAction/UseProtectedAction";
 
 export default function CredentialPathAuditPage() {
@@ -101,59 +100,7 @@ export default function CredentialPathAuditPage() {
   };
 
   const handleDownloadPDF = () => {
-    const doc = new jsPDF();
-
-    // Header Banner — amber theme
-    doc.setFillColor(18, 18, 18);
-    doc.rect(0, 0, doc.internal.pageSize.width, 40, "F");
-    doc.setTextColor(245, 158, 11); // amber-500
-    doc.setFont("Helvetica", "bold");
-    doc.setFontSize(22);
-    doc.text("NEXCORE SECURITY PLATFORM", 15, 20);
-    doc.setTextColor(255, 255, 255);
-    doc.setFontSize(12);
-    doc.text("CREDENTIAL PATH AUDIT REPORT", 15, 30);
-
-    doc.setTextColor(50, 50, 50);
-    doc.setFontSize(10);
-    doc.text(`Target Domain: ${domain}`, 15, 50);
-    doc.text(`Scope: ${scope === "full" ? "Full Path Traversal" : "Quick Privilege Check"}`, 15, 55);
-    doc.text(`Date: ${new Date().toLocaleString()}`, 15, 60);
-    doc.text("Status: Completed / VA-Verified", 15, 65);
-
-    doc.setDrawColor(245, 158, 11);
-    doc.setLineWidth(0.5);
-    doc.line(15, 72, doc.internal.pageSize.width - 15, 72);
-
-    doc.setFontSize(14);
-    doc.text("Executive Summary", 15, 82);
-    doc.setFont("Helvetica", "normal");
-    doc.setFontSize(10);
-
-    const summaryText = `This path audit analyzed user account privilege structures, local admin group nesting, session histories, and ACL permissions for domain '${domain}'. The goal was to identify credential theft paths and lateral movement routes to domain administration. A highly critical delegation route was mapped.`;
-    const splitSummary = doc.splitTextToSize(summaryText, doc.internal.pageSize.width - 30);
-    doc.text(splitSummary, 15, 90);
-
-    const headers = [["Security Domain", "Severity", "Finding Status", "Remediation"]];
-    const tableData = results.map(finding => [
-      finding.control,
-      finding.severity,
-      finding.status,
-      finding.remediation || finding.details
-    ]);
-
-    autoTable(doc, {
-      head: headers,
-      body: tableData.length > 0 ? tableData : [
-        ["No findings compiled", "N/A", "N/A", "Scan completed with no active targets or findings."]
-      ],
-      startY: 110,
-      theme: "striped",
-      headStyles: { fillColor: [245, 158, 11], textColor: [0, 0, 0] },
-      margin: { top: 110 },
-    });
-
-    doc.save(`Nexcore-credential-path-audit-${Date.now()}.pdf`);
+    generateCredentialPathPDF(results, domain, scope);
   };
 
   const checksFailed = results.filter(r => r.status === 'Fail').length;

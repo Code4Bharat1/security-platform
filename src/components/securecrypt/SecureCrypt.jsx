@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useMemo, useState, useEffect } from "react";
 import {
   Clipboard,
   ClipboardCheck,
@@ -13,10 +13,12 @@ import {
   Loader2,
   XCircle,
   FileText,
+  Eye,
+  EyeOff,
+  History,
 } from "lucide-react";
-import { jsPDF } from "jspdf";
-import autoTable from "jspdf-autotable";
 import useProtectedAction from "../UseProtectedAction/UseProtectedAction";
+import { generateSecureCryptPDF } from "./generateSecureCryptPDF";
 
 export default function SecureCrypt() {
   const API = useMemo(
@@ -38,6 +40,39 @@ export default function SecureCrypt() {
   const [copiedKey, setCopiedKey] = useState(false);
 
   const protectedAction = useProtectedAction();
+  const [showPassphrase, setShowPassphrase] = useState(false);
+  const [showKey, setShowKey] = useState(false);
+  const [sessionKeys, setSessionKeys] = useState([]);
+
+  useEffect(() => {
+    try {
+      const stored = sessionStorage.getItem("securecrypt_session_keys");
+      if (stored) {
+        setSessionKeys(JSON.parse(stored));
+      }
+    } catch (_) {}
+  }, []);
+
+  const saveToSessionHistory = (key, textPreview) => {
+    try {
+      const newEntry = {
+        id: Date.now(),
+        timestamp: new Date().toLocaleTimeString(),
+        key,
+        preview: textPreview.slice(0, 16) + (textPreview.length > 16 ? "..." : "")
+      };
+      const updated = [newEntry, ...sessionKeys].slice(0, 10);
+      setSessionKeys(updated);
+      sessionStorage.setItem("securecrypt_session_keys", JSON.stringify(updated));
+    } catch (_) {}
+  };
+
+  const clearSessionHistory = () => {
+    setSessionKeys([]);
+    try {
+      sessionStorage.removeItem("securecrypt_session_keys");
+    } catch (_) {}
+  };
 
   const encrypt = async () => {
     setLoading(true);
@@ -66,7 +101,10 @@ export default function SecureCrypt() {
 
         setResultText(data.package || "");
         setReport(data.report || null);
-        if (data.generatedKeyB64) setGeneratedKeyB64(data.generatedKeyB64);
+        if (data.generatedKeyB64) {
+          setGeneratedKeyB64(data.generatedKeyB64);
+          saveToSessionHistory(data.generatedKeyB64, text.trim());
+        }
         if (data.note) setNote(data.note);
       } catch (e) {
         setResultText(`ERROR: ${e.message || "Error contacting server."}`);
@@ -135,56 +173,7 @@ export default function SecureCrypt() {
   };
 
   const downloadPdf = (r) => {
-    const doc = new jsPDF({ unit: "pt" });
-
-    // Branded header
-    doc.setFillColor(18, 18, 18);
-    doc.rect(0, 0, doc.internal.pageSize.width, 40, "F");
-    doc.setTextColor(16, 185, 129);
-    doc.setFont("Helvetica", "bold");
-    doc.setFontSize(18);
-    doc.text("NEXCORE SECURITY PLATFORM", 15, 20);
-    doc.setTextColor(255, 255, 255);
-    doc.setFontSize(10);
-    doc.text(`SECURECRYPT — ${mode.toUpperCase()} REPORT`, 15, 34);
-
-    doc.setDrawColor(16, 185, 129);
-    doc.setLineWidth(0.5);
-    doc.line(15, 48, doc.internal.pageSize.width - 15, 48);
-
-    const summary = [];
-    if (mode === "encrypt") {
-      summary.push(["Mode", "Encrypt"]);
-      summary.push(["Algorithm", r?.algorithm || "-"]);
-      summary.push(["KDF", r?.kdf || "-"]);
-      summary.push(["Iterations", String(r?.iterations ?? "-")]);
-      summary.push(["Key Length", `${r?.keyLengthBits ?? "-"} bit`]);
-      summary.push(["Salt", r?.salt || "-"]);
-      summary.push(["IV", r?.iv || "-"]);
-      summary.push(["Auth Tag", r?.authTag || "-"]);
-      summary.push(["Ciphertext", r?.ciphertext || "-"]);
-    } else {
-      summary.push(["Mode", "Decrypt"]);
-      summary.push(["Algorithm", r?.algorithm || "-"]);
-      summary.push(["KDF", r?.kdf || "-"]);
-      summary.push(["Iterations", String(r?.iterations ?? "-")]);
-      summary.push(["Key Length", `${r?.keyLengthBits ?? "-"} bit`]);
-      summary.push(["Salt", r?.salt || "-"]);
-      summary.push(["IV", r?.iv || "-"]);
-      summary.push(["Auth Tag", r?.authTag || "-"]);
-      summary.push(["Ciphertext (src)", r?.ciphertext || "-"]);
-      summary.push(["Decrypted Result", resultText || "-"]);
-    }
-
-    autoTable(doc, {
-      startY: 58,
-      head: [["Field", "Value"]],
-      body: summary,
-      styles: { fontSize: 9, cellPadding: 4 },
-      headStyles: { fillColor: [16, 185, 129], textColor: [255, 255, 255] },
-    });
-
-    doc.save(`${mode}_report.pdf`);
+    generateSecureCryptPDF(r, mode, text, resultText);
   };
 
   const resultIsError = resultText.startsWith("ERROR:");
@@ -277,8 +266,8 @@ export default function SecureCrypt() {
                     key={value}
                     className={`flex items-center gap-3 text-sm cursor-pointer group p-3.5 rounded-xl border transition-all ${
                       mode === value
-                        ? "border-emerald-500/50 bg-emerald-500/5 text-white"
-                        : "border-zinc-800/80 bg-white/[0.01] text-zinc-300 hover:bg-white/[0.03] hover:border-zinc-700"
+                        ? "border-emerald-500/50 bg-transparent text-white"
+                        : "border-zinc-800/80 bg-transparent text-zinc-300 hover:border-zinc-700"
                     }`}
                   >
                     <input
@@ -288,6 +277,9 @@ export default function SecureCrypt() {
                       checked={mode === value}
                       onChange={() => {
                         setMode(value);
+                        setText("");
+                        setPassphrase("");
+                        setKeyB64("");
                         setResultText("");
                         setReport(null);
                         setGeneratedKeyB64("");
@@ -336,32 +328,68 @@ export default function SecureCrypt() {
                 <div className="grid sm:grid-cols-2 gap-4">
                   <div>
                     <label className="block text-xs uppercase tracking-widest font-mono text-zinc-400 mb-2 font-semibold">
-                      Passphrase <span className="text-zinc-600 normal-case tracking-normal">(optional)</span>
+                      Passphrase{" "}
+                      <span className="text-zinc-500 normal-case tracking-normal font-normal">
+                        {mode === "encrypt" ? "(optional)" : "(required if no key)"}
+                      </span>
                     </label>
-                    <input
-                      type="password"
-                      value={passphrase}
-                      onChange={(e) => setPassphrase(e.target.value)}
-                      placeholder="Strong passphrase…"
-                      disabled={loading}
-                      className="w-full bg-zinc-900/40 text-zinc-100 border border-zinc-800/80 rounded-xl p-3.5 text-sm focus:border-emerald-500/50 focus:ring-1 focus:ring-emerald-500/30 focus:outline-none transition-all placeholder:text-zinc-600 font-mono"
-                    />
-                    <p className="text-[11px] text-zinc-500 mt-1.5 font-mono">
-                      If empty, a random 256-bit key is generated.
-                    </p>
+                    <div className="relative">
+                      <input
+                        type={showPassphrase ? "text" : "password"}
+                        value={passphrase}
+                        onChange={(e) => setPassphrase(e.target.value)}
+                        placeholder={mode === "encrypt" ? "Strong passphrase…" : "Enter decryption passphrase…"}
+                        disabled={loading}
+                        className="w-full bg-zinc-900/40 text-zinc-100 border border-zinc-800/80 rounded-xl p-3.5 pr-10 text-sm focus:border-emerald-500/50 focus:ring-1 focus:ring-emerald-500/30 focus:outline-none transition-all placeholder:text-zinc-600 font-mono"
+                      />
+                      {passphrase && (
+                        <button
+                          type="button"
+                          onClick={() => setShowPassphrase(!showPassphrase)}
+                          className="absolute right-3.5 top-1/2 -translate-y-1/2 text-zinc-500 hover:text-emerald-400 focus:outline-none"
+                        >
+                          {showPassphrase ? <EyeOff size={16} /> : <Eye size={16} />}
+                        </button>
+                      )}
+                    </div>
+                    {passphrase.length > 0 && passphrase.length < 12 ? (
+                      <p className="text-[11px] text-rose-450 mt-1.5 font-mono font-semibold">
+                        ⚠️ Weak passphrase (&lt; 12 chars). Vulnerable to brute-force.
+                      </p>
+                    ) : (
+                      <p className="text-[11px] text-zinc-500 mt-1.5 font-mono">
+                        {mode === "encrypt"
+                          ? "If empty, a random 256-bit key is generated."
+                          : "Passphrase used during encryption."}
+                      </p>
+                    )}
                   </div>
                   <div>
                     <label className="block text-xs uppercase tracking-widest font-mono text-zinc-400 mb-2 font-semibold">
-                      Base64 Key <span className="text-zinc-600 normal-case tracking-normal">(optional)</span>
+                      Base64 Key{" "}
+                      <span className="text-zinc-500 normal-case tracking-normal font-normal">
+                        {mode === "encrypt" ? "(optional)" : "(required if no passphrase)"}
+                      </span>
                     </label>
-                    <input
-                      type="text"
-                      value={keyB64}
-                      onChange={(e) => setKeyB64(e.target.value)}
-                      placeholder="Use instead of passphrase"
-                      disabled={loading}
-                      className="w-full bg-zinc-900/40 text-zinc-100 border border-zinc-800/80 rounded-xl p-3.5 text-sm focus:border-emerald-500/50 focus:ring-1 focus:ring-emerald-500/30 focus:outline-none transition-all placeholder:text-zinc-600 font-mono"
-                    />
+                    <div className="relative">
+                      <input
+                        type={showKey ? "text" : "password"}
+                        value={keyB64}
+                        onChange={(e) => setKeyB64(e.target.value)}
+                        placeholder="Use instead of passphrase"
+                        disabled={loading}
+                        className="w-full bg-zinc-900/40 text-zinc-100 border border-zinc-800/80 rounded-xl p-3.5 pr-10 text-sm focus:border-emerald-500/50 focus:ring-1 focus:ring-emerald-500/30 focus:outline-none transition-all placeholder:text-zinc-600 font-mono"
+                      />
+                      {keyB64 && (
+                        <button
+                          type="button"
+                          onClick={() => setShowKey(!showKey)}
+                          className="absolute right-3.5 top-1/2 -translate-y-1/2 text-zinc-500 hover:text-emerald-400 focus:outline-none"
+                        >
+                          {showKey ? <EyeOff size={16} /> : <Eye size={16} />}
+                        </button>
+                      )}
+                    </div>
                     <p className="text-[11px] text-zinc-500 mt-1.5 font-mono">
                       Exactly 32 bytes (base64). Overrides passphrase.
                     </p>
@@ -457,7 +485,7 @@ export default function SecureCrypt() {
                 </div>
 
                 {note && (
-                  <div className="rounded-xl border border-emerald-500/20 bg-emerald-500/5 px-4 py-3">
+                  <div className="rounded-xl border border-emerald-500/20 bg-transparent px-4 py-3">
                     <p className="text-xs text-emerald-400 font-mono">{note}</p>
                   </div>
                 )}
@@ -559,6 +587,43 @@ export default function SecureCrypt() {
                 ))}
               </div>
             </div>
+
+            {/* Session Key Escrow History */}
+            {sessionKeys.length > 0 && (
+              <div className="border border-zinc-800/80 bg-zinc-950/20 backdrop-blur-md rounded-2xl p-6 space-y-4 shadow-[0_8px_30px_rgb(0,0,0,0.12)]">
+                <div className="flex items-center justify-between border-b border-zinc-800/40 pb-2.5">
+                  <h4 className="text-xs font-mono font-bold uppercase tracking-wider text-zinc-100 flex items-center gap-2">
+                    <History className="h-4 w-4 text-emerald-400" />
+                    Session Key Escrow
+                  </h4>
+                  <button
+                    onClick={clearSessionHistory}
+                    className="text-[10px] font-mono text-rose-400 hover:text-rose-300 uppercase cursor-pointer focus:outline-none"
+                  >
+                    Clear
+                  </button>
+                </div>
+                <div className="space-y-3 max-h-60 overflow-y-auto pr-1">
+                  {sessionKeys.map((item) => (
+                    <div key={item.id} className="bg-zinc-900/30 border border-zinc-800/50 rounded-xl p-3 space-y-1.5 font-mono text-[11px]">
+                      <div className="flex items-center justify-between text-zinc-500 text-[10px]">
+                        <span>{item.timestamp}</span>
+                        <span className="text-emerald-500/80 max-w-[120px] truncate">For: "{item.preview}"</span>
+                      </div>
+                      <div className="flex items-center justify-between gap-2">
+                        <code className="text-zinc-300 break-all select-all font-mono text-[10px] max-w-[200px] truncate">{item.key}</code>
+                        <button
+                          onClick={() => copyToClipboard(item.key, () => {})}
+                          className="text-[10px] text-emerald-400 hover:text-emerald-300 uppercase cursor-pointer font-semibold"
+                        >
+                          Copy
+                        </button>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
           </div>
         </div>
       </div>

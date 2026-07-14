@@ -20,8 +20,10 @@ import {
   Radio,
   Wifi,
   Filter,
+  Download,
 } from "lucide-react";
 import useProtectedAction from "../UseProtectedAction/UseProtectedAction";
+import { generateBasicNetworkScanPDF } from "./generateBasicNetworkScanPDF";
 
 const API = process.env.NEXT_PUBLIC_PROD_API_URL?.replace(/\/+$/, "");
 
@@ -487,12 +489,12 @@ export default function BasicNetworkScan() {
 
             {/* Loading state */}
             {loading && (
-              <div className="border border-amber-500/20 bg-amber-500/5 rounded-2xl p-6">
+              <div className="border border-amber-500/20 rounded-2xl p-6">
                 <div className="flex items-center gap-3 mb-4">
-                  <span className="bns-scanning-dot h-2.5 w-2.5 rounded-full bg-black inline-block" />
-                  <span className="text-sm font-mono font-bold text-black">SCANNING IN PROGRESS</span>
+                  <span className="bns-scanning-dot h-2.5 w-2.5 rounded-full bg-amber-400 inline-block animate-pulse" />
+                  <span className="text-sm font-mono font-bold text-amber-400">SCANNING IN PROGRESS</span>
                 </div>
-                <div className="space-y-2 font-mono text-xs text-black font-medium">
+                <div className="space-y-2 font-mono text-xs text-zinc-400">
                   <p>▶ Parsing targets & resolving DNS hosts...</p>
                   <p>▶ Running TCP host alive ping sweeps...</p>
                   <p>▶ Probing open ports in concurrency-limited socket batches...</p>
@@ -570,6 +572,14 @@ export default function BasicNetworkScan() {
                         </div>
                       </div>
                       <div className="flex items-center gap-2">
+                        <button
+                          type="button"
+                          onClick={() => generateBasicNetworkScanPDF(result, target)}
+                          className="flex items-center gap-1.5 text-[0.65rem] font-mono px-2.5 py-1 rounded-lg border border-amber-500/25 text-amber-400 bg-amber-500/5 hover:bg-amber-500/10 transition-all hover:scale-[1.01] active:scale-[0.99] cursor-pointer"
+                        >
+                          <Download className="h-3 w-3" />
+                          PDF Report
+                        </button>
                         <button
                           type="button"
                           onClick={() => setShowOnlyOpen((v) => !v)}

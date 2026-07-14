@@ -374,7 +374,7 @@ export default function CloudSecurityPage() {
                 </div>
 
                 <div className="border-t border-zinc-800/40 my-3 pt-3 space-y-4">
-                  <div className="bg-amber-500/5 border border-amber-500/10 p-3.5 rounded-xl">
+                  <div className="border border-amber-500/10 p-3.5 rounded-xl">
                     <p className="text-[0.68rem] text-zinc-400 font-mono leading-relaxed flex items-start gap-2">
                       <Lock className="h-4.5 w-4.5 text-amber-400 flex-shrink-0 mt-0.5" />
                       <span>

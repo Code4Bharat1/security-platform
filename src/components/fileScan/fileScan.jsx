@@ -50,6 +50,7 @@ export default function FileScan() {
     switch (status?.toLowerCase()) {
       case "malicious": return "text-red-500 bg-red-500/10 border-red-500/20";
       case "suspicious": return "text-yellow-500 bg-yellow-500/10 border-yellow-500/20";
+      case "unverified": return "text-zinc-400 bg-zinc-500/10 border-zinc-500/20";
       default: return "text-green-500 bg-green-500/10 border-green-500/20";
     }
   };

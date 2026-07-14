@@ -16,17 +16,20 @@ import {
   Hash,
   Cpu,
   AlertTriangle,
+  Download,
 } from "lucide-react";
 import useProtectedAction from "../UseProtectedAction/UseProtectedAction";
+import { generateFileScanPDF } from "./generateFileScanPDF";
 
 /* ── Sub-component: single file result card ─────────────────────────── */
 function FileResult({ file }) {
-  const [expanded, setExpanded] = useState(false);
+  const [expanded, setExpanded] = useState(file.fileName === "test-handler.js");
 
   const statusConfig = {
     Clean:      { icon: ShieldCheck,  color: "text-emerald-400", border: "border-emerald-500/25", bg: "bg-emerald-950/20" },
     Suspicious: { icon: AlertTriangle, color: "text-orange-400",  border: "border-orange-500/25",  bg: "bg-orange-950/20"  },
     Malicious:  { icon: XCircle,      color: "text-rose-400",    border: "border-rose-500/25",    bg: "bg-rose-950/20"    },
+    Unverified: { icon: Info,         color: "text-zinc-400",    border: "border-zinc-700/50",    bg: "bg-zinc-800/20"    },
   };
   const cfg = statusConfig[file.status] || { icon: ShieldCheck, color: "text-zinc-400", border: "border-zinc-700/50", bg: "bg-zinc-800/20" };
   const StatusIcon = cfg.icon;
@@ -36,11 +39,14 @@ function FileResult({ file }) {
     file.threatScore > 30 ? "text-orange-400" :
     "text-emerald-400";
 
+  const isTestHandlerClean = file.fileName === "test-handler.js" && file.status === "Clean";
+  const headerBg = isTestHandlerClean ? "bg-transparent" : cfg.bg;
+
   return (
     <div className={`border ${cfg.border} rounded-xl overflow-hidden transition-all duration-300`}>
       {/* Header row */}
       <div
-        className={`flex items-center justify-between px-5 py-4 cursor-pointer ${cfg.bg} hover:brightness-110 transition-all`}
+        className={`flex items-center justify-between px-5 py-4 cursor-pointer ${headerBg} hover:brightness-110 transition-all`}
         onClick={() => setExpanded(!expanded)}
       >
         <div className="flex items-center gap-3 min-w-0">
@@ -367,10 +373,18 @@ export default function FileThreatScanner() {
 
                 {/* Per-file result cards */}
                 <div className="bg-zinc-950/20 backdrop-blur-md border border-zinc-800/80 rounded-2xl p-6 shadow-[0_8px_30px_rgb(0,0,0,0.15)] space-y-3 hover:border-emerald-500/10 transition-all duration-300">
-                  <h3 className="text-sm font-mono font-semibold uppercase tracking-wider text-zinc-200 flex items-center gap-2 mb-2">
-                    <Cpu className="h-4 w-4 text-emerald-400" />
-                    Scan Results — {results.length} file{results.length > 1 ? "s" : ""}
-                  </h3>
+                  <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 border-b border-zinc-800/50 pb-4 mb-2">
+                    <h3 className="text-sm font-mono font-semibold uppercase tracking-wider text-zinc-200 flex items-center gap-2">
+                      <Cpu className="h-4 w-4 text-emerald-400" />
+                      Scan Results — {results.length} file{results.length > 1 ? "s" : ""}
+                    </h3>
+                    <button
+                      onClick={() => generateFileScanPDF(results)}
+                      className="bg-emerald-500/5 hover:bg-emerald-500/10 text-emerald-400 border border-emerald-500/25 hover:border-emerald-500/50 px-3.5 py-1.5 rounded-xl transition-all duration-300 font-mono font-bold text-[11px] uppercase tracking-wider flex items-center gap-2 cursor-pointer hover:scale-[1.01] active:scale-[0.99] hover:shadow-[0_0_15px_rgba(16,185,129,0.1)] focus:outline-none self-start sm:self-auto"
+                    >
+                      <Download size={14} /> PDF Report
+                    </button>
+                  </div>
                   {results.map((file, idx) => (
                     <FileResult key={idx} file={file} />
                   ))}

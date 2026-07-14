@@ -160,32 +160,32 @@ export default function SecretKeyScanner() {
   const badge = (sev) => {
     const base = "border-l-4 p-4 rounded-xl font-mono text-xs shadow-md space-y-2 ";
     if (sev === "Critical" || sev === "High") {
-      return `${base} border-red-500/40 bg-red-955/10 text-zinc-200`;
+      return `${base} border-red-500/40 bg-transparent text-zinc-200`;
     }
     if (sev === "Medium") {
-      return `${base} border-orange-500/40 bg-orange-955/10 text-zinc-200`;
+      return `${base} border-orange-500/40 bg-transparent text-zinc-200`;
     }
-    return `${base} border-zinc-800 bg-zinc-900/40 text-zinc-350`;
+    return `${base} border-zinc-800 bg-transparent text-zinc-350`;
   };
 
   const getSeverityBadge = (sev) => {
     const base = "inline-flex items-center px-2.5 py-0.5 rounded-lg text-[10px] font-bold font-mono border uppercase tracking-wider";
     if (sev === "Critical" || sev === "High") {
       return (
-        <span className={`${base} border-red-500/40 bg-red-500/5 text-red-400`}>
+        <span className={`${base} border-red-500/40 bg-transparent text-red-400`}>
           {sev}
         </span>
       );
     }
     if (sev === "Medium") {
       return (
-        <span className={`${base} border-orange-500/40 bg-orange-500/5 text-orange-400`}>
+        <span className={`${base} border-orange-500/40 bg-transparent text-orange-400`}>
           {sev}
         </span>
       );
     }
     return (
-      <span className={`${base} border-zinc-800 bg-zinc-900/40 text-zinc-400`}>
+      <span className={`${base} border-zinc-800 bg-transparent text-zinc-400`}>
         {sev}
       </span>
     );

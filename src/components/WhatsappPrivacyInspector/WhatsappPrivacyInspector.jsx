@@ -13,8 +13,10 @@ import {
   Loader2,
   FileText,
   Lock,
+  Download,
 } from "lucide-react";
 import useProtectedAction from "../UseProtectedAction/UseProtectedAction";
+import { generateWhatsappPDF } from "./generateWhatsappPDF";
 
 export default function WhatsappPrivacyChecker() {
   const [images, setImages] = useState([]);
@@ -113,9 +115,9 @@ export default function WhatsappPrivacyChecker() {
   };
 
   const getScoreColor = (val) => {
-    if (val >= 80) return "text-emerald-400 border-emerald-500/25 bg-emerald-950/20";
-    if (val >= 50) return "text-orange-400 border-orange-500/25 bg-orange-950/20";
-    return "text-rose-400 border-rose-500/25 bg-rose-950/20";
+    if (val >= 80) return "text-emerald-400 border-emerald-500/25 bg-transparent";
+    if (val >= 50) return "text-orange-400 border-orange-500/25 bg-transparent";
+    return "text-rose-400 border-rose-500/25 bg-transparent";
   };
 
   return (
@@ -284,11 +286,19 @@ export default function WhatsappPrivacyChecker() {
             {/* Analysis Results */}
             {score !== null && !isLoading && (
               <div className="bg-zinc-950/20 backdrop-blur-md border border-zinc-800/80 rounded-2xl p-6 shadow-[0_12px_40px_rgb(0,0,0,0.2)] space-y-6 hover:border-emerald-500/10 transition-all duration-300">
-                <div className="border-b border-zinc-800/50 pb-4 flex items-center gap-3">
-                  <ShieldCheck className="h-5 w-5 text-emerald-400" />
-                  <h2 className="font-mono font-bold text-sm uppercase tracking-wider text-zinc-100">
-                    Analysis Results
-                  </h2>
+                <div className="border-b border-zinc-800/50 pb-4 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+                  <div className="flex items-center gap-3">
+                    <ShieldCheck className="h-5 w-5 text-emerald-400" />
+                    <h2 className="font-mono font-bold text-sm uppercase tracking-wider text-zinc-100">
+                      Analysis Results
+                    </h2>
+                  </div>
+                  <button
+                    onClick={() => generateWhatsappPDF(score, messages, settings, images.length)}
+                    className="bg-emerald-500/5 hover:bg-emerald-500/10 text-emerald-400 border border-emerald-500/25 hover:border-emerald-500/50 px-3.5 py-1.5 rounded-xl transition-all duration-300 font-mono font-bold text-[11px] uppercase tracking-wider flex items-center gap-2 cursor-pointer hover:scale-[1.01] active:scale-[0.99] hover:shadow-[0_0_15px_rgba(16,185,129,0.1)] focus:outline-none self-start sm:self-auto"
+                  >
+                    <Download size={14} /> PDF Report
+                  </button>
                 </div>
 
                 {/* Score Section */}

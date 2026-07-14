@@ -13,11 +13,11 @@ import {
   ShieldCheck,
   MapPin,
   Clock,
+  Download,
 } from "lucide-react";
 import axios from "axios";
-import { jsPDF } from "jspdf";
-import autoTable from "jspdf-autotable";
 import useProtectedAction from "../UseProtectedAction/UseProtectedAction";
+import { generateIpPDF } from "./generateIpPDF";
 
 export default function IPInfoFinder() {
   const [ip, setIp] = useState("");
@@ -112,147 +112,7 @@ export default function IPInfoFinder() {
   }
 
   function exportPDF() {
-    if (!info) return;
-    const doc = new jsPDF({ unit: "pt", format: "a4" });
-    const marginX = 40;
-
-    // Header Banner
-    doc.setFillColor(18, 18, 18);
-    doc.rect(0, 0, doc.internal.pageSize.width, 60, "F");
-    doc.setTextColor(16, 185, 129);
-    doc.setFont("Helvetica", "bold");
-    doc.setFontSize(18);
-    doc.text("NEXCORE SECURITY PLATFORM", 40, 28);
-    doc.setTextColor(255, 255, 255);
-    doc.setFontSize(10);
-    doc.text("IP INTELLIGENCE & THREAT ASSESSMENT REPORT", 40, 44);
-
-    doc.setDrawColor(16, 185, 129);
-    doc.setLineWidth(1);
-    doc.line(15, 68, doc.internal.pageSize.width - 15, 68);
-
-    // Page 1: Overview
-    doc.setTextColor(40, 40, 40);
-    doc.setFont("Helvetica", "bold");
-    doc.setFontSize(13);
-    doc.text("1. EXECUTIVE ASSESSMENT SUMMARY", marginX, 90);
-
-    doc.setFont("Helvetica", "normal");
-    doc.setFontSize(9);
-    doc.text(`Target IP:          ${info.basicInformation?.ipAddress}`, marginX, 110);
-    doc.text(`Classification:     ${info.basicInformation?.ipClass}`, marginX, 122);
-    doc.text(`Scan Date:          ${info.reportGeneratedAt || new Date().toLocaleString()}`, marginX, 134);
-    doc.text(`Security Rating:    ${info.overallSecurityRating} (Risk: ${info.securityThreatIntel?.riskScore}/100)`, marginX, 146);
-
-    doc.setFont("Helvetica", "bold");
-    doc.text("Actionable Recommendations:", marginX, 170);
-    doc.setFont("Helvetica", "normal");
-    let yPos = 184;
-    (info.recommendations || []).forEach((r) => {
-      const splitText = doc.splitTextToSize(`• ${r}`, doc.internal.pageSize.width - marginX * 2);
-      doc.text(splitText, marginX, yPos);
-      yPos += splitText.length * 12 + 4;
-    });
-
-    // Basic Information Table
-    autoTable(doc, {
-      startY: yPos + 10,
-      head: [["Basic Information", "Value"]],
-      body: [
-        ["IP Address", info.basicInformation?.ipAddress],
-        ["IP Version", info.basicInformation?.version],
-        ["Reverse DNS", info.basicInformation?.reverseDNS],
-        ["Hostname", info.basicInformation?.hostname],
-        ["Classification", info.basicInformation?.ipClass],
-      ],
-      styles: { fontSize: 8 },
-      headStyles: { fillColor: [16, 185, 129], textColor: [255, 255, 255] },
-      margin: { left: marginX, right: marginX },
-      theme: "grid",
-    });
-
-    // Location Table
-    doc.setFont("Helvetica", "bold");
-    doc.setFontSize(13);
-    doc.text("2. LOCATION DATA", marginX, doc.lastAutoTable.finalY + 25);
-    autoTable(doc, {
-      startY: doc.lastAutoTable.finalY + 35,
-      head: [["Location Field", "Value"]],
-      body: [
-        ["Country", info.locationData?.country],
-        ["Region", info.locationData?.region],
-        ["City", info.locationData?.city],
-        ["Timezone", info.locationData?.timezone],
-        ["Latitude", String(info.locationData?.latitude ?? "Not Available")],
-        ["Longitude", String(info.locationData?.longitude ?? "Not Available")],
-      ],
-      styles: { fontSize: 8 },
-      headStyles: { fillColor: [16, 185, 129], textColor: [255, 255, 255] },
-      margin: { left: marginX, right: marginX },
-      theme: "grid",
-    });
-
-    // Network Table
-    doc.setFont("Helvetica", "bold");
-    doc.text("3. NETWORK DETAILS", marginX, doc.lastAutoTable.finalY + 25);
-    autoTable(doc, {
-      startY: doc.lastAutoTable.finalY + 35,
-      head: [["Network Field", "Value"]],
-      body: [
-        ["ISP", info.networkDetails?.isp],
-        ["Organization", info.networkDetails?.organization],
-        ["ASN", info.networkDetails?.asn],
-      ],
-      styles: { fontSize: 8 },
-      headStyles: { fillColor: [16, 185, 129], textColor: [255, 255, 255] },
-      margin: { left: marginX, right: marginX },
-      theme: "grid",
-    });
-
-    // Security & Threat Intelligence Table
-    doc.addPage();
-    doc.setFillColor(18, 18, 18);
-    doc.rect(0, 0, doc.internal.pageSize.width, 40, "F");
-    doc.setTextColor(16, 185, 129);
-    doc.setFont("Helvetica", "bold");
-    doc.setFontSize(14);
-    doc.text("NEXCORE SECURITY & THREAT INTELLIGENCE", 40, 24);
-
-    doc.setTextColor(40, 40, 40);
-    doc.text("4. SECURITY & THREAT INTELLIGENCE", marginX, 65);
-    autoTable(doc, {
-      startY: 75,
-      head: [["Security Indicator", "Status / Value"]],
-      body: [
-        ["Overall Security Rating", info.overallSecurityRating],
-        ["Risk Score (0-100)", `${info.securityThreatIntel?.riskScore}`],
-        ["Proxy/VPN", info.securityThreatIntel?.proxyOrVpn],
-        ["Tor Exit Node", info.securityThreatIntel?.torExitNode],
-        ["Blacklist Status", info.securityThreatIntel?.blacklistStatus],
-        ["Malware Detection", info.securityThreatIntel?.malwareHostingHistory],
-        ["Spam Reports", `${info.securityThreatIntel?.spamReports || 0}`],
-      ],
-      styles: { fontSize: 8 },
-      headStyles: { fillColor: [16, 185, 129], textColor: [255, 255, 255] },
-      margin: { left: marginX, right: marginX },
-      theme: "grid",
-    });
-
-    // Draw page numbers & disclaimers
-    const totalPages = doc.internal.getNumberOfPages();
-    for (let i = 1; i <= totalPages; i++) {
-      doc.setPage(i);
-      doc.setFontSize(7);
-      doc.setTextColor(120, 120, 120);
-      doc.text(
-        `Page ${i} of ${totalPages} | Confidential IP Threat Assessment | Generated by Nexcore`,
-        doc.internal.pageSize.width / 2,
-        doc.internal.pageSize.height - 20,
-        { align: "center" }
-      );
-    }
-
-    doc.save(`ip-intelligence-report-${info.basicInformation?.ipAddress}.pdf`);
+    generateIpPDF(info);
   }
 
   return (
@@ -418,18 +278,18 @@ export default function IPInfoFinder() {
                         {info.reportGeneratedAt}
                       </div>
                     )}
-                    <div className="flex items-center gap-1.5">
+                    <div className="flex items-center gap-2">
                       <button
                         onClick={exportTXT}
-                        className="px-2.5 py-1 rounded-lg bg-zinc-900 border border-zinc-800 text-[10px] font-mono text-zinc-300 hover:text-emerald-400 hover:border-emerald-500/30 transition flex items-center gap-1 cursor-pointer"
+                        className="px-3 py-1.5 rounded-xl bg-zinc-900 border border-zinc-800 text-[10px] font-mono text-zinc-300 hover:text-emerald-400 hover:border-emerald-500/30 transition flex items-center gap-1 cursor-pointer"
                       >
                         TXT
                       </button>
                       <button
                         onClick={exportPDF}
-                        className="px-2.5 py-1 rounded-lg bg-emerald-500/10 border border-emerald-500/20 text-[10px] font-mono text-emerald-400 hover:bg-emerald-500/20 transition flex items-center gap-1 cursor-pointer"
+                        className="bg-emerald-500/5 hover:bg-emerald-500/10 text-emerald-400 border border-emerald-500/25 hover:border-emerald-500/50 px-3.5 py-1.5 rounded-xl transition-all duration-300 font-mono font-bold text-[11px] uppercase tracking-wider flex items-center gap-2 cursor-pointer hover:scale-[1.01] active:scale-[0.99] hover:shadow-[0_0_15px_rgba(16,185,129,0.1)] focus:outline-none"
                       >
-                        PDF
+                        <Download size={14} /> PDF Report
                       </button>
                     </div>
                   </div>

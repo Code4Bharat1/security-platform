@@ -124,9 +124,9 @@ export default function ToolsCard() {
         type: "non-tech",
       },
       {
-        name: "Email Attachment Analyzer",
+        name: "Email Phishing & Threat Analyzer",
         image: "/GreenTeam/email.png",
-        description: "Scans email attachments for malware or hidden threats.",
+        description: "Audits email authentication headers, body links, and attachments for phishing indicators.",
         slug: "email-attachment-analyzer",
         buttonLabel: "Analyze File",
         type: "non-tech",

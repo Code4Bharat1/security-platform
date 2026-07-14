@@ -14,8 +14,11 @@ import {
   RefreshCcw,
   ArrowRight,
   Maximize2,
+  EyeOff,
+  Download,
 } from "lucide-react";
 import useProtectedAction from "../UseProtectedAction/UseProtectedAction";
+import { generateQrPDF } from "./generateQrPDF";
 
 /* ── Sub-component: Camera Capture ─────────────────────────── */
 const CameraCapture = ({ onCapture }) => {
@@ -26,25 +29,35 @@ const CameraCapture = ({ onCapture }) => {
 
   useEffect(() => {
     let streamInstance = null;
+    let isMounted = true;
     const setupCamera = async () => {
       try {
         const stream = await navigator.mediaDevices.getUserMedia({
           video: { facingMode: "environment" },
         });
         streamInstance = stream;
-        if (videoRef.current) {
+        if (isMounted && videoRef.current) {
           videoRef.current.srcObject = stream;
-          await videoRef.current.play();
-          setReady(true);
+          try {
+            await videoRef.current.play();
+            if (isMounted) setReady(true);
+          } catch (playErr) {
+            if (playErr.name !== "AbortError") {
+              console.error("Camera play error:", playErr);
+            }
+          }
         }
       } catch (err) {
-        console.error("Camera error:", err);
-        setCameraError("Unable to access camera. Please check permissions.");
+        if (isMounted) {
+          console.error("Camera error:", err);
+          setCameraError("Unable to access camera. Please check permissions.");
+        }
       }
     };
     setupCamera();
 
     return () => {
+      isMounted = false;
       if (streamInstance) {
         streamInstance.getTracks().forEach((track) => track.stop());
       }
@@ -124,6 +137,7 @@ const FakeQRCodeDetectorAndQRGenerator = () => {
   const [inputMethod, setInputMethod] = useState("upload");
   const [imageSrc, setImageSrc] = useState(null);
   const [scanResult, setScanResult] = useState("");
+  const [rawScanResult, setRawScanResult] = useState(null);
   const [generateResult, setGenerateResult] = useState("");
   const [loading, setLoading] = useState(false);
   const [qrText, setQrText] = useState("");
@@ -182,7 +196,14 @@ const FakeQRCodeDetectorAndQRGenerator = () => {
         );
 
         const data = await response.json();
-        setScanResult(`${data.message}\n\n${data.data}`);
+        setRawScanResult(data);
+        if (data.status === "error") {
+          setScanResult(`❌ Error: ${data.message}`);
+        } else {
+          const verdictRaw = data.verdict || "SAFE";
+          const displayVerdict = verdictRaw.includes("SAFE") ? `✅ ${verdictRaw}` : `⚠️ ${verdictRaw}`;
+          setScanResult(`VERDICT        : ${displayVerdict}\nRISK DETAILS   : ${data.risk || "None"}\nRECOMMENDATION : ${data.suggestion || "None"}\n\nDECODED CONTENT:\n${data.data}`);
+        }
       } catch (err) {
         setScanResult("❌ Failed to connect to server.");
       } finally {
@@ -239,6 +260,7 @@ const FakeQRCodeDetectorAndQRGenerator = () => {
   const resetAll = () => {
     setImageSrc(null);
     setScanResult("");
+    setRawScanResult(null);
     setGenerateResult("");
     setQrText("");
     setInputMethod("upload");
@@ -343,8 +365,8 @@ const FakeQRCodeDetectorAndQRGenerator = () => {
                     key={value}
                     className={`flex items-center gap-3 text-sm cursor-pointer group p-3.5 rounded-xl border transition-all ${
                       tab === value
-                        ? "border-emerald-500/50 bg-emerald-500/5 text-white"
-                        : "border-zinc-800/80 bg-white/[0.01] text-zinc-300 hover:bg-white/[0.03] hover:border-zinc-700"
+                        ? "border-emerald-500/50 bg-transparent text-white"
+                        : "border-zinc-800/80 bg-transparent text-zinc-300 hover:bg-transparent hover:border-zinc-700"
                     }`}
                   >
                     <input
@@ -533,11 +555,21 @@ const FakeQRCodeDetectorAndQRGenerator = () => {
             {/* Scan Result */}
             {scanResult && !loading && (
               <div className="bg-zinc-950/20 backdrop-blur-md border border-zinc-800/80 rounded-2xl p-6 shadow-[0_12px_40px_rgb(0,0,0,0.2)] space-y-4 hover:border-emerald-500/10 transition-all duration-300">
-                <div className="border-b border-zinc-800/50 pb-4 flex items-center gap-2">
-                  <ShieldCheck className="h-5 w-5 text-emerald-400" />
-                  <span className="font-mono font-bold text-sm uppercase tracking-wider text-emerald-400">
-                    Inspection Result
-                  </span>
+                <div className="border-b border-zinc-800/50 pb-4 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+                  <div className="flex items-center gap-2">
+                    <ShieldCheck className="h-5 w-5 text-emerald-400" />
+                    <span className="font-mono font-bold text-sm uppercase tracking-wider text-emerald-400">
+                      Inspection Result
+                    </span>
+                  </div>
+                  {tab === "scanner" && rawScanResult && (
+                    <button
+                      onClick={() => generateQrPDF(rawScanResult, imageSrc?.file?.name || "qr-code-image.jpg")}
+                      className="bg-emerald-500/5 hover:bg-emerald-500/10 text-emerald-400 border border-emerald-500/25 hover:border-emerald-500/50 px-3.5 py-1.5 rounded-xl transition-all duration-300 font-mono font-bold text-[11px] uppercase tracking-wider flex items-center gap-2 cursor-pointer hover:scale-[1.01] active:scale-[0.99] hover:shadow-[0_0_15px_rgba(16,185,129,0.1)] focus:outline-none self-start sm:self-auto"
+                    >
+                      <Download size={14} /> PDF Report
+                    </button>
+                  )}
                 </div>
                 <div className="bg-zinc-900/30 rounded-xl p-4 border border-zinc-800/50">
                   <pre className="whitespace-pre-wrap break-all text-xs font-mono leading-relaxed text-zinc-300">
