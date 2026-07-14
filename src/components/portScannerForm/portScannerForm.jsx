@@ -21,6 +21,7 @@ import {
   Loader2
 } from "lucide-react";
 import useProtectedAction from "../UseProtectedAction/UseProtectedAction";
+import { generatePortScannerPDF } from "./generatePortScannerPDF";
 
 const API = process.env.NEXT_PUBLIC_PROD_API_URL?.replace(/\/+$/, "");
 
@@ -74,6 +75,21 @@ export default function PortScannerForm() {
     setError("");
     setResult(null);
 
+    let cleanHost = host.trim();
+    if (cleanHost.includes("http://") || cleanHost.includes("https://") || cleanHost.includes("/") || cleanHost.startsWith("www.")) {
+      try {
+        const temp = cleanHost.includes("://") ? cleanHost : `https://${cleanHost}`;
+        const urlObj = new URL(temp);
+        cleanHost = urlObj.hostname;
+        if (cleanHost.startsWith("www.")) {
+          cleanHost = cleanHost.substring(4);
+        }
+      } catch (err) {
+        cleanHost = cleanHost.replace(/^(https?:\/\/)?(www\.)?/, "").split("/")[0].split(":")[0];
+      }
+      setHost(cleanHost);
+    }
+
     await protectedAction(async (token) => {
       try {
         const parsed = parsePortInput(portInput);
@@ -83,7 +99,7 @@ export default function PortScannerForm() {
           );
 
         let qs = new URLSearchParams({
-          host,
+          host: cleanHost,
           filter,
           includeHostnames: includeHostnames.toString(),
         });
@@ -97,7 +113,7 @@ export default function PortScannerForm() {
           const gathered = [];
           for (const p of parsed.ports) {
             const q = new URLSearchParams({
-              host,
+              host: cleanHost,
               port: String(p),
               filter,
               includeHostnames: includeHostnames.toString(),
@@ -117,7 +133,7 @@ export default function PortScannerForm() {
             }
           }
           setResult({
-            host,
+            host: cleanHost,
             filter,
             includeHostnames,
             portRange: portInput,
@@ -443,6 +459,8 @@ export default function PortScannerForm() {
                     <ExportBar
                       baseName={`port-scan-${result.host}-${filter}`}
                       rows={rows}
+                      result={result}
+                      host={host}
                     />
                   </div>
                 )}
@@ -539,7 +557,7 @@ export default function PortScannerForm() {
 }
 
 /* JSON / CSV Export */
-function ExportBar({ baseName, rows }) {
+function ExportBar({ baseName, rows, result, host }) {
   const downloadJSON = () => {
     const blob = new Blob([JSON.stringify(rows, null, 2)], {
       type: "application/json",
@@ -551,6 +569,10 @@ function ExportBar({ baseName, rows }) {
     const csv = toCsv(rows);
     const blob = new Blob([csv], { type: "text/csv" });
     triggerDownload(blob, `${baseName}.csv`);
+  };
+
+  const downloadPDF = () => {
+    generatePortScannerPDF(result, host);
   };
 
   return (
@@ -568,6 +590,13 @@ function ExportBar({ baseName, rows }) {
       >
         <FileSpreadsheet className="w-3.5 h-3.5" />
         CSV Export
+      </button>
+      <button
+        onClick={downloadPDF}
+        className="px-4 py-2.5 bg-zinc-900/40 hover:bg-red-500/5 text-zinc-350 hover:text-red-400 border border-zinc-800/80 hover:border-red-500/30 rounded-xl font-mono font-bold text-xs uppercase transition-all duration-300 flex items-center gap-1.5 cursor-pointer"
+      >
+        <Download className="w-3.5 h-3.5" />
+        Download PDF Report
       </button>
       <div className="text-zinc-500 text-xs font-mono ml-auto">
         {rows.length} result{rows.length !== 1 ? "s" : ""} found

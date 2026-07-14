@@ -49,10 +49,25 @@ export default function WhoisLookup() {
     setError("");
     setResult(null);
 
-    const v = domain.trim();
+    let v = domain.trim();
     if (!v) return setError("Please enter a domain name.");
-    if (v.includes("http://") || v.includes("https://"))
-      return setError("Enter domain name only (no http/https).");
+
+    // Automatically clean up the domain input if they input http/https, www, or path elements
+    if (v.includes("http://") || v.includes("https://") || v.includes("/") || v.startsWith("www.")) {
+      try {
+        const temp = v.includes("://") ? v : `https://${v}`;
+        const urlObj = new URL(temp);
+        v = urlObj.hostname.toLowerCase();
+        if (v.startsWith("www.")) {
+          v = v.substring(4);
+        }
+      } catch (err) {
+        // Fallback cleanup
+        v = v.replace(/^(https?:\/\/)?(www\.)?/, "").split("/")[0].split(":")[0];
+      }
+      setDomain(v);
+    }
+
     if (!ownershipVerified && !SKIP_DOMAIN_VERIFICATION_FOR_TESTING) {
       return setError("Verify ownership of this domain before running a WHOIS scan.");
     }
@@ -61,7 +76,7 @@ export default function WhoisLookup() {
 
     await protectedAction(async (token) => {
       try {
-        const apiBase = process.env.NEXT_PUBLIC_PROD_API_URL || "";
+        const apiBase = (process.env.NEXT_PUBLIC_PROD_API_URL || "http://localhost:5000/api").replace(/\/+$/, "");
         const res = await fetch(`${apiBase}/whois/whois-scan`, {
           method: "POST",
           headers: {
