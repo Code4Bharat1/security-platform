@@ -17,11 +17,13 @@ import {
   ChevronRight,
   HelpCircle,
   Award,
-  CheckCircle2
+  CheckCircle2,
+  Download
 } from "lucide-react";
 import useProtectedAction from "../UseProtectedAction/UseProtectedAction";
 import OwnershipVerificationWizard from "@/components/ownership/OwnershipVerificationWizard";
 import { toast } from "react-hot-toast";
+import { generateWordPressPDF, calculateSecurityScore } from "./generateWordPressPDF";
 
 const WordPressScanner = () => {
   const SKIP_DOMAIN_VERIFICATION_FOR_TESTING = true;
@@ -217,22 +219,42 @@ const WordPressScanner = () => {
               </div>
             )}
 
-            {/* Results Report Card */}
             {!loading && scanData && (
-              <div className="bg-zinc-950/20 backdrop-blur-md border border-zinc-800/80 rounded-2xl p-6 shadow-[0_8px_30px_rgb(0,0,0,0.2)] space-y-6">
+              scanData.notWordPress ? (
+                <div className="bg-zinc-950/20 backdrop-blur-md border border-zinc-800/80 rounded-2xl p-8 shadow-[0_8px_30px_rgb(0,0,0,0.2)] text-center font-mono text-xs text-zinc-400 space-y-4">
+                  <ShieldAlert className="h-8 w-8 text-red-400 mx-auto" />
+                  <p className="font-semibold text-zinc-200 text-sm">Non-WordPress Website Detected</p>
+                  <p className="mb-2">The target website is not identified as a WordPress installation. WordPress-specific security assessment findings, version enumerations, and audits are not applicable.</p>
+                  <button
+                    onClick={() => generateWordPressPDF(scanData, url)}
+                    className="px-4 py-2.5 bg-zinc-900/40 hover:bg-red-500/5 text-zinc-350 hover:text-red-400 border border-zinc-800/80 hover:border-red-500/30 rounded-xl font-mono font-bold text-xs uppercase transition-all duration-300 flex items-center justify-center gap-1.5 cursor-pointer mx-auto"
+                  >
+                    <Download className="w-3.5 h-3.5" />
+                    Download PDF Report
+                  </button>
+                </div>
+              ) : (
+                <div className="bg-zinc-950/20 backdrop-blur-md border border-zinc-800/80 rounded-2xl p-6 shadow-[0_8px_30px_rgb(0,0,0,0.2)] space-y-6">
                 
-                <div className="flex justify-between items-center border-b border-zinc-900 pb-4">
+                <div className="flex flex-col sm:flex-row justify-between sm:items-center border-b border-zinc-900 pb-4 gap-4">
                   <div>
                     <h3 className="text-lg font-mono font-bold text-zinc-100 uppercase tracking-wider">
                       WordPress Security Scorecard
                     </h3>
-                    <p className="text-xs font-mono text-zinc-550 mt-0.5">
+                    <p className="text-xs font-mono text-zinc-550 mt-0.5 mb-3">
                       Vulnerability telemetry outcome report
                     </p>
+                    <button
+                      onClick={() => generateWordPressPDF(scanData, url)}
+                      className="px-4 py-2 bg-zinc-900/40 hover:bg-red-500/5 text-zinc-350 hover:text-red-400 border border-zinc-800/80 hover:border-red-500/30 rounded-xl font-mono font-bold text-xs uppercase transition-all duration-300 flex items-center gap-1.5 cursor-pointer"
+                    >
+                      <Download className="w-3.5 h-3.5" />
+                      Download PDF Report
+                    </button>
                   </div>
-                  <div className="bg-zinc-900/40 border border-zinc-800/80 px-4 py-2.5 rounded-xl text-center font-mono">
+                  <div className="bg-zinc-900/40 border border-zinc-800/80 px-4 py-2.5 rounded-xl text-center font-mono self-start sm:self-auto">
                     <span className="text-[9px] text-zinc-500 block uppercase font-bold tracking-wider">Security Score</span>
-                    <span className="text-red-400 font-extrabold text-lg">{scanData.securityScore} / 100</span>
+                    <span className="text-red-400 font-extrabold text-lg">{calculateSecurityScore(scanData)} / 100</span>
                   </div>
                 </div>
 
@@ -277,7 +299,8 @@ const WordPressScanner = () => {
                   </ul>
                 </div>
               </div>
-            )}
+            )
+          )}
 
           </div>
 

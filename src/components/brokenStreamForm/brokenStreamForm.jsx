@@ -1,9 +1,8 @@
 "use client";
 
 import { useMemo, useRef, useState } from "react";
-import { jsPDF } from "jspdf";
-import autoTable from "jspdf-autotable";
 import useProtectedAction from "../UseProtectedAction/UseProtectedAction";
+import { generateBrokenLinkPDF } from "./generateBrokenLinkPDF";
 import { toast } from "react-hot-toast";
 import {
   Link2Off,
@@ -211,83 +210,7 @@ export default function BrokenStreamPage() {
   }
 
   async function downloadPDF() {
-    const doc = new jsPDF({ unit: "pt", format: "a4" });
-    const pageWidth = doc.internal.pageSize.getWidth();
-
-    // Header Banner
-    doc.setFillColor(18, 18, 18);
-    doc.rect(0, 0, pageWidth, 55, "F");
-
-    doc.setTextColor(239, 68, 68);
-    doc.setFont("helvetica", "bold");
-    doc.setFontSize(18);
-    doc.text("NEXCORE RED TEAM SECURITY AUDIT", 20, 25);
-
-    doc.setTextColor(255, 255, 255);
-    doc.setFontSize(9);
-    doc.text(`BROKEN LINK SCAN REPORT FOR ${url.toUpperCase()}`, 20, 42);
-
-    // Summary metadata
-    doc.setTextColor(50, 50, 50);
-    doc.setFontSize(9);
-    if (summary) {
-      doc.text(
-        `Summary: Total ${summary.total} | Working ${summary.working} | Broken ${summary.broken} | Redirects ${summary.redirects}`,
-        20,
-        75
-      );
-      if (summary.diff) {
-        doc.text(
-          `Change vs last scan: broken ${summary.diff.broken >= 0 ? "+" : ""}${
-            summary.diff.broken
-          } | fixed ${summary.diff.fixed}`,
-          20,
-          90
-        );
-      }
-    }
-
-    const body = items.map((i) => [
-      i.severity,
-      `${i.status} ${i.statusText}`,
-      i.anchorText || "-",
-      i.url,
-      i.finalUrl && i.finalUrl !== i.url
-        ? `${i.finalUrl} (${i.redirectHops})`
-        : "-",
-      i.scope,
-      i.location,
-      i.priorityScore,
-      i.suggestion || "-",
-    ]);
-
-    autoTable(doc, {
-      startY: 110,
-      head: [
-        [
-          "Severity",
-          "Status",
-          "Anchor",
-          "URL",
-          "Final URL (hops)",
-          "Scope",
-          "Location",
-          "Priority",
-          "Suggestion",
-        ],
-      ],
-      body,
-      theme: "grid",
-      styles: { fontSize: 7, cellWidth: "wrap" },
-      headStyles: { fillColor: [239, 68, 68], textColor: [255, 255, 255] },
-      columnStyles: {
-        3: { cellWidth: 100 },
-        4: { cellWidth: 100 },
-        8: { cellWidth: 80 },
-      },
-    });
-
-    doc.save("broken_links_report.pdf");
+    generateBrokenLinkPDF(items, summary, url);
   }
 
   return (

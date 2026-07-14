@@ -1,9 +1,9 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import jsPDF from "jspdf";
-import autoTable from "jspdf-autotable";
 import useProtectedAction from "../UseProtectedAction/UseProtectedAction";
+import { generateWebsiteReconPDF } from "./generateWebsiteReconPDF";
+import { generateDnsPDF } from "./generateDnsPDF";
 import OwnershipVerificationWizard from "@/components/ownership/OwnershipVerificationWizard";
 import {
   Globe,
@@ -29,7 +29,7 @@ import {
 } from "lucide-react";
 
 const dnsTypeMap = { 1: "A", 28: "AAAA", 15: "MX", 16: "TXT", 2: "NS" };
-const RECORD_TYPES = ["A", "AAAA", "MX", "TXT", "NS"];
+const RECORD_TYPES = ["ALL", "A", "AAAA", "MX", "TXT", "NS"];
 const TECH_GROUPS = [
   { key: "frontend", label: "Frontend" },
   { key: "backend", label: "Backend" },
@@ -59,7 +59,7 @@ export default function Webrecon() {
 
   const protectedAction = useProtectedAction();
   const [domain, setDomain] = useState("");
-  const [recordType, setRecordType] = useState("A");
+  const [recordType, setRecordType] = useState("ALL");
   const [result, setResult] = useState(null);
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
@@ -75,32 +75,68 @@ export default function Webrecon() {
   );
 
   const handleLookup = async () => {
-    setError("");
-    setResult(null);
+    await protectedAction(async (token) => {
+      setError("");
+      setResult(null);
 
-    const target = normalizeDomain(domain);
-    if (!target) {
-      setError("Please enter a domain");
-      return;
-    }
-
-    setLoading(true);
-    try {
-      const res = await fetch(`${API_BASE}/dns/resolve`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ domain: target, type: recordType }),
-      });
-      const data = await res.json();
-      if (!res.ok || !data?.success) {
-        throw new Error(data?.error || `Request failed (${res.status})`);
+      const target = normalizeDomain(domain);
+      if (!target) {
+        setError("Please enter a domain");
+        return;
       }
-      setResult(data.data);
-    } catch (err) {
-      setError(err?.message || "Error fetching DNS data");
-    } finally {
-      setLoading(false);
-    }
+
+      setLoading(true);
+      try {
+        if (recordType === "ALL") {
+          const types = ["A", "AAAA", "MX", "TXT", "NS"];
+          const responses = await Promise.all(
+            types.map(async (type) => {
+              try {
+                const res = await fetch(`${API_BASE}/dns/resolve`, {
+                  method: "POST",
+                  headers: { 
+                    "Content-Type": "application/json",
+                    Authorization: `Bearer ${token}`
+                  },
+                  body: JSON.stringify({ domain: target, type }),
+                });
+                const data = await res.json();
+                return { type, data: data.success ? data.data : null };
+              } catch (_) {
+                return { type, data: null };
+              }
+            })
+          );
+
+          const combinedAnswer = [];
+          responses.forEach(({ data }) => {
+            if (data && Array.isArray(data.Answer)) {
+              combinedAnswer.push(...data.Answer);
+            }
+          });
+
+          setResult({ Answer: combinedAnswer });
+        } else {
+          const res = await fetch(`${API_BASE}/dns/resolve`, {
+            method: "POST",
+            headers: { 
+              "Content-Type": "application/json",
+              Authorization: `Bearer ${token}`
+            },
+            body: JSON.stringify({ domain: target, type: recordType }),
+          });
+          const data = await res.json();
+          if (!res.ok || !data?.success) {
+            throw new Error(data?.error || `Request failed (${res.status})`);
+          }
+          setResult(data.data);
+        }
+      } catch (err) {
+        setError(err?.message || "Error fetching DNS data");
+      } finally {
+        setLoading(false);
+      }
+    });
   };
 
   const handleDeepScan = async () => {
@@ -186,80 +222,7 @@ export default function Webrecon() {
 
   const downloadPDF = () => {
     if (!scan) return;
-
-    const doc = new jsPDF({ unit: "mm", format: "a4" });
-    const pageWidth = doc.internal.pageSize.getWidth();
-    const horizontalMargin = 10;
-    const usableWidth = pageWidth - horizontalMargin * 2;
-    const sectionWidth = 30;
-    const keyWidth = 40;
-    const valueWidth = usableWidth - sectionWidth - keyWidth;
-    
-    const body = [
-      ["WHOIS", "Registrar", scan.whois?.registrar || "-"],
-      ["WHOIS", "Created", scan.whois?.created || "-"],
-      ["WHOIS", "Expires", scan.whois?.expires || "-"],
-      ["SSL", "Issuer", scan.ssl?.issuer || "-"],
-      ["SSL", "Valid Till", scan.ssl?.validTo || "-"],
-      ["SSL", "Protocol", scan.ssl?.protocol || "-"],
-      ["GeoIP", "IP", scan.geoip?.ip || "-"],
-      ["GeoIP", "Country", scan.geoip?.country || "-"],
-      ["GeoIP", "ISP", scan.geoip?.isp || "-"],
-      ["Persistence", "Saved", scan.persistence?.saved ? "Yes" : "No"],
-      ...(flattenTechnologies(scan.technologies).map((item) => [
-        "Technology",
-        item.label,
-        item.value,
-      ]) || []),
-      ...((scan.securityHeaders?.missing || []).map((item) => [
-        "Security Headers",
-        "Missing",
-        item,
-      ]) || []),
-      ...((scan.ports?.results || []).map((item) => [
-        "Ports",
-        `${item.port}`,
-        `${item.service} - ${item.state.toUpperCase()}${item.error ? ` (${item.error})` : ""}`,
-      ]) || []),
-    ];
-
-    // Header Banner
-    doc.setFillColor(18, 18, 18);
-    doc.rect(0, 0, pageWidth, 40, "F");
-
-    doc.setTextColor(239, 68, 68); // Red Team Primary
-    doc.setFont("helvetica", "bold");
-    doc.setFontSize(18);
-    doc.text("NEXCORE RED TEAM SECURITY AUDIT", horizontalMargin, 20);
-
-    doc.setTextColor(255, 255, 255);
-    doc.setFontSize(10);
-    doc.text("WEBSITE RECONNAISSANCE DISCOVERY LOG", horizontalMargin, 30);
-
-    autoTable(doc, {
-      head: [["Section", "Audit Target Matrix Key", "Detected Value"]],
-      body,
-      startY: 48,
-      margin: { left: horizontalMargin, right: horizontalMargin },
-      styles: {
-        fontSize: 8,
-        cellPadding: 3,
-        overflow: "linebreak",
-        valign: "middle",
-      },
-      headStyles: {
-        fillColor: [239, 68, 68],
-        textColor: 255,
-        fontStyle: "bold",
-      },
-      columnStyles: {
-        0: { cellWidth: sectionWidth },
-        1: { cellWidth: keyWidth },
-        2: { cellWidth: valueWidth },
-      },
-    });
-    
-    doc.save("website_recon_report.pdf");
+    generateWebsiteReconPDF(scan, null);
   };
 
   return (
@@ -405,10 +368,19 @@ export default function Webrecon() {
             {/* DNS lookup results display */}
             {result && (
               <div className="bg-zinc-950/20 backdrop-blur-md border border-zinc-800/80 rounded-2xl p-6 shadow-[0_8px_30px_rgb(0,0,0,0.2)]">
-                <h3 className="text-sm font-mono font-bold text-zinc-200 flex items-center gap-2 border-b border-zinc-850 pb-2.5 mb-4">
-                  <Terminal className="w-4 h-4 text-red-400" />
-                  Resolved DNS Results ({recordType})
-                </h3>
+                <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 border-b border-zinc-850 pb-2.5 mb-4">
+                  <h3 className="text-sm font-mono font-bold text-zinc-200 flex items-center gap-2">
+                    <Terminal className="w-4 h-4 text-red-400" />
+                    Resolved DNS Results ({recordType})
+                  </h3>
+                  <button
+                    onClick={() => generateDnsPDF(result, domain, recordType)}
+                    className="px-3 py-1.5 bg-zinc-900/40 hover:bg-red-500/5 text-zinc-350 hover:text-red-400 border border-zinc-800/80 hover:border-red-500/30 rounded-xl font-mono font-bold text-xs uppercase transition-all duration-300 flex items-center justify-center gap-1.5 cursor-pointer"
+                  >
+                    <Download className="w-3.5 h-3.5" />
+                    Download DNS PDF
+                  </button>
+                </div>
                 {Array.isArray(result.Answer) && result.Answer.length > 0 ? (
                   <div className="space-y-4">
                     {result.Answer.map((rec, i) => (

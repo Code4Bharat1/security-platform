@@ -1,9 +1,8 @@
 'use client';
 
 import { useState } from 'react';
-import { jsPDF } from 'jspdf';
-import autoTable from 'jspdf-autotable';
 import useProtectedAction from '../UseProtectedAction/UseProtectedAction';
+import { generateBruteForcePDF } from './generateBruteForcePDF';
 import {
   Terminal,
   Globe,
@@ -78,36 +77,7 @@ export default function DirectoryBruteForcer() {
   };
 
   const downloadPDF = () => {
-    const doc = new jsPDF();
-    const pageWidth = doc.internal.pageSize.getWidth();
-
-    // Header Banner
-    doc.setFillColor(18, 18, 18);
-    doc.rect(0, 0, pageWidth, 40, "F");
-
-    doc.setTextColor(239, 68, 68);
-    doc.setFont("helvetica", "bold");
-    doc.setFontSize(18);
-    doc.text("NEXCORE RED TEAM SECURITY AUDIT", 14, 20);
-
-    doc.setTextColor(255, 255, 255);
-    doc.setFontSize(10);
-    doc.text(`DIRECTORY BRUTE FORCE AUDIT LOG FOR ${target.toUpperCase()}`, 14, 30);
-
-    autoTable(doc, {
-      head: [['Path Hostname', 'HTTP Status', 'Diagnostic Result']],
-      body: results.map(({ path, status, result }) => [
-        path ?? '-',
-        status ?? '-',
-        typeof result === 'string' ? result : JSON.stringify(result),
-      ]),
-      startY: 48,
-      theme: 'grid',
-      styles: { fontSize: 8, cellPadding: 3 },
-      headStyles: { fillColor: [239, 68, 68], textColor: [255, 255, 255] },
-    });
-    
-    doc.save('directory_brute_force_results.pdf');
+    generateBruteForcePDF(results, meta, target);
   };
 
   const viewFoundSite = (path) => {
