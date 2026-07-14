@@ -1,0 +1,388 @@
+import { jsPDF } from "jspdf";
+import {
+  C,
+  safe,
+  drawSectionHeader,
+  renderTable,
+  getAuditorInfo,
+  applyHeaderFooterDecorator,
+} from "../../utils/pdfFramework";
+
+export const generateMalwaveScanPDF = async (
+  results = [],
+  fileName = "package.json",
+  riskScore = 0,
+  summaryText = ""
+) => {
+  const { employeeName, employeeMail } = getAuditorInfo();
+
+  const now = new Date();
+  const scanDate = now
+    .toLocaleDateString("en-GB", { day: "2-digit", month: "short", year: "numeric" })
+    .toUpperCase();
+  const scanTime = now.toLocaleTimeString("en-GB", {
+    hour: "2-digit",
+    minute: "2-digit",
+    second: "2-digit",
+  });
+
+  // Aggregate counts
+  const totalIssues    = results.length;
+  const criticals      = results.filter((r) => r.severity === "Critical").length;
+  const highs          = results.filter((r) => r.severity === "High").length;
+  const mediums        = results.filter((r) => r.severity === "Medium").length;
+  const lows           = results.filter((r) => r.severity === "Low").length;
+  const cleanPackages  = Math.max(0, totalIssues === 0 ? 1 : 0); // all clean if no issues
+
+  const riskBand =
+    criticals > 0 ? "Critical Risk"
+    : highs > 0   ? "High Risk"
+    : mediums > 0  ? "Medium Risk"
+    : lows > 0     ? "Low Risk"
+    : "Secure";
+
+  try {
+    const doc = new jsPDF("p", "mm", "a4");
+
+    // ════════════════════════════════════════════════════════════════════════
+    // PAGE 1 — COVER PAGE
+    // ════════════════════════════════════════════════════════════════════════
+    doc.setFillColor(...C.bluePrimary);
+    doc.rect(0, 0, 210, 3.5, "F");
+
+    doc.setFont("helvetica", "normal");
+    doc.setFontSize(7.5);
+    doc.setTextColor(...C.textMuted);
+    doc.text("NEXCORE ALLIANCE | Individual Tool Report – Malwave Scan (Dependency Security)", 14, 12);
+
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(24);
+    doc.setTextColor(...C.bluePrimary);
+    doc.text("NEXCORE ALLIANCE", 105, 30, { align: "center" });
+
+    doc.setFont("helvetica", "italic");
+    doc.setFontSize(10);
+    doc.text("AI-Powered Cybersecurity & Information Security Solutions", 105, 36, { align: "center" });
+
+    doc.setDrawColor(...C.bluePrimary);
+    doc.setLineWidth(0.4);
+    doc.line(14, 40, 196, 40);
+
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(16);
+    doc.setTextColor(...C.bluePrimary);
+    doc.text("MALWAVE SCAN — DEPENDENCY SECURITY", 105, 54, { align: "center" });
+    doc.text("ASSESSMENT REPORT", 105, 60, { align: "center" });
+
+    doc.line(14, 65, 196, 65);
+
+    renderTable(doc, {
+      startY: 72,
+      head: [],
+      body: [
+        ["Assessment Performed by", employeeMail],
+        ["Employee Name",           employeeName],
+        ["Employee Mail ID",        employeeMail],
+        ["Manifest File Audited",   fileName],
+        ["Assessment Date",         scanDate],
+        ["Assessment Time",         scanTime],
+        ["Classification",          "Confidential"],
+        ["Assessment Status",       "Completed"],
+      ],
+      columnStyles: {
+        0: { fontStyle: "bold", cellWidth: 55, fillColor: [245, 245, 245] },
+        1: { cellWidth: 127 },
+      },
+    });
+
+    doc.line(14, 260, 196, 260);
+    doc.setFont("helvetica", "normal");
+    doc.setFontSize(7.5);
+    doc.setTextColor(...C.textMuted);
+    doc.text(
+      "www.nexcorealliance.com | ISO/IEC 27001 Certified | AICPA SOC Compliant",
+      105, 267, { align: "center" }
+    );
+
+    // ════════════════════════════════════════════════════════════════════════
+    // PAGE 2 — ASSESSMENT INFORMATION
+    // ════════════════════════════════════════════════════════════════════════
+    doc.addPage();
+    let y = 25;
+
+    y = drawSectionHeader(doc, "1. ASSESSMENT INFORMATION", y);
+
+    renderTable(doc, {
+      startY: y,
+      head: [],
+      body: [
+        ["Tool Name",             "Malwave Scan"],
+        ["Tool Category",         "Software Composition Analysis (SCA) / Supply-Chain Security"],
+        ["Methodology Alignment", "OWASP A06:2021-Vulnerable and Outdated Components / OSV.dev Advisory Database"],
+        ["Compliance Alignment",  "ISO/IEC 27001 | AICPA SOC Frameworks | OWASP Top 10"],
+        ["Manifest File",         fileName],
+        ["Assessment Mode",       "Automated SCA — Typosquatting Detection + OSV CVE Lookup"],
+      ],
+      columnStyles: {
+        0: { fontStyle: "bold", cellWidth: 55, fillColor: [245, 245, 245] },
+        1: { cellWidth: 127 },
+      },
+    });
+    y = doc.lastAutoTable.finalY + 8;
+
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(10);
+    doc.setTextColor(...C.bluePrimary);
+    doc.text("Tool Overview", 14, y);
+    y += 5;
+
+    doc.setFont("helvetica", "normal");
+    doc.setFontSize(8.5);
+    doc.setTextColor(...C.textMain);
+    doc.text(
+      "The Malwave Scan tool performs automated Software Composition Analysis (SCA) by parsing a submitted package manifest file (package.json), extracting all declared dependency names and version ranges, and running two concurrent security checks: (1) Typosquatting detection — flags packages whose names closely resemble popular libraries using Levenshtein distance analysis, identifying potential malicious package substitution attacks; (2) CVE lookup — queries the OSV.dev global vulnerability advisory database in parallel to identify known security vulnerabilities, their severity classification, and recommended upgrade paths.",
+      14, y,
+      { maxWidth: 182, align: "justify", lineHeightFactor: 1.35 }
+    );
+
+    // ════════════════════════════════════════════════════════════════════════
+    // PAGE 3 — SCAN SUMMARY
+    // ════════════════════════════════════════════════════════════════════════
+    doc.addPage();
+    y = 25;
+
+    y = drawSectionHeader(doc, "2. SCAN SUMMARY", y);
+
+    renderTable(doc, {
+      startY: y,
+      head: [["Manifest File", "Total Issues", "Critical", "High", "Medium", "Low", "Risk Score", "Risk Band"]],
+      body: [[
+        fileName,
+        String(totalIssues),
+        String(criticals),
+        String(highs),
+        String(mediums),
+        String(lows),
+        `${riskScore}/100`,
+        riskBand,
+      ]],
+      headStyles: { fillColor: C.bgHeader, textColor: C.white, halign: "center" },
+      columnStyles: {
+        0: { cellWidth: 38 },
+        1: { halign: "center", cellWidth: 22 },
+        2: { halign: "center", cellWidth: 22 },
+        3: { halign: "center", cellWidth: 20 },
+        4: { halign: "center", cellWidth: 22 },
+        5: { halign: "center", cellWidth: 18 },
+        6: { halign: "center", cellWidth: 26 },
+        7: { halign: "center", cellWidth: 14 },
+      },
+      didParseCell: (data) => {
+        if (data.column.index === 7 && data.section === "body") {
+          if (criticals > 0 || highs > 0) {
+            data.cell.styles.textColor = C.red;
+            data.cell.styles.fontStyle = "bold";
+          } else if (mediums > 0) {
+            data.cell.styles.textColor = C.amber;
+            data.cell.styles.fontStyle = "bold";
+          } else if (lows > 0) {
+            data.cell.styles.textColor = C.blue;
+            data.cell.styles.fontStyle = "bold";
+          } else {
+            data.cell.styles.textColor = [22, 163, 74];
+            data.cell.styles.fontStyle = "bold";
+          }
+        }
+      },
+    });
+    y = doc.lastAutoTable.finalY + 8;
+
+    // Risk Score bar (visual row)
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(10);
+    doc.setTextColor(...C.bluePrimary);
+    doc.text("Risk Score Breakdown", 14, y);
+    y += 5;
+
+    renderTable(doc, {
+      startY: y,
+      head: [["Risk Category", "Packages Found", "Score Weight per Package", "Subtotal"]],
+      body: [
+        ["Critical (Typosquatting / Supply-Chain)", String(criticals), "+35 pts", `${criticals * 35} pts`],
+        ["High (Active CVE – RCE/Injection)",       String(highs),     "+20 pts", `${highs * 20} pts`],
+        ["Medium (CVE – Moderate Impact)",           String(mediums),   "+10 pts", `${mediums * 10} pts`],
+        ["Low (Known Advisory)",                     String(lows),      "+5 pts",  `${lows * 5} pts`],
+        ["Final Risk Score (capped at 100)",         "—",               "—",       `${riskScore}/100`],
+      ],
+      headStyles: { fillColor: C.bgHeader, textColor: C.white },
+      columnStyles: {
+        0: { fontStyle: "bold", cellWidth: 90 },
+        1: { cellWidth: 30, halign: "center" },
+        2: { cellWidth: 40, halign: "center" },
+        3: { cellWidth: 22, halign: "center" },
+      },
+    });
+    y = doc.lastAutoTable.finalY + 8;
+
+    // Summary text
+    if (summaryText) {
+      doc.setFont("helvetica", "normal");
+      doc.setFontSize(8.5);
+      doc.setTextColor(...C.textMain);
+      doc.text(summaryText, 14, y, { maxWidth: 182, align: "justify", lineHeightFactor: 1.35 });
+    }
+
+    // ════════════════════════════════════════════════════════════════════════
+    // PAGE 4 — DETAILED FINDINGS
+    // ════════════════════════════════════════════════════════════════════════
+    doc.addPage();
+    y = 25;
+
+    y = drawSectionHeader(doc, "3. DETAILED FINDINGS — VULNERABLE DEPENDENCIES", y);
+
+    const findingRows =
+      results.length > 0
+        ? results.map((issue) => [
+            safe(issue.name),
+            safe(issue.currentVersion),
+            safe(issue.latestVersion, "N/A"),
+            safe(issue.severity).toUpperCase(),
+            safe(issue.vulnerability),
+          ])
+        : [["No vulnerable dependencies found", "—", "—", "—", "All packages passed SCA checks."]];
+
+    renderTable(doc, {
+      startY: y,
+      head: [["Package Name", "Current Ver.", "Safe Ver.", "Severity", "Vulnerability / Issue"]],
+      body: findingRows,
+      headStyles: { fillColor: C.bgHeader, textColor: C.white },
+      columnStyles: {
+        0: { fontStyle: "bold", cellWidth: 36 },
+        1: { cellWidth: 24, halign: "center" },
+        2: { cellWidth: 22, halign: "center" },
+        3: { cellWidth: 22, halign: "center" },
+        4: { cellWidth: 78 },
+      },
+      didParseCell: (data) => {
+        if (data.column.index === 3 && data.section === "body") {
+          const v = String(data.cell.raw || "");
+          if (v === "CRITICAL") { data.cell.styles.textColor = C.purple; data.cell.styles.fontStyle = "bold"; }
+          else if (v === "HIGH")   { data.cell.styles.textColor = C.red;   data.cell.styles.fontStyle = "bold"; }
+          else if (v === "MEDIUM") { data.cell.styles.textColor = C.amber; }
+          else if (v === "LOW")    { data.cell.styles.textColor = C.blue;  }
+        }
+      },
+    });
+
+    // ════════════════════════════════════════════════════════════════════════
+    // PAGE 5 — REMEDIATION GUIDE
+    // ════════════════════════════════════════════════════════════════════════
+    doc.addPage();
+    y = 25;
+
+    y = drawSectionHeader(doc, "3. DETAILED FINDINGS — REMEDIATION GUIDE", y);
+
+    const remediationRows =
+      results.length > 0
+        ? results.map((issue) => [
+            safe(issue.name),
+            safe(issue.currentVersion),
+            safe(issue.severity).toUpperCase(),
+            safe(issue.remediation),
+          ])
+        : [["No issues found", "—", "—", "No remediation action required. All packages are clean."]];
+
+    renderTable(doc, {
+      startY: y,
+      head: [["Package Name", "Current Ver.", "Severity", "Remediation Guidance"]],
+      body: remediationRows,
+      headStyles: { fillColor: C.bgHeader, textColor: C.white },
+      columnStyles: {
+        0: { fontStyle: "bold", cellWidth: 38 },
+        1: { cellWidth: 24, halign: "center" },
+        2: { cellWidth: 22, halign: "center" },
+        3: { cellWidth: 98 },
+      },
+      didParseCell: (data) => {
+        if (data.column.index === 2 && data.section === "body") {
+          const v = String(data.cell.raw || "");
+          if (v === "CRITICAL") { data.cell.styles.textColor = C.purple; data.cell.styles.fontStyle = "bold"; }
+          else if (v === "HIGH")   { data.cell.styles.textColor = C.red;   data.cell.styles.fontStyle = "bold"; }
+          else if (v === "MEDIUM") { data.cell.styles.textColor = C.amber; }
+          else if (v === "LOW")    { data.cell.styles.textColor = C.blue;  }
+        }
+      },
+    });
+
+    // ════════════════════════════════════════════════════════════════════════
+    // PAGE 6 — CONCLUSION & APPENDIX
+    // ════════════════════════════════════════════════════════════════════════
+    doc.addPage();
+    y = 25;
+
+    y = drawSectionHeader(doc, "4. CONCLUSION & RECOMMENDATIONS", y);
+
+    const conclusionText1 =
+      totalIssues > 0
+        ? `The Malwave Scan Software Composition Analysis (SCA) completed against the dependency manifest ${fileName}. A total of ${totalIssues} supply-chain security issue(s) were identified${criticals > 0 ? `, including ${criticals} Critical typosquatting or malicious package substitution risk(s)` : ""}${highs > 0 ? ` and ${highs} High severity CVE vulnerability reference(s)` : ""}. The computed risk score is ${riskScore}/100, rated ${riskBand}.`
+        : `The Malwave Scan Software Composition Analysis (SCA) completed against the dependency manifest ${fileName}. No known vulnerable dependencies or typosquatting risks were identified. All scanned packages are considered safe with a risk score of ${riskScore}/100, rated Secure.`;
+
+    const conclusionText2 =
+      "It is strongly recommended to periodically audit dependency manifests as part of the software development lifecycle (SDLC), pin dependency versions to specific release tags to prevent automated package substitution, subscribe to OSV.dev and GitHub Security Advisory feeds for affected packages, and implement a CI/CD pipeline stage that blocks builds containing known vulnerable or suspicious dependency entries.";
+
+    doc.setFont("helvetica", "normal");
+    doc.setFontSize(8.5);
+    doc.setTextColor(...C.textMain);
+    doc.text(conclusionText1, 14, y, { maxWidth: 182, align: "justify", lineHeightFactor: 1.35 });
+    y += 22;
+    doc.text(conclusionText2, 14, y, { maxWidth: 182, align: "justify", lineHeightFactor: 1.35 });
+    y += 28;
+
+    y = drawSectionHeader(doc, "5. APPENDIX", y);
+
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(10);
+    doc.setTextColor(...C.bluePrimary);
+    doc.text("Column Reference Guide", 14, y);
+    y += 5;
+
+    renderTable(doc, {
+      startY: y,
+      head: [["Column", "Description"]],
+      body: [
+        ["Package Name",         "The npm package name as declared in the dependency manifest"],
+        ["Current Version",      "The version range declared in the package.json manifest"],
+        ["Safe Version",         "The minimum fixed version recommended to resolve the vulnerability (from OSV.dev)"],
+        ["Severity",             "Risk classification: Critical / High / Medium / Low"],
+        ["Vulnerability / Issue","The specific CVE identifier, advisory summary, or typosquatting flag"],
+        ["Remediation Guidance", "The recommended corrective action — upgrade path, removal, or advisory reference"],
+      ],
+      headStyles: { fillColor: C.bgHeader, textColor: C.white },
+      columnStyles: {
+        0: { fontStyle: "bold", cellWidth: 45 },
+        1: { cellWidth: 137 },
+      },
+    });
+    y = doc.lastAutoTable.finalY + 12;
+
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(10);
+    doc.setTextColor(...C.bluePrimary);
+    doc.text("Acknowledgement", 14, y);
+    y += 6;
+
+    doc.setFont("helvetica", "normal");
+    doc.setFontSize(8.5);
+    doc.setTextColor(...C.textMain);
+    doc.text(
+      "The findings presented in this report are based on observations made during the assessment period and represent the software supply-chain security status of the submitted dependency manifest at the time of scanning. Vulnerability data is sourced from the OSV.dev global advisory database and may not reflect vulnerabilities disclosed after the scan timestamp. This report contains confidential and proprietary information intended solely for the authorized recipient. Unauthorized disclosure, distribution, or reproduction of this report is prohibited without prior written consent from Nexcore Alliance.",
+      14, y,
+      { maxWidth: 182, align: "justify", lineHeightFactor: 1.35 }
+    );
+
+    applyHeaderFooterDecorator(doc, "Malwave Scan");
+    doc.save(`Malwave_Scan_Report_${scanDate}.pdf`);
+  } catch (err) {
+    console.error("Failed to generate Malwave Scan PDF:", err);
+  }
+};

@@ -16,8 +16,7 @@ import {
   AlertTriangle,
   Info
 } from "lucide-react";
-import jsPDF from "jspdf";
-import autoTable from "jspdf-autotable";
+import { generateSystemHardeningPDF } from "@/components/systemHardening/generateSystemHardeningPDF";
 import useProtectedAction from "@/components/UseProtectedAction/UseProtectedAction";
 
 export default function SystemHardeningPage() {
@@ -93,65 +92,7 @@ export default function SystemHardeningPage() {
   };
 
   const handleDownloadPDF = () => {
-    const doc = new jsPDF();
-    
-    // Header Banner
-    doc.setFillColor(18, 18, 18);
-    doc.rect(0, 0, doc.internal.pageSize.width, 40, "F");
-    
-    doc.setTextColor(245, 158, 11); // Amber
-    doc.setFont("Helvetica", "bold");
-    doc.setFontSize(22);
-    doc.text("NEXCORE SECURITY PLATFORM", 15, 20);
-    
-    doc.setTextColor(255, 255, 255);
-    doc.setFontSize(12);
-    doc.text("ADVANCE SCANNING - SYSTEM HARDENING REPORT", 15, 30);
-    
-    // Scan Meta Info
-    doc.setTextColor(50, 50, 50);
-    doc.setFontSize(10);
-    doc.text(`Target Host: ${target}`, 15, 50);
-    doc.text(`Date: ${new Date().toLocaleString()}`, 15, 55);
-    doc.text("Status: Completed / Sec-Verified", 15, 60);
-    
-    doc.setDrawColor(245, 158, 11);
-    doc.setLineWidth(0.5);
-    doc.line(15, 67, doc.internal.pageSize.width - 15, 67);
-
-    // Summary
-    doc.setFontSize(14);
-    doc.text("Executive Summary", 15, 77);
-    doc.setFont("Helvetica", "normal");
-    doc.setFontSize(10);
-    
-    const summaryText = `This secure configuration assessment audited host services, port exposures, web protocols, and database settings on target '${target}' against standard CIS Benchmarks. Active configuration issues were parsed and are compiled below.`;
-    
-    const splitSummary = doc.splitTextToSize(summaryText, doc.internal.pageSize.width - 30);
-    doc.text(splitSummary, 15, 85);
-
-    // Findings Table
-    const headers = [["Control Checked", "Status", "Severity", "Details", "Remediation Guide"]];
-    const tableData = results.map(finding => [
-      finding.control,
-      finding.status,
-      finding.severity,
-      finding.details,
-      finding.remediation
-    ]);
-
-    autoTable(doc, {
-      head: headers,
-      body: tableData.length > 0 ? tableData : [
-        ["No findings compiled", "N/A", "N/A", "Scan completed with no active targets or findings.", "N/A"]
-      ],
-      startY: 105,
-      theme: "striped",
-      headStyles: { fillColor: [245, 158, 11], textColor: [0, 0, 0] },
-      margin: { top: 105 }
-    });
-    
-    doc.save(`Nexcore-hardening-report-${Date.now()}.pdf`);
+    generateSystemHardeningPDF(results, target);
   };
 
   const checksFailed = results.filter(r => r.status === 'Fail').length;

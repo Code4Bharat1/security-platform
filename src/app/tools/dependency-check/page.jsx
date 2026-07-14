@@ -17,8 +17,7 @@ import {
   ArrowRight,
   Filter
 } from "lucide-react";
-import { jsPDF } from "jspdf";
-import autoTable from "jspdf-autotable";
+import { generateMalwaveScanPDF } from "@/components/malwaveScan/generateMalwaveScanPDF";
 import useProtectedAction from "@/components/UseProtectedAction/UseProtectedAction";
 
 /* ─────────────── Severity Badge styling ─────────────── */
@@ -180,71 +179,7 @@ export default function DependencyCheckPage() {
 
   // Export PDF Report
   const handleDownloadPDF = () => {
-    const doc = new jsPDF({ unit: "pt", format: "a4" });
-    const M = 40;
-    let y = 56;
-    
-    // Header Banner
-    doc.setFillColor(18, 18, 18);
-    doc.rect(0, 0, doc.internal.pageSize.width, 80, "F");
-    
-    doc.setTextColor(245, 158, 11); // Warm Amber
-    doc.setFont("helvetica", "bold");
-    doc.setFontSize(20);
-    doc.text("NEXCORE SECURITY PLATFORM", M, 35);
-    
-    doc.setTextColor(255, 255, 255);
-    doc.setFontSize(11);
-    doc.text("MALWAVE SCAN - DEPENDENCY SECURITY REPORT", M, 55);
-    y = 110;
-    
-    // Scan Meta Info
-    doc.setTextColor(50, 50, 50);
-    doc.setFont("helvetica", "normal");
-    doc.setFontSize(9);
-    doc.text(`Manifest File: ${fileName}`, M, y);
-    doc.text(`Scan Date:     ${new Date().toLocaleString()}`, M, y + 15);
-    doc.text(`Risk Score:    ${riskScore}/100`, M, y + 30);
-    y += 55;
-    
-    doc.setDrawColor(245, 158, 11);
-    doc.setLineWidth(0.5);
-    doc.line(M, y, doc.internal.pageSize.width - M, y);
-    y += 20;
-
-    // Summary
-    doc.setFont("helvetica", "bold");
-    doc.setFontSize(12);
-    doc.text("Executive Summary", M, y);
-    y += 15;
-    
-    doc.setFont("helvetica", "normal");
-    doc.setFontSize(9.5);
-    const splitSummary = doc.splitTextToSize(summaryText || "Assessment evaluated the target codebase dependencies against known vulnerability advisories.", doc.internal.pageSize.width - (M * 2));
-    doc.text(splitSummary, M, y);
-    y += splitSummary.length * 12 + 15;
-
-    // Findings Table
-    const headers = [["Package", "Current Version", "Safe Version", "Severity", "Vulnerability Details"]];
-    const tableData = results.map(issue => [
-      issue.name,
-      issue.currentVersion,
-      issue.latestVersion || "N/A",
-      issue.severity,
-      issue.vulnerability
-    ]);
-
-    autoTable(doc, {
-      head: headers,
-      body: tableData,
-      startY: y,
-      theme: "striped",
-      styles: { fontSize: 8 },
-      headStyles: { fillColor: [245, 158, 11], textColor: [255, 255, 255] },
-      margin: { left: M, right: M }
-    });
-    
-    doc.save(`Nexcore-dependency-report-${Date.now()}.pdf`);
+    generateMalwaveScanPDF(results, fileName, riskScore, summaryText);
   };
 
   return (

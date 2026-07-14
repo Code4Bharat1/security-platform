@@ -23,8 +23,7 @@ import {
   Network,
   FileText
 } from "lucide-react";
-import { jsPDF } from "jspdf";
-import autoTable from "jspdf-autotable";
+import { generateWebAppTestPDF } from "./generateWebAppTestPDF";
 import useProtectedAction from "../UseProtectedAction/UseProtectedAction";
 
 /* ─────────────── Severity Badge styling ─────────────── */
@@ -172,71 +171,7 @@ export default function WebAppAudit() {
   // Export PDF Report
   const handleDownloadPDF = () => {
     if (!scanData) return;
-    const doc = new jsPDF({ unit: "pt", format: "a4" });
-    const M = 40;
-    let y = 56;
-    
-    // Header Banner
-    doc.setFillColor(18, 18, 18);
-    doc.rect(0, 0, doc.internal.pageSize.width, 80, "F");
-    
-    doc.setTextColor(245, 158, 11); // Warm Amber
-    doc.setFont("helvetica", "bold");
-    doc.setFontSize(20);
-    doc.text("NEXCORE SECURITY PLATFORM", M, 35);
-    
-    doc.setTextColor(255, 255, 255);
-    doc.setFontSize(11);
-    doc.text("WEB APPLICATION SECURITY CONFIGURATION REPORT", M, 55);
-    y = 110;
-    
-    // Scan Meta Info
-    doc.setTextColor(50, 50, 50);
-    doc.setFont("helvetica", "normal");
-    doc.setFontSize(9);
-    doc.text(`Target Host: ${scanData.domain}`, M, y);
-    doc.text(`Scan Date:   ${new Date(scanData.timestamp).toLocaleString()}`, M, y + 15);
-    doc.text(`Sec Grade:   ${scanData.securityGrade || "N/A"}`, M, y + 30);
-    y += 55;
-    
-    doc.setDrawColor(245, 158, 11);
-    doc.setLineWidth(0.5);
-    doc.line(M, y, doc.internal.pageSize.width - M, y);
-    y += 20;
-
-    // Summary
-    doc.setFont("helvetica", "bold");
-    doc.setFontSize(12);
-    doc.text("Executive Summary", M, y);
-    y += 15;
-    
-    doc.setFont("helvetica", "normal");
-    doc.setFontSize(9.5);
-    const summaryText = `This report lists configuration, security header, session cookie, and SSL/TLS findings for the target host ${scanData.domain}. A total of ${scanData.vulnerabilities?.length || 0} issues were identified.`;
-    const splitSummary = doc.splitTextToSize(summaryText, doc.internal.pageSize.width - (M * 2));
-    doc.text(splitSummary, M, y);
-    y += splitSummary.length * 12 + 15;
-
-    // Findings Table
-    const headers = [["Vulnerability / Control Check", "Severity", "Description", "Remediation Guide"]];
-    const tableData = (scanData.vulnerabilities || []).map(v => [
-      v.description,
-      v.severity?.toUpperCase(),
-      v.details,
-      v.recommendation
-    ]);
-
-    autoTable(doc, {
-      head: headers,
-      body: tableData,
-      startY: y,
-      theme: "striped",
-      styles: { fontSize: 8 },
-      headStyles: { fillColor: [245, 158, 11], textColor: [255, 255, 255] },
-      margin: { left: M, right: M }
-    });
-    
-    doc.save(`Nexcore-web-audit-report-${Date.now()}.pdf`);
+    generateWebAppTestPDF(scanData);
   };
 
   return (

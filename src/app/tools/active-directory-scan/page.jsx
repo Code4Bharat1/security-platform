@@ -14,8 +14,7 @@ import {
   ShieldCheck,
   Network,
 } from "lucide-react";
-import jsPDF from "jspdf";
-import autoTable from "jspdf-autotable";
+import { generateActiveDirectoryScanPDF } from "./generateActiveDirectoryScanPDF";
 import useProtectedAction from "@/components/UseProtectedAction/UseProtectedAction";
 
 export default function ActiveDirectoryScanPage() {
@@ -102,59 +101,7 @@ export default function ActiveDirectoryScanPage() {
   };
 
   const handleDownloadPDF = () => {
-    const doc = new jsPDF();
-
-    // Header Banner — amber theme
-    doc.setFillColor(18, 18, 18);
-    doc.rect(0, 0, doc.internal.pageSize.width, 40, "F");
-    doc.setTextColor(245, 158, 11); // amber-500
-    doc.setFont("Helvetica", "bold");
-    doc.setFontSize(22);
-    doc.text("NEXCORE SECURITY PLATFORM", 15, 20);
-    doc.setTextColor(255, 255, 255);
-    doc.setFontSize(12);
-    doc.text("ACTIVE DIRECTORY SECURITY SCAN REPORT", 15, 30);
-
-    doc.setTextColor(50, 50, 50);
-    doc.setFontSize(10);
-    doc.text(`Target Domain: ${domain}`, 15, 50);
-    doc.text(`Scope: ${scope === "full" ? "Full Domain Audit" : "Quick Audit"}`, 15, 55);
-    doc.text(`Date: ${new Date().toLocaleString()}`, 15, 60);
-    doc.text("Status: Completed / VA-Verified", 15, 65);
-
-    doc.setDrawColor(245, 158, 11);
-    doc.setLineWidth(0.5);
-    doc.line(15, 72, doc.internal.pageSize.width - 15, 72);
-
-    doc.setFontSize(14);
-    doc.text("Executive Summary", 15, 82);
-    doc.setFont("Helvetica", "normal");
-    doc.setFontSize(10);
-
-    const summaryText = `This security assessment analyzed Active Directory configuration, authentication settings, password policies, and Kerberos delegation configuration for domain '${domain}'. Several critical items were identified, including outdated Krbtgt account password age and multiple Kerberoasting-susceptible accounts.`;
-    const splitSummary = doc.splitTextToSize(summaryText, doc.internal.pageSize.width - 30);
-    doc.text(splitSummary, 15, 90);
-
-    const headers = [["Security Domain", "Severity", "Finding Status", "Remediation"]];
-    const tableData = results.map(finding => [
-      finding.control,
-      finding.severity,
-      finding.status,
-      finding.remediation || finding.details
-    ]);
-
-    autoTable(doc, {
-      head: headers,
-      body: tableData.length > 0 ? tableData : [
-        ["No findings compiled", "N/A", "N/A", "Scan completed with no active targets or findings."]
-      ],
-      startY: 110,
-      theme: "striped",
-      headStyles: { fillColor: [245, 158, 11], textColor: [0, 0, 0] },
-      margin: { top: 110 },
-    });
-
-    doc.save(`Nexcore-active-directory-scan-${Date.now()}.pdf`);
+    generateActiveDirectoryScanPDF(results, domain, scope);
   };
 
   const checksFailed = results.filter(r => r.status === 'Fail').length;
