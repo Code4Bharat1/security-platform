@@ -432,8 +432,8 @@ export default function CredentialPathAuditPage() {
                       {filteredResults.map((finding, idx) => {
                         const isExpanded = expandedRow === idx;
                         const statusColor = finding.status === 'Pass' 
-                          ? 'text-emerald-400 border-emerald-500/20 bg-emerald-500/5' 
-                          : 'text-red-450 border-red-500/20 bg-red-500/5';
+                          ? 'text-emerald-900 border-emerald-500/40 bg-emerald-400' 
+                          : 'text-white border-red-600 bg-red-500';
                         const severityColor = finding.severity === 'High' 
                           ? 'text-red-400 font-bold' 
                           : finding.severity === 'Medium' 

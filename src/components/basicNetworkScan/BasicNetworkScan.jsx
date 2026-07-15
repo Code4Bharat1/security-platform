@@ -291,18 +291,17 @@ export default function BasicNetworkScan() {
           color: inherit !important;
         }
         .bns-submit-btn {
-          background-color: rgba(245, 158, 11, 0.05) !important;
-          color: #f59e0b !important;
-          border: 1px solid rgba(245, 158, 11, 0.2) !important;
+          background-color: #f59e0b !important;
+          color: #111111 !important;
+          border: none !important;
         }
         .bns-submit-btn:hover:not(:disabled) {
-          background-color: rgba(245, 158, 11, 0.1) !important;
-          border-color: rgba(245, 158, 11, 0.5) !important;
-          color: #fbbf24 !important;
-          box-shadow: 0 0 20px rgba(245, 158, 11, 0.15) !important;
+          background-color: #fbbf24 !important;
+          box-shadow: 0 0 28px rgba(245, 158, 11, 0.45) !important;
+          transform: scale(1.01);
         }
         .bns-submit-btn * {
-          color: inherit !important;
+          color: #111111 !important;
         }
         .bns-port-row {
           transition: background 0.15s ease;
@@ -459,7 +458,7 @@ export default function BasicNetworkScan() {
                 <button
                   type="submit"
                   disabled={loading || !isValidTarget}
-                  className="w-full bns-submit-btn rounded-xl font-mono font-bold text-xs uppercase py-4 transition-all duration-300 hover:scale-[1.01] active:scale-[0.99] flex items-center justify-center gap-2 disabled:opacity-40 disabled:pointer-events-none focus:outline-none"
+                  className="w-full bns-submit-btn rounded-xl font-mono font-bold text-sm uppercase py-4 transition-all duration-300 active:scale-[0.99] flex items-center justify-center gap-2.5 disabled:opacity-50 disabled:pointer-events-none focus:outline-none"
                 >
                   {loading ? (
                     <>
