@@ -85,8 +85,17 @@ export const AuthProvider = ({ children }) => {
         }
       } catch (err) {
         console.error("💥 [AuthContext] Silent refresh failed:", err.message);
-        toast.error("Session expired. Please log in again.");
-        logout();
+        const isNetworkError = err.message && (
+          err.message.toLowerCase().includes("failed to fetch") || 
+          err.message.toLowerCase().includes("networkerror") || 
+          err.message.toLowerCase().includes("load failed")
+        );
+        if (isNetworkError) {
+          toast.error("Network error. Unable to sync session with security server.");
+        } else {
+          toast.error("Session expired. Please log in again.");
+          logout();
+        }
         return null;
       } finally {
         // Clear active promise reference when completed
