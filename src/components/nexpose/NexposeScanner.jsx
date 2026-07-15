@@ -21,9 +21,8 @@ import {
   Cpu,
   ShieldAlert
 } from "lucide-react";
-import { jsPDF } from "jspdf";
-import autoTable from "jspdf-autotable";
 import useProtectedAction from "../UseProtectedAction/UseProtectedAction";
+import { generateSQLiPDF } from "./generateSQLiPDF";
 
 const API_BASE = process.env.NEXT_PUBLIC_PROD_API_URL;
 
@@ -48,6 +47,7 @@ export default function NexposeScanner() {
   const [urlError, setUrlError] = useState("");
   const [openIdx, setOpenIdx] = useState(null);
   const [showPositivesOnly, setShowPositivesOnly] = useState(false);
+  const [currentPage, setCurrentPage] = useState(1);
   
   const protectedAction = useProtectedAction();
   const urlIsValid = isValidHttpUrl(url);
@@ -127,59 +127,8 @@ export default function NexposeScanner() {
 
   function exportPDF() {
     if (!result) return;
-    const doc = new jsPDF({ orientation: "p", unit: "pt", format: "a4" });
-
-    // Red Team header banner style
-    doc.setFillColor(18, 18, 18);
-    doc.rect(0, 0, 595, 55, "F");
-
-    doc.setTextColor(239, 68, 68);
-    doc.setFont("helvetica", "bold");
-    doc.setFontSize(16);
-    doc.text("SQL INJECTION SCAN REPORT", 40, 35);
-
-    doc.setTextColor(255, 255, 255);
-    doc.setFontSize(9);
-    doc.text(`Target: ${result.url || "N/A"}`, 40, 48);
-
-    doc.setTextColor(50, 50, 50);
-    doc.setFontSize(9);
-    doc.text(`Method: ${result.method || "N/A"} (param: ${result.paramName || "N/A"})`, 40, 75);
-    doc.text(`Risk: ${result.riskScore ?? 0}/100 (${result.riskLevel || "N/A"})`, 40, 90);
-    doc.text(`Coverage: ${result.payloadsAttempted ?? 0} payloads`, 40, 105);
-
-    const head = [
-      ["#", "Type", "Payload/Pair", "Evidence", "Status", "Time(ms)"],
-    ];
-    const rows = (result.tests || []).map((f, i) => [
-      String(i + 1),
-      f.type,
-      (f.payload || "").slice(0, 96),
-      (f.evidence || "—").slice(0, 96),
-      String(f.status),
-      String(f.timeMs),
-    ]);
-
-    autoTable(doc, {
-      startY: 125,
-      head,
-      body: rows,
-      theme: "grid",
-      styles: { fontSize: 8, cellPadding: 3, overflow: "linebreak" },
-      headStyles: { fillColor: [239, 68, 68] },
-      margin: { left: 40, right: 40 },
-      columnStyles: {
-        0: { cellWidth: 20 },
-        1: { cellWidth: 100 },
-        2: { cellWidth: 150 },
-        3: { cellWidth: 120 },
-        4: { cellWidth: 50 },
-        5: { cellWidth: 50 },
-      },
-    });
-
-    doc.save("sqli_scan_report.pdf");
-  }
+    generateSQLiPDF(result);
+  };
 
   function exportJSON() {
     if (!result) return;
@@ -492,82 +441,133 @@ export default function NexposeScanner() {
                     Injection Scan Logs
                   </h3>
 
-                  <div className="overflow-x-auto rounded-xl border border-zinc-850 bg-zinc-900/10">
-                    <table className="min-w-full text-[11px] text-zinc-350 leading-relaxed">
-                      <thead className="bg-zinc-900/40 border-b border-zinc-850 text-zinc-500 font-bold uppercase tracking-wider text-[9px]">
-                        <tr>
-                          <th className="px-4 py-3 text-left">#</th>
-                          <th className="px-4 py-3 text-left">Type</th>
-                          <th className="px-4 py-3 text-left">Evidence / Error</th>
-                          <th className="px-4 py-3 text-left">HTTP</th>
-                          <th className="px-4 py-3 text-left">Time(ms)</th>
-                          <th className="px-4 py-3 text-left">Details</th>
-                        </tr>
-                      </thead>
-                      <tbody>
-                        {rows.map((f, idx) => {
-                          const open = openIdx === idx;
-                          return (
-                            <tr key={idx} className="border-t border-zinc-900 align-top hover:bg-zinc-900/40 transition-colors">
-                              <td className="px-4 py-3 text-zinc-650 font-bold">{idx + 1}</td>
-                              <td className="px-4 py-3 text-zinc-300 font-semibold">{f.type}</td>
-                              <td className="px-4 py-3 text-zinc-400 break-all max-w-[120px]">
-                                {f.evidence || (f.error ? "Request failed" : "—")}
-                              </td>
-                              <td className="px-4 py-3 text-zinc-400">{String(f.status)}</td>
-                              <td className="px-4 py-3 text-zinc-450">{String(f.timeMs)}</td>
-                              <td className="px-4 py-3">
-                                <button
-                                  onClick={() => setOpenIdx(open ? null : idx)}
-                                  className="px-2.5 py-1 text-[10px] bg-zinc-900 border border-zinc-850 text-zinc-300 rounded-lg inline-flex items-center gap-1 hover:border-zinc-700 cursor-pointer uppercase font-bold select-none"
-                                >
-                                  {open ? "Hide" : "View"}
-                                  {open ? (
-                                    <ChevronUp size={12} />
-                                  ) : (
-                                    <ChevronDown size={12} />
-                                  )}
-                                </button>
-                                {open && (
-                                  <div className="mt-3 p-3.5 bg-zinc-950/70 border border-zinc-850 rounded-xl space-y-1.5 leading-relaxed text-zinc-400 text-[10px]">
-                                    <div>
-                                      <span className="font-bold text-zinc-600">Parameter Key:</span> {f.param}
-                                    </div>
-                                    <div>
-                                      <span className="font-bold text-zinc-600">Method:</span> {f.method}
-                                    </div>
-                                    <div className="break-all">
-                                      <span className="font-bold text-zinc-600">Payload:</span> {f.payload}
-                                    </div>
-                                    {f.pocUrl && (
-                                      <div className="break-all">
-                                        <span className="font-bold text-zinc-600">PoC URL:</span> {f.pocUrl}
-                                      </div>
-                                    )}
-                                    <div>
-                                      <span className="font-bold text-zinc-600">Risk rating:</span> {f.risk}
-                                    </div>
-                                    {f.error && (
-                                      <div className="text-red-400">
-                                        <span className="font-bold">Error status:</span> {f.error}
-                                      </div>
-                                    )}
-                                  </div>
-                                )}
-                              </td>
-                            </tr>
-                          );
-                        })}
-                        {!rows.length && (
-                          <tr>
-                            <td className="px-4 py-8 text-center text-zinc-600 font-mono" colSpan={6}>
-                              No scan logs to display.
-                            </td>
-                          </tr>
+                  {(() => {
+                    const itemsPerPage = 10;
+                    const totalItems = rows.length;
+                    const totalPages = Math.ceil(totalItems / itemsPerPage) || 1;
+                    
+                    const safePage = Math.min(currentPage, totalPages);
+                    const startIdx = (safePage - 1) * itemsPerPage;
+                    const pageRows = rows.slice(startIdx, startIdx + itemsPerPage);
+
+                    return (
+                      <>
+                        <div className="overflow-x-auto rounded-xl border border-zinc-850 bg-zinc-900/10">
+                          <table className="min-w-full text-[11px] text-zinc-350 leading-relaxed table-fixed">
+                            <colgroup>
+                              <col className="w-12" />
+                              <col className="w-28" />
+                              <col />
+                              <col className="w-16" />
+                              <col className="w-20" />
+                              <col className="w-24" />
+                            </colgroup>
+                            <thead className="bg-zinc-900/40 border-b border-zinc-850 text-zinc-500 font-bold uppercase tracking-wider text-[9px]">
+                              <tr>
+                                <th className="px-4 py-3 text-left">#</th>
+                                <th className="px-4 py-3 text-left">Type</th>
+                                <th className="px-4 py-3 text-left">Evidence / Error</th>
+                                <th className="px-4 py-3 text-left">HTTP</th>
+                                <th className="px-4 py-3 text-left">Time(ms)</th>
+                                <th className="px-4 py-3 text-left">Details</th>
+                              </tr>
+                            </thead>
+                            <tbody>
+                              {pageRows.map((f, localIdx) => {
+                                const globalIdx = startIdx + localIdx;
+                                const open = openIdx === globalIdx;
+                                return (
+                                  <tr key={globalIdx} className="border-t border-zinc-900 align-top hover:bg-zinc-900/40 transition-colors">
+                                    <td className="px-4 py-3 text-zinc-650 font-bold">{globalIdx + 1}</td>
+                                    <td className="px-4 py-3 text-zinc-300 font-semibold">{f.type}</td>
+                                    <td className="px-4 py-3 text-zinc-400 break-all">
+                                      {f.evidence || (f.error ? "Request failed" : "—")}
+                                    </td>
+                                    <td className="px-4 py-3 text-zinc-400">{String(f.status)}</td>
+                                    <td className="px-4 py-3 text-zinc-450">{String(f.timeMs)}</td>
+                                    <td className="px-4 py-3">
+                                      <button
+                                        onClick={() => setOpenIdx(open ? null : globalIdx)}
+                                        className="px-2.5 py-1 text-[10px] bg-zinc-900 border border-zinc-850 text-zinc-300 rounded-lg inline-flex items-center gap-1 hover:border-zinc-700 cursor-pointer uppercase font-bold select-none"
+                                      >
+                                        {open ? "Hide" : "View"}
+                                        {open ? (
+                                          <ChevronUp size={12} />
+                                        ) : (
+                                          <ChevronDown size={12} />
+                                        )}
+                                      </button>
+                                      {open && (
+                                        <div className="mt-3 p-3.5 bg-zinc-950/70 border border-zinc-850 rounded-xl space-y-1.5 leading-relaxed text-zinc-400 text-[10px]">
+                                          <div>
+                                            <span className="font-bold text-zinc-600">Parameter Key:</span> {f.param}
+                                          </div>
+                                          <div>
+                                            <span className="font-bold text-zinc-600">Method:</span> {f.method}
+                                          </div>
+                                          <div className="break-all">
+                                            <span className="font-bold text-zinc-600">Payload:</span> {f.payload}
+                                          </div>
+                                          {f.pocUrl && (
+                                            <div className="break-all">
+                                              <span className="font-bold text-zinc-600">PoC URL:</span> {f.pocUrl}
+                                            </div>
+                                          )}
+                                          <div>
+                                            <span className="font-bold text-zinc-600">Risk rating:</span> {f.risk}
+                                          </div>
+                                          {f.error && (
+                                            <div className="text-red-400">
+                                              <span className="font-bold">Error status:</span> {f.error}
+                                            </div>
+                                          )}
+                                        </div>
+                                      )}
+                                    </td>
+                                  </tr>
+                                );
+                              })}
+                              {!rows.length && (
+                                <tr>
+                                  <td className="px-4 py-8 text-center text-zinc-600 font-mono" colSpan={6}>
+                                    No scan logs to display.
+                                  </td>
+                                </tr>
+                              )}
+                            </tbody>
+                          </table>
+                        </div>
+
+                        {/* Pagination container OUTSIDE the scroll box */}
+                        {totalItems > itemsPerPage && (
+                          <div className="flex flex-col sm:flex-row items-center justify-between gap-4 font-mono text-[10px] border-t border-zinc-900 pt-4 px-2">
+                            <span className="text-zinc-550 order-2 sm:order-1">
+                              Showing {startIdx + 1}–{Math.min(startIdx + itemsPerPage, totalItems)} of {totalItems} logs
+                            </span>
+                            <div className="flex items-center gap-1.5 order-1 sm:order-2 w-full sm:w-auto justify-center">
+                              <button
+                                onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
+                                disabled={safePage === 1}
+                                className="px-2.5 py-1 bg-zinc-900 border border-zinc-850 hover:border-zinc-700 disabled:opacity-40 text-zinc-300 rounded-md cursor-pointer disabled:cursor-not-allowed font-bold"
+                              >
+                                Prev
+                              </button>
+                              <span className="text-zinc-450 px-1 font-semibold whitespace-nowrap">
+                                Page {safePage} / {totalPages}
+                              </span>
+                              <button
+                                onClick={() => setCurrentPage(prev => Math.min(totalPages, prev + 1))}
+                                disabled={safePage === totalPages}
+                                className="px-2.5 py-1 bg-zinc-900 border border-zinc-850 hover:border-zinc-700 disabled:opacity-40 text-zinc-300 rounded-md cursor-pointer disabled:cursor-not-allowed font-bold"
+                              >
+                                Next
+                              </button>
+                            </div>
+                          </div>
                         )}
-                      </tbody>
-                    </table>
-                  </div>
+                      </>
+                    );
+                  })()}
                 </div>
 
                 {/* Export Options */}

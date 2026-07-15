@@ -13,15 +13,25 @@ import {
   Activity,
   Layers,
   Cpu,
-  ShieldAlert
+  ShieldAlert,
+  Download
 } from "lucide-react";
 import useProtectedAction from "../UseProtectedAction/UseProtectedAction";
+import { generateCsrfPDF } from "./generateCsrfPDF";
 
 export default function CSRFChecker() {
   const [code, setCode] = useState("");
   const [result, setResult] = useState(null);
   const [loading, setLoading] = useState(false);
   const [toasts, setToasts] = useState([]);
+  const [pdfLoading, setPdfLoading] = useState(false);
+
+  const downloadPDF = () => {
+    if (!result) return;
+    generateCsrfPDF(result, (msg) => {
+      if (msg) addToast(msg, "info");
+    });
+  };
 
   const protectedAction = useProtectedAction();
   const API_BASE = process.env.NEXT_PUBLIC_PROD_API_URL;
@@ -271,10 +281,19 @@ export default function CSRFChecker() {
             {result && (
               <div className="bg-zinc-950/20 backdrop-blur-md border border-zinc-800/80 rounded-2xl p-6 shadow-[0_8px_30px_rgb(0,0,0,0.2)] space-y-6">
                 
-                <h3 className="text-sm font-mono font-bold text-zinc-200 flex items-center gap-2 border-b border-zinc-850 pb-2.5">
-                  <Activity className="w-4 h-4 text-red-400" />
-                  Security Analysis Outcome
-                </h3>
+                <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 border-b border-zinc-850 pb-2.5">
+                  <h3 className="text-sm font-mono font-bold text-zinc-200 flex items-center gap-2">
+                    <Activity className="w-4 h-4 text-red-400" />
+                    Security Analysis Outcome
+                  </h3>
+                  <button
+                    onClick={downloadPDF}
+                    className="px-3 py-1.5 bg-zinc-900/40 hover:bg-red-500/5 text-zinc-350 hover:text-red-400 border border-zinc-800/80 hover:border-red-500/30 rounded-xl font-mono font-bold text-xs uppercase transition-all duration-300 flex items-center justify-center gap-1.5 cursor-pointer"
+                  >
+                    <Download className="w-3.5 h-3.5" />
+                    Download PDF Report
+                  </button>
+                </div>
 
                 {/* Score breakdown metrics */}
                 <div className="grid gap-4 sm:grid-cols-2">

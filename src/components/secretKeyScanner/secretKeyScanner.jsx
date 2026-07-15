@@ -16,6 +16,7 @@ import {
   FileText
 } from "lucide-react";
 import useProtectedAction from "../UseProtectedAction/UseProtectedAction";
+import { generateSecretKeyScannerPDF } from "./generateSecretKeyScannerPDF";
 
 export default function SecretKeyScanner() {
   const pathname = usePathname() || "";
@@ -73,56 +74,7 @@ export default function SecretKeyScanner() {
 
   const makePdf = () => {
     if (!results?.length) return;
-    const doc = new jsPDF();
-    const pad = 12;
-
-    // Header Color
-    doc.setFillColor(18, 18, 18);
-    doc.rect(0, 0, 210, 55, "F");
-
-    doc.setTextColor(isVaTeam ? 245 : 239, isVaTeam ? 158 : 68, isVaTeam ? 11 : 68);
-    doc.setFont("helvetica", "bold");
-    doc.setFontSize(16);
-    doc.text(isVaTeam ? "ADVANCED DYNAMIC SCAN REPORT" : "SECRET KEY EXPOSURE REPORT", pad, 25);
-
-    doc.setTextColor(255, 255, 255);
-    doc.setFontSize(9);
-    doc.text(`Validated Online: ${validateOnline ? "Yes" : "No"} | Findings: ${results.length}`, pad, 40);
-
-    const rows = results.map((r, i) => [
-      i + 1,
-      r.type || "—",
-      r.severity || "—",
-      `L${r.line || "—"}`,
-      r.redacted || "—",
-      r.validation?.status || "unknown",
-      r.validation?.evidence?.status || "—",
-    ]);
-
-    autoTable(doc, {
-      startY: 70,
-      head: [
-        [
-          "#",
-          "Type",
-          "Severity",
-          "Line",
-          "Secret (redacted)",
-          "Validation",
-          "HTTP Status",
-        ],
-      ],
-      body: rows,
-      theme: "grid",
-      styles: { fontSize: 8, cellWidth: "wrap" },
-      columnStyles: { 4: { cellWidth: 70 } },
-      headStyles: { 
-        fillColor: isVaTeam ? [245, 158, 11] : [239, 68, 68],
-        textColor: isVaTeam ? [0, 0, 0] : [255, 255, 255]
-      },
-    });
-
-    doc.save(isVaTeam ? "advanced_dynamic_scan_report.pdf" : "secret_scan_report.pdf");
+    generateSecretKeyScannerPDF(results, validateOnline);
   };
 
   const downloadTxt = () => {

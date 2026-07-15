@@ -18,10 +18,10 @@ import {
   Cpu,
   ShieldAlert
 } from "lucide-react";
-import { jsPDF } from "jspdf";
 import { toPng } from "html-to-image";
 import useProtectedAction from "../UseProtectedAction/UseProtectedAction";
 import OwnershipVerificationWizard from "@/components/ownership/OwnershipVerificationWizard";
+import { generateWhoisPDF } from "./generateWhoisPDF";
 
 const ccToFlag = (cc) => {
   if (!cc) return "";
@@ -104,27 +104,7 @@ export default function WhoisLookup() {
 
   const downloadPDF = () => {
     if (!result) return;
-    const doc = new jsPDF();
-    const pad = 12;
-
-    // Red Team banner style
-    doc.setFillColor(18, 18, 18);
-    doc.rect(0, 0, 210, 55, "F");
-
-    doc.setTextColor(239, 68, 68);
-    doc.setFont("helvetica", "bold");
-    doc.setFontSize(16);
-    doc.text("WHOIS REGISTRY REPORT", pad, 25);
-
-    doc.setTextColor(255, 255, 255);
-    doc.setFontSize(9);
-    doc.text(`Target Domain: ${result.input || domain}`, pad, 40);
-
-    const text = JSON.stringify(result.summary || result, null, 2);
-    const lines = doc.splitTextToSize(text, 180);
-    doc.setTextColor(50, 50, 50);
-    doc.text(lines, pad, 70);
-    doc.save("whois_report.pdf");
+    generateWhoisPDF(result);
   };
 
   const downloadPNG = async () => {
@@ -292,55 +272,91 @@ export default function WhoisLookup() {
                     Domain Registry Summary
                   </h3>
 
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4 font-mono text-xs text-zinc-350">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 font-mono text-xs text-zinc-350">
                     <div className="flex items-center gap-2.5 bg-zinc-900/40 border border-zinc-850 p-3 rounded-xl">
                       <Globe className="w-4.5 h-4.5 text-red-400 flex-shrink-0" />
-                      <span className="text-zinc-550 font-semibold">Domain:</span>
-                      <span className="text-zinc-200 font-bold break-all">{summary?.domainName || "—"}</span>
+                      <div>
+                        <span className="text-zinc-550 block font-semibold">Domain:</span>
+                        <span className="text-zinc-200 font-bold break-all">{summary?.domainName || "—"}</span>
+                      </div>
                     </div>
 
                     <div className="flex items-center gap-2.5 bg-zinc-900/40 border border-zinc-850 p-3 rounded-xl">
                       <Server className="w-4.5 h-4.5 text-red-400 flex-shrink-0" />
-                      <span className="text-zinc-550 font-semibold">Registrar:</span>
-                      <span className="text-zinc-200 font-bold break-all">{summary?.registrar || "—"}</span>
+                      <div>
+                        <span className="text-zinc-550 block font-semibold">Registrar:</span>
+                        <span className="text-zinc-200 font-bold break-all">{summary?.registrar || "—"}</span>
+                      </div>
                     </div>
 
                     <div className="flex items-center gap-2.5 bg-zinc-900/40 border border-zinc-850 p-3 rounded-xl">
                       <Clock className="w-4.5 h-4.5 text-red-400 flex-shrink-0" />
-                      <span className="text-zinc-550 font-semibold">Created:</span>
-                      <span className="text-zinc-200 font-bold">{formatDate(summary?.creationDate)}</span>
+                      <div>
+                        <span className="text-zinc-550 block font-semibold">Created:</span>
+                        <span className="text-zinc-200 font-bold">{formatDate(summary?.creationDate)}</span>
+                      </div>
                     </div>
 
                     <div className="flex items-center gap-2.5 bg-zinc-900/40 border border-zinc-850 p-3 rounded-xl">
                       <Lock className="w-4.5 h-4.5 text-red-400 flex-shrink-0" />
-                      <span className="text-zinc-550 font-semibold">Expires:</span>
-                      <span className="text-zinc-200 font-bold">{formatDate(summary?.registryExpiryDate)}</span>
+                      <div>
+                        <span className="text-zinc-550 block font-semibold">Expires:</span>
+                        <span className="text-zinc-200 font-bold">{formatDate(summary?.registryExpiryDate)}</span>
+                      </div>
                     </div>
 
                     <div className="flex items-center gap-2.5 bg-zinc-900/40 border border-zinc-850 p-3 rounded-xl">
                       <Database className="w-4.5 h-4.5 text-red-400 flex-shrink-0" />
-                      <span className="text-zinc-550 font-semibold">Country:</span>
-                      <span className="text-zinc-200 font-bold">
-                        {ccToFlag(summary?.country)} {summary?.country || "—"}
-                      </span>
+                      <div>
+                        <span className="text-zinc-550 block font-semibold">Country:</span>
+                        <span className="text-zinc-200 font-bold">
+                          {ccToFlag(summary?.country)} {summary?.country || "—"}
+                        </span>
+                      </div>
                     </div>
 
                     <div className="flex items-center gap-2.5 bg-zinc-900/40 border border-zinc-850 p-3 rounded-xl">
                       <Shield className="w-4.5 h-4.5 text-red-400 flex-shrink-0" />
-                      <span className="text-zinc-550 font-semibold">Status:</span>
-                      <div className="flex flex-wrap items-center gap-1.5">
-                        {summary?.status?.length ? (
-                          summary.status.map((s, i) => (
-                            <span
-                              key={i}
-                              className="inline-block px-2 py-0.5 text-[9px] rounded-lg border border-red-500/30 bg-red-500/5 text-red-400 font-semibold uppercase font-mono"
-                            >
-                              {s}
-                            </span>
-                          ))
-                        ) : (
-                          <span className="text-zinc-500">—</span>
-                        )}
+                      <div>
+                        <span className="text-zinc-550 block font-semibold">DNSSEC:</span>
+                        <span className="text-zinc-200 font-bold">{summary?.dnssecSigned ? "Enabled" : "Disabled"}</span>
+                      </div>
+                    </div>
+
+                    <div className="flex items-center gap-2.5 bg-zinc-900/40 border border-zinc-850 p-3 rounded-xl">
+                      <Activity className="w-4.5 h-4.5 text-red-400 flex-shrink-0" />
+                      <div>
+                        <span className="text-zinc-550 block font-semibold">IP Address:</span>
+                        <span className="text-zinc-200 font-bold break-all">{summary?.ip || "—"}</span>
+                      </div>
+                    </div>
+
+                    <div className="flex items-center gap-2.5 bg-zinc-900/40 border border-zinc-850 p-3 rounded-xl">
+                      <Layers className="w-4.5 h-4.5 text-red-400 flex-shrink-0" />
+                      <div>
+                        <span className="text-zinc-550 block font-semibold">IP Provider:</span>
+                        <span className="text-zinc-200 font-bold break-all">{summary?.ipProvider || "—"}</span>
+                      </div>
+                    </div>
+
+                    <div className="flex items-start gap-2.5 bg-zinc-900/40 border border-zinc-850 p-3 rounded-xl sm:col-span-2 lg:col-span-3">
+                      <Shield className="w-4.5 h-4.5 text-red-400 flex-shrink-0 mt-0.5" />
+                      <div>
+                        <span className="text-zinc-550 block font-semibold mb-1">Status:</span>
+                        <div className="flex flex-wrap items-center gap-1.5">
+                          {summary?.status?.length ? (
+                            summary.status.map((s, i) => (
+                              <span
+                                key={i}
+                                className="inline-block px-2 py-0.5 text-[9px] rounded-lg border border-red-500/30 bg-red-500/5 text-red-400 font-semibold uppercase font-mono"
+                              >
+                                {s.split(/\s+/)[0]}
+                              </span>
+                            ))
+                          ) : (
+                            <span className="text-zinc-500">—</span>
+                          )}
+                        </div>
                       </div>
                     </div>
                   </div>
@@ -368,7 +384,7 @@ export default function WhoisLookup() {
                     <Terminal className="w-4 h-4 text-red-400" />
                     WHOIS Raw Response
                   </h3>
-                  <pre className="whitespace-pre-wrap text-[11px] text-zinc-450 bg-zinc-950/65 border border-zinc-900 rounded-xl p-4 overflow-auto max-h-96 leading-relaxed">
+                  <pre className="whitespace-pre-wrap text-[13px] text-zinc-450 bg-zinc-950/65 border border-zinc-900 rounded-xl p-4 overflow-auto max-h-[500px] leading-relaxed">
                     {result.raw || "No raw registry records found."}
                   </pre>
                 </section>

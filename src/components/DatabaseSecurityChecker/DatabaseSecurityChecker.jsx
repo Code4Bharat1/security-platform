@@ -12,9 +12,11 @@ import {
   Activity,
   Info,
   Globe,
-  ShieldAlert
+  ShieldAlert,
+  Download
 } from "lucide-react";
 import useProtectedAction from "../UseProtectedAction/UseProtectedAction";
+import { generateDbPDF } from "./generateDbPDF";
 
 export default function DbSecurityChecker() {
   const [form, setForm] = useState({
@@ -29,6 +31,11 @@ export default function DbSecurityChecker() {
   const [result, setResult] = useState(null);
 
   const protectedAction = useProtectedAction();
+  
+  const downloadPDF = () => {
+    if (!result) return;
+    generateDbPDF(result);
+  };
 
   const toggleCheck = (check) => {
     setForm((prev) => ({
@@ -284,7 +291,9 @@ export default function DbSecurityChecker() {
                     <div className="grid gap-4 sm:grid-cols-2">
                       <div className="rounded-xl p-4 border border-zinc-850 bg-zinc-900/40 text-center">
                         <span className="text-[10px] text-zinc-550 block mb-1">Security Score</span>
-                        <span className="text-2xl font-extrabold text-red-450">{result.securityScore} / 100</span>
+                        <span className="text-2xl font-extrabold text-red-450">
+                          {result.securityScore !== "N/A" ? `${result.securityScore} / 100` : "N/A"}
+                        </span>
                       </div>
 
                       <div className="rounded-xl p-4 border border-zinc-850 bg-zinc-900/40 text-center">
@@ -331,6 +340,15 @@ export default function DbSecurityChecker() {
                         </ul>
                       </div>
                     )}
+                    {/* Export Options */}
+                    <div className="flex flex-wrap gap-3 border-t border-zinc-900 pt-4 mt-4">
+                      <button
+                        onClick={downloadPDF}
+                        className="px-4 py-2.5 bg-zinc-900/40 hover:bg-red-500/5 text-zinc-350 hover:text-red-400 border border-zinc-800/80 hover:border-red-500/30 rounded-xl font-mono font-bold text-xs uppercase transition-all duration-300 flex items-center gap-1.5 cursor-pointer"
+                      >
+                        <Download className="w-3.5 h-3.5" strokeWidth={2.5} /> PDF Report
+                      </button>
+                    </div>
 
                   </div>
                 )}

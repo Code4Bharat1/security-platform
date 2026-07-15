@@ -21,6 +21,7 @@ import {
   ChevronDown
 } from "lucide-react";
 import useProtectedAction from "../UseProtectedAction/UseProtectedAction";
+import { generateClickjackingPDF } from "./generateClickjackingPDF";
 
 const API_BASE = (
   (typeof process !== "undefined" &&
@@ -156,89 +157,7 @@ export default function ClickjackingTester() {
 
   const downloadPdf = () => {
     if (!result || result.ok === false) return;
-
-    const doc = new jsPDF({ unit: "pt" });
-    const now = new Date().toLocaleString();
-
-    // Red Team banner style
-    doc.setFillColor(18, 18, 18);
-    doc.rect(0, 0, 595, 55, "F");
-
-    doc.setTextColor(239, 68, 68);
-    doc.setFont("helvetica", "bold");
-    doc.setFontSize(16);
-    doc.text("CLICKJACKING SECURITY REPORT", 40, 35);
-
-    doc.setTextColor(255, 255, 255);
-    doc.setFontSize(9);
-    doc.text(`Target: ${result.url || url} | Generated: ${now}`, 40, 48);
-
-    doc.setTextColor(50, 50, 50);
-    doc.setFontSize(11);
-    doc.text(`Overall Severity: ${severity || "—"}`, 40, 85);
-
-    autoTable(doc, {
-      startY: 105,
-      head: [["Check", "Status", "Details"]],
-      body: [
-        [
-          "X-Frame-Options",
-          headersInfo.xfoPresent ? "Present" : "Missing",
-          headersInfo.xfoValue || "—",
-        ],
-        [
-          "CSP frame-ancestors",
-          headersInfo.cspFaPresent ? "Present" : "Missing",
-          headersInfo.cspFaPresent ? "Directive found" : "—",
-        ],
-      ],
-      theme: "grid",
-      styles: { fontSize: 9 },
-      headStyles: { fillColor: [239, 68, 68] },
-    });
-
-    const pmY = (doc.lastAutoTable?.finalY || 105) + 20;
-    doc.text("Protection Mechanisms Detected:", 40, pmY);
-    const lines = (
-      Array.isArray(result?.protectedBy) ? result.protectedBy : ["None"]
-    ).join("\n");
-    doc.setFontSize(9);
-    doc.text(lines || "None", 40, pmY + 18);
-
-    const recStart = pmY + 18 + 14 * (lines.split("\n").length || 1) + 20;
-    doc.setFontSize(11);
-    doc.text("Recommendations:", 40, recStart);
-
-    const recs = Array.isArray(result?.recommendations) ? result.recommendations : [];
-    let y = recStart + 18;
-    if (recs.length === 0) {
-      doc.setFontSize(9);
-      doc.text("No recommendations. Site appears protected.", 40, y);
-    } else {
-      recs.forEach((r, idx) => {
-        doc.setFontSize(10);
-        doc.text(`${idx + 1}. ${r.title} (${r.priority || "info"})`, 40, y);
-        y += 14;
-        doc.setFontSize(9);
-        const exp = doc.splitTextToSize(r.explain || "", 515);
-        doc.text(exp, 50, y);
-        y += exp.length * 12 + 6;
-        if (r.snippet) {
-          const sn = doc.splitTextToSize(r.snippet, 515);
-          doc.setFont("courier", "normal");
-          doc.text(sn, 50, y);
-          doc.setFont("helvetica", "normal");
-          y += sn.length * 12 + 8;
-        }
-        y += 6;
-        if (y > 760 && idx < recs.length - 1) {
-          doc.addPage();
-          y = 40;
-        }
-      });
-    }
-
-    doc.save("clickjacking_security_report.pdf");
+    generateClickjackingPDF(result, null);
   };
 
   const serverSnippets = {

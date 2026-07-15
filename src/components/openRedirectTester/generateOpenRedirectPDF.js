@@ -39,6 +39,19 @@ const isUnusualRedirect = (t, originalDomain) => {
   return false;
 };
 
+const getDisplayFinalUrl = (finalUrl, originalDomain) => {
+  if (!finalUrl || finalUrl === "-") return "-";
+  try {
+    const urlObj = new URL(finalUrl);
+    if (urlObj.hostname === originalDomain || urlObj.hostname.endsWith("." + originalDomain)) {
+      return `${urlObj.protocol}//${urlObj.hostname}`;
+    }
+    return finalUrl;
+  } catch (_) {
+    return finalUrl;
+  }
+};
+
 export const generateOpenRedirectPDF = async (report = {}, setPdfProgress) => {
   if (!report) return;
   setPdfProgress?.("Initializing PDF document...");
@@ -216,7 +229,7 @@ export const generateOpenRedirectPDF = async (report = {}, setPdfProgress) => {
       t.param,
       getInjectedPayloadValue(t.testedUrl, t.param),
       t.chain && t.chain.length > 0 ? t.chain.map(h => h.status).join(" -> ") : "200",
-      t.finalUrl || "-",
+      getDisplayFinalUrl(t.finalUrl, originalDomain),
       t.finalDomain || "-",
       t.vulnerable ? "Vulnerable" : "Safe"
     ]);
@@ -270,7 +283,7 @@ export const generateOpenRedirectPDF = async (report = {}, setPdfProgress) => {
             ["Injected Payload",           getInjectedPayloadValue(t.testedUrl, t.param)],
             ["HTTP Response status",       t.chain && t.chain[0] ? String(t.chain[0].status) : "200"],
             ["Location Header",            t.chain && t.chain[0] ? (t.chain[0].location || "None") : "None"],
-            ["Final Redirect URL",         t.finalUrl || "-"],
+            ["Final Redirect URL",         getDisplayFinalUrl(t.finalUrl, originalDomain)],
             ["Final Redirect Domain",      t.finalDomain || "-"],
             ["Redirect Pathway Chain",     pathwayChain],
             ["Impact",                     staticMeta.impact],

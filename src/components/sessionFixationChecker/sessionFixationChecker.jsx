@@ -1,8 +1,6 @@
 "use client";
 
 import { useRef, useState } from "react";
-import { jsPDF } from "jspdf";
-import autoTable from "jspdf-autotable";
 import {
   Shield,
   Upload,
@@ -21,6 +19,7 @@ import {
   ShieldAlert
 } from "lucide-react";
 import useProtectedAction from "../UseProtectedAction/UseProtectedAction";
+import { generateSessionFixationPDF } from "./generateSessionFixationPDF";
 
 export default function SessionFixationChecker() {
   const [code, setCode] = useState("");
@@ -160,81 +159,7 @@ export default function SessionFixationChecker() {
       addToast("No report to export", "error");
       return;
     }
-    const doc = new jsPDF({ unit: "pt" });
-
-    // Red Team banner style
-    doc.setFillColor(18, 18, 18);
-    doc.rect(0, 0, 595, 55, "F");
-
-    doc.setTextColor(239, 68, 68);
-    doc.setFont("helvetica", "bold");
-    doc.setFontSize(16);
-    doc.text("SESSION FIXATION SECURITY REPORT", 40, 35);
-
-    doc.setTextColor(255, 255, 255);
-    doc.setFontSize(9);
-    doc.text(`Generated: ${new Date().toLocaleString()}`, 40, 48);
-
-    doc.setTextColor(50, 50, 50);
-    doc.setFontSize(9);
-    if (summary) {
-      doc.text(`Overall Risk: ${summary.overallRisk}`, 40, 75);
-      doc.text(
-        `Findings: ${summary.totalFindings}  |  Critical: ${summary.critical}  High: ${summary.high}  Medium: ${summary.medium}  Low: ${summary.low}`,
-        40,
-        90
-      );
-    }
-
-    autoTable(doc, {
-      startY: 110,
-      head: [
-        [
-          "Severity",
-          "Rule",
-          "Message",
-          "Confidence",
-          "Exploitability",
-          "CVSS",
-          "Lines",
-        ],
-      ],
-      body: (report || []).map((it) => [
-        it.severity || "",
-        it.rule || "",
-        String(it.message || "").slice(0, 120),
-        it.confidence || "",
-        it.exploitability || "",
-        it.cvss ?? "",
-        (it.locations || []).map((l) => l.line).join(";"),
-      ]),
-      theme: "grid",
-      styles: { fontSize: 7, cellPadding: 4 },
-      headStyles: { fillColor: [239, 68, 68] },
-      columnStyles: { 2: { cellWidth: 240 } },
-      margin: { left: 40, right: 40 },
-    });
-
-    doc.addPage();
-    doc.setFontSize(12);
-    doc.text("Recommendations", 40, 40);
-    const recs = [
-      "Regenerate session ID after login and privilege escalation.",
-      "Use HttpOnly, Secure, SameSite for cookies; set sensible maxAge.",
-      "Strong randomness (crypto.randomBytes(32)/uuid v4/nanoid).",
-      "Bind session to IP/UA where appropriate; invalidate on change.",
-      "Enforce MFA for sensitive actions.",
-      "Destroy session on logout; HTTPS only with HSTS enabled.",
-    ];
-    doc.setFontSize(9);
-    let y = 60;
-    recs.forEach((t) => {
-      doc.text(`• ${t}`, 48, y);
-      y += 16;
-    });
-
-    doc.save(`${fileSafe("session-fixation-report")}.pdf`);
-    addToast("PDF report downloaded", "success");
+    generateSessionFixationPDF(report, summary, metrics);
   };
 
   const getSeverityIcon = (s) => {
@@ -423,92 +348,170 @@ export default function SessionFixationChecker() {
               </div>
             </div>
 
-            {/* Export buttons row */}
+            {/* Completion Banner */}
             {report && (
-              <div className="flex flex-wrap gap-3">
-                <button
-                  onClick={() => openExport("json")}
-                  className="px-4 py-2.5 bg-zinc-900/40 hover:bg-red-500/5 text-zinc-350 hover:text-red-400 border border-zinc-800/80 hover:border-red-500/30 rounded-xl font-mono font-bold text-xs uppercase transition-all duration-300 flex items-center gap-1.5 cursor-pointer"
-                >
-                  <Download className="w-3.5 h-3.5" /> JSON Export
-                </button>
-                <button
-                  onClick={() => openExport("csv")}
-                  className="px-4 py-2.5 bg-zinc-900/40 hover:bg-red-500/5 text-zinc-350 hover:text-red-400 border border-zinc-800/80 hover:border-red-500/30 rounded-xl font-mono font-bold text-xs uppercase transition-all duration-300 flex items-center gap-1.5 cursor-pointer"
-                >
-                  <Download className="w-3.5 h-3.5" /> CSV Export
-                </button>
-                <button
-                  onClick={downloadPDF}
-                  className="px-4 py-2.5 bg-zinc-900/40 hover:bg-red-500/5 text-zinc-350 hover:text-red-400 border border-zinc-800/80 hover:border-red-500/30 rounded-xl font-mono font-bold text-xs uppercase transition-all duration-300 flex items-center gap-1.5 cursor-pointer"
-                >
-                  <Download className="w-3.5 h-3.5" /> PDF Report
-                </button>
+              <div className="bg-zinc-950/20 backdrop-blur-md border border-zinc-800/80 rounded-2xl p-8 shadow-[0_8px_30px_rgb(0,0,0,0.2)] text-center space-y-6">
+                <div className="w-12 h-12 mx-auto border border-red-500/30 bg-red-500/5 rounded-xl flex items-center justify-center">
+                  <CheckCircle className="w-6 h-6 text-red-400" />
+                </div>
+                <div className="space-y-2">
+                  <h2 className="text-xl font-mono font-bold text-zinc-100 uppercase tracking-wider">
+                    ✓ ANALYSIS COMPLETED
+                  </h2>
+                  <p className="text-zinc-400 font-mono text-xs max-w-xl mx-auto leading-relaxed">
+                    The security assessment has completed successfully. Review the findings below or download the detailed report for complete analysis.
+                  </p>
+                </div>
+                <div className="flex justify-center gap-4 flex-wrap">
+                  <button
+                    onClick={downloadPDF}
+                    className="px-6 py-3 bg-red-500 hover:bg-red-600 text-black rounded-xl font-mono font-bold text-xs uppercase tracking-wider transition-all duration-300 flex items-center gap-2 cursor-pointer hover:shadow-[0_0_20px_rgba(239,68,68,0.2)]"
+                  >
+                    <Download className="w-4 h-4 text-black" />
+                    Download Report
+                  </button>
+                  <button
+                    onClick={() => {
+                      setReport(null);
+                      setSummary(null);
+                      setMetrics(null);
+                      setComparison(null);
+                      setReportId(null);
+                      setCode("");
+                    }}
+                    className="px-6 py-3 bg-zinc-900/40 hover:bg-red-500/5 text-zinc-350 hover:text-red-400 border border-zinc-800/80 hover:border-red-500/30 rounded-xl font-mono font-bold text-xs uppercase tracking-wider transition-all duration-300 flex items-center gap-2 cursor-pointer"
+                  >
+                    <Activity className="w-4 h-4" />
+                    Run New Scan
+                  </button>
+                </div>
               </div>
             )}
 
             {/* Results Section */}
             {report !== null && (
-              <div ref={reportRef} className="space-y-6">
+              <div ref={reportRef} className="space-y-6 mt-6">
                 
                 {/* Score breakdown metrics card */}
-                {(summary || metrics) && (
-                  <div className="bg-zinc-950/20 backdrop-blur-md border border-zinc-800/80 rounded-2xl p-6 shadow-[0_8px_30px_rgb(0,0,0,0.2)] space-y-4">
-                    {summary && (
-                      <div className="text-sm font-mono text-zinc-350 border-b border-zinc-900 pb-3">
-                        Overall Risk: <span className="text-red-450 font-bold uppercase">{summary.overallRisk}</span> • Findings:{" "}
-                        <span className="text-red-400 font-bold">{summary.totalFindings}</span> (C:
-                        {summary.critical} H:{summary.high} M:{summary.medium} L:
-                        {summary.low})
+                <div className="bg-zinc-950/20 backdrop-blur-md border border-zinc-800/80 rounded-2xl p-6 shadow-[0_8px_30px_rgb(0,0,0,0.2)] space-y-6">
+                  {/* Dynamic security summary values */}
+                  <div className="grid grid-cols-2 md:grid-cols-4 gap-4 font-mono text-xs text-left">
+                    <div className="bg-zinc-900/40 border border-zinc-850 p-4 rounded-xl space-y-1">
+                      <span className="text-[10px] text-zinc-550 block font-bold uppercase tracking-wider">Security Status</span>
+                      <span className={`text-sm font-extrabold block ${
+                        report.some(r => r.status === "Failed" && (r.severity === "Critical" || r.severity === "High")) 
+                          ? "text-red-400" 
+                          : report.some(r => r.status === "Failed") 
+                          ? "text-orange-450" 
+                          : report.filter(r => r.status === "Passed").length === 0 
+                          ? "text-zinc-550" 
+                          : "text-green-400"
+                      }`}>
+                        {(() => {
+                          const naCount = report.filter(r => r.status === "N/A" || r.status === "Unable to Verify").length;
+                          if (naCount === report.length) return "Unable to Verify";
+                          if (report.some(r => r.status === "Failed" && (r.severity === "Critical" || r.severity === "High"))) return "Vulnerable";
+                          if (report.some(r => r.status === "Failed")) return "Potential Risk";
+                          return "Secure";
+                        })()}
+                      </span>
+                    </div>
+
+                    <div className="bg-zinc-900/40 border border-zinc-850 p-4 rounded-xl space-y-1">
+                      <span className="text-[10px] text-zinc-550 block font-bold uppercase tracking-wider">Security Score</span>
+                      <span className="text-sm font-extrabold text-zinc-200 block">
+                        {(() => {
+                          const active = report.filter(r => r.status !== "N/A" && r.status !== "Unable to Verify");
+                          const scoreVal = active.length > 0 
+                            ? Math.round((active.filter(r => r.status === "Passed").length / active.length) * 100) 
+                            : 100;
+                          return `${scoreVal} / 100`;
+                        })()}
+                      </span>
+                    </div>
+
+                    <div className="bg-zinc-900/40 border border-zinc-850 p-4 rounded-xl space-y-1">
+                      <span className="text-[10px] text-zinc-550 block font-bold uppercase tracking-wider">Risk Level</span>
+                      <span className="text-sm font-extrabold text-zinc-200 block">
+                        {(() => {
+                          const active = report.filter(r => r.status !== "N/A" && r.status !== "Unable to Verify");
+                          const scoreVal = active.length > 0 
+                            ? Math.round((active.filter(r => r.status === "Passed").length / active.length) * 100) 
+                            : 100;
+                          if (scoreVal < 40) return "Critical Risk";
+                          if (scoreVal < 70) return "High Risk";
+                          if (scoreVal < 90) return "Moderate Risk";
+                          return "Secure (Low Risk)";
+                        })()}
+                      </span>
+                    </div>
+
+                    <div className="bg-zinc-900/40 border border-zinc-850 p-4 rounded-xl space-y-1">
+                      <span className="text-[10px] text-zinc-550 block font-bold uppercase tracking-wider">Checks Summary</span>
+                      <div className="text-[10px] text-zinc-400 space-y-0.5 mt-0.5">
+                        <div className="flex justify-between">
+                          <span>Passed:</span>
+                          <span className="text-green-400 font-bold">{report.filter(r => r.status === "Passed").length}</span>
+                        </div>
+                        <div className="flex justify-between">
+                          <span>Failed:</span>
+                          <span className="text-red-400 font-bold">{report.filter(r => r.status === "Failed").length}</span>
+                        </div>
+                        <div className="flex justify-between">
+                          <span>Unable to Verify:</span>
+                          <span className="text-zinc-500 font-bold">{report.filter(r => r.status === "N/A" || r.status === "Unable to Verify").length}</span>
+                        </div>
                       </div>
-                    )}
-                    {comparison && (
-                      <div className="text-[10px] font-mono text-zinc-550">
-                        {comparison.previousReportId
-                          ? `Compared to previous scan: Δ${
-                              comparison.deltaFindings >= 0 ? "+" : ""
-                            }${comparison.deltaFindings}`
-                          : "No previous scan with matching file identity"}
-                      </div>
-                    )}
-                    {metrics && (
-                      <div className="grid md:grid-cols-2 gap-4 text-xs font-mono text-zinc-450">
-                        <div className="bg-zinc-900/40 border border-zinc-850 p-3 rounded-xl space-y-1">
-                          <span className="text-[9px] text-zinc-550 block font-bold uppercase tracking-wider">Cookie Headers</span>
-                          HttpOnly: <span className="text-zinc-250 font-semibold">{String(metrics.cookieFlags?.httpOnly)}</span>, 
-                          Secure: <span className="text-zinc-250 font-semibold">{String(metrics.cookieFlags?.secure)}</span>, 
-                          SameSite: <span className="text-zinc-250 font-semibold">{String(metrics.cookieFlags?.sameSite || "—")}</span>
-                        </div>
-                        <div className="bg-zinc-900/40 border border-zinc-850 p-3 rounded-xl space-y-1">
-                          <span className="text-[9px] text-zinc-550 block font-bold uppercase tracking-wider">Token Quality</span>
-                          Entropy Hint: <span className="text-zinc-250 font-semibold">{metrics.tokenEntropyHint || "—"}</span> • 
-                          Reuse Risk: <span className="text-red-400 font-semibold">{metrics.tokenReuseRisk || "—"}</span>
-                        </div>
-                        <div className="bg-zinc-900/40 border border-zinc-850 p-3 rounded-xl space-y-1">
-                          <span className="text-[9px] text-zinc-550 block font-bold uppercase tracking-wider">Session Bindings</span>
-                          IP Address: <span className="text-zinc-250 font-semibold">{metrics.ipBinding ? "yes" : "no"}</span> • 
-                          User-Agent: <span className="text-zinc-250 font-semibold">{metrics.uaBinding ? "yes" : "no"}</span>
-                        </div>
-                        <div className="bg-zinc-900/40 border border-zinc-850 p-3 rounded-xl space-y-1">
-                          <span className="text-[9px] text-zinc-550 block font-bold uppercase tracking-wider">MFA / Invalidation</span>
-                          MFA Enabled: <span className="text-zinc-250 font-semibold">{metrics.mfaPresent ? "yes" : "no"}</span> • 
-                          Regen on Escalation: <span className="text-zinc-250 font-semibold">{metrics.regenOnPrivEsc ? "yes" : "no"}</span>
-                        </div>
-                      </div>
-                    )}
+                    </div>
                   </div>
-                )}
+
+                  {comparison && (
+                    <div className="text-[10px] font-mono text-zinc-550 border-t border-zinc-900/60 pt-3">
+                      {comparison.previousReportId
+                        ? `Compared to previous scan: Δ${
+                            comparison.deltaFindings >= 0 ? "+" : ""
+                          }${comparison.deltaFindings}`
+                        : "No previous scan with matching file identity"}
+                    </div>
+                  )}
+
+                  {metrics && (
+                    <div className="grid md:grid-cols-2 gap-4 text-xs font-mono text-zinc-450 border-t border-zinc-900/60 pt-4 text-left">
+                      <div className="bg-zinc-900/40 border border-zinc-850 p-3 rounded-xl space-y-1">
+                        <span className="text-[9px] text-zinc-550 block font-bold uppercase tracking-wider">Cookie Headers</span>
+                        HttpOnly: <span className="text-zinc-250 font-semibold">{String(metrics.cookieFlags?.httpOnly)}</span>, 
+                        Secure: <span className="text-zinc-250 font-semibold">{String(metrics.cookieFlags?.secure)}</span>, 
+                        SameSite: <span className="text-zinc-250 font-semibold">{String(metrics.cookieFlags?.sameSite || "—")}</span>
+                      </div>
+                      <div className="bg-zinc-900/40 border border-zinc-850 p-3 rounded-xl space-y-1">
+                        <span className="text-[9px] text-zinc-550 block font-bold uppercase tracking-wider">Token Quality</span>
+                        Entropy Hint: <span className="text-zinc-250 font-semibold">{metrics.tokenEntropyHint || "—"}</span> • 
+                        Reuse Risk: <span className="text-red-400 font-semibold">{metrics.tokenReuseRisk || "—"}</span>
+                      </div>
+                      <div className="bg-zinc-900/40 border border-zinc-850 p-3 rounded-xl space-y-1">
+                        <span className="text-[9px] text-zinc-550 block font-bold uppercase tracking-wider">Session Bindings</span>
+                        IP Address: <span className="text-zinc-250 font-semibold">{metrics.ipBinding ? "yes" : "no"}</span> • 
+                        User-Agent: <span className="text-zinc-250 font-semibold">{metrics.uaBinding ? "yes" : "no"}</span>
+                      </div>
+                      <div className="bg-zinc-900/40 border border-zinc-850 p-3 rounded-xl space-y-1">
+                        <span className="text-[9px] text-zinc-550 block font-bold uppercase tracking-wider">MFA / Invalidation</span>
+                        MFA Enabled: <span className="text-zinc-250 font-semibold">{metrics.mfaPresent ? "yes" : "no"}</span> • 
+                        Regen on Escalation: <span className="text-zinc-250 font-semibold">{metrics.regenOnPrivEsc ? "yes" : "no"}</span>
+                      </div>
+                    </div>
+                  )}
+                </div>
 
                 {/* Specific issues list */}
-                {Array.isArray(report) && report.length > 0 ? (
+                {Array.isArray(report) && report.filter(r => r.status === "Failed").length > 0 && (
                   <div className="space-y-4">
                     <div className="flex items-center gap-3">
                       <AlertTriangle className="w-5 h-5 text-red-400" />
                       <h2 className="text-base font-mono font-bold text-zinc-200 uppercase tracking-wider">
-                        Security Scan Report ({report.length} flaws)
+                        Security Scan Report ({report.filter(r => r.status === "Failed").length} flaws)
                       </h2>
                     </div>
-                    {report.map((f, i) => (
+                    {report.filter(r => r.status === "Failed").map((f, i) => (
                       <div
                         key={i}
                         className="bg-zinc-950/20 backdrop-blur-md border border-zinc-800/80 rounded-2xl p-6 shadow-[0_8px_30px_rgb(0,0,0,0.2)] font-mono text-xs space-y-3"
@@ -520,12 +523,12 @@ export default function SessionFixationChecker() {
                               {(f.severity || "").toUpperCase()} • CVSS {f.cvss ?? "—"} • {f.exploitability || "—"} exploitability
                             </span>
                           </div>
-                          <span className="text-[10px] text-zinc-550 uppercase tracking-wide font-semibold">
+                          <span className="text-[10px] text-zinc-550 uppercase tracking-wide font-semibold text-right flex-1">
                             Rule: {f.rule || "—"}
                           </span>
                         </div>
                         
-                        <div className="text-zinc-350 space-y-2">
+                        <div className="text-zinc-350 space-y-2 text-left">
                           <p>
                             <strong className="text-zinc-500">Issue:</strong> {f.message}
                           </p>
@@ -542,7 +545,7 @@ export default function SessionFixationChecker() {
                         </div>
 
                         {Array.isArray(f.locations) && f.locations.length > 0 && (
-                          <div className="mt-3 border-t border-zinc-900/60 pt-3">
+                          <div className="mt-3 border-t border-zinc-900/60 pt-3 text-left">
                             <span className="text-[10px] text-zinc-550 block font-bold uppercase tracking-wider mb-2">Line Locations</span>
                             <ul className="space-y-1.5 pl-0 list-none text-zinc-400">
                               {f.locations.slice(0, 5).map((loc, k) => (
@@ -561,23 +564,13 @@ export default function SessionFixationChecker() {
                         )}
 
                         {f.suggestion && (
-                          <div className="bg-zinc-900/40 border border-zinc-850 p-4 rounded-xl space-y-1 mt-4">
+                          <div className="bg-zinc-900/40 border border-zinc-850 p-4 rounded-xl space-y-1 mt-4 text-left">
                             <span className="text-[10px] text-zinc-550 block font-bold uppercase tracking-wider">Recommended Remediation</span>
                             <p className="text-red-400 font-semibold">{f.suggestion}</p>
                           </div>
                         )}
                       </div>
                     ))}
-                  </div>
-                ) : (
-                  <div className="bg-zinc-950/20 backdrop-blur-md border border-zinc-800/80 rounded-2xl p-16 shadow-[0_8px_30px_rgb(0,0,0,0.2)] text-center space-y-4">
-                    <CheckCircle className="w-12 h-12 mx-auto text-red-450 animate-pulse" />
-                    <h2 className="text-lg font-mono font-bold text-zinc-200 uppercase tracking-wider">
-                      Validation Safe
-                    </h2>
-                    <p className="text-zinc-500 font-mono text-xs">
-                      No session fixation vulnerability flags identified in code.
-                    </p>
                   </div>
                 )}
               </div>

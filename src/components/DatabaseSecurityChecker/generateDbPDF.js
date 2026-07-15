@@ -102,11 +102,11 @@ export const generateDbPDF = async (scanResult, setPdfProgress) => {
     doc.setFont("helvetica", "bold");
     doc.setFontSize(24);
     doc.setTextColor(...C.bluePrimary);
-    doc.text("NEXCORE ALLIANCE", 14, 30);
+    doc.text("NEXCORE ALLIANCE", 105, 30, { align: "center" });
 
     doc.setFont("helvetica", "oblique");
     doc.setFontSize(10);
-    doc.text("AI-Powered Cybersecurity & Information Security Solutions", 14, 36);
+    doc.text("AI-Powered Cybersecurity & Information Security Solutions", 105, 36, { align: "center" });
 
     // Divider line
     doc.setDrawColor(...C.bluePrimary);
@@ -213,6 +213,7 @@ export const generateDbPDF = async (scanResult, setPdfProgress) => {
     const scoreVal = scanResult.securityScore ?? 100;
     const issuesVal = scanResult.issues ?? 0;
     const isSuccess = issuesVal === 0;
+    const scoreText = scoreVal === "N/A" ? "N/A" : `${scoreVal}/100`;
 
     // Render Scan Summary table
     renderTable(doc, {
@@ -220,7 +221,7 @@ export const generateDbPDF = async (scanResult, setPdfProgress) => {
       head: [["Status", "Security Score", "Issues Found"]],
       body: [[
         isSuccess ? "Success" : "Warning",
-        `${scoreVal}/100`,
+        scoreText,
         String(issuesVal)
       ]],
       headStyles: {
@@ -305,11 +306,10 @@ export const generateDbPDF = async (scanResult, setPdfProgress) => {
     // Draw Section 4: Conclusion & recommendations
     y = drawSectionHeader(doc, "4. CONCLUSION & RECOMMENDATIONS", y);
 
-    const hasAuth = findings.some(f => f.message.includes("Authentication enabled"));
-    const authStatus = hasAuth ? "Enabled" : "Disabled";
-    const exposureScope = host === "127.0.0.1" || host === "localhost" ? "Local" : "Public / External";
+    const authStatus = scanResult.authStatus || "N/A";
+    const exposureScope = scanResult.exposureScope || "N/A";
 
-    const conclusionText = `The Database Security Checker assessment connected to ${targetInput} and identified the database as ${dbType} with an overall security score of ${scoreVal}/100 and ${issuesVal} issue(s) identified. The authentication status was determined to be ${authStatus} with an exposure scope of ${exposureScope}. Reported findings indicate key configurations around port access, client encryption, and role configurations. Where issues are identified, they must be prioritised for remediation based on their associated severity and exposure scope.
+    const conclusionText = `The Database Security Checker assessment connected to ${targetInput} and identified the database as ${dbType} with an overall security score of ${scoreText} and ${issuesVal} issue(s) identified. The authentication status was determined to be ${authStatus} with an exposure scope of ${exposureScope}. Reported findings indicate key configurations around port access, client encryption, and role configurations. Where issues are identified, they must be prioritised for remediation based on their associated severity and exposure scope.
 
 It is recommended that authentication be enforced on all database interfaces without exception. Database services should not be exposed directly to public-facing network segments; access must be restricted to authorised internal hosts through firewall rules or network segmentation controls. The principle of least privilege should be applied to all database accounts, and default or anonymous accounts must be disabled. Suggestions returned by the tool should be reviewed and actioned in full. Regular configuration audits against CIS Database Benchmarks should be scheduled to detect and remediate configuration drift.`;
 
