@@ -11,9 +11,12 @@ import {
   Shield,
   Clock,
   Globe,
+  FileText,
+  Download,
 } from "lucide-react";
 import toast, { Toaster } from "react-hot-toast";
 import useProtectedAction from "@/components/UseProtectedAction/UseProtectedAction";
+import { generateURLShortenerPDF } from "./generateURLShortenerPDF";
 
 export default function UrlShortener() {
   const [originalUrl, setOriginalUrl] = useState("");
@@ -23,8 +26,32 @@ export default function UrlShortener() {
   const [history, setHistory] = useState([]);
   const [copiedIndex, setCopiedIndex] = useState(null);
   const [copiedResult, setCopiedResult] = useState(false);
+  const [pdfProgress, setPdfProgress] = useState(null);
 
   const protectedAction = useProtectedAction();
+
+  const downloadPDF = async (item = null) => {
+    toast.loading("Generating PDF Report...", { id: "pdf-gen" });
+
+    try {
+      const data = item
+        ? { result: item }
+        : { result: { original: originalUrl, short: shortUrl, timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' }) }, history };
+
+      await generateURLShortenerPDF(
+        data,
+        (msg) => {
+          if (msg) {
+            toast.loading(msg, { id: "pdf-gen" });
+          }
+        }
+      );
+      toast.success("PDF report downloaded!", { id: "pdf-gen" });
+    } catch (err) {
+      console.error(err);
+      toast.error("Failed to generate PDF report", { id: "pdf-gen" });
+    }
+  };
 
   const handleShorten = async () => {
     const trimmedUrl = originalUrl.trim();
@@ -252,8 +279,17 @@ export default function UrlShortener() {
                           }
                         }}
                         className="p-3.5 rounded-xl border border-zinc-800 bg-zinc-950/80 text-zinc-400 hover:text-emerald-400 hover:border-emerald-500/30 transition-all flex items-center justify-center flex-shrink-0 cursor-pointer"
+                        title="Copy link"
                       >
                         {copiedResult ? <Check size={16} className="text-emerald-400" /> : <Copy size={16} />}
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => downloadPDF({ original: originalUrl, short: shortUrl, timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' }) })}
+                        className="p-3.5 rounded-xl border border-zinc-800 bg-zinc-950/80 text-zinc-400 hover:text-emerald-400 hover:border-emerald-500/30 transition-all flex items-center justify-center flex-shrink-0 cursor-pointer"
+                        title="Download PDF Report"
+                      >
+                        <FileText size={16} />
                       </button>
                     </div>
                   </div>
@@ -270,10 +306,21 @@ export default function UrlShortener() {
             {/* Session Activity history */}
             {history.length > 0 && (
               <div className="bg-zinc-950/20 backdrop-blur-md border border-zinc-800/80 rounded-2xl p-6 shadow-[0_8px_30px_rgb(0,0,0,0.2)] hover:border-emerald-500/10 transition-all duration-300 space-y-5">
-                <h2 className="text-lg font-mono font-medium text-zinc-100 flex items-center gap-2">
-                  <Clock className="text-emerald-400 w-5 h-5" />
-                  Session History
-                </h2>
+                <div className="flex justify-between items-center border-b border-zinc-850 pb-3 mb-2">
+                  <h2 className="text-lg font-mono font-medium text-zinc-100 flex items-center gap-2">
+                    <Clock className="text-emerald-400 w-5 h-5" />
+                    Session History
+                  </h2>
+                  <button
+                    type="button"
+                    onClick={() => downloadPDF()}
+                    className="px-3 py-1.5 bg-zinc-900/40 hover:bg-emerald-500/5 text-zinc-300 hover:text-emerald-400 border border-zinc-800/80 hover:border-emerald-500/30 rounded-xl font-mono font-bold text-xs uppercase tracking-wider transition-all duration-300 flex items-center justify-center gap-1.5 cursor-pointer"
+                    title="Download Bulk PDF Report"
+                  >
+                    <Download className="w-3.5 h-3.5" />
+                    Download PDF
+                  </button>
+                </div>
 
                 {/* Dashboard Stats */}
                 <div className="grid grid-cols-2 gap-4">
@@ -308,22 +355,33 @@ export default function UrlShortener() {
                             → {item.original}
                           </div>
                         </div>
-                        <button
-                          type="button"
-                          onClick={async () => {
-                            try {
-                              await navigator.clipboard.writeText(item.short);
-                              setCopiedIndex(idx);
-                              toast.success("Copied!");
-                              setTimeout(() => setCopiedIndex(null), 1500);
-                            } catch {
-                              toast.error("Failed to copy.");
-                            }
-                          }}
-                          className="p-2 rounded-lg border border-zinc-850 bg-zinc-900/40 text-zinc-400 hover:text-emerald-400 hover:border-emerald-500/20 transition-all flex items-center justify-center flex-shrink-0 cursor-pointer"
-                        >
-                          {copiedIndex === idx ? <Check size={12} className="text-emerald-400" /> : <Copy size={12} />}
-                        </button>
+                        <div className="flex gap-1.5 flex-shrink-0">
+                          <button
+                            type="button"
+                            onClick={async () => {
+                              try {
+                                await navigator.clipboard.writeText(item.short);
+                                setCopiedIndex(idx);
+                                toast.success("Copied!");
+                                setTimeout(() => setCopiedIndex(null), 1500);
+                              } catch {
+                                toast.error("Failed to copy.");
+                              }
+                            }}
+                            className="p-2 rounded-lg border border-zinc-850 bg-zinc-900/40 text-zinc-400 hover:text-emerald-400 hover:border-emerald-500/20 transition-all flex items-center justify-center cursor-pointer"
+                            title="Copy link"
+                          >
+                            {copiedIndex === idx ? <Check size={12} className="text-emerald-400" /> : <Copy size={12} />}
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => downloadPDF(item)}
+                            className="p-2 rounded-lg border border-zinc-850 bg-zinc-900/40 text-zinc-400 hover:text-emerald-400 hover:border-emerald-500/20 transition-all flex items-center justify-center cursor-pointer"
+                            title="Download PDF Report"
+                          >
+                            <FileText size={12} />
+                          </button>
+                        </div>
                       </div>
                     ))}
                   </div>
