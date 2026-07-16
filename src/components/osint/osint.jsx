@@ -11,7 +11,9 @@ import {
   RefreshCw,
   AlertCircle,
   Database,
+  Download,
 } from "lucide-react";
+import { generateDataBreachPDF } from "./generateDataBreachPDF";
 import toast, { Toaster } from "react-hot-toast";
 import useProtectedAction from "../UseProtectedAction/UseProtectedAction";
 
@@ -37,6 +39,15 @@ export default function OsintTool() {
   const [results, setResults] = useState(null);
   const [error, setError] = useState("");
   const protectedAction = useProtectedAction();
+
+  const handleDownloadPDF = () => {
+    if (!results) return;
+    generateDataBreachPDF({
+      queryType:  results.queryType  || queryType,
+      queryValue: results.queryValue || queryValue,
+      details:    results.details    || [],
+    });
+  };
 
   const handleCheck = async () => {
     if (!queryValue.trim()) return;
@@ -298,6 +309,15 @@ export default function OsintTool() {
                 <div className="text-[10px] text-zinc-500 font-mono italic">
                   * Note: Some platforms restrict profiles behind API limits or anti-bot measures. Redundant checks may flag as unknown.
                 </div>
+
+                {/* Download PDF Report button */}
+                <button
+                  onClick={handleDownloadPDF}
+                  className="w-full flex items-center justify-center gap-2 py-3 mt-2 rounded-xl border border-emerald-500/30 bg-emerald-500/5 hover:bg-emerald-500/10 text-emerald-400 font-mono font-bold text-xs uppercase tracking-wider transition-all duration-200 hover:border-emerald-500/50 hover:scale-[1.01] active:scale-[0.99] cursor-pointer"
+                >
+                  <Download className="w-4 h-4" />
+                  Download PDF Report
+                </button>
               </div>
             )}
           </div>

@@ -17,7 +17,7 @@ import {
   ArrowRight,
   Filter
 } from "lucide-react";
-import { generateMalwaveScanPDF } from "@/components/malwaveScan/generateMalwaveScanPDF";
+import { generateMalwareScanPDF } from "@/components/malwareScan/generateMalwareScanPDF";
 import useProtectedAction from "@/components/UseProtectedAction/UseProtectedAction";
 
 /* ─────────────── Severity Badge styling ─────────────── */
@@ -103,7 +103,7 @@ export default function DependencyCheckPage() {
       });
     };
 
-    await addLog("[INFO] Initializing Malwave dependency scan workspace...", 100);
+    await addLog("[INFO] Initializing Malware dependency scan workspace...", 100);
     await addLog(`[INFO] Targeted manifest file: ${fileName}`, 150);
     await addLog("[INFO] Validating JSON syntax baseline...", 150);
 
@@ -157,7 +157,7 @@ export default function DependencyCheckPage() {
         }
 
         await addLog("[INFO] Audit scorecard generated.", 100);
-        await addLog("[SUCCESS] Malwave Scan completed successfully.", 150);
+        await addLog("[SUCCESS] Malware Scan completed successfully.", 150);
 
         setResults(data.issues || []);
         setRiskScore(data.riskScore || 0);
@@ -179,7 +179,7 @@ export default function DependencyCheckPage() {
 
   // Export PDF Report
   const handleDownloadPDF = () => {
-    generateMalwaveScanPDF(results, fileName, riskScore, summaryText);
+    generateMalwareScanPDF(results, fileName, riskScore, summaryText);
   };
 
   return (
@@ -237,7 +237,7 @@ export default function DependencyCheckPage() {
           </div>
           <div>
             <h1 className="text-4xl sm:text-5xl font-mono font-bold text-zinc-100">
-              MALWAVE <span className="text-amber-400">SCAN</span>
+              MALWARE <span className="text-amber-400">SCAN</span>
             </h1>
             <p className="mt-2 text-zinc-400 max-w-2xl text-base font-normal">
               Software Composition Analysis (SCA). Upload manifest declarations to query OSV.dev APIs for known CVEs, and run typosquatting checking algorithms.

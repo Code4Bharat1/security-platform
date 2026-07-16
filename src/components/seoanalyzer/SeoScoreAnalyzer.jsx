@@ -12,22 +12,28 @@ import {
   AlertTriangle,
   FileText,
   ShieldCheck,
+  FileDown,
 } from "lucide-react";
+import { generateSeoScoreAnalyzerPDF } from "./generateSeoScoreAnalyzerPDF";
 import useProtectedAction from "../UseProtectedAction/UseProtectedAction";
 
 export default function SeoScoreAnalyzer() {
-  const [url, setUrl] = useState("");
-  const [result, setResult] = useState(null);
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState("");
+  const [url, setUrl]           = useState("");
+  const [result, setResult]     = useState(null);
+  const [loading, setLoading]   = useState(false);
+  const [error, setError]       = useState("");
+  const [pdfProgress, setPdfProgress] = useState(null);
   const protectedAction = useProtectedAction();
 
-  const strengths =
-    result?.summary?.strengths || result?.strengths || [];
-  const weaknesses =
-    result?.summary?.weaknesses || result?.issues || [];
-  const metaDescription =
-    result?.metaDescription || result?.description || "N/A";
+  // ── PDF download using Unified PDF Reporting Framework ──────────────────
+  const downloadPDF = async () => {
+    if (!result) return;
+    await generateSeoScoreAnalyzerPDF(result, setPdfProgress);
+  };
+
+  const strengths = result?.strengths || [];
+  const weaknesses = result?.issues || [];
+  const metaDescription = result?.description || "N/A";
 
   const analyzeSEO = async () => {
     if (!url.trim()) {
@@ -87,6 +93,11 @@ export default function SeoScoreAnalyzer() {
         "--gold-dark": "#047857",
         "--ring": "rgba(16, 185, 129, 0.34)",
         "--surface-glow": "rgba(16, 185, 129, 0.14)",
+        "--scroll-thumb": "rgba(16, 185, 129, 0.35)",
+        "--scroll-thumb-hover": "rgba(16, 185, 129, 0.55)",
+        "--selection-bg": "rgba(16, 185, 129, 0.22)",
+        "--radial-glow": "rgba(16, 185, 129, 0.04)",
+        "--border-glow": "rgba(16, 185, 129, 0.12)",
       }}
     >
       <style>{`
@@ -94,13 +105,13 @@ export default function SeoScoreAnalyzer() {
           padding-top: 3.5rem !important;
         }
         .tool-detail-page ::-webkit-scrollbar-thumb {
-          background: rgba(16, 185, 129, 0.35) !important;
+          background: var(--scroll-thumb) !important;
         }
         .tool-detail-page ::-webkit-scrollbar-thumb:hover {
-          background: rgba(16, 185, 129, 0.55) !important;
+          background: var(--scroll-thumb-hover) !important;
         }
         .tool-detail-page ::selection {
-          background: rgba(16, 185, 129, 0.22) !important;
+          background: var(--selection-bg) !important;
           color: #e6fffa !important;
         }
         .tool-detail-page .tool-detail-panel,
@@ -110,12 +121,12 @@ export default function SeoScoreAnalyzer() {
         .tool-detail-page .bg-gray-800,
         .tool-detail-page .bg-black\/30 {
           background:
-            radial-gradient(circle at center, rgba(16, 185, 129, 0.04), transparent 55%),
+            radial-gradient(circle at center, var(--radial-glow), transparent 55%),
             linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01)) !important;
           box-shadow:
             inset 0 0 0 1px rgba(255,255,255,0.01),
-            0 0 40px rgba(16, 185, 129, 0.04) !important;
-          border-color: rgba(16, 185, 129, 0.12) !important;
+            0 0 40px var(--radial-glow) !important;
+          border-color: var(--border-glow) !important;
         }
       `}</style>
 
@@ -243,8 +254,8 @@ export default function SeoScoreAnalyzer() {
                           result.score >= 80
                             ? "text-emerald-400"
                             : result.score >= 50
-                            ? "text-amber-400"
-                            : "text-rose-400"
+                              ? "text-amber-400"
+                              : "text-rose-400"
                         }
                         strokeWidth="8"
                         strokeDasharray={2 * Math.PI * 50}
@@ -329,6 +340,53 @@ export default function SeoScoreAnalyzer() {
                     </ul>
                   </div>
                 </div>
+
+                {/* Action buttons */}
+                <div className="flex flex-col sm:flex-row gap-3">
+                  <button
+                    onClick={downloadPDF}
+                    disabled={pdfProgress !== null}
+                    className="w-full bg-emerald-500/5 hover:bg-emerald-500/10 text-emerald-400 border border-emerald-500/25 hover:border-emerald-500/50 px-4 py-3 rounded-xl font-mono font-bold text-[11px] uppercase tracking-wider flex items-center justify-center gap-2 transition-all hover:scale-[1.01] active:scale-[0.99] focus:outline-none cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
+                  >
+                    {pdfProgress ? (
+                      <><Loader2 className="w-4 h-4 animate-spin" /> {pdfProgress}</>
+                    ) : (
+                      <><FileDown className="w-4 h-4" /> Download PDF Report</>
+                    )}
+                  </button>
+                </div>
+
+                {/* Generated Reports Section (server-side exports) */}
+                {result.generatedFiles && result.generatedFiles.length > 0 && (
+                  <div className="bg-zinc-950/20 backdrop-blur-md border border-emerald-500/20 rounded-2xl p-6 shadow-md hover:border-emerald-500/30 transition-all">
+                    <h3 className="text-xs font-mono font-bold uppercase tracking-wider text-emerald-400 mb-4 flex items-center gap-2">
+                      <FileText className="h-4 w-4" />
+                      Generated Reports & Exports
+                    </h3>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                      {result.generatedFiles.map((file, idx) => {
+                        const fileUrl = `${process.env.NEXT_PUBLIC_PROD_API_URL.replace(/\/+$/, "")}/uploads/${file.fileName}`;
+                        return (
+                          <a
+                            key={idx}
+                            href={fileUrl}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="flex items-center justify-between p-3 rounded-xl border border-zinc-800/80 bg-zinc-900/10 hover:bg-zinc-900/40 hover:border-emerald-500/30 transition-all font-mono text-xs text-zinc-300"
+                          >
+                            <span className="flex items-center gap-2">
+                              <span className="inline-block px-2 py-0.5 rounded bg-emerald-500/10 text-emerald-400 text-[10px] font-bold">
+                                {file.fileType}
+                              </span>
+                              <span className="truncate max-w-[150px]">{file.fileName}</span>
+                            </span>
+                            <span className="text-emerald-400 hover:underline">Download</span>
+                          </a>
+                        );
+                      })}
+                    </div>
+                  </div>
+                )}
               </div>
             )}
           </div>
@@ -342,11 +400,13 @@ export default function SeoScoreAnalyzer() {
               </h4>
               <ul className="space-y-3.5 list-none pl-0">
                 {[
-                  "Evaluates HTML heading hierarchies (H1 through H6 formats).",
-                  "Scans semantic markup constraints for proper body content structures.",
-                  "Inspects image arrays to find missing descriptive 'alt' tag elements.",
-                  "Verifies robots.txt guidelines and sitemap discovery protocols.",
-                  "Ensures baseline structural parameters for target page indexes.",
+                  "Evaluates Page Title presence and character length bounds.",
+                  "Scans Meta Description presence and character length bounds.",
+                  "Inspects HTML H1 headers (presence and multiple H1 errors).",
+                  "Checks for canonical link tags and robots meta tag directives.",
+                  "Analyzes HTML page size and gzip/br/deflate compression status.",
+                  "Verifies viewport configurations for mobile friendliness.",
+                  "Audits all image tags for missing descriptive alt attributes."
                 ].map((text, i) => (
                   <li key={i} className="flex items-start gap-2">
                     <span className="inline-block w-1.5 h-1.5 rounded-full bg-emerald-500/60 mt-1.5 flex-shrink-0" />

@@ -471,7 +471,7 @@ export const vaTools = [
     status: "passive",
   },
   {
-    name: "Malwave Scan",
+    name: "Malware Scan",
     description: "Review dependencies, packages, and malicious package risk.",
     slug: "dependency-check",
     buttonLabel: "Launch Tool",
