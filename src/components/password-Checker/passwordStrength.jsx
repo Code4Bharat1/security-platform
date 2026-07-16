@@ -12,9 +12,11 @@ import {
   EyeOff,
   Info,
   Sliders,
-  Shield
+  Shield,
+  Download
 } from "lucide-react";
 import toast, { Toaster } from "react-hot-toast";
+import { generatePasswordStrengthPDF } from "./generatePasswordStrengthPDF";
 
 const API_BASE = (process.env.NEXT_PUBLIC_PROD_API_URL || "http://localhost:5000/api").replace(/\/+$/, "");
 const ENDPOINT = "/password/analyze";
@@ -29,6 +31,26 @@ export default function PasswordCheckerPage() {
 
   // Modal State
   const [modalOpen, setModalOpen] = useState(false);
+
+  const downloadPDF = async () => {
+    if (!data) return;
+    toast.loading("Generating PDF Report...", { id: "pdf-gen" });
+
+    try {
+      await generatePasswordStrengthPDF(
+        { password: pw, data },
+        (msg) => {
+          if (msg) {
+            toast.loading(msg, { id: "pdf-gen" });
+          }
+        }
+      );
+      toast.success("PDF report downloaded!", { id: "pdf-gen" });
+    } catch (e) {
+      console.error(e);
+      toast.error("Failed to generate PDF report", { id: "pdf-gen" });
+    }
+  };
 
   // Clipboard helper
   const copyToClipboard = async (text, setCopiedState) => {
@@ -334,10 +356,23 @@ export default function PasswordCheckerPage() {
 
           return (
             <div className="bg-zinc-950/20 backdrop-blur-md border border-zinc-800/80 rounded-2xl p-6 shadow-[0_8px_30px_rgb(0,0,0,0.2)] hover:border-emerald-500/10 transition-all duration-300 space-y-6 animate-[fadeIn_0.3s_ease-out]">
-              <h2 className="text-lg font-mono font-medium text-zinc-100 border-b border-zinc-800/40 pb-3 flex items-center gap-2">
-                <Shield className="text-emerald-400 w-5 h-5" />
-                <span>ANALYSIS RESULTS</span>
-              </h2>
+              <div className="flex justify-between items-center border-b border-zinc-800/40 pb-3 mb-2 flex-wrap gap-4">
+                <h2 className="text-lg font-mono font-medium text-zinc-100 flex items-center gap-2">
+                  <Shield className="text-emerald-400 w-5 h-5" />
+                  <span>ANALYSIS RESULTS</span>
+                </h2>
+                {data && !loading && !err && (
+                  <button
+                    type="button"
+                    onClick={downloadPDF}
+                    className="px-4 py-2 bg-zinc-900/40 hover:bg-emerald-500/5 text-zinc-300 hover:text-emerald-400 border border-zinc-800/80 hover:border-emerald-500/30 rounded-xl font-mono font-bold text-xs uppercase tracking-wider transition-all duration-300 flex items-center justify-center gap-1.5 cursor-pointer"
+                    title="Download PDF Report"
+                  >
+                    <Download className="w-3.5 h-3.5" />
+                    Download PDF
+                  </button>
+                )}
+              </div>
 
               {loading ? (
                 <div className="flex items-center justify-center py-6 gap-2 text-sm text-zinc-500 font-mono">
