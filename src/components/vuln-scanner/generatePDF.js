@@ -1,91 +1,19 @@
 import { jsPDF } from "jspdf";
-import autoTable from "jspdf-autotable";
+import {
+  C,
+  safe,
+  getSeverityColor,
+  drawSectionHeader,
+  renderTable,
+  getAuditorInfo,
+  applyHeaderFooterDecorator,
+} from "../../utils/pdfFramework";
 
 export const generatePDF = async (scanData, setPdfProgress) => {
   if (!scanData) return;
   setPdfProgress("Initializing PDF document...");
 
-  // ── Design System Color Tokens ───────────────────────────────────────────
-  const C = {
-    bg:          [255, 255, 255],     // Page background: white
-    bgAlt:       [248, 249, 250],     // Alternate rows: light grey
-    bgHeader:    [13, 56, 115],       // Header box background: dark blue
-    bluePrimary: [13, 56, 115],       // Primary text / box: dark blue
-    white:       [255, 255, 255],
-    black:       [0, 0, 0],
-    textMain:    [40, 40, 40],        // Dark grey main text
-    textMuted:   [110, 110, 110],     // Light grey caption text
-    lineColor:   [210, 210, 210],     // Table border lines
-    red:         [220, 53, 69],       // High severity
-    amber:       [253, 126, 20],      // Medium severity
-    blue:        [13, 110, 253],      // Low severity
-    purple:      [111, 66, 193],      // Critical severity
-    gray:        [110, 110, 110],     // Info severity
-  };
-
-  const safe = (v, fallback = "—") =>
-    v !== undefined && v !== null && v !== "" ? String(v) : fallback;
-
-  // Severity color utility
-  const getSeverityColor = (sev) => {
-    switch ((sev || "").toLowerCase()) {
-      case "critical": return C.purple;
-      case "high":     return C.red;
-      case "medium":   return C.amber;
-      case "low":      return C.blue;
-      default:         return C.gray;
-    }
-  };
-
-  // Helper: Draw Section Title Box
-  const drawSectionHeader = (doc, title, y) => {
-    doc.setFillColor(...C.bluePrimary);
-    doc.rect(14, y, 182, 8, "F");
-    doc.setFont("helvetica", "bold");
-    doc.setFontSize(10);
-    doc.setTextColor(...C.white);
-    doc.text(title, 18, y + 5.5);
-    return y + 14;
-  };
-
-  // Helper: Render standard tables
-  const renderTable = (doc, opts) => {
-    autoTable(doc, {
-      styles: {
-        fontSize: 8,
-        cellPadding: { top: 3.5, right: 4, bottom: 3.5, left: 4 },
-        fillColor: C.bg,
-        textColor: C.textMain,
-        lineColor: C.lineColor,
-        lineWidth: 0.15,
-        font: "helvetica",
-        overflow: "linebreak",
-      },
-      headStyles: {
-        fillColor: C.bgHeader,
-        textColor: C.white,
-        fontStyle: "bold",
-        fontSize: 8,
-        lineColor: C.bluePrimary,
-        lineWidth: 0.15,
-      },
-      alternateRowStyles: { fillColor: C.bgAlt },
-      margin: { left: 14, right: 14 },
-      ...opts,
-    });
-  };
-
-  // Helper: Get user profile details
-  let employeeName = "Security Auditor";
-  let employeeMail = "auditor@nexcorealliance.com";
-  try {
-    const storedUser = localStorage.getItem("user");
-    if (storedUser) {
-      const parsed = JSON.parse(storedUser);
-      if (parsed.name) employeeName = parsed.name;
-      if (parsed.email) employeeMail = parsed.email;
-    }
-  } catch (_) {}
+  const { employeeName, employeeMail } = getAuditorInfo();
 
   try {
     const doc = new jsPDF("p", "mm", "a4");
@@ -116,11 +44,11 @@ export const generatePDF = async (scanData, setPdfProgress) => {
     doc.setFont("helvetica", "bold");
     doc.setFontSize(24);
     doc.setTextColor(...C.bluePrimary);
-    doc.text("NEXCORE ALLIANCE", 14, 30);
+    doc.text("NEXCORE ALLIANCE", 105, 30, { align: "center" });
 
     doc.setFont("helvetica", "oblique");
     doc.setFontSize(10);
-    doc.text("AI-Powered Cybersecurity & Information Security Solutions", 14, 36);
+    doc.text("AI-Powered Cybersecurity & Information Security Solutions", 105, 36, { align: "center" });
 
     // Divider line
     doc.setDrawColor(...C.bluePrimary);
@@ -378,39 +306,7 @@ Critical and High severity findings must be prioritised for immediate remediatio
     // ══════════════════════════════════════════════════════════════════════
     // DRAW PAGE HEADERS & FOOTERS (Post-processing)
     // ══════════════════════════════════════════════════════════════════════
-    const totalPages = doc.internal.getNumberOfPages();
-    for (let i = 1; i <= totalPages; i++) {
-      doc.setPage(i);
-      const pageW = doc.internal.pageSize.getWidth();
-
-      // 1. Draw top blue banner stripe on every page
-      doc.setFillColor(...C.bluePrimary);
-      doc.rect(0, 0, pageW, 3, "F");
-
-      // 2. Draw running header text on subsequent pages (page > 1)
-      if (i > 1) {
-        doc.setFont("helvetica", "normal");
-        doc.setFontSize(7.5);
-        doc.setTextColor(...C.textMuted);
-        doc.text("NEXCORE ALLIANCE | Individual Tool Report – Vulnerability Scanner", 14, 12);
-        
-        doc.setDrawColor(...C.bluePrimary);
-        doc.setLineWidth(0.2);
-        doc.line(14, 14.5, 196, 14.5);
-      }
-
-      // 3. Draw running footer on every page
-      doc.setFont("helvetica", "normal");
-      doc.setFontSize(7.5);
-      doc.setTextColor(...C.textMuted);
-      
-      doc.setDrawColor(...C.lineColor);
-      doc.setLineWidth(0.2);
-      doc.line(14, 283, 196, 283);
-
-      doc.text("Confidential | www.nexcorealliance.com", 14, 289);
-      doc.text(`Page ${i}`, pageW - 14, 289, { align: "right" });
-    }
+    applyHeaderFooterDecorator(doc, "Vulnerability Scanner");
 
     setPdfProgress("Saving PDF...");
     doc.save(`${domain}-VAPT-Report-${Date.now()}.pdf`);

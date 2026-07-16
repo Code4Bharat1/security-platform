@@ -28,28 +28,44 @@ const getInjectedPayloadValue = (testedUrl, paramName) => {
   }
 };
 
+function etldPlusOne(hostname = '') {
+  const parts = (hostname || '').toLowerCase().split('.').filter(Boolean);
+  if (parts.length <= 2) return parts.join('.');
+  return parts.slice(-2).join('.');
+}
+
+function sameSite(a, b) {
+  return etldPlusOne(a) === etldPlusOne(b);
+}
+
+const getHttpStatus = (t) => {
+  if (t.chain && t.chain.length > 0) {
+    const firstStatus = t.chain[0].status;
+    if (typeof firstStatus === 'number') {
+      return String(firstStatus);
+    }
+    if (typeof firstStatus === 'string' && /^\d+$/.test(firstStatus)) {
+      return firstStatus;
+    }
+    return 'N/A';
+  }
+  return '200';
+};
+
+const getDisplayFinalUrl = (finalUrl) => {
+  if (!finalUrl || finalUrl === "-" || finalUrl === "ERR") return "N/A";
+  return finalUrl;
+};
+
 const isUnusualRedirect = (t, originalDomain) => {
   if (t.vulnerable) return true;
   if (t.chain && t.chain.length > 0) {
     const finalDomain = t.finalDomain || "";
-    if (finalDomain && finalDomain !== originalDomain) {
+    if (finalDomain && !sameSite(finalDomain, originalDomain)) {
       return true;
     }
   }
   return false;
-};
-
-const getDisplayFinalUrl = (finalUrl, originalDomain) => {
-  if (!finalUrl || finalUrl === "-") return "-";
-  try {
-    const urlObj = new URL(finalUrl);
-    if (urlObj.hostname === originalDomain || urlObj.hostname.endsWith("." + originalDomain)) {
-      return `${urlObj.protocol}//${urlObj.hostname}`;
-    }
-    return finalUrl;
-  } catch (_) {
-    return finalUrl;
-  }
 };
 
 export const generateOpenRedirectPDF = async (report = {}, setPdfProgress) => {
@@ -57,22 +73,31 @@ export const generateOpenRedirectPDF = async (report = {}, setPdfProgress) => {
   setPdfProgress?.("Initializing PDF document...");
 
   const { employeeName, employeeMail } = getAuditorInfo();
-  const targetUrl = report.originalUrl || "-";
-  const originalDomain = report.originalDomain || "";
+  const targetUrl = report.originalUrl || "N/A";
+  const originalDomain = report.originalDomain || "N/A";
   const tests = report.tests || [];
-  
+
   const vulnStatus = report.summary?.vulnerable ? "Vulnerable" : "Not Vulnerable";
-  const overallVerdict = report.summary?.vulnerable ? "Vulnerable" : "Safe";
+  const overallVerdict = report.summary?.vulnerable ? "Vulnerable" : "Not Vulnerable";
 
   // Calculate Scan Statistics
   const paramsSet = new Set(tests.map(t => t.param));
   const parametersTested = paramsSet.size;
   const payloadsTested = tests.length;
-  const redirectsObserved = tests.filter(t => t.chain && t.chain.length > 0).length;
-  const externalRedirects = tests.filter(t => t.vulnerable).length;
-  const internalRedirects = tests.filter(t => t.chain && t.chain.length > 0 && !t.vulnerable).length;
-  const failedRequests = tests.filter(t => t.chain && t.chain.some(h => h.status === 'ERR' || h.error)).length;
-  const scanDuration = report.durationMs ? `${(report.durationMs / 1000).toFixed(2)} s` : "2.40 s";
+  const isRedirect = (t) => t.chain && t.chain.length > 0 && [300, 301, 302, 303, 307, 308].includes(t.chain[0].status);
+  const redirectsObserved = tests.filter(t => isRedirect(t)).length;
+  const externalRedirects = tests.filter(t => {
+    if (!isRedirect(t)) return false;
+    const finalHost = t.finalDomain || "";
+    return finalHost && !sameSite(finalHost, originalDomain);
+  }).length;
+  const internalRedirects = tests.filter(t => {
+    if (!isRedirect(t)) return false;
+    const finalHost = t.finalDomain || "";
+    return finalHost && sameSite(finalHost, originalDomain);
+  }).length;
+  const failedRequests = tests.filter(t => !t.chain || t.chain.length === 0 || t.chain.some(h => h.status === 'ERR' || h.error)).length;
+  const scanDuration = report.durationMs ? `${(report.durationMs / 1000).toFixed(2)} s` : "N/A";
 
   try {
     const doc = new jsPDF("p", "mm", "a4");
@@ -131,13 +156,13 @@ export const generateOpenRedirectPDF = async (report = {}, setPdfProgress) => {
       head: [],
       body: [
         ["Assessment Performed by", employeeMail],
-        ["Employee Name",           employeeName],
-        ["Employee Mail ID",        employeeMail],
-        ["Scanned URL",             targetUrl],
-        ["Assessment Date",         scanDate],
-        ["Assessment Time",         scanTime],
-        ["Classification",          "Confidential"],
-        ["Assessment Status",       "Completed"],
+        ["Employee Name", employeeName],
+        ["Employee Mail ID", employeeMail],
+        ["Scanned URL", targetUrl],
+        ["Assessment Date", scanDate],
+        ["Assessment Time", scanTime],
+        ["Classification", "Confidential"],
+        ["Assessment Status", "Completed"],
       ],
       columnStyles: {
         0: { fontStyle: "bold", cellWidth: 55, fillColor: [245, 245, 245] },
@@ -164,12 +189,12 @@ export const generateOpenRedirectPDF = async (report = {}, setPdfProgress) => {
       startY: y,
       head: [],
       body: [
-        ["Tool Name",             "Open Redirect Tester"],
-        ["Tool Category",         "Web Security / URL Redirection Vulnerability Scanner"],
+        ["Tool Name", "Open Redirect Tester"],
+        ["Tool Category", "Web Security / URL Redirection Vulnerability Scanner"],
         ["Methodology Alignment", "OWASP WSTG – OTG-CLIENT-004 / Input Validation Testing"],
-        ["Compliance Alignment",  "ISO/IEC 27001 │ AICPA SOC Frameworks"],
-        ["Scanned URL",           targetUrl],
-        ["Assessment Mode",       "Active / Automated Redirect Parameter Injection"],
+        ["Compliance Alignment", "ISO/IEC 27001 │ AICPA SOC Frameworks"],
+        ["Scanned URL", targetUrl],
+        ["Assessment Mode", "Active / Automated Redirect Parameter Injection"],
       ],
       columnStyles: {
         0: { fontStyle: "bold", cellWidth: 55, fillColor: [245, 245, 245] },
@@ -200,14 +225,14 @@ export const generateOpenRedirectPDF = async (report = {}, setPdfProgress) => {
       startY: y,
       head: [["Scan Metric Parameter", "Observed Telemetry Value"]],
       body: [
-        ["Parameters Tested",        String(parametersTested)],
-        ["Payloads Tested",          String(payloadsTested)],
-        ["Redirects Observed",       String(redirectsObserved)],
+        ["Parameters Tested", String(parametersTested)],
+        ["Payloads Tested", String(payloadsTested)],
+        ["Redirects Observed", String(redirectsObserved)],
         ["External Redirects (Vuln)", String(externalRedirects)],
-        ["Internal Redirects",       String(internalRedirects)],
-        ["Failed Requests",          String(failedRequests)],
-        ["Scan Duration",            scanDuration],
-        ["Overall Verdict",          overallVerdict]
+        ["Internal Redirects", String(internalRedirects)],
+        ["Failed Requests", String(failedRequests)],
+        ["Scan Duration", scanDuration],
+        ["Overall Verdict", overallVerdict]
       ],
       columnStyles: {
         0: { fontStyle: "bold", cellWidth: 70, fillColor: [245, 245, 245] },
@@ -228,10 +253,10 @@ export const generateOpenRedirectPDF = async (report = {}, setPdfProgress) => {
     const testMatrixRows = tests.map(t => [
       t.param,
       getInjectedPayloadValue(t.testedUrl, t.param),
-      t.chain && t.chain.length > 0 ? t.chain.map(h => h.status).join(" -> ") : "200",
-      getDisplayFinalUrl(t.finalUrl, originalDomain),
-      t.finalDomain || "-",
-      t.vulnerable ? "Vulnerable" : "Safe"
+      getHttpStatus(t),
+      t.vulnerable ? getDisplayFinalUrl(t.finalUrl) : (targetUrl || "N/A"),
+      t.vulnerable ? (t.finalDomain || "N/A") : (originalDomain || "N/A"),
+      t.vulnerable ? "Vulnerable" : "Not Vulnerable"
     ]);
 
     renderTable(doc, {
@@ -271,23 +296,23 @@ export const generateOpenRedirectPDF = async (report = {}, setPdfProgress) => {
           y = 25;
         }
 
-        const pathwayChain = t.chain && t.chain.length > 0 
-          ? t.chain.map((hop, hIdx) => `Hop ${hIdx + 1}: [${hop.status}] Location: ${hop.location || 'None'} (${hop.url})`).join("\n")
+        const pathwayChain = t.chain && t.chain.length > 0
+          ? t.chain.map((hop, hIdx) => `Hop ${hIdx + 1}: [${hop.status || "N/A"}] Location: ${hop.location || 'None'} (${hop.url || "N/A"})`).join("\n")
           : "Direct connection (No redirection observed)";
 
         renderTable(doc, {
           startY: y,
           head: [],
           body: [
-            ["Parameter",                  t.param || "-"],
-            ["Injected Payload",           getInjectedPayloadValue(t.testedUrl, t.param)],
-            ["HTTP Response status",       t.chain && t.chain[0] ? String(t.chain[0].status) : "200"],
-            ["Location Header",            t.chain && t.chain[0] ? (t.chain[0].location || "None") : "None"],
-            ["Final Redirect URL",         getDisplayFinalUrl(t.finalUrl, originalDomain)],
-            ["Final Redirect Domain",      t.finalDomain || "-"],
-            ["Redirect Pathway Chain",     pathwayChain],
-            ["Impact",                     staticMeta.impact],
-            ["Recommendation",             staticMeta.recommendation]
+            ["Parameter", t.param || "N/A"],
+            ["Injected Payload", getInjectedPayloadValue(t.testedUrl, t.param)],
+            ["HTTP Response status", getHttpStatus(t)],
+            ["Location Header", t.chain && t.chain[0] ? (t.chain[0].location || "None") : "None"],
+            ["Final Redirect URL", t.vulnerable ? getDisplayFinalUrl(t.finalUrl) : (targetUrl || "N/A")],
+            ["Final Redirect Domain", t.vulnerable ? (t.finalDomain || "N/A") : (originalDomain || "N/A")],
+            ["Redirect Pathway Chain", pathwayChain],
+            ["Impact", staticMeta.impact],
+            ["Recommendation", staticMeta.recommendation]
           ],
           columnStyles: {
             0: { fontStyle: "bold", cellWidth: 55, fillColor: [245, 245, 245] },
@@ -310,7 +335,7 @@ export const generateOpenRedirectPDF = async (report = {}, setPdfProgress) => {
 
     const conclusionText1 =
       "The Open Redirect Tester assessment injected external destination payloads into redirect-related parameters of the target URL to determine whether the application performs adequate validation before issuing HTTP redirects. Each parameter was tested and the resulting HTTP status code and final destination URL were recorded to confirm the presence or absence of an exploitable open redirect condition.";
-    
+
     const conclusionText2 =
       "Where an open redirect vulnerability is confirmed, the application must implement a server-side allowlist of permitted redirect destinations. User-supplied redirect parameters should never be followed without strict validation against this allowlist. Relative path redirects should be preferred over absolute URL redirects wherever application design permits.";
 
@@ -320,7 +345,7 @@ export const generateOpenRedirectPDF = async (report = {}, setPdfProgress) => {
     doc.setFont("helvetica", "normal");
     doc.setFontSize(9);
     doc.setTextColor(...C.textMain);
-    
+
     doc.text(conclusionText1, 14, y, { maxWidth: 182, align: "justify", lineHeightFactor: 1.45 });
     y += doc.getTextDimensions(conclusionText1, { maxWidth: 182 }).h + 6;
 
@@ -348,13 +373,13 @@ export const generateOpenRedirectPDF = async (report = {}, setPdfProgress) => {
       head: [["Column", "Description"]],
       body: [
         ["Total Parameters Tested", "Total Number of Parameters Tested"],
-        ["Vulnerability Status",    "Assessment outcome: Vulnerable │ Not Vulnerable │ Partial (domain-restricted redirect observed)"],
-        ["Injected Payload",        "The external URL payload injected into the parameter to test for unvalidated redirect behaviour"],
-        ["HTTP Status",             "HTTP response code returned after payload injection (e.g., 301, 302, 307, 200)"],
-        ["Final Redirect URL",      "The resolved destination URL after all redirect hops; confirms whether the application followed the injected external destination"],
-        ["Final Redirect Domain",   "The destination domain to which the user is ultimately redirected after all redirect chains and URL forwarding mechanisms have been processed."],
-        ["Impact",                  "Describes the potential security consequences of exploiting the identified open redirect vulnerability, such as phishing attacks, credential theft, malware distribution, or user redirection to malicious websites."],
-        ["Recommendation",          "Brief summary of the scan outcome, highlighting whether the tested parameter is vulnerable and the observed redirect behavior."]
+        ["Vulnerability Status", "Assessment outcome: Vulnerable │ Not Vulnerable │ Partial (domain-restricted redirect observed)"],
+        ["Injected Payload", "The external URL payload injected into the parameter to test for unvalidated redirect behaviour"],
+        ["HTTP Status", "HTTP response code returned after payload injection (e.g., 301, 302, 307, 200)"],
+        ["Final Redirect URL", "The resolved destination URL after all redirect hops; confirms whether the application followed the injected external destination"],
+        ["Final Redirect Domain", "The destination domain to which the user is ultimately redirected after all redirect chains and URL forwarding mechanisms have been processed."],
+        ["Impact", "Describes the potential security consequences of exploiting the identified open redirect vulnerability, such as phishing attacks, credential theft, malware distribution, or user redirection to malicious websites."],
+        ["Recommendation", "Brief summary of the scan outcome, highlighting whether the tested parameter is vulnerable and the observed redirect behavior."]
       ],
       columnStyles: {
         0: { fontStyle: "bold", cellWidth: 50, fillColor: [245, 245, 245] },
@@ -383,7 +408,7 @@ export const generateOpenRedirectPDF = async (report = {}, setPdfProgress) => {
     setPdfProgress?.("Saving PDF...");
     const pad = (n) => String(n).padStart(2, "0");
     const dStr = `${now.getFullYear()}-${pad(now.getMonth() + 1)}-${pad(now.getDate())}_${pad(now.getHours())}${pad(now.getMinutes())}${pad(now.getSeconds())}`;
-    
+
     doc.save(`Open_Redirect_Tester_Report_${dStr}.pdf`);
 
   } catch (err) {

@@ -17,7 +17,8 @@ import {
   Layers,
   Cpu,
   ExternalLink,
-  CheckCircle2
+  CheckCircle2,
+  FileDown
 } from "lucide-react";
 import useProtectedAction from "../UseProtectedAction/UseProtectedAction";
 import { toast } from "react-hot-toast";
@@ -89,6 +90,23 @@ export default function Apiform() {
   const [loading, setLoading] = useState(false);
   const [activeTab, setActiveTab] = useState("headers");
   const [showAdvanced, setShowAdvanced] = useState(false);
+
+  const exportPDF = async () => {
+    if (!results) return;
+    toast.loading("Generating PDF Report...", { id: "pdf-gen" });
+    try {
+      const { generateAPISecurityTesterPDF } = await import("./generateAPISecurityTesterPDF");
+      await generateAPISecurityTesterPDF(results, (msg) => {
+        if (msg) {
+          toast.loading(msg, { id: "pdf-gen" });
+        }
+      });
+      toast.success("PDF report downloaded!", { id: "pdf-gen" });
+    } catch (err) {
+      console.error(err);
+      toast.error("Failed to generate PDF report", { id: "pdf-gen" });
+    }
+  };
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
@@ -200,7 +218,7 @@ export default function Apiform() {
   const randomExample = () => EXAMPLES[Math.floor(Math.random() * EXAMPLES.length)];
 
   return (
-    <div 
+    <div
       className="tool-detail-page min-h-screen"
       style={{
         '--hero-ambient-a': 'rgba(239, 68, 68, 0.08)',
@@ -260,10 +278,10 @@ export default function Apiform() {
 
         {/* 2-Column Split Layout */}
         <div className="grid gap-8 lg:grid-cols-[1fr_400px]">
-          
+
           {/* Left Column */}
           <div className="space-y-6">
-            
+
             {/* Input Form Card */}
             <div className="bg-zinc-950/20 backdrop-blur-md border border-zinc-800/80 rounded-2xl p-6 shadow-[0_8px_30px_rgb(0,0,0,0.2)] hover:border-red-500/10 transition-all duration-300 space-y-4">
               <h2 className="text-lg font-mono font-medium text-zinc-100 mb-2 flex items-center gap-2">
@@ -411,22 +429,20 @@ export default function Apiform() {
                 <div className="flex border-b border-zinc-800/80">
                   <button
                     type="button"
-                    className={`px-4 py-2.5 text-xs font-mono font-semibold transition-all ${
-                      activeTab === "headers"
-                        ? "border-b-2 border-red-500 text-red-400"
-                        : "text-zinc-550 hover:text-zinc-400"
-                    }`}
+                    className={`px-4 py-2.5 text-xs font-mono font-semibold transition-all ${activeTab === "headers"
+                      ? "border-b-2 border-red-500 text-red-400"
+                      : "text-zinc-550 hover:text-zinc-400"
+                      }`}
                     onClick={() => setActiveTab("headers")}
                   >
                     Headers
                   </button>
                   <button
                     type="button"
-                    className={`px-4 py-2.5 text-xs font-mono font-semibold transition-all ${
-                      activeTab === "body"
-                        ? "border-b-2 border-red-500 text-red-400"
-                        : "text-zinc-550 hover:text-zinc-400"
-                    }`}
+                    className={`px-4 py-2.5 text-xs font-mono font-semibold transition-all ${activeTab === "body"
+                      ? "border-b-2 border-red-500 text-red-400"
+                      : "text-zinc-550 hover:text-zinc-400"
+                      }`}
                     onClick={() => setActiveTab("body")}
                   >
                     Body
@@ -456,7 +472,7 @@ export default function Apiform() {
             {/* Results Panel */}
             {!loading && results && (
               <div className="bg-zinc-950/20 backdrop-blur-md border border-zinc-800/80 rounded-2xl p-6 shadow-[0_8px_30px_rgb(0,0,0,0.2)] space-y-6">
-                
+
                 {/* Header title */}
                 <div className="flex justify-between items-center border-b border-zinc-900 pb-4 flex-wrap gap-4">
                   <div>
@@ -467,13 +483,22 @@ export default function Apiform() {
                       Endpoint scan diagnostic report
                     </p>
                   </div>
-                  <button
-                    onClick={() => setResults(null)}
-                    className="px-3.5 py-2 bg-zinc-900/40 hover:bg-red-500/5 text-zinc-350 hover:text-red-400 border border-zinc-800/80 hover:border-red-500/30 rounded-xl font-mono font-bold text-xs uppercase transition-all duration-300 flex items-center justify-center gap-1.5 cursor-pointer"
-                  >
-                    <RefreshCw className="h-3.5 w-3.5" />
-                    Test Another
-                  </button>
+                  <div className="flex gap-2">
+                    <button
+                      onClick={exportPDF}
+                      className="px-3.5 py-2 bg-zinc-900/40 hover:bg-red-500/5 text-zinc-350 hover:text-red-400 border border-zinc-800/80 hover:border-red-500/30 rounded-xl font-mono font-bold text-xs uppercase transition-all duration-300 flex items-center justify-center gap-1.5 cursor-pointer"
+                    >
+                      <FileDown className="h-3.5 w-3.5" />
+                      PDF Report
+                    </button>
+                    <button
+                      onClick={() => setResults(null)}
+                      className="px-3.5 py-2 bg-zinc-900/40 hover:bg-red-500/5 text-zinc-350 hover:text-red-400 border border-zinc-800/80 hover:border-red-500/30 rounded-xl font-mono font-bold text-xs uppercase transition-all duration-300 flex items-center justify-center gap-1.5 cursor-pointer"
+                    >
+                      <RefreshCw className="h-3.5 w-3.5" />
+                      Test Another
+                    </button>
+                  </div>
                 </div>
 
                 {/* Scorecard block */}
@@ -517,9 +542,8 @@ export default function Apiform() {
                     <div className="flex items-center gap-2">
                       <span className="text-zinc-500">HTTP Status:</span>
                       <span
-                        className={`font-bold ${
-                          results.status >= 400 ? "text-red-550" : "text-zinc-200"
-                        }`}
+                        className={`font-bold ${results.status >= 400 ? "text-red-550" : "text-zinc-200"
+                          }`}
                       >
                         {results.status}
                       </span>
@@ -680,14 +704,14 @@ export default function Apiform() {
                           status={results.securityChecks.sensitiveDataExposure.status}
                           tone={
                             results.securityChecks.sensitiveDataExposure.status ===
-                            "No obvious data exposure"
+                              "No obvious data exposure"
                               ? "text-zinc-300"
                               : "text-orange-400"
                           }
                         >
                           {results.securityChecks.sensitiveDataExposure.details &&
                             results.securityChecks.sensitiveDataExposure.details !==
-                              "No sensitive data patterns detected in response" && (
+                            "No sensitive data patterns detected in response" && (
                               <div className="bg-zinc-900/50 p-3 rounded-lg border border-zinc-850 mt-2 font-mono text-xs">
                                 <div className="font-semibold text-zinc-400">Details:</div>
                                 <pre className="text-[10px] overflow-auto max-h-40 text-zinc-550">
@@ -710,14 +734,14 @@ export default function Apiform() {
                           status={results.securityChecks.injectionVulnerability.status}
                           tone={
                             results.securityChecks.injectionVulnerability.status ===
-                            "No obvious vulnerabilities"
+                              "No obvious vulnerabilities"
                               ? "text-zinc-300"
                               : "text-orange-400"
                           }
                         >
                           {results.securityChecks.injectionVulnerability.details &&
                             results.securityChecks.injectionVulnerability.details !==
-                              "No common error patterns detected in response" && (
+                            "No common error patterns detected in response" && (
                               <div className="bg-zinc-900/50 p-3 rounded-lg border border-zinc-850 mt-2 font-mono text-xs">
                                 <div className="font-semibold text-zinc-400">Details:</div>
                                 <pre className="text-[10px] overflow-auto max-h-40 text-zinc-550">
@@ -771,7 +795,7 @@ export default function Apiform() {
 
           {/* Right Column (Specs & Guidance) */}
           <div className="space-y-6">
-            
+
             {/* Guidance sidebar card */}
             <div className="border border-zinc-800/80 bg-zinc-950/20 backdrop-blur-md rounded-2xl p-6 space-y-4 shadow-[0_8px_30px_rgb(0,0,0,0.12)]">
               <h2 className="text-xs font-mono font-bold uppercase tracking-wider text-zinc-100 flex items-center gap-2">

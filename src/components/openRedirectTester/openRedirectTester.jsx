@@ -379,12 +379,11 @@ export default function DarkThemeOpenRedirectTester() {
                             <span className="font-bold text-zinc-200">{t.param}</span>
                             <span className="text-zinc-700">•</span>
                             <span className="text-zinc-450">{t.payloadName}</span>
-                          </div>
-                          <div className="text-[10px] uppercase font-bold tracking-wider">
+                          </div>                           <div className="text-[10px] uppercase font-bold tracking-wider">
                             {t.vulnerable ? (
                               <span className="text-red-400">Vulnerable</span>
                             ) : (
-                              <span className="text-zinc-500">Safe</span>
+                              <span className="text-zinc-500">Not Vulnerable</span>
                             )}
                           </div>
                         </summary>
@@ -396,10 +395,10 @@ export default function DarkThemeOpenRedirectTester() {
                           </div>
                           <div>
                             <span className="text-zinc-600 font-bold">Resolved Final URL:</span>{" "}
-                            <span className="break-all font-semibold block text-zinc-350">{t.finalUrl}</span>
+                            <span className="break-all font-semibold block text-zinc-350">{t.vulnerable ? (t.finalUrl || "N/A") : (report.originalUrl || "N/A")}</span>
                           </div>
                           <div className="text-[10px] text-zinc-550">
-                            Final Domain: <span className="text-zinc-300 font-bold">{t.finalDomain}</span>
+                            Final Domain: <span className="text-zinc-300 font-bold">{t.vulnerable ? (t.finalDomain || "N/A") : (report.originalDomain || "N/A")}</span>
                             <span className="mx-2">•</span>
                             Changed eTLD+1: <span className="text-zinc-300 font-bold">{t.changedETLD ? "Yes" : "No"}</span>
                           </div>
