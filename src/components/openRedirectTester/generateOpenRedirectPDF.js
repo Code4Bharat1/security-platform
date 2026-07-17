@@ -192,7 +192,7 @@ export const generateOpenRedirectPDF = async (report = {}, setPdfProgress) => {
         ["Tool Name", "Open Redirect Tester"],
         ["Tool Category", "Web Security / URL Redirection Vulnerability Scanner"],
         ["Methodology Alignment", "OWASP WSTG – OTG-CLIENT-004 / Input Validation Testing"],
-        ["Compliance Alignment", "ISO/IEC 27001 │ AICPA SOC Frameworks"],
+        ["Compliance Alignment", "ISO/IEC 27001 | AICPA SOC Frameworks"],
         ["Scanned URL", targetUrl],
         ["Assessment Mode", "Active / Automated Redirect Parameter Injection"],
       ],
@@ -373,7 +373,7 @@ export const generateOpenRedirectPDF = async (report = {}, setPdfProgress) => {
       head: [["Column", "Description"]],
       body: [
         ["Total Parameters Tested", "Total Number of Parameters Tested"],
-        ["Vulnerability Status", "Assessment outcome: Vulnerable │ Not Vulnerable │ Partial (domain-restricted redirect observed)"],
+        ["Vulnerability Status", "Assessment outcome: Vulnerable | Not Vulnerable | Partial (domain-restricted redirect observed)"],
         ["Injected Payload", "The external URL payload injected into the parameter to test for unvalidated redirect behaviour"],
         ["HTTP Status", "HTTP response code returned after payload injection (e.g., 301, 302, 307, 200)"],
         ["Final Redirect URL", "The resolved destination URL after all redirect hops; confirms whether the application followed the injected external destination"],

@@ -68,7 +68,7 @@ export const renderTable = (doc, opts) => {
       lineWidth: 0.15,
     },
     alternateRowStyles: { fillColor: C.bgAlt },
-    margin: { left: 14, right: 14 },
+    margin: { top: 20, bottom: 20, left: 14, right: 14 },
     ...opts,
   });
 };

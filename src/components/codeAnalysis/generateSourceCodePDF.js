@@ -172,7 +172,7 @@ export const generateSourceCodePDF = async (data, metadata, setPdfProgress) => {
         ["Tool Name",             "Source Code Analyzer"],
         ["Tool Category",         "Static Application Security Testing (SAST) / Source Code Review"],
         ["Methodology Alignment", "OWASP WSTG – OTG-CODE / OWASP Top 10 / CWE / SANS Top 25"],
-        ["Compliance Alignment",  "ISO/IEC 27001 │ AICPA SOC Frameworks"],
+        ["Compliance Alignment",  "ISO/IEC 27001 | AICPA SOC Frameworks"],
         ["Scanned Target",        targetName],
         ["Assessment Mode",       "Non-Intrusive / Static Analysis"],
       ],
@@ -356,7 +356,7 @@ export const generateSourceCodePDF = async (data, metadata, setPdfProgress) => {
       startY: y + 5,
       head: [["Column / Field", "Description"]],
       body: [
-        ["Severity",              "Risk level assigned to the finding: Critical │ High │ Medium │ Low │ Informational."],
+        ["Severity",              "Risk level assigned to the finding: Critical | High | Medium | Low | Informational."],
         ["Vulnerability Category", "Security weakness classification (e.g., XSS, SQL Injection, Command Injection, Hardcoded Secrets, Path Traversal, Unsafe Eval)."],
         ["File / Location",        "File name or path within the submitted repository or code package where the vulnerability was detected."],
         ["Line",                   "Line number within the identified file where the vulnerable code construct is present."],
