@@ -312,7 +312,7 @@ export const generateEmailPDF = async (result = {}, filename = "email-message.em
       // PAGE 2 — ASSESSMENT INFORMATION, SCAN SUMMARY & FINDINGS (PART 1)
       // ----------------------------------------------------------------------
       doc.addPage();
-      y = 25;
+      let y = 25;
 
       y = drawSectionHeader(doc, "1. ASSESSMENT INFORMATION", y);
 

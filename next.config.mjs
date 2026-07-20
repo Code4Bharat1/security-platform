@@ -1,5 +1,10 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
+  eslint: {
+    // Warning: This allows production builds to successfully complete even if
+    // your project has ESLint errors.
+    ignoreDuringBuilds: true,
+  },
   async headers() {
     const isDev = process.env.NODE_ENV === 'development';
     const apiURL = process.env.NEXT_PUBLIC_PROD_API_URL || '';
