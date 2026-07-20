@@ -9,7 +9,7 @@ const nextConfig = {
     const isDev = process.env.NODE_ENV === 'development';
     const apiURL = process.env.NEXT_PUBLIC_PROD_API_URL || '';
     const isLocalApi = apiURL.includes('localhost') || apiURL.includes('127.0.0.1');
-    const connectSrc = `connect-src 'self' https://security-platform-api.code4bharat.com ${
+    const connectSrc = `connect-src 'self' https://api-security.nexcorealliance.com/ ${
       (isDev || isLocalApi) ? 'http://localhost:* http://127.0.0.1:* ws://localhost:* ws://127.0.0.1:*' : ''
     }`;
 
