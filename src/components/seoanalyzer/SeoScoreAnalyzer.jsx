@@ -365,7 +365,7 @@ export default function SeoScoreAnalyzer() {
                     </h3>
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                       {result.generatedFiles.map((file, idx) => {
-                        const fileUrl = `${process.env.NEXT_PUBLIC_PROD_API_URL.replace(/\/+$/, "")}/uploads/${file.fileName}`;
+                        const fileUrl = `${(process.env.NEXT_PUBLIC_PROD_API_URL || "").replace(/\/+$/, "")}/uploads/${file.fileName}`;
                         return (
                           <a
                             key={idx}

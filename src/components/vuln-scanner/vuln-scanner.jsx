@@ -56,7 +56,7 @@ export default function Vulnscanner() {
   const protectedAction = useProtectedAction();
 
   const API_BASE = useMemo(
-    () => process.env.NEXT_PUBLIC_PROD_API_URL.replace(/\/+$/, ""),
+    () => (process.env.NEXT_PUBLIC_PROD_API_URL || "").replace(/\/+$/, ""),
     [],
   );
 
