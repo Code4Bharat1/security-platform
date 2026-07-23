@@ -6,6 +6,7 @@ import axios from "axios";
 import { useRouter } from "next/navigation";
 import { toast } from 'react-hot-toast';
 import { useAuth } from "@/context/AuthContext";
+import GoogleLoginButton from "@/components/Auth/GoogleLoginButton.jsx";
 
 export default function GainAccess() {
   const { setToken, setUser } = useAuth();
@@ -334,6 +335,19 @@ export default function GainAccess() {
                 {loading ? "Authenticating..." : "Gain Access"}
               </button>
             </form>
+
+            {/* "OR" Divider */}
+            <div className="relative my-6 flex items-center justify-center">
+              <div className="w-full border-t border-[color:var(--border)]" />
+              <span className="absolute bg-[color:var(--surface-card)] px-3 text-xs uppercase tracking-wider text-[color:var(--text-muted)]">
+                OR
+              </span>
+            </div>
+
+            {/* Social Login */}
+            <div>
+              <GoogleLoginButton />
+            </div>
 
             <p className="mt-6 text-center text-sm text-[color:var(--text-muted)]">
               Don&apos;t have an account?{" "}

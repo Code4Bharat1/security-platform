@@ -42,6 +42,7 @@ next-env.d.ts
 .early.coverage
 
 .env.local/
+.env.local
 node_modules/
 # Added by code-review-graph
 .code-review-graph/
@@ -60,3 +61,4 @@ AGENTS.md
 CLAUDE.md
 GEMINI.md
 QODER.md
+AUTH.md

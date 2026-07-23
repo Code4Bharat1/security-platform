@@ -6,6 +6,7 @@ import Footer from "@/components/layout/footer";
 import WhatsApp from '@/components/WhatsApp/WhatsApp';
 import Chatbot from '@/components/Chatbot/chatbot';
 import { Toaster } from 'react-hot-toast';
+import { GoogleOAuthProvider } from '@react-oauth/google';
 import { AuthProvider } from "@/context/AuthContext";
 
 const themeInitScript = `
@@ -70,17 +71,21 @@ export default function RootLayout({ children }) {
         className={`${spaceGrotesk.variable} ${geist.variable} ${jetBrainsMono.variable} antialiased`}
       >
         <AuthProvider>
-          <Navbar />
-          {children}
-          <Toaster position="top-right" toastOptions={{
-            style: {
-              background: '#333',
-              color: '#fff',
-            },
-          }} />
-          < WhatsApp />
-          < Chatbot />
-          <Footer />
+          <GoogleOAuthProvider 
+            clientId={process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID}
+          >
+            <Navbar />
+            {children}
+            <Toaster position="top-right" toastOptions={{
+              style: {
+                background: '#333',
+                color: '#fff',
+              },
+            }} />
+            < WhatsApp />
+            < Chatbot />
+            <Footer />
+          </GoogleOAuthProvider>
         </AuthProvider>
       </body>
     </html>

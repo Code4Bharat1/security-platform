@@ -2,6 +2,7 @@
 import React, { createContext, useState, useEffect, useContext, useRef, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import { toast } from "react-hot-toast";
+import { googleLogout } from "@react-oauth/google";
 
 const AuthContext = createContext(null);
 
@@ -35,6 +36,7 @@ export const AuthProvider = ({ children }) => {
     localStorage.removeItem("refreshToken");
     localStorage.removeItem("user");
     localStorage.removeItem("redirectAfterLogin");
+    googleLogout();
     setUser(null);
     setToken(null);
     router.replace("/gain-access");
@@ -156,6 +158,24 @@ export const AuthProvider = ({ children }) => {
     }, LOGOUT_TIMEOUT);
   }, [logout]);
 
+  // Google Auth
+  const loginWithGoogle = async (idToken, redirectPath = "/tools") => {
+    const apiBase = (process.env.NEXT_PUBLIC_PROD_API_URL || "").replace(/\/+$/, "");
+    const res = await fetch(`${apiBase}/auth/google`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ token: idToken })
+    });
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.message || "Google auth failed")
+    localStorage.setItem("token", data.accessToken);
+    localStorage.setItem("refreshToken", data.refreshToken);
+    localStorage.setItem("user", JSON.stringify(data.user))
+    setToken(data.accessToken);
+    setUser(data.user);
+    router.push(redirectPath);
+  };
+
   // Initialization & Listeners
   useEffect(() => {
     const initializeAuth = async () => {
@@ -235,6 +255,7 @@ export const AuthProvider = ({ children }) => {
         refreshSession,
         setUser,
         setToken,
+        loginWithGoogle,
       }}
     >
       {children}

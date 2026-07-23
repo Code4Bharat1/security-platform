@@ -9,7 +9,7 @@ const nextConfig = {
     const isDev = process.env.NODE_ENV === 'development';
     const apiURL = process.env.NEXT_PUBLIC_PROD_API_URL || '';
     const isLocalApi = apiURL.includes('localhost') || apiURL.includes('127.0.0.1');
-    const connectSrc = `connect-src 'self' https://api-security.nexcorealliance.com/ ${
+    const connectSrc = `connect-src 'self' https://api-security.nexcorealliance.com/ https://accounts.google.com ${
       (isDev || isLocalApi) ? 'http://localhost:* http://127.0.0.1:* ws://localhost:* ws://127.0.0.1:*' : ''
     }`;
 
@@ -21,9 +21,10 @@ const nextConfig = {
             key: 'Content-Security-Policy',
             value: `
               default-src 'self';
-              script-src 'self' 'unsafe-eval' 'unsafe-inline' https://trusted-site.com;
-              style-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net;
-              img-src 'self' data: https: blob:;
+              script-src 'self' 'unsafe-eval' 'unsafe-inline' https://trusted-site.com https://accounts.google.com;
+              style-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net https://accounts.google.com;
+              img-src 'self' data: https: blob: https://lh3.googleusercontent.com;
+              frame-src 'self' https://accounts.google.com;
               ${connectSrc};
             `.replace(/\s{2,}/g, ' ').trim()
           },
