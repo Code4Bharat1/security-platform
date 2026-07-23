@@ -5,7 +5,7 @@ Welcome to the **Security Platform** Developer Documentation. This guide provide
 
 ---
 
-## 🌳 Project Directory Tree Structure Overview
+## 🌳 Project Directory Tree Structure Overview (Please Add any new folder or file in the Directory tree structure before you commit)
 
 ```text
 security-platform/
@@ -65,6 +65,7 @@ security-platform/
 │   │   └── layout.jsx            # Platform Root Layout (AuthProvider & Toaster)
 │   ├── components/               # React UI Components
 │   │   ├── AboutUs/              # Company About & Branches Components
+│   │   ├── Auth/                 # Google Authentication Components
 │   │   ├── Home/                 # Landing Page Hero, Services, Blogs & Certifications
 │   │   ├── layout/               # Shared Global Navigation Bar & Footer
 │   │   ├── marketing/            # Hero Graphics, Brand Marks & Orbit Radar

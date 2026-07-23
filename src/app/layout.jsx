@@ -70,10 +70,10 @@ export default function RootLayout({ children }) {
         suppressHydrationWarning
         className={`${spaceGrotesk.variable} ${geist.variable} ${jetBrainsMono.variable} antialiased`}
       >
-        <AuthProvider>
-          <GoogleOAuthProvider 
-            clientId={process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID}
-          >
+        <GoogleOAuthProvider 
+          clientId={process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID}
+        >
+          <AuthProvider>
             <Navbar />
             {children}
             <Toaster position="top-right" toastOptions={{
@@ -85,8 +85,8 @@ export default function RootLayout({ children }) {
             < WhatsApp />
             < Chatbot />
             <Footer />
-          </GoogleOAuthProvider>
-        </AuthProvider>
+          </AuthProvider>
+        </GoogleOAuthProvider>
       </body>
     </html>
   );

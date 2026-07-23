@@ -22,9 +22,9 @@ export default function GoogleLoginButton({ onSuccessRedirect = "/tools" }) {
         onError={() => toast.error("Google Authentication Failed")}
         theme="filled_white"
         shape="pill"
-        width="300"
         size="large"
         text="Sign in with Google"
+        use_fedcm_for_prompt={true}
       />
     </div>
   );
