@@ -32,11 +32,11 @@ const nextConfig = {
           { key: 'X-Frame-Options', value: 'DENY' },
           { 
             key: 'Cross-Origin-Opener-Policy', 
-            value: 'same-origin-allow-popups' 
+            value: 'unsafe-none' 
           },
           { 
             key: 'Cross-Origin-Embedder-Policy', 
-            value: 'unsafe-none' 
+            value: 'unsafe-none'
           }
         ],
       },

@@ -444,7 +444,7 @@ export const vaTools = [
     status: "active",
   },
   {
-    name: "Credential Validation",
+    name: "AWS Credential Validation",
     description: "Assess access patterns and exposed identity attack paths.",
     slug: "cloud-security",
     buttonLabel: "Launch Tool",
@@ -453,7 +453,7 @@ export const vaTools = [
     status: "passive",
   },
   {
-    name: "Advance Scanning",
+    name: "System Hardening",
     description: "Analyze systems and services for deeper configuration issues.",
     slug: "system-hardening",
     buttonLabel: "Launch Tool",

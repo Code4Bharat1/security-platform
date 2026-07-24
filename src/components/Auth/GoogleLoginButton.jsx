@@ -3,9 +3,33 @@ import { GoogleLogin } from "@react-oauth/google";
 import { useAuth } from "@/context/AuthContext";
 import { toast } from "react-hot-toast";
 import { jwtDecode } from "jwt-decode";
+import { useEffect } from "react";
 
 export default function GoogleLoginButton({ onSuccessRedirect = "/tools" }) {
   const { loginWithGoogle } = useAuth();
+
+  // Ignore the browser warning as it does not break the application or security features.
+  // This warning is thrown by the browser due to the COOP policy.
+  useEffect(() => {
+    const originalConsoleWarn = console.warn;
+    const originalConsoleError = console.error;
+
+    const suppressGoogleWarning = (...args) => {
+      if (args[0] && typeof args[0] === 'string' && args[0].includes('Cross-Origin-Opener-Policy policy would block window.postMessage call.')) {
+        return;
+      }
+      originalConsoleWarn.apply(console, args);
+    };
+
+    console.warn = suppressGoogleWarning;
+    console.error = suppressGoogleWarning;
+
+    return () => {
+      console.warn = originalConsoleWarn;
+      console.error = originalConsoleError;
+    };
+  }, []);
+
   const handleSuccess = async (credentialResponse) => {
     console.log(jwtDecode(credentialResponse.credential));
     try {

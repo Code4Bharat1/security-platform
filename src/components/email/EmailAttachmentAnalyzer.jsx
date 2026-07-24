@@ -166,7 +166,7 @@ export default function EmailAttachmentAnalyzer() {
           </div>
           <div>
             <h1 className="text-4xl sm:text-5xl font-mono font-bold text-zinc-100">
-              EMAIL ATTACHMENT <span className="text-emerald-400">ANALYZER</span>
+              EMAIL PHISHING <span className="text-emerald-400">& THREAT ANALYZER</span>
             </h1>
             <p className="mt-2 text-zinc-400 max-w-3xl text-base font-normal">
               Upload email attachment files or complete EML email messages to scan for potential threats, scripts, macros, and reputation risks.

@@ -319,7 +319,7 @@ export default function CloudSecurityPage() {
           </div>
           <div>
             <h1 className="text-4xl sm:text-5xl font-mono font-bold text-zinc-100">
-              CREDENTIAL <span className="text-amber-400">VALIDATION</span>
+              AWS CREDENTIAL <span className="text-amber-400">VALIDATION</span>
             </h1>
             <p className="mt-2 text-zinc-400 max-w-2xl text-base font-normal">
               Audit cloud access keys, user profiles, MFA enforcement, and IAM policies. Supports secure programmatic AWS scans using temporary credentials.
