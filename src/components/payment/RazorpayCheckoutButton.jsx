@@ -20,6 +20,7 @@
 import { useState } from "react";
 import { toast } from "react-hot-toast";
 import { ArrowRight } from "lucide-react";
+import { generatePaymentReceiptPDF } from "./generatePaymentReceiptPDF";
 
 // ── Dynamic Razorpay script loader (singleton) ─────────────────────────
 const loadRazorpayScript = () => {
@@ -118,6 +119,15 @@ export default function RazorpayCheckoutButton({
               );
               if (onPaymentSuccess) {
                 onPaymentSuccess(verifyData);
+              }
+              // Generate PDF receipt if backend returned receipt data
+              if (verifyData.receipt) {
+                try {
+                  generatePaymentReceiptPDF(verifyData.receipt);
+                } catch (pdfErr) {
+                  console.error("[RazorpayCheckout] Failed to generate PDF receipt:", pdfErr);
+                  toast.error("Payment successful, but failed to generate receipt PDF.");
+                }
               }
             } else {
               toast.error(
