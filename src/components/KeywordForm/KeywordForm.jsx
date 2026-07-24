@@ -67,7 +67,7 @@ export default function KeywordPage() {
         setReport(data);
         toast.success("Keyword intelligence audit complete!");
       } catch (err) {
-        console.error("Keyword analysis failed:", err);
+        console.warn("Keyword analysis failed:", err);
         setError(
           err.name === "AbortError"
             ? "Request timeout"

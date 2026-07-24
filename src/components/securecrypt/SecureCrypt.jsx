@@ -115,6 +115,10 @@ export default function SecureCrypt() {
   };
 
   const decrypt = async () => {
+    if (!passphrase.trim() && !keyB64.trim()) {
+       setResultText("ERROR: Missing decryption key. Please enter either the Passphrase or the Base64 Key used during encryption.");
+       return;
+     }
     setLoading(true);
     setResultText("");
     setReport(null);

@@ -115,14 +115,14 @@ export default function ToolsCard() {
       },
     ],
     [
-      {
-        name: "WhatsApp Privacy Inspector",
-        image: "/GreenTeam/wp.png",
-        description: "Checks WhatsApp settings for potential privacy risks.",
-        slug: "whatsapp-privacy-inspector",
-        buttonLabel: "Inspect Now",
-        type: "non-tech",
-      },
+      // {
+      //   name: "WhatsApp Privacy Inspector",
+      //   image: "/GreenTeam/wp.png",
+      //   description: "Checks WhatsApp settings for potential privacy risks.",
+      //   slug: "whatsapp-privacy-inspector",
+      //   buttonLabel: "Inspect Now",
+      //   type: "non-tech",
+      // },
       {
         name: "Email Phishing & Threat Analyzer",
         image: "/GreenTeam/email.png",

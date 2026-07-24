@@ -57,14 +57,14 @@ export default function GreenTool() {
             buttonLabel: "Scan File",
             type: "non-tech"
         },
-        {
-            name: "WhatsApp Privacy Inspector",
-            image: "/tools/card-images/wp.png",
-            description: "Checks WhatsApp settings for potential privacy risks.",
-            slug: "whatsapp-privacy-inspector",
-            buttonLabel: "Inspect Now",
-            type: "non-tech"
-        },
+        // {
+        //     name: "WhatsApp Privacy Inspector",
+        //     image: "/tools/card-images/wp.png",
+        //     description: "Checks WhatsApp settings for potential privacy risks.",
+        //     slug: "whatsapp-privacy-inspector",
+        //     buttonLabel: "Inspect Now",
+        //     type: "non-tech"
+        // },
         {
             name: "Email Attachment Analyzer",
             image: "/tools/card-images/email.png",

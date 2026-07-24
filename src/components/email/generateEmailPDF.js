@@ -135,9 +135,9 @@ export const generateEmailPDF = async (result = {}, filename = "email-message.em
           [
             String(attachmentsCount),
             String(attachmentsCount + 1),
-            String(dangerousAttachmentsCount + suspiciousLinksCount),
-            String((attachmentsCount - dangerousAttachmentsCount) + (linksCount - suspiciousLinksCount)),
-            "Completed"
+            String(dangerousAttachmentsCount + (isSuspicious ? 1 : 0)),
+            String((attachmentsCount - dangerousAttachmentsCount) + (isSuspicious ? 0 : 1)),
+            "100 / 100"
           ]
         ],
         headStyles: { fillColor: C.bgHeader, textColor: C.white, halign: "center" },
@@ -360,7 +360,7 @@ export const generateEmailPDF = async (result = {}, filename = "email-message.em
             "1",
             isSuspicious ? "1" : "0",
             isSuspicious ? "0" : "1",
-            "Completed"
+            "100 / 100"
           ]
         ],
         headStyles: { fillColor: C.bgHeader, textColor: C.white, halign: "center" },

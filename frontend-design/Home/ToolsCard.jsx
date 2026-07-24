@@ -94,14 +94,15 @@ export default function ToolsCard() {
     slug: "regexDetector",
     buttonLabel: "Regex Security Validator",
     type: "blue-team"
-  },], [{
-    name: "WhatsApp Privacy Inspector",
-    image: "/tools/card-images/wp.png",
-    description: "Checks WhatsApp settings for potential privacy risks.",
-    slug: "whatsapp-privacy-inspector",
-    buttonLabel: "Inspect Now",
-    type: "non-tech"
-  },
+  },], [
+  // {
+  //   name: "WhatsApp Privacy Inspector",
+  //   image: "/tools/card-images/wp.png",
+  //   description: "Checks WhatsApp settings for potential privacy risks.",
+  //   slug: "whatsapp-privacy-inspector",
+  //   buttonLabel: "Inspect Now",
+  //   type: "non-tech"
+  // },
   {
     name: "Email Attachment Analyzer",
     image: "/tools/card-images/email.png",
@@ -308,12 +309,13 @@ export default function ToolsCard() {
             image: "/ip.png",
             description: " Validate HTTPS security implementation.",
             type: "blue-team"
-          }, {
-            title: "WhatsApp Privacy",
-            image: "/tools/card-images/wp.png",
-            description: "Checks WhatsApp settings for potential privacy risks.",
-            type: "non-tech"
-          },
+          }, 
+          // {
+          //   title: "WhatsApp Privacy",
+          //   image: "/tools/card-images/wp.png",
+          //   description: "Checks WhatsApp settings for potential privacy risks.",
+          //   type: "non-tech"
+          // },
           {
             title: "Whois Domain Lookup",
             image: "/tools/card-images/whois.png",

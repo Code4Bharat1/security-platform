@@ -1,15 +1,15 @@
 "use client";
 
 import React, { useState, useEffect, useRef, useMemo } from "react";
-import { 
-  Globe, 
-  Terminal, 
-  Download, 
-  ShieldAlert, 
-  Info, 
-  Activity, 
-  Loader2, 
-  CheckCircle2, 
+import {
+  Globe,
+  Terminal,
+  Download,
+  ShieldAlert,
+  Info,
+  Activity,
+  Loader2,
+  CheckCircle2,
   AlertTriangle,
   ArrowRight,
   Eye,
@@ -119,7 +119,7 @@ export default function AdvancedDynamicScan() {
     await protectedAction(async (token) => {
       try {
         await addLog("[INFO] Connecting to dynamic audit cluster...", 100);
-        
+
         const res = await fetch(`${API_BASE}/advanced-dynamic-scan/scan`, {
           method: "POST",
           headers: {
@@ -153,7 +153,7 @@ export default function AdvancedDynamicScan() {
           await addLog("[INFO] Executing dynamic injection fuzzers on query inputs...", 100);
           const hasCriticals = data.vulnerabilities?.some(v => v.severity === "Critical" && v.status === "Fail");
           const hasHighs = data.vulnerabilities?.some(v => v.severity === "High" && v.status === "Fail");
-          
+
           if (hasCriticals) await addLog("[ALERT] SQL Injection indicators detected on parsed form inputs!", 100);
           if (hasHighs) await addLog("[ALERT] XSS script tags successfully reflected in response parameters!", 100);
         }
@@ -185,7 +185,7 @@ export default function AdvancedDynamicScan() {
   };
 
   return (
-    <div 
+    <div
       className="tool-detail-page min-h-screen"
       style={{
         "--hero-ambient-a": "rgba(245, 158, 11, 0.08)",
@@ -242,31 +242,31 @@ export default function AdvancedDynamicScan() {
               ADVANCED DYNAMIC <span className="text-amber-400">SCAN</span>
             </h1>
             <p className="mt-2 text-zinc-400 max-w-2xl text-base font-normal">
-              Execute dynamic vulnerability scanner crawls on applications. Inspects security headers, cookie flags, and runs passive fuzzers to map XSS / SQL Injection exposures.
+              Tests for common web security misconfigurations and basic injection indicators
             </p>
           </div>
         </div>
 
         {/* Grid layout */}
         <div className="grid gap-8 lg:grid-cols-[1fr_380px]">
-          
+
           {/* Left Column */}
           <div className="space-y-6">
-            
+
             {/* Control Config Card */}
             <div className="bg-zinc-950/20 backdrop-blur-md border border-zinc-800/80 rounded-2xl p-6 shadow-[0_8px_30px_rgb(0,0,0,0.2)] hover:border-amber-500/10 transition-all duration-300">
               <h2 className="text-lg font-mono font-medium text-zinc-100 mb-6 flex items-center gap-2">
                 <Terminal className="h-5 w-5 text-amber-400" />
                 Target Configurations
               </h2>
-              
+
               <form onSubmit={handleStartScan} className="space-y-4">
                 <div>
                   <label className="block text-xs uppercase tracking-wider font-mono text-zinc-400 mb-2 font-semibold">
                     Scan Target URL
                   </label>
-                  <input 
-                    type="text" 
+                  <input
+                    type="text"
                     value={targetUrl}
                     onChange={(e) => setTargetUrl(e.target.value)}
                     disabled={loading}
@@ -278,7 +278,7 @@ export default function AdvancedDynamicScan() {
 
                 <div className="grid grid-cols-2 gap-4 pt-2">
                   <label className="flex items-center gap-2 text-xs font-mono text-zinc-350 cursor-pointer">
-                    <input 
+                    <input
                       type="checkbox"
                       checked={crawlingEnabled}
                       onChange={(e) => setCrawlingEnabled(e.target.checked)}
@@ -289,7 +289,7 @@ export default function AdvancedDynamicScan() {
                   </label>
 
                   <label className="flex items-center gap-2 text-xs font-mono text-zinc-350 cursor-pointer">
-                    <input 
+                    <input
                       type="checkbox"
                       checked={fuzzingEnabled}
                       onChange={(e) => setFuzzingEnabled(e.target.checked)}
@@ -301,7 +301,7 @@ export default function AdvancedDynamicScan() {
                 </div>
 
                 <div className="pt-4">
-                  <button 
+                  <button
                     type="submit"
                     disabled={loading}
                     className="w-full bns-submit-btn rounded-xl font-mono font-bold text-sm uppercase py-4 transition-all duration-300 active:scale-[0.99] flex items-center justify-center gap-2.5 focus:outline-none disabled:opacity-50 disabled:pointer-events-none"
@@ -343,8 +343,8 @@ export default function AdvancedDynamicScan() {
                   </span>
                   {loading && <span className="text-amber-400 animate-pulse">● SPIDER RUNNING</span>}
                 </div>
-                
-                <div 
+
+                <div
                   ref={logContainerRef}
                   className="h-44 overflow-y-auto space-y-2 pr-2 custom-scrollbar text-zinc-400 font-mono"
                 >
@@ -354,7 +354,7 @@ export default function AdvancedDynamicScan() {
                     if (log.includes("[WARNING]")) color = "text-orange-400";
                     if (log.includes("[ALERT]")) color = "text-red-500 font-bold";
                     if (log.includes("[CRAWLER]")) color = "text-blue-400";
-                    
+
                     return (
                       <div key={index} className={`leading-relaxed ${color}`}>
                         {log}
@@ -387,11 +387,10 @@ export default function AdvancedDynamicScan() {
                   <span className="text-xs uppercase font-mono font-bold text-zinc-300">Dynamic Scan Findings</span>
                   <button
                     onClick={() => setShowOnlyFailures(prev => !prev)}
-                    className={`flex items-center gap-1.5 text-[0.65rem] font-mono px-2.5 py-1 rounded-lg border transition-all ${
-                      showOnlyFailures
-                        ? "border-amber-500/40 text-amber-400 bg-amber-500/10"
-                        : "border-zinc-700/60 text-zinc-500 hover:border-zinc-650"
-                    }`}
+                    className={`flex items-center gap-1.5 text-[0.65rem] font-mono px-2.5 py-1 rounded-lg border transition-all ${showOnlyFailures
+                      ? "border-amber-500/40 text-amber-400 bg-amber-500/10"
+                      : "border-zinc-700/60 text-zinc-500 hover:border-zinc-650"
+                      }`}
                   >
                     <Filter className="h-3 w-3" />
                     {showOnlyFailures ? "Showing Failures Only" : "Show Failures Only"}
@@ -410,7 +409,7 @@ export default function AdvancedDynamicScan() {
                           </div>
                         </div>
                         <p className="text-xs text-zinc-400 font-mono leading-relaxed">{vuln.details}</p>
-                        
+
                         {vuln.evidence && (
                           <div className="bg-zinc-900/60 border border-zinc-850 p-2.5 rounded-lg overflow-x-auto my-1">
                             <code className="text-[10px] break-all block font-mono text-zinc-500">{vuln.evidence}</code>
@@ -476,7 +475,7 @@ export default function AdvancedDynamicScan() {
                 </div>
 
                 <div className="space-y-2">
-                  <button 
+                  <button
                     onClick={handleDownloadPDF}
                     className="w-full bg-amber-500/5 hover:bg-amber-500/10 text-amber-400 border border-amber-500/20 hover:border-amber-500/50 rounded-xl font-mono font-bold text-xs uppercase py-4 transition-all duration-300 hover:scale-[1.01] active:scale-[0.99] flex items-center justify-center gap-2 cursor-pointer hover:shadow-[0_0_20px_rgba(245,158,11,0.15)] focus:outline-none"
                   >
@@ -517,7 +516,7 @@ export default function AdvancedDynamicScan() {
               </ul>
             </div>
           </div>
-          
+
         </div>
       </div>
     </div>

@@ -25,7 +25,7 @@ function useProtectedAction() {
       const activeToken = token || localStorage.getItem("token");
       await callback(activeToken);
     } catch (err) {
-      console.error("💥 Action execution failed:", err);
+      console.warn("💥 Action execution failed:", err);
     }
   };
 }

@@ -141,6 +141,7 @@ const FakeQRCodeDetectorAndQRGenerator = () => {
   const [generateResult, setGenerateResult] = useState("");
   const [loading, setLoading] = useState(false);
   const [qrText, setQrText] = useState("");
+  const [generatedImage, setGeneratedImage] = useState(null);
   const protectedAction = useProtectedAction();
 
   const handleImage = (fileData) => {
@@ -222,6 +223,7 @@ const FakeQRCodeDetectorAndQRGenerator = () => {
     setGenerateResult("");
     setScanResult("");
     setImageSrc(null);
+    setGeneratedImage(null);
     await protectedAction(async (userToken) => {
       try {
         const response = await fetch(
@@ -245,6 +247,7 @@ const FakeQRCodeDetectorAndQRGenerator = () => {
         if (data.status === "success") {
           const qrImageSrc = data.data.replaceAll("\r\n", "\n");
           setImageSrc(qrImageSrc);
+          setGeneratedImage(data.image);
           setScanResult(data.message || "QR code generated successfully.");
         } else {
           setGenerateResult(data.message || "Failed to generate QR code.");
@@ -259,6 +262,7 @@ const FakeQRCodeDetectorAndQRGenerator = () => {
 
   const resetAll = () => {
     setImageSrc(null);
+    setGeneratedImage(null);
     setScanResult("");
     setRawScanResult(null);
     setGenerateResult("");
@@ -377,6 +381,7 @@ const FakeQRCodeDetectorAndQRGenerator = () => {
                       onChange={() => {
                         setTab(value);
                         setImageSrc(null);
+                        setGeneratedImage(null);
                         setScanResult("");
                         setGenerateResult("");
                       }}
@@ -403,7 +408,7 @@ const FakeQRCodeDetectorAndQRGenerator = () => {
                   </h2>
 
                   {/* Input method selector buttons */}
-                  <div className="flex gap-2">
+                  {/* <div className="flex gap-2">
                     <button
                       onClick={() => {
                         setInputMethod("upload");
@@ -432,7 +437,7 @@ const FakeQRCodeDetectorAndQRGenerator = () => {
                     >
                       Use Camera
                     </button>
-                  </div>
+                  </div> */}
 
                   {/* Drop zone / Upload UI */}
                   {inputMethod === "upload" && (
@@ -465,9 +470,9 @@ const FakeQRCodeDetectorAndQRGenerator = () => {
                   )}
 
                   {/* Camera view UI */}
-                  {inputMethod === "camera" && (
+                  {/* {inputMethod === "camera" && (
                     <CameraCapture onCapture={handleImage} />
-                  )}
+                  )} */}
 
                   {/* Captured / Uploaded Image Preview */}
                   {imageSrc && imageSrc.url && (
@@ -581,27 +586,60 @@ const FakeQRCodeDetectorAndQRGenerator = () => {
 
             {/* ASCII QR Code Output */}
             {tab === "generator" && imageSrc && typeof imageSrc === "string" && !loading && (
-              <div className="bg-zinc-950/20 backdrop-blur-md border border-zinc-800/80 rounded-2xl p-6 shadow-[0_12px_40px_rgb(0,0,0,0.2)] space-y-4 hover:border-emerald-500/10 transition-all duration-300">
-                <div className="border-b border-zinc-800/50 pb-4 flex items-center gap-2">
-                  <QrCode className="h-5 w-5 text-emerald-400" />
-                  <span className="font-mono font-bold text-sm uppercase tracking-wider text-emerald-400">
-                    Generated ASCII Matrix
-                  </span>
+              <div className="bg-zinc-950/20 backdrop-blur-md border border-zinc-800/80 rounded-2xl p-6 shadow-[0_12px_40px_rgb(0,0,0,0.2)] space-y-6 hover:border-emerald-500/10 transition-all duration-300">
+                <div className="border-b border-zinc-800/50 pb-4 flex items-center justify-between gap-4">
+                  <div className="flex items-center gap-2">
+                    <QrCode className="h-5 w-5 text-emerald-400" />
+                    <span className="font-mono font-bold text-sm uppercase tracking-wider text-emerald-400">
+                      Generated QR Code
+                    </span>
+                  </div>
+                  {generatedImage && (
+                    <a
+                      href={generatedImage}
+                      download={`qr-code-${Date.now()}.png`}
+                      className="bg-emerald-500/5 hover:bg-emerald-500/10 text-emerald-400 border border-emerald-500/25 hover:border-emerald-500/50 px-3.5 py-1.5 rounded-xl transition-all duration-300 font-mono font-bold text-[11px] uppercase tracking-wider flex items-center gap-2 cursor-pointer hover:scale-[1.01] active:scale-[0.99] hover:shadow-[0_0_15px_rgba(16,185,129,0.1)] focus:outline-none"
+                    >
+                      <Download size={14} /> Download QR Image
+                    </a>
+                  )}
                 </div>
-                <div className="bg-white border border-zinc-800 rounded-xl p-6 flex justify-center overflow-x-auto shadow-inner">
-                  <pre
-                    style={{
-                      fontFamily: "Fira Code, Courier New, monospace",
-                      lineHeight: 1.0,
-                      letterSpacing: "-0.08ch",
-                    }}
-                    className="text-lg text-black select-all"
-                  >
-                    {imageSrc}
-                  </pre>
+
+                <div className="grid md:grid-cols-[1fr_200px] gap-6">
+                  {/* ASCII Matrix */}
+                  <div className="space-y-2">
+                    <span className="text-[10px] text-zinc-400 font-mono uppercase tracking-wider block">ASCII Matrix</span>
+                    <div className="bg-white border border-zinc-200 rounded-xl p-6 flex justify-center overflow-x-auto shadow-inner">
+                      <pre
+                        style={{
+                          fontFamily: "Fira Code, Courier New, monospace",
+                          lineHeight: 1.0,
+                          letterSpacing: "-0.08ch",
+                        }}
+                        className="text-lg text-black select-all"
+                      >
+                        {imageSrc}
+                      </pre>
+                    </div>
+                  </div>
+
+                  {/* Visual Image */}
+                  {generatedImage && (
+                    <div className="space-y-2 flex flex-col items-center md:items-start">
+                      <span className="text-[10px] text-zinc-400 font-mono uppercase tracking-wider block self-start">Visual Image</span>
+                      <div className="bg-white border border-zinc-200 rounded-xl p-4 flex items-center justify-center w-full max-w-[200px] aspect-square shadow-md">
+                        <img
+                          src={generatedImage}
+                          alt="Generated QR Code"
+                          className="w-full h-full object-contain"
+                        />
+                      </div>
+                    </div>
+                  )}
                 </div>
+
                 <p className="text-[10px] text-zinc-500 font-mono text-center">
-                  * Select and copy the ASCII characters above to save or use inside terminals.
+                  * Copy the ASCII characters for terminal use, or click "Download QR Image" to download as a PNG file.
                 </p>
               </div>
             )}
@@ -630,8 +668,7 @@ const FakeQRCodeDetectorAndQRGenerator = () => {
               </h4>
               <ul className="space-y-3.5 list-none pl-0">
                 {[
-                  "Upload local QR code image files, or activate your camera feed to scan physically.",
-                  "Holographic scanner overlays help align codes directly within active video feeds.",
+                  "Upload local QR code image files to scan.",
                   "Inspects target redirection targets to flag malicious domains, DNS parameters, or shorteners.",
                   "Checks domains against updated brand indicators to prevent Qishing scams.",
                   "Allows instant ASCII generation of custom matrix outputs.",
