@@ -45,7 +45,8 @@ security-platform/
 │   │   │   ├── subscription/     # Subscription & Invoicing Page (`page.jsx`)
 │   │   │   └── page.jsx          # Platform Main Landing Page
 │   │   ├── api/                  # Backend API Handlers
-│   │   │   └── image-proxy/      # CORS Image Proxy API Handler (`route.jsx`)
+│   │   │   ├── image-proxy/      # CORS Image Proxy API Handler (`route.jsx`)
+│   │   │   └── payments/         # Payment-related API Handlers (`route.jsx`)
 │   │   ├── services/             # Service Overview Pages
 │   │   │   ├── cloud-security/   # Cloud Security Service (`page.jsx`)
 │   │   │   ├── network-security/     # Network Security Service (`page.jsx`)
@@ -72,6 +73,7 @@ security-platform/
 │   │   ├── Tool/                 # Categorized Tool Templates (Red/Blue/Green/Purple)
 │   │   ├── tool-guidance/        # Tool Tooltips, Pre-Scan Checklists & Help Panels
 │   │   ├── [toolComponents]/     # Scanner UI Components & PDF Generators (`generate*PDF.js`)
+│   │   ├── payments/             # Payment & Payment-Related UI Components
 │   │   ├── GainAcess.jsx           # Authentication Modal Dialog Component
 │   │   ├── ProtectedWrapper.jsx    # Client-side Route Auth Protection HOC Guard
 │   │   └── withProtectedAction.jsx # HOC Enforcing Auth/Credits on Action Buttons
@@ -81,7 +83,8 @@ security-platform/
 │   │   ├── tool-guidance/        # Guidance Validators & Schema Registry
 │   │   ├── fetchMeta.js          # Domain Metadata Fetching Utility
 │   │   ├── tools.js              # Master Security Tool Registry & Cost Metadata
-│   │   └── utils.js              # Class Name Merger Helper (`clsx` + `tailwind-merge`)
+│   │   ├── utils.js              # Class Name Merger Helper (`clsx` + `tailwind-merge`)
+│   │   └── razorpay.js           # Razorpay Payment Processing Utility
 │   └── utils/                    # Core Analytical Engines
 │       ├── codeAnalyzer.js       # Static AST Security Code Analysis Engine
 │       └── pdfFramework.js       # Report PDF Generation Framework Wrapper

@@ -15,8 +15,10 @@ import {
   History,
   ArrowRight
 } from "lucide-react";
+import { toast } from "react-hot-toast";
 import ProtectedWrapper from "@/components/ProtectedWrapper";
 import SectionIntro from "@/components/marketing/SectionIntro";
+import RazorpayCheckoutButton from "@/components/payment/RazorpayCheckoutButton";
 
 const PLAN_CARDS = [
   {
@@ -196,6 +198,23 @@ export default function SubscriptionPage() {
     fetchHistory();
     fetchCredits();
   }, []);
+
+  // Called by RazorpayCheckoutButton after a successful payment verification
+  const refreshSubscriptionState = async (verifyData) => {
+    // Update local storage user credits if available
+    const storedUser = localStorage.getItem("user");
+    if (storedUser && verifyData?.credits) {
+      const parsed = JSON.parse(storedUser);
+      parsed.credits = verifyData.credits;
+      localStorage.setItem("user", JSON.stringify(parsed));
+    }
+
+    setSuccessMsg(`Successfully upgraded to the ${verifyData?.plan || "new"} Plan!`);
+    setErrorMsg("");
+
+    // Refresh all subscription data from the backend
+    await Promise.all([fetchCurrentSub(), fetchHistory(), fetchCredits()]);
+  };
 
   const handleUpgrade = async (planName) => {
     setErrorMsg("");
@@ -407,15 +426,10 @@ export default function SubscriptionPage() {
                             Default Tier
                           </button>
                         ) : (
-                          <button
-                            type="button"
-                            onClick={() => handleUpgrade(card.name)}
-                            disabled={actionLoading}
-                            className="gold-button w-full justify-center py-2.5 text-xs font-semibold flex items-center gap-1.5 cursor-pointer"
-                          >
-                            <span>Upgrade</span>
-                            <ArrowRight className="h-3.5 w-3.5" />
-                          </button>
+                          <RazorpayCheckoutButton
+                            plan={card}
+                            onPaymentSuccess={refreshSubscriptionState}
+                          />
                         )}
                       </div>
                     </div>
