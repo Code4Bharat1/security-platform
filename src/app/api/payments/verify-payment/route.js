@@ -3,6 +3,7 @@
  * -----------------------------------
  * Verifies Razorpay payment signature and forwards to the Express backend
  * for actual database fulfillment (subscription upgrade + credit allocation).
+ * Returns receipt data for client-side PDF generation.
  *
  * Request body:
  *   { razorpay_order_id, razorpay_payment_id, razorpay_signature, planName }
@@ -10,7 +11,7 @@
  *   Authorization: Bearer <token>  (forwarded to backend)
  *
  * Response:
- *   { success, message, credits }
+ *   { success, message, plan, credits, receipt: { ... } }
  */
 
 import { NextResponse } from "next/server";
@@ -63,9 +64,10 @@ export async function POST(req) {
     // ── Forward to Express backend for DB fulfillment ──────────────────
     // The backend's POST /subscription/upgrade handles:
     //   - Marking old subscriptions as 'upgraded'
-    //   - Creating new active subscription record
+    //   - Creating new active subscription record (with Razorpay IDs)
     //   - Granting credits to user
     //   - Logging credit transaction
+    //   - Generating receipt data
     const authHeader = req.headers.get("authorization");
     const apiBase = (process.env.NEXT_PUBLIC_PROD_API_URL || "").replace(/\/+$/, "");
 
@@ -75,7 +77,11 @@ export async function POST(req) {
         "Content-Type": "application/json",
         ...(authHeader ? { Authorization: authHeader } : {}),
       },
-      body: JSON.stringify({ plan: planName }),
+      body: JSON.stringify({
+        plan: planName,
+        razorpayOrderId: razorpay_order_id,
+        razorpayPaymentId: razorpay_payment_id,
+      }),
     });
 
     const backendData = await backendRes.json();
@@ -96,6 +102,7 @@ export async function POST(req) {
       message: backendData.message || `Payment verified & ${planName} plan upgraded successfully!`,
       plan: planName,
       credits: backendData.credits,
+      receipt: backendData.receipt || null,
     });
   } catch (err) {
     console.error("[verify-payment] Error:", err);
