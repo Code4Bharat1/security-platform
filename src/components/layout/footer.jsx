@@ -29,6 +29,7 @@ const columns = [
   {
     title: 'Resources',
     links: [
+      { label: 'Integrated Reports', href: '/tools' },
       { label: 'Red Team', href: '/tools' },
       { label: 'Green Team Research', href: '/tools' },
       { label: 'Blue Team', href: '/tools' },

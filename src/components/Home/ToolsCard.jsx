@@ -9,6 +9,40 @@ export default function ToolsCard() {
   const buttonList = [
     [
       {
+        name: "Free Report",
+        image: "/tools/card-images/tools/card-images/ode.png",
+        description: "Generate consolidated summary reports for basic scans including WHOIS, DNS, and HTTP security.",
+        slug: "report-generator?plan=free",
+        buttonLabel: "Generate Report",
+        type: "reports",
+      },
+      {
+        name: "Premium Report",
+        image: "/tools/card-images/tools/card-images/ode.png",
+        description: "Access intermediate scanner details, WAF configurations, and domain trust reports.",
+        slug: "report-generator?plan=premium",
+        buttonLabel: "Generate Report",
+        type: "reports",
+      },
+      {
+        name: "Pro Report",
+        image: "/tools/card-images/tools/card-images/ode.png",
+        description: "Consolidated reports for advanced AST analyzers, API testers, and credentials paths.",
+        slug: "report-generator?plan=pro",
+        buttonLabel: "Generate Report",
+        type: "reports",
+      },
+      {
+        name: "Enterprise Report",
+        image: "/tools/card-images/tools/card-images/ode.png",
+        description: "Full network, Active Directory, and organizational security posture compliance reports.",
+        slug: "report-generator?plan=enterprise",
+        buttonLabel: "Generate Report",
+        type: "reports",
+      },
+    ],
+    [
+      {
         name: "Vulnerability Scanner",
         image: "/RedTeam/vuln_scanner.png",
         description:
@@ -170,6 +204,18 @@ export default function ToolsCard() {
   // --- Categories with tool counts ---
   const initialCategories = [
     {
+      title: "Integrated Reports",
+      description: "AD posture reviews and\ncredential theft paths.",
+      bgColorClass: "bg-[#D4A64A]",
+      bgImageClass:
+        "bg-[url('/tools/white-bg-design-1.png')] bg-right-bottom bg-no-repeat bg-[length:50%]",
+      textColorClass: "text-white",
+      glowColor: "#D4A64A",
+      buttonColor: "bg-[#D4A64A] hover:bg-[#c3963a]",
+      borderGlow: "hover:border-[#D4A64A] hover:shadow-[0_0_15px_#D4A64A]",
+      toolCount: 4,
+    },
+    {
       title: "Red Teaming",
       description: "Offensive security topics,\npenetration testing, etc.",
       bgColorClass: "bg-red-500",
@@ -210,10 +256,11 @@ export default function ToolsCard() {
 
   // --- Helper function to get button list index from category title ---
   const getButtonListIndex = (title) => {
-    if (title.includes("Red")) return 0;
-    if (title.includes("Blue")) return 1;
-    if (title.includes("Non-Tech")) return 2;
-    return 1; // default to blue team
+    if (title.includes("Reports")) return 0;
+    if (title.includes("Red")) return 1;
+    if (title.includes("Blue")) return 2;
+    if (title.includes("Non-Tech")) return 3;
+    return 2; // default to blue team
   };
 
   // --- Initialize state from localStorage or defaults ---
@@ -433,7 +480,9 @@ export default function ToolsCard() {
         <button
           onClick={() => {
             let path = "";
-            if (categories[activeIndex].title.includes("Red")) {
+            if (categories[activeIndex].title.includes("Reports")) {
+              path = "/tools/reports";
+            } else if (categories[activeIndex].title.includes("Red")) {
               path = "/tools/red-team";
             } else if (categories[activeIndex].title.includes("Blue")) {
               path = "/tools/blue-team";

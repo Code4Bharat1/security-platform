@@ -1,3 +1,42 @@
+export const reportsTools = [
+  {
+    name: "Free Report",
+    description: "Generate consolidated summary reports for basic scans including WHOIS, DNS, and HTTP security.",
+    slug: "report-generator?plan=free",
+    buttonLabel: "Launch Tool",
+    team: "reports",
+    teamLabel: "Integrated Reports",
+    status: "active",
+  },
+  {
+    name: "Premium Report",
+    description: "Access intermediate scanner details, WAF configurations, and domain trust reports.",
+    slug: "report-generator?plan=premium",
+    buttonLabel: "Launch Tool",
+    team: "reports",
+    teamLabel: "Integrated Reports",
+    status: "active",
+  },
+  {
+    name: "Pro Report",
+    description: "Consolidated reports for advanced AST analyzers, API testers, and credentials paths.",
+    slug: "report-generator?plan=pro",
+    buttonLabel: "Launch Tool",
+    team: "reports",
+    teamLabel: "Integrated Reports",
+    status: "active",
+  },
+  {
+    name: "Enterprise Report",
+    description: "Full network, Active Directory, and organizational security posture compliance reports.",
+    slug: "report-generator?plan=enterprise",
+    buttonLabel: "Launch Tool",
+    team: "reports",
+    teamLabel: "Integrated Reports",
+    status: "active",
+  }
+];
+
 export const redTools = [
   {
     name: "Vulnerability Scanner",
@@ -511,6 +550,7 @@ export const vaTools = [
 ];
 
 export const toolGroups = [
+  { key: "reports", label: "Integrated Reports", count: reportsTools.length, tools: reportsTools },
   { key: "red", label: "Red Team", count: redTools.length, tools: redTools },
   { key: "blue", label: "Blue Team", count: blueTools.length, tools: blueTools },
   { key: "green", label: "Green Team", count: greenTools.length, tools: greenTools },

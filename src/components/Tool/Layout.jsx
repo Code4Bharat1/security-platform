@@ -7,6 +7,13 @@ import EngagementCta from "@/components/marketing/EngagementCta";
 import SectionIntro from "@/components/marketing/SectionIntro";
 
 const teamTheme = {
+  reports: {
+    label: "Integrated Reports",
+    accent: "text-[var(--gold)]",
+    border: "border-[var(--gold)]/30",
+    glow: "hover:shadow-[0_0_50px_rgba(212,166,74,0.12)]",
+    tint: "from-[var(--gold)]/8",
+  },
   red: {
     label: "Red Team",
     accent: "text-[#ff6f7f]",

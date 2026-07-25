@@ -23,7 +23,7 @@ const badgeTone = {
 };
 
 export default function PlatformOverview() {
-  const [activeGroup, setActiveGroup] = useState("red");
+  const [activeGroup, setActiveGroup] = useState("reports");
   const [query, setQuery] = useState("");
   const [planFeaturesMap, setPlanFeaturesMap] = useState(null);
   const [userPlan, setUserPlan] = useState(null);
@@ -55,6 +55,7 @@ export default function PlatformOverview() {
 
   const handleLaunchClick = (e, tool) => {
     if (!token) return; // if not logged in, let them navigate so it redirects to login
+    if (tool.team === 'reports') return; // bypass plan check for reports
     
     if (planFeaturesMap && userPlan) {
       if (userPlan === 'Enterprise') return; // Enterprise bypass
