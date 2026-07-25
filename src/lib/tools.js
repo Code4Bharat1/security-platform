@@ -343,14 +343,14 @@ export const tools = [
     buttonLabel: "Generate Keyword",
     type: "non-tech"
   },
-  {
-    name: "Data Breach",
-    image: "/tools/card-images/DataBreach1.png",
-    description: "Find Where Your Email , Phone No. Or Username is Exposed",
-    slug: "osint",
-    buttonLabel: "Check Info",
-    type: "non-tech"
-  },
+  // {
+  //   name: "Data Breach",
+  //   image: "/tools/card-images/DataBreach1.png",
+  //   description: "Find Where Your Email , Phone No. Or Username is Exposed",
+  //   slug: "osint",
+  //   buttonLabel: "Check Info",
+  //   type: "non-tech"
+  // },
   {
     name: "URL Shortener",
     image: "/tools/card-images/shorted-url.png",
