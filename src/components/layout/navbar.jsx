@@ -13,8 +13,7 @@ const navItems = [
   { href: '/tools', label: 'Platform' },
   { href: '/about', label: 'Company' },
   { href: '/connect', label: 'Contact' },
-  { href: '/history', label: 'History' },
-  // { href: '/admin', label: 'Admin Dashboard'}
+  { href: '/history', label: 'History' }
 ];
 
 const telemetryItems = [
@@ -60,13 +59,18 @@ export default function Navbar() {
   }, [userName]);
 
   const visibleNavItems = useMemo(() => {
-    return navItems.filter((item) => {
-      if (item.href === '/history') {
-        return !!userName;
-      }
-      return true;
-    });
-  }, [userName]);
+    return [
+      ...navItems.filter((item) => {
+        // History only visible when logged in
+        if (item.href === '/history') return !!userName;
+        return true;
+      }),
+      // Admin Dashboard only visible to admin users
+      ...(user?.role === 'admin'
+        ? [{ href: 'http://localhost:3001/admin/dashboard', label: 'Admin Dashboard', adminOnly: true }]
+        : [])
+    ];
+  }, [userName, user]);
 
   const handleLogout = () => {
     contextLogout();

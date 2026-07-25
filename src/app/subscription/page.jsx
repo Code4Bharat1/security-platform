@@ -27,28 +27,15 @@ const PLAN_CARDS = [
     credits: 10,
     icon: Shield,
     iconColor: "text-white/40",
-    borderColor: "border-white/5",
-    features: [
-      "Core vulnerability assessments",
-      "10 baseline scanning credits",
-      "Standard community documentation",
-      "Single-domain testing limit"
-    ]
+    borderColor: "border-white/5"
   },
   {
-    name: "Basic",
+    name: "Premium",
     price: 799,
     credits: 100,
     icon: Zap,
     iconColor: "text-blue-400",
-    borderColor: "border-blue-500/20",
-    features: [
-      "All Free features included",
-      "100 testing credits allocated",
-      "WAF and TLS configuration scans",
-      "Email support service level",
-      "Up to 3 verified domains"
-    ]
+    borderColor: "border-blue-500/20"
   },
   {
     name: "Pro",
@@ -56,14 +43,7 @@ const PLAN_CARDS = [
     credits: 500,
     icon: Award,
     iconColor: "text-[var(--gold)]",
-    borderColor: "border-[var(--gold)]/30",
-    features: [
-      "All Basic features included",
-      "500 testing credits allocated",
-      "Advanced XSS & CSRF audit testing",
-      "Brute force and session verification",
-      "Prioritized engineering support"
-    ]
+    borderColor: "border-[var(--gold)]/30"
   },
   {
     name: "Enterprise",
@@ -71,14 +51,7 @@ const PLAN_CARDS = [
     credits: 2000,
     icon: Sparkles,
     iconColor: "text-purple-400",
-    borderColor: "border-purple-500/20",
-    features: [
-      "All Pro features included",
-      "2,000 testing credits allocated",
-      "Full API scan compliance suite",
-      "Dedicated account security adviser",
-      "Unlimited domain verification"
-    ]
+    borderColor: "border-purple-500/20"
   }
 ];
 
@@ -96,6 +69,9 @@ export default function SubscriptionPage() {
   const [loadingCurrent, setLoadingCurrent] = useState(true);
   const [loadingHistory, setLoadingHistory] = useState(true);
   const [actionLoading, setActionLoading] = useState(false);
+  // Live plan→tools mapping fetched from the admin-configured PlanFeature collection
+  const [planFeatures, setPlanFeatures] = useState({});
+  const [loadingFeatures, setLoadingFeatures] = useState(true);
   
   const [successMsg, setSuccessMsg] = useState("");
   const [errorMsg, setErrorMsg] = useState("");
@@ -193,10 +169,28 @@ export default function SubscriptionPage() {
     }
   };
 
+  const fetchPlanFeatures = async () => {
+    setLoadingFeatures(true);
+    try {
+      const res = await fetch(
+        `${process.env.NEXT_PUBLIC_PROD_API_URL}/subscription/plan-features`
+      );
+      if (res.ok) {
+        const data = await res.json();
+        setPlanFeatures(data);
+      }
+    } catch (err) {
+      console.error("Error fetching plan features:", err);
+    } finally {
+      setLoadingFeatures(false);
+    }
+  };
+
   useEffect(() => {
     fetchCurrentSub();
     fetchHistory();
     fetchCredits();
+    fetchPlanFeatures();
   }, []);
 
   // Called by RazorpayCheckoutButton after a successful payment verification
@@ -396,15 +390,32 @@ export default function SubscriptionPage() {
                           <span className="text-xs text-white/40 ml-1">/ month</span>
                         </div>
 
-                        {/* Feature checklist */}
-                        <ul className="space-y-2.5 text-xs text-white/60">
-                          {card.features.map((feature, idx) => (
-                            <li key={idx} className="flex items-start gap-2">
-                              <Check className="h-3.5 w-3.5 text-[var(--gold)] flex-shrink-0 mt-0.5" />
-                              <span>{feature}</span>
-                            </li>
-                          ))}
-                        </ul>
+                        {/* Feature checklist — live from admin PlanFeature config */}
+                        {loadingFeatures ? (
+                          <ul className="space-y-2.5">
+                            {[1, 2, 3, 4].map(i => (
+                              <li key={i} className="h-3 bg-white/5 animate-pulse rounded w-3/4" />
+                            ))}
+                          </ul>
+                        ) : (
+                          <ul className="space-y-2.5 text-xs text-white/60">
+                            {(planFeatures[card.name] || []).slice(0, 5).map((tool, idx) => (
+                              <li key={idx} className="flex items-start gap-2">
+                                <Check className="h-3.5 w-3.5 text-[var(--gold)] flex-shrink-0 mt-0.5" />
+                                <span>{tool.name}</span>
+                              </li>
+                            ))}
+                            {(planFeatures[card.name] || []).length > 5 && (
+                              <li className="flex items-center gap-2 text-white/30 italic">
+                                <Check className="h-3.5 w-3.5 text-white/20 flex-shrink-0" />
+                                <span>+ {(planFeatures[card.name] || []).length - 5} more tools included</span>
+                              </li>
+                            )}
+                            {(planFeatures[card.name] || []).length === 0 && (
+                              <li className="text-white/30 italic">No tools assigned yet.</li>
+                            )}
+                          </ul>
+                        )}
                       </div>
 
                       {/* Upgrade CTA */}
