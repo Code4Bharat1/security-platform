@@ -4,10 +4,18 @@ import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
 import { ArrowRight, ExternalLink, Search } from "lucide-react";
 
+import { useRouter } from "next/navigation";
+import toast from "react-hot-toast";
+
 import SectionIntro from "@/components/marketing/SectionIntro";
 import EngagementCta from "@/components/marketing/EngagementCta";
+import { useAuth } from "@/context/AuthContext";
 
 import { toolGroups } from "./catalog";
+
+const API_BASE = (process.env.NEXT_PUBLIC_PROD_API_URL || "http://localhost:5000").replace(/\/$/, "");
+const USE_API_PREFIX = !/\/api$/i.test(API_BASE);
+const API_URL = `${API_BASE}${USE_API_PREFIX ? "/api" : ""}`;
 
 const badgeTone = {
   active: "bg-[#8b2331]/35 text-[#ff667a] border-[#ff667a]/20",
@@ -17,6 +25,49 @@ const badgeTone = {
 export default function PlatformOverview() {
   const [activeGroup, setActiveGroup] = useState("red");
   const [query, setQuery] = useState("");
+  const [planFeaturesMap, setPlanFeaturesMap] = useState(null);
+  const [userPlan, setUserPlan] = useState(null);
+
+  const { token } = useAuth();
+  const router = useRouter();
+
+  useEffect(() => {
+    // Load the plan features map globally for validation
+    fetch(`${API_URL}/subscription/plan-features`)
+      .then(res => res.json())
+      .then(data => setPlanFeaturesMap(data))
+      .catch(err => console.error("Failed to load plan features:", err));
+  }, []);
+
+  useEffect(() => {
+    // If user is logged in, fetch their current plan
+    if (token) {
+      fetch(`${API_URL}/subscription/current`, {
+        headers: { Authorization: `Bearer ${token}` }
+      })
+        .then(res => res.json())
+        .then(data => setUserPlan(data.plan || "Free"))
+        .catch(err => console.error("Failed to load user plan:", err));
+    } else {
+      setUserPlan(null);
+    }
+  }, [token]);
+
+  const handleLaunchClick = (e, tool) => {
+    if (!token) return; // if not logged in, let them navigate so it redirects to login
+    
+    if (planFeaturesMap && userPlan) {
+      if (userPlan === 'Enterprise') return; // Enterprise bypass
+      
+      const allowedTools = planFeaturesMap[userPlan] || [];
+      const hasAccess = allowedTools.some(t => t.name === tool.name);
+      
+      if (!hasAccess) {
+        e.preventDefault(); // Stop navigation
+        toast.error(`"${tool.name}" is not included in your active plan.`);
+      }
+    }
+  };
 
   useEffect(() => {
     const savedGroup = localStorage.getItem("platformActiveGroup");
@@ -123,6 +174,7 @@ export default function PlatformOverview() {
                 <div className="mt-8 flex items-center justify-between">
                   <Link
                     href={`/tools/${tool.slug}`}
+                    onClick={(e) => handleLaunchClick(e, tool)}
                     className="inline-flex items-center gap-2 font-mono text-sm text-[var(--gold)] transition hover:text-white"
                   >
                     <span>{tool.buttonLabel}</span>
@@ -131,6 +183,7 @@ export default function PlatformOverview() {
 
                   <Link
                     href={`/tools/${tool.slug}`}
+                    onClick={(e) => handleLaunchClick(e, tool)}
                     aria-label={`Open ${tool.name}`}
                     className="text-white/30 transition hover:text-[var(--gold)]"
                   >

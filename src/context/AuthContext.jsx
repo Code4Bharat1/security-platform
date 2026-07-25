@@ -209,6 +209,8 @@ export const AuthProvider = ({ children }) => {
 
     initializeAuth();
 
+    // (Global fetch interceptor removed — was incorrectly intercepting public API routes)
+
     // Listen to local storage changes to synchronize across tabs
     const handleStorageChange = (e) => {
       if (e.key === "token" && !e.newValue) {
