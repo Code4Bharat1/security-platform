@@ -8,6 +8,7 @@ import Chatbot from '@/components/Chatbot/chatbot';
 import { Toaster } from 'react-hot-toast';
 import { GoogleOAuthProvider } from '@react-oauth/google';
 import { AuthProvider } from "@/context/AuthContext";
+import { PlanProvider } from "@/context/PlanContext";
 
 const themeInitScript = `
   (() => {
@@ -74,6 +75,7 @@ export default function RootLayout({ children }) {
           clientId={process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID}
         >
           <AuthProvider>
+            <PlanProvider>
             <Navbar />
             {children}
             <Toaster position="top-right" toastOptions={{
@@ -85,6 +87,7 @@ export default function RootLayout({ children }) {
             < WhatsApp />
             < Chatbot />
             <Footer />
+            </PlanProvider>
           </AuthProvider>
         </GoogleOAuthProvider>
       </body>

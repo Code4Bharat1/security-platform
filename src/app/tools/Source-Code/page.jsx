@@ -192,7 +192,7 @@ export default function SourceCodeAnalyzer() {
 
         if (!res.ok) {
           const errorData = await res.json().catch(() => ({}));
-          throw new Error(errorData.error || `API error: ${res.statusText}`);
+          throw new Error(errorData.error || errorData.message || `API error: ${res.statusText}`);
         }
 
         const data = await res.json();
