@@ -15,7 +15,7 @@ import { razorpayInstance } from "@/lib/razorpay";
 
 // Plan whitelist to prevent tampered amounts from the client
 const PLAN_PRICE_MAP = {
-  Basic: 799,
+  Premium: 799,
   Pro: 2499,
   Enterprise: 7999,
 };

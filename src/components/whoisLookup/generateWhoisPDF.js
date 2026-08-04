@@ -15,7 +15,7 @@ const formatDate = (iso) => {
   return d.toLocaleDateString("en-GB", { day: "2-digit", month: "short", year: "numeric" }).toUpperCase();
 };
 
-export const generateWhoisPDF = async (result = {}) => {
+export const generateWhoisPDF = async (result = {}, targetDomain = "—", existingDoc = null) => {
   const { employeeName, employeeMail } = getAuditorInfo();
   
   const now = new Date();
@@ -23,13 +23,13 @@ export const generateWhoisPDF = async (result = {}) => {
   const scanTime = now.toLocaleTimeString("en-GB", { hour: "2-digit", minute: "2-digit", second: "2-digit" });
 
   const summary = result?.summary || {};
-  const targetDomain = summary?.domainName || result?.input || "—";
+  const targetDomainName = summary?.domainName || result?.input || targetDomain || "—";
   const registrarName = summary?.registrar || "—";
   const resolvedIp = summary?.ip || "—";
   const assessmentOutcome = result?.ok ? "Successful" : "Lookup Failed";
 
   try {
-    const doc = new jsPDF("p", "mm", "a4");
+    const doc = existingDoc ? (existingDoc.addPage(), existingDoc) : new jsPDF("p", "mm", "a4");
 
     // ══════════════════════════════════════════════════════════════════════
     // PAGE 1 — COVER PAGE & ASSESSMENT INFORMATION
@@ -47,7 +47,7 @@ export const generateWhoisPDF = async (result = {}) => {
     doc.setTextColor(...C.bluePrimary);
     doc.text("NEXCORE ALLIANCE", 105, 30, { align: "center" });
 
-    doc.setFont("helvetica", "oblique");
+    doc.setFont("helvetica", "italic");
     doc.setFontSize(10);
     doc.text("AI-Powered Cybersecurity & Information Security Solutions", 105, 36, { align: "center" });
 
@@ -256,10 +256,10 @@ export const generateWhoisPDF = async (result = {}) => {
     doc.setTextColor(...C.textMain);
     doc.text(ackText, 14, y + 5, { maxWidth: 182, align: "left", lineHeightFactor: 1.45 });
 
-    // Apply header & footer decorator to all pages
-    applyHeaderFooterDecorator(doc, "Whois Domain Lookup");
-
-    doc.save(`Whois-Domain-Report-${Date.now()}.pdf`);
+    if (!existingDoc) {
+      doc.save(`Whois-Domain-Report-${Date.now()}.pdf`);
+    }
+    return doc;
   } catch (err) {
     console.error("Failed to generate Whois PDF report:", err);
   }

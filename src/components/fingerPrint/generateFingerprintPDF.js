@@ -43,24 +43,25 @@ const SECURITY_IMPACT_MAP = {
   }
 };
 
-export const generateFingerprintPDF = async (results = [], meta = {}, targetUrl = "-", setPdfProgress) => {
-  if (!results || results.length === 0) return;
+export const generateFingerprintPDF = async (results = [], meta = {}, targetUrl = "-", setPdfProgress, existingDoc = null) => {
+  const techList = Array.isArray(results) ? results : (results?.results || results?.technologies || []);
+  if (!techList || techList.length === 0) return;
   setPdfProgress?.("Initializing PDF document...");
 
   const { employeeName, employeeMail } = getAuditorInfo();
 
   try {
-    const doc = new jsPDF("p", "mm", "a4");
+    const doc = existingDoc ? (existingDoc.addPage(), existingDoc) : new jsPDF("p", "mm", "a4");
 
     // Dates
     const now = new Date();
     const scanDate = now.toLocaleDateString("en-GB", { day: "2-digit", month: "short", year: "numeric" }).toUpperCase();
     const scanTime = now.toLocaleTimeString("en-GB", { hour: "2-digit", minute: "2-digit", second: "2-digit" });
 
-    const totalTech = results.length;
+    const totalTech = techList.length;
     const durationText = meta?.durationMs ? `${(meta.durationMs / 1000).toFixed(2)} s` : "-";
 
-    const categoriesSet = new Set(results.map(f => f.category));
+    const categoriesSet = new Set(techList.map(f => f.category));
     const categoriesScanned = categoriesSet.size;
 
     // ════════════════════════════════════════════════════════════════════════
@@ -84,7 +85,7 @@ export const generateFingerprintPDF = async (results = [], meta = {}, targetUrl 
     doc.setTextColor(...C.bluePrimary);
     doc.text("NEXCORE ALLIANCE", 105, 30, { align: "center" });
 
-    doc.setFont("helvetica", "oblique");
+    doc.setFont("helvetica", "italic");
     doc.setFontSize(10);
     doc.text("AI-Powered Cybersecurity & Information Security Solutions", 105, 36, { align: "center" });
 
@@ -352,13 +353,13 @@ export const generateFingerprintPDF = async (results = [], meta = {}, targetUrl 
     doc.text(ackText, 14, y + 6, { maxWidth: 182, align: "justify", lineHeightFactor: 1.4 });
 
     // Apply header / footer decorator
-    applyHeaderFooterDecorator(doc, "Technology Fingerprinter");
-
-    setPdfProgress?.("Saving PDF...");
-    const pad = (n) => String(n).padStart(2, "0");
-    const dStr = `${now.getFullYear()}-${pad(now.getMonth() + 1)}-${pad(now.getDate())}_${pad(now.getHours())}${pad(now.getMinutes())}${pad(now.getSeconds())}`;
-    
-    doc.save(`Technology_Fingerprinter_Report_${dStr}.pdf`);
+    if (!existingDoc) {
+      setPdfProgress?.("Saving PDF...");
+      const pad = (n) => String(n).padStart(2, "0");
+      const dStr = `${now.getFullYear()}-${pad(now.getMonth() + 1)}-${pad(now.getDate())}_${pad(now.getHours())}${pad(now.getMinutes())}${pad(now.getSeconds())}`;
+      doc.save(`Technology_Fingerprinter_Report_${dStr}.pdf`);
+    }
+    return doc;
 
   } catch (err) {
     console.error("Failed to generate Fingerprint PDF:", err);

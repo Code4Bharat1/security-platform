@@ -55,21 +55,22 @@ const REMEDIATION_MAP = {
  * @param {string} targetDomain - Scanned main domain
  * @param {Function} setPdfProgress - Progress indicator setter
  */
-export const generateSubdomainPDF = async (results = [], stats = {}, targetDomain = "-", setPdfProgress) => {
-  if (!results || results.length === 0) return;
+export const generateSubdomainPDF = async (results = [], stats = {}, targetDomain = "-", setPdfProgress, existingDoc = null) => {
+  const subdomainsList = Array.isArray(results) ? results : (results?.subdomains || []);
+  if (!subdomainsList || subdomainsList.length === 0) return;
   setPdfProgress?.("Initializing PDF document...");
 
   const { employeeName, employeeMail } = getAuditorInfo();
 
   try {
-    const doc = new jsPDF("p", "mm", "a4");
+    const doc = existingDoc ? (existingDoc.addPage(), existingDoc) : new jsPDF("p", "mm", "a4");
 
     // Dates
     const now = new Date();
     const scanDate = now.toLocaleDateString("en-GB", { day: "2-digit", month: "short", year: "numeric" }).toUpperCase();
     const scanTime = now.toLocaleTimeString("en-GB", { hour: "2-digit", minute: "2-digit", second: "2-digit" });
 
-    const totalSubdomains = stats?.total || results.length;
+    const totalSubdomains = stats?.total || subdomainsList.length;
     const durationText = stats?.durationMs ? `${(stats.durationMs / 1000).toFixed(2)} s` : "-";
 
     // ════════════════════════════════════════════════════════════════════════
@@ -93,7 +94,7 @@ export const generateSubdomainPDF = async (results = [], stats = {}, targetDomai
     doc.setTextColor(...C.bluePrimary);
     doc.text("NEXCORE ALLIANCE", 105, 30, { align: "center" });
 
-    doc.setFont("helvetica", "oblique");
+    doc.setFont("helvetica", "italic");
     doc.setFontSize(10);
     doc.text("AI-Powered Cybersecurity & Information Security Solutions", 105, 36, { align: "center" });
 
@@ -106,11 +107,11 @@ export const generateSubdomainPDF = async (results = [], stats = {}, targetDomai
     doc.setFont("helvetica", "bold");
     doc.setFontSize(16);
     doc.setTextColor(...C.bluePrimary);
-    doc.text("SUBDOMAIN SCANNER SECURITY ASSESSMENT", 105, 54, { align: "center" });
+    doc.text("SUBDOMAIN SCANNER", 105, 54, { align: "center" });
 
     doc.setFont("helvetica", "bold");
     doc.setFontSize(12);
-    doc.text("REPORT", 105, 60, { align: "center" });
+    doc.text("SECURITY ASSESSMENT REPORT", 105, 60, { align: "center" });
 
     // Divider below title
     doc.line(14, 65, 196, 65);
@@ -123,9 +124,8 @@ export const generateSubdomainPDF = async (results = [], stats = {}, targetDomai
         ["Assessment Performed by", employeeMail],
         ["Employee Name",           employeeName],
         ["Employee Mail ID",        employeeMail],
-        ["Scanned Domain",          targetDomain],
-        ["Assessment Date",         scanDate],
-        ["Assessment Time",         scanTime],
+        ["Target Domain",           targetDomain],
+        ["Assessment Timestamp",    `${scanDate} ${scanTime}`],
         ["Classification",          "Confidential"],
         ["Assessment Status",       "Completed"],
       ],
@@ -135,9 +135,13 @@ export const generateSubdomainPDF = async (results = [], stats = {}, targetDomai
       },
     });
 
+    // Page 1 Section Tag
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(10);
+    doc.setTextColor(...C.bluePrimary);
+    doc.text("1. ASSESSMENT INFORMATION", 14, 250);
+
     // Cover footer
-    doc.setDrawColor(...C.lineColor);
-    doc.setLineWidth(0.25);
     doc.line(14, 260, 196, 260);
     doc.setFont("helvetica", "normal");
     doc.setFontSize(7.5);
@@ -145,23 +149,28 @@ export const generateSubdomainPDF = async (results = [], stats = {}, targetDomai
     doc.text("www.nexcorealliance.com | ISO/IEC 27001 Certified | AICPA SOC Compliant", 105, 267, { align: "center" });
 
     // ════════════════════════════════════════════════════════════════════════
-    // PAGE 2 — ASSESSMENT INFORMATION & RESULTS
+    // PAGE 2 — ASSESSMENT INFORMATION & TOOL OVERVIEW
     // ════════════════════════════════════════════════════════════════════════
-    setPdfProgress?.("Building assessment information...");
     doc.addPage();
 
-    let y = drawSectionHeader(doc, "1. ASSESSMENT INFORMATION", 25);
+    let y = 25;
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(11);
+    doc.setTextColor(...C.bluePrimary);
+    doc.text("Tool Details", 14, y);
+    y += 5;
 
     renderTable(doc, {
       startY: y,
       head: [],
       body: [
         ["Tool Name",             "Subdomain Scanner"],
-        ["Tool Category",         "Subdomain Enumeration / DNS Reconnaissance"],
-        ["Methodology Alignment", "OWASP WSTG – OTG-INFO / Passive & Active Reconnaissance"],
-        ["Compliance Alignment",  "ISO/IEC 27001 │ AICPA SOC Frameworks"],
-        ["Scanned Domain",        targetDomain],
-        ["Assessment Mode",       "Non-Intrusive / Automated DNS Enumeration"],
+        ["Tool Category",         "Reconnaissance & Surface Mapping Engine"],
+        ["Methodology Alignment", "OWASP WSTG – OTG-INFO-007 (Subdomain Enumeration)"],
+        ["Compliance Alignment",  "ISO/IEC 27001 | AICPA SOC Frameworks | OWASP Top 10"],
+        ["Target Domain",         targetDomain],
+        ["Subdomains Discovered", String(totalSubdomains)],
+        ["Assessment Mode",       "Passive DNS & Certificate Transparency Log Search"],
       ],
       columnStyles: {
         0: { fontStyle: "bold", cellWidth: 55, fillColor: [245, 245, 245] },
@@ -180,7 +189,7 @@ export const generateSubdomainPDF = async (results = [], stats = {}, targetDomai
     doc.setFontSize(9);
     doc.setTextColor(...C.textMain);
     const overviewText =
-      "The Subdomain Scanner tool performs DNS-based enumeration against a target domain to discover associated subdomains. The tool validates DNS resolution for each discovered entry, identifies record types, maps IP addresses, detects wildcard DNS configurations, confirms live host availability, removes duplicate entries, and tracks discovery sources. Results support attack surface mapping, shadow IT identification, and exposure assessment of internet-facing assets.";
+      "The Subdomain Scanner performs non-intrusive reconnaissance to discover publicly indexed subdomains belonging to a target domain. It queries public DNS records, Certificate Transparency (CT) logs, and search engine indices to build a comprehensive map of the organization's external attack surface. Identifying exposed subdomains is a critical first step in security assessments, as forgotten or unmanaged subdomains (shadow IT) frequently host outdated software, legacy endpoints, or misconfigured cloud services vulnerable to exploitation such as subdomain takeover or unauthorized access.";
     doc.text(overviewText, 14, y + 6, { maxWidth: 182, align: "justify", lineHeightFactor: 1.4 });
 
     y += doc.getTextDimensions(overviewText, { maxWidth: 182 }).h + 12;
@@ -308,11 +317,10 @@ export const generateSubdomainPDF = async (results = [], stats = {}, targetDomai
     // Apply header / footer decorator
     applyHeaderFooterDecorator(doc, "Subdomain Scanner");
 
-    setPdfProgress?.("Saving PDF...");
-    const pad = (n) => String(n).padStart(2, "0");
-    const dStr = `${now.getFullYear()}-${pad(now.getMonth() + 1)}-${pad(now.getDate())}_${pad(now.getHours())}${pad(now.getMinutes())}${pad(now.getSeconds())}`;
-    
-    doc.save(`Subdomain_Scanner_Report_${dStr}.pdf`);
+    if (!existingDoc) {
+      doc.save(`Subdomain_Scanner_Report_${dStr}.pdf`);
+    }
+    return doc;
 
   } catch (err) {
     console.error("Failed to generate Subdomain PDF:", err);

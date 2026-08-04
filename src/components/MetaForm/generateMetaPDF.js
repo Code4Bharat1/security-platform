@@ -13,7 +13,7 @@ const trim = (str, len) => {
   return str.length > len ? str.substring(0, len) + "..." : str;
 };
 
-export const generateMetaPDF = async (report = {}, url = "") => {
+export const generateMetaPDF = async (report = {}, url = "", existingDoc = null) => {
   if (!report) return;
 
   const { employeeName, employeeMail } = getAuditorInfo();
@@ -28,7 +28,7 @@ export const generateMetaPDF = async (report = {}, url = "") => {
   const corsVerdict = report.cors?.verdict || "Reasonable";
 
   try {
-    const doc = new jsPDF("p", "mm", "a4");
+    const doc = existingDoc ? (existingDoc.addPage(), existingDoc) : new jsPDF("p", "mm", "a4");
 
     // Dates
     const now = new Date();
@@ -397,13 +397,12 @@ export const generateMetaPDF = async (report = {}, url = "") => {
     doc.setTextColor(...C.textMain);
     doc.text(ackText, 14, y, { maxWidth: 182, align: "justify", lineHeightFactor: 1.4 });
 
-    // Apply header / footer decorator
-    applyHeaderFooterDecorator(doc, "Meta Tag Analyzer");
-
-    const pad = (n) => String(n).padStart(2, "0");
-    const dStr = `${now.getFullYear()}-${pad(now.getMonth() + 1)}-${pad(now.getDate())}_${pad(now.getHours())}${pad(now.getMinutes())}${pad(now.getSeconds())}`;
-    
-    doc.save(`Meta_Tag_Analyzer_Report_${dStr}.pdf`);
+    if (!existingDoc) {
+      const pad = (n) => String(n).padStart(2, "0");
+      const dStr = `${now.getFullYear()}-${pad(now.getMonth() + 1)}-${pad(now.getDate())}_${pad(now.getHours())}${pad(now.getMinutes())}${pad(now.getSeconds())}`;
+      doc.save(`Meta_Tag_Analyzer_Report_${dStr}.pdf`);
+    }
+    return doc;
 
   } catch (err) {
     console.error("Failed to generate Meta PDF:", err);

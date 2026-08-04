@@ -171,14 +171,14 @@ const getFindingDetails = (section, key, value) => {
   return { severity, status, impact, recommendation };
 };
 
-export const generateWebsiteReconPDF = async (scanResult, setPdfProgress) => {
+export const generateWebsiteReconPDF = async (scanResult, setPdfProgress, existingDoc = null) => {
   if (!scanResult) return;
   if (setPdfProgress) setPdfProgress("Initializing Website Recon PDF document...");
 
   const { employeeName, employeeMail } = getAuditorInfo();
 
   try {
-    const doc = new jsPDF("p", "mm", "a4");
+    const doc = existingDoc ? (existingDoc.addPage(), existingDoc) : new jsPDF("p", "mm", "a4");
     const domain = safe(scanResult.urlUsed || scanResult.domain || "Unknown Domain").replace(/^https?:\/\//, "").split("/")[0];
     
     // Dates
@@ -292,7 +292,7 @@ export const generateWebsiteReconPDF = async (scanResult, setPdfProgress) => {
     doc.setTextColor(...C.bluePrimary);
     doc.text("NEXCORE ALLIANCE", 105, 30, { align: "center" });
 
-    doc.setFont("helvetica", "oblique");
+    doc.setFont("helvetica", "italic");
     doc.setFontSize(10);
     doc.text("AI-Powered Cybersecurity & Information Security Solutions", 105, 36, { align: "center" });
 
@@ -547,8 +547,11 @@ export const generateWebsiteReconPDF = async (scanResult, setPdfProgress) => {
     // Apply header & footer decorator to all pages
     applyHeaderFooterDecorator(doc, "Website Recon");
 
-    if (setPdfProgress) setPdfProgress("Saving PDF...");
-    doc.save(`${domain}-Website-Recon-Report-${Date.now()}.pdf`);
+    if (!existingDoc) {
+      if (setPdfProgress) setPdfProgress("Saving PDF...");
+      doc.save(`${domain}-Website-Recon-Report-${Date.now()}.pdf`);
+    }
+    return doc;
   } catch (err) {
     console.error("Failed to generate Website Recon PDF report:", err);
   } finally {
