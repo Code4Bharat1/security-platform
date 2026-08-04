@@ -178,7 +178,8 @@ export const generateWebsiteReconPDF = async (scanResult, setPdfProgress, existi
   const { employeeName, employeeMail } = getAuditorInfo();
 
   try {
-    const doc = existingDoc ? (existingDoc.addPage(), existingDoc) : new jsPDF("p", "mm", "a4");
+    const isJsPDF = existingDoc && typeof existingDoc.addPage === "function";
+    const doc = isJsPDF ? (existingDoc.addPage(), existingDoc) : new jsPDF("p", "mm", "a4");
     const domain = safe(scanResult.urlUsed || scanResult.domain || "Unknown Domain").replace(/^https?:\/\//, "").split("/")[0];
     
     // Dates

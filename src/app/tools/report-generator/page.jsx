@@ -41,6 +41,25 @@ import { generateWhoisPDF } from "@/components/whoisLookup/generateWhoisPDF";
 import { generateMetaPDF } from "@/components/MetaForm/generateMetaPDF";
 import { generateFingerprintPDF } from "@/components/fingerPrint/generateFingerprintPDF";
 import { generateWebsiteReconPDF } from "@/components/webrecon/generateWebsiteReconPDF";
+import { generateBruteForcePDF } from "@/components/bruteForce/generateBruteForcePDF";
+import { generateWordPressPDF } from "@/components/wordpressForm/generateWordPressPDF";
+import { generateClickjackingPDF } from "@/components/clickjackingTester/generateClickjackingPDF";
+import { generateVulnScannerPDF } from "@/components/vuln-scanner/generateVulnScannerPDF";
+import { generateXssTesterPDF } from "@/components/xssTester/generateXssTesterPDF";
+import { generateOpenRedirectPDF } from "@/components/openRedirectTester/generateOpenRedirectPDF";
+import { generateSQLiPDF } from "@/components/nexpose/generateSQLiPDF";
+import { generateHttpsPDF } from "@/components/httpsCheckerForm/generateHttpsPDF";
+import { generateWafPDF } from "@/components/waf_form/generateWafPDF";
+import { generateMdrPDF } from "@/components/mdr/generateMdrPDF";
+import { generateKeywordPDF } from "@/components/KeywordForm/generateKeywordPDF";
+import { generateSitemapPDF } from "@/components/sitemapForm/generateSitemapPDF";
+import { generateLinkDetectorPDF } from "@/components/linkdetector/generateLinkDetectorPDF";
+import { generateIpPDF } from "@/components/ip/generateIpPDF";
+import { generateSeoScoreAnalyzerPDF } from "@/components/seoanalyzer/generateSeoScoreAnalyzerPDF";
+import { generateWebsiteOptimizationPDF } from "@/components/websiteoptimization/generateWebsiteOptimizationPDF";
+import { generateAdvancedDynamicScanPDF } from "@/components/advancedDynamicScan/generateAdvancedDynamicScanPDF";
+import { generateBasicNetworkScanPDF } from "@/components/basicNetworkScan/generateBasicNetworkScanPDF";
+import { generateWebAppTestPDF } from "@/components/webAppAudit/generateWebAppTestPDF";
 
 // ── Excluded Tools Registry (Tools requiring files, code snippets, tokens or local parameters) ──
 const EXCLUDED_TOOL_NAMES_AND_ROUTES = new Set([
@@ -318,6 +337,146 @@ function ReportGeneratorContent() {
     setConsoleLogs((prev) => [...prev, msg]);
   };
 
+  // ── Helper to upload PDF to Backend History ────────────────────────────────
+  const uploadPdfToHistory = async (toolName, fileName, arrayBuffer, targetDomain, details = {}, authToken = null) => {
+    try {
+      const activeToken = authToken || (typeof window !== "undefined" ? localStorage.getItem("token") : null);
+      if (!activeToken) {
+        console.warn(`[History Upload] Skipped: No auth token available for ${fileName}`);
+        return;
+      }
+
+      const bytes = new Uint8Array(arrayBuffer);
+      let binary = "";
+      const len = bytes.byteLength;
+      for (let i = 0; i < len; i++) {
+        binary += String.fromCharCode(bytes[i]);
+      }
+      const base64 = btoa(binary);
+
+      const res = await fetch(`${API_BASE}/history/upload`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${activeToken}`
+        },
+        body: JSON.stringify({
+          toolName,
+          target: targetDomain,
+          fileName,
+          fileBufferBase64: base64,
+          details
+        })
+      });
+
+      if (res.ok) {
+        const resJson = await res.json();
+        console.log(`[History Upload] Saved ${fileName} to history (ID: ${resJson.historyId})`);
+      } else {
+        const errText = await res.text();
+        console.error(`[History Upload] HTTP ${res.status} error for ${fileName}:`, errText);
+      }
+    } catch (err) {
+      console.error(`Failed to upload ${fileName} to history:`, err);
+    }
+  };
+
+  // ── Helper to run individual tool PDF generator and capture buffer ─────────
+  const generateToolPdfBuffer = async (tool, resData, cleanHost) => {
+    let capturedBuffer = null;
+
+    // Save original jsPDF save functions
+    const _apiSave = jsPDF.API?.save;
+    const _protoSave = jsPDF.prototype?.save;
+
+    const interceptSave = function (filename) {
+      try {
+        capturedBuffer = this.output("arraybuffer");
+      } catch (err) {
+        console.error("Capture save error:", err);
+      }
+      return this; // Intercept & return doc instance; DO NOT trigger browser download!
+    };
+
+    if (jsPDF.API) jsPDF.API.save = interceptSave;
+    if (jsPDF.prototype) jsPDF.prototype.save = interceptSave;
+
+    const dummyProgress = () => {};
+
+    try {
+      let ret = null;
+      const name = tool.name;
+      const route = tool.route;
+
+      if (route === "/api/subdomainEnumeration" || name === "Subdomain Scanner") {
+        const subs = Array.isArray(resData) ? resData : (resData?.subdomains || []);
+        ret = await generateSubdomainPDF(subs, resData?.stats || {}, cleanHost, dummyProgress, null);
+      } else if (route === "/api/whoisLookup" || name === "Whois Domain Lookup") {
+        ret = await generateWhoisPDF(resData, cleanHost, null);
+      } else if (route === "/api/meta-tag" || name === "Meta Tag Analyzer") {
+        ret = await generateMetaPDF(resData, cleanHost, null);
+      } else if (route === "/api/fingerPrint" || name === "Technology Fingerprinter") {
+        const techs = Array.isArray(resData) ? resData : (resData?.results || resData?.technologies || []);
+        ret = await generateFingerprintPDF(techs, resData?.meta || {}, cleanHost, dummyProgress, null);
+      } else if (route === "/api/webrecon" || name === "Website Recon") {
+        ret = await generateWebsiteReconPDF(resData, dummyProgress, null);
+      } else if (route === "/api/bruteForce" || name === "Brute Force Scanner") {
+        const items = Array.isArray(resData) ? resData : (resData?.results || []);
+        ret = await generateBruteForcePDF(items, resData?.meta || null, cleanHost);
+      } else if (route === "/api/wordpressForm" || name === "WordPress Scanner") {
+        ret = await generateWordPressPDF(resData, cleanHost);
+      } else if (route === "/api/clickjackingTester" || name === "Clickjacking Tester") {
+        ret = await generateClickjackingPDF(resData, dummyProgress);
+      } else if (route === "/api/vuln-scanner" || name === "Vulnerability Scanner") {
+        ret = await generateVulnScannerPDF(resData, dummyProgress, null);
+      } else if (route === "/api/xssTester" || name === "XSS Tester") {
+        ret = await generateXssTesterPDF(resData, cleanHost);
+      } else if (route === "/api/openRedirectTester" || name === "Open Redirect Tester") {
+        ret = await generateOpenRedirectPDF(resData, dummyProgress);
+      } else if (route === "/api/nexpose-scan" || name === "SQLi Scanner") {
+        ret = await generateSQLiPDF(resData);
+      } else if (route === "/api/httpsCheckerForm" || name === "HTTPS Security Checker") {
+        ret = await generateHttpsPDF(resData, dummyProgress);
+      } else if (route === "/api/firewallDashboard" || name === "WAF Scanner") {
+        ret = await generateWafPDF(resData, dummyProgress);
+      } else if (route === "/api/mdr-monitor" || name === "MDR Monitor") {
+        ret = await generateMdrPDF(resData, cleanHost, dummyProgress);
+      } else if (route === "/api/keyword-checker" || name === "Keyword Density Checker") {
+        ret = await generateKeywordPDF(resData, cleanHost);
+      } else if (route === "/api/KeywordGenerator" || name === "Keyword Generator") {
+        ret = await generateKeywordPDF(resData, cleanHost);
+      } else if (route === "/api/sitemapForm" || name === "Sitemap Generator") {
+        ret = await generateSitemapPDF(resData, cleanHost, 3);
+      } else if (route === "/api/check-link" || name === "Link Detector") {
+        ret = await generateLinkDetectorPDF(resData, dummyProgress);
+      } else if (route === "/api/ip-address-info-finder" || name === "IP Address Info Finder") {
+        ret = await generateIpPDF(resData);
+      } else if (route === "/api/seo-score-analyzer-tool" || name === "SEO Score Analyzer Tool") {
+        ret = await generateSeoScoreAnalyzerPDF(resData, dummyProgress);
+      } else if (route === "/api/website-optimization-tool" || name === "Website Optimization Tool") {
+        ret = await generateWebsiteOptimizationPDF(resData, dummyProgress);
+      } else if (route === "/api/advanced-dynamic-scan" || name === "Advanced Dynamic Scan") {
+        const dynamicResults = Array.isArray(resData?.results) ? resData.results : (Array.isArray(resData?.data) ? resData.data : (Array.isArray(resData) ? resData : []));
+        ret = await generateAdvancedDynamicScanPDF(dynamicResults, cleanHost, resData?.riskScore || 0, resData?.urlsCrawled || [], resData?.summary || "");
+      } else if (route === "/api/basic-network-scan" || name === "Basic Network Scanning") {
+        ret = await generateBasicNetworkScanPDF(resData, cleanHost);
+      } else if (route === "/api/web-app-audit" || name === "Web Application Test") {
+        ret = await generateWebAppTestPDF(resData);
+      }
+
+      if (!capturedBuffer && ret && typeof ret.output === "function") {
+        capturedBuffer = ret.output("arraybuffer");
+      }
+    } catch (err) {
+      console.error(`Error building PDF buffer for ${tool.name}:`, err);
+    } finally {
+      if (jsPDF.API && _apiSave) jsPDF.API.save = _apiSave;
+      if (jsPDF.prototype && _protoSave) jsPDF.prototype.save = _protoSave;
+    }
+
+    return capturedBuffer;
+  };
+
   // ── Sequential Multi-Tool Execution Runner ────────────────────────────────
   const handleStartScan = async (e) => {
     e.preventDefault();
@@ -373,7 +532,8 @@ function ReportGeneratorContent() {
             method: config.method || "POST",
             headers: {
               "Content-Type": "application/json",
-              Authorization: `Bearer ${token}`
+              Authorization: `Bearer ${token}`,
+              "X-Skip-History-Middleware": "true"
             }
           };
 
@@ -389,13 +549,26 @@ function ReportGeneratorContent() {
           }
 
           const resData = await res.json();
-          appendLog(`[SUCCESS] ${tool.name} finished successfully.`);
+          appendLog(`[SUCCESS] ${tool.name} finished scan.`);
+
+          // Generate styled tool PDF report buffer and save to history BEFORE marking tool as completed
+          appendLog(`[PDF] Generating styled PDF report for ${tool.name}...`);
+          const toolPdfBuf = await generateToolPdfBuffer(tool, resData, cleanHost);
+
+          if (toolPdfBuf) {
+            const safeName = `${tool.name.replace(/[^a-zA-Z0-9_-]/g, "_")}_Report.pdf`;
+            await uploadPdfToHistory(tool.name, safeName, toolPdfBuf, cleanHost, { status: "completed" }, token);
+            appendLog(`[HISTORY] Styled PDF report for ${tool.name} saved to history.`);
+          } else {
+            appendLog(`[HISTORY] Notice: PDF generator returned no buffer for ${tool.name}.`);
+          }
 
           const resultItem = {
             name: tool.name,
             route: tool.route,
             status: "completed",
             data: resData,
+            pdfBuffer: toolPdfBuf,
             timestamp: new Date().toLocaleTimeString()
           };
 
@@ -421,18 +594,136 @@ function ReportGeneratorContent() {
         // Brief delay between sequential scans
         await new Promise(r => setTimeout(r, 600));
       }
+
+      const passed = accumulatedResults.filter(r => r.status === "completed").length;
+      const failed = accumulatedResults.filter(r => r.status === "failed").length;
+
+      appendLog(`[INFO] Consolidated Multi-Tool Pipeline Completed.`);
+      appendLog(`[SUMMARY] ${passed} tool(s) completed successfully, ${failed} failed.`);
+
+      // ── Build Consolidated Integrated PDF ───────────────────────────────────
+      appendLog(`[PDF] Compiling Consolidated Integrated Security Report PDF...`);
+      try {
+        const { PDFDocument } = await import("pdf-lib");
+        const summaryDoc = new jsPDF("p", "mm", "a4");
+
+        // Cover Page
+        summaryDoc.setFillColor(...C.bluePrimary);
+        summaryDoc.rect(0, 0, 210, 3.5, "F");
+
+        summaryDoc.setFont("helvetica", "bold");
+        summaryDoc.setFontSize(22);
+        summaryDoc.setTextColor(...C.bluePrimary);
+        summaryDoc.text("NEXCORE ALLIANCE", 105, 28, { align: "center" });
+
+        summaryDoc.setFont("helvetica", "italic");
+        summaryDoc.setFontSize(10);
+        summaryDoc.text("AI-Powered Cybersecurity & Information Security Solutions", 105, 34, { align: "center" });
+
+        summaryDoc.setDrawColor(...C.bluePrimary);
+        summaryDoc.setLineWidth(0.4);
+        summaryDoc.line(14, 38, 196, 38);
+
+        summaryDoc.setFont("helvetica", "bold");
+        summaryDoc.setFontSize(15);
+        summaryDoc.setTextColor(...C.bluePrimary);
+        summaryDoc.text("CONSOLIDATED INTEGRATED SECURITY REPORT", 105, 50, { align: "center" });
+
+        summaryDoc.line(14, 55, 196, 55);
+
+        const { employeeName, employeeMail } = getAuditorInfo();
+        const now = new Date();
+        const scanDate = now.toLocaleDateString("en-GB", { day: "2-digit", month: "short", year: "numeric" }).toUpperCase();
+        const scanTime = now.toLocaleTimeString("en-GB", { hour: "2-digit", minute: "2-digit", second: "2-digit" });
+
+        renderTable(summaryDoc, {
+          startY: 62,
+          head: [],
+          body: [
+            ["Assessment Performed by", employeeMail],
+            ["Auditor Name",            employeeName],
+            ["Auditor Mail ID",         employeeMail],
+            ["Target Domain / Host",    cleanHost],
+            ["Target URL",              targetUrl],
+            ["Assessment Date",         scanDate],
+            ["Assessment Time",         scanTime],
+            ["Total Tools Assessed",    `${accumulatedResults.length} Tools`],
+            ["Successful Assessments",  `${passed} Passed`],
+            ["Failed Assessments",      `${failed} Failed`],
+            ["Report Classification",   "Confidential"],
+            ["Pipeline Status",         "Completed"]
+          ],
+          columnStyles: {
+            0: { fontStyle: "bold", cellWidth: 55, fillColor: [245, 245, 245] },
+            1: { cellWidth: 127 }
+          }
+        });
+
+        applyHeaderFooterDecorator(summaryDoc, "Consolidated Integrated Security Report");
+
+        // Index / Table of Contents Page
+        summaryDoc.addPage();
+        let indexY = drawSectionHeader(summaryDoc, "REPORT INDEX & TOOL DIRECTORY", 20);
+
+        const indexHeaders = [["Index", "Tool Name", "Category / Focus Area", "Audit Result"]];
+        const indexData = accumulatedResults.map((r, idx) => [
+          `Section ${idx + 1}`,
+          r.name,
+          r.route || "Security Audit",
+          r.status === "completed" ? "PASSED (Integrated)" : "FAILED (Skipped)"
+        ]);
+
+        renderTable(summaryDoc, {
+          head: indexHeaders,
+          body: indexData,
+          startY: indexY,
+          columnStyles: {
+            0: { cellWidth: 25, fontStyle: "bold" },
+            1: { cellWidth: 55, fontStyle: "bold" },
+            2: { cellWidth: 65 },
+            3: { cellWidth: 37 }
+          }
+        });
+
+        const integratedBuffers = [summaryDoc.output("arraybuffer")];
+        for (const res of accumulatedResults) {
+          if (res.status === "completed" && res.pdfBuffer) {
+            integratedBuffers.push(res.pdfBuffer);
+          }
+        }
+
+        const mergedPdf = await PDFDocument.create();
+        for (const buf of integratedBuffers) {
+          try {
+            const donorPdf = await PDFDocument.load(buf);
+            const copiedPages = await mergedPdf.copyPages(donorPdf, donorPdf.getPageIndices());
+            copiedPages.forEach(p => mergedPdf.addPage(p));
+          } catch (mergeErr) {
+            console.error("Error merging PDF donor buffer:", mergeErr);
+          }
+        }
+
+        const mergedBytes = await mergedPdf.save();
+        await uploadPdfToHistory(
+          "Integrated Security Report",
+          `Integrated_Security_Report_${cleanHost}.pdf`,
+          mergedBytes.buffer,
+          cleanHost,
+          { status: "completed", totalTools: accumulatedResults.length, passed, failed },
+          token
+        );
+        appendLog(`[HISTORY] Consolidated Integrated Security Report saved to history.`);
+
+      } catch (integratedErr) {
+        console.error("Failed compiling Integrated PDF:", integratedErr);
+      }
+
+      appendLog(`[SUCCESS] Integrated Report ready. You may now download the stacked PDF report.`);
+
+      setScanResults(accumulatedResults);
+      setScanning(false);
+      setReportReady(true);
     });
-
-    const passed = accumulatedResults.filter(r => r.status === "completed").length;
-    const failed = accumulatedResults.filter(r => r.status === "failed").length;
-
-    appendLog(`[INFO] Consolidated Multi-Tool Pipeline Completed.`);
-    appendLog(`[SUMMARY] ${passed} tool(s) completed successfully, ${failed} failed.`);
-    appendLog(`[SUCCESS] Integrated Report ready. You may now download the stacked PDF report.`);
-
-    setScanResults(accumulatedResults);
-    setScanning(false);
-    setReportReady(true);
   };
 
   // ── Render Formatted PDF Page Fallback ────────────────────────────────────
@@ -537,114 +828,139 @@ function ReportGeneratorContent() {
   // ── Stacked Integrated PDF Generator ──────────────────────────────────────
   const handleDownloadPDF = async () => {
     if (!hasAccess || scanResults.length === 0) return;
-    
-    const doc = new jsPDF("p", "mm", "a4");
-    const passedCount = scanResults.filter(r => r.status === "completed").length;
-    const failedCount = scanResults.filter(r => r.status === "failed").length;
-    const { employeeName, employeeMail } = getAuditorInfo();
 
-    // ── Page 1: Cover Page & Master Executive Summary ─────────────────────────
-    doc.setFillColor(...C.bluePrimary);
-    doc.rect(0, 0, 210, 3.5, "F");
+    try {
+      const { PDFDocument } = await import("pdf-lib");
+      const summaryDoc = new jsPDF("p", "mm", "a4");
+      const passedCount = scanResults.filter(r => r.status === "completed").length;
+      const failedCount = scanResults.filter(r => r.status === "failed").length;
+      const { employeeName, employeeMail } = getAuditorInfo();
+      const cleanHost = domain.replace(/^https?:\/\//i, "").replace(/\/.*$/, "");
 
-    doc.setFont("helvetica", "bold");
-    doc.setFontSize(22);
-    doc.setTextColor(...C.bluePrimary);
-    doc.text("NEXCORE ALLIANCE", 105, 28, { align: "center" });
+      // ── Cover Page & Executive Summary ──────────────────────────────────────
+      summaryDoc.setFillColor(...C.bluePrimary);
+      summaryDoc.rect(0, 0, 210, 3.5, "F");
 
-    doc.setFont("helvetica", "italic");
-    doc.setFontSize(10);
-    doc.text("AI-Powered Cybersecurity & Information Security Solutions", 105, 34, { align: "center" });
+      summaryDoc.setFont("helvetica", "bold");
+      summaryDoc.setFontSize(22);
+      summaryDoc.setTextColor(...C.bluePrimary);
+      summaryDoc.text("NEXCORE ALLIANCE", 105, 28, { align: "center" });
 
-    doc.setDrawColor(...C.bluePrimary);
-    doc.setLineWidth(0.4);
-    doc.line(14, 38, 196, 38);
+      summaryDoc.setFont("helvetica", "italic");
+      summaryDoc.setFontSize(10);
+      summaryDoc.text("AI-Powered Cybersecurity & Information Security Solutions", 105, 34, { align: "center" });
 
-    doc.setFont("helvetica", "bold");
-    doc.setFontSize(14);
-    doc.setTextColor(...C.bluePrimary);
-    doc.text(`CONSOLIDATED ${userPlan.toUpperCase()} TIER MULTI-TOOL AUDIT REPORT`, 105, 50, { align: "center" });
-    doc.line(14, 56, 196, 56);
+      summaryDoc.setDrawColor(...C.bluePrimary);
+      summaryDoc.setLineWidth(0.4);
+      summaryDoc.line(14, 38, 196, 38);
 
-    renderTable(doc, {
-      startY: 62,
-      head: [],
-      body: [
-        ["Assessment Performed by", employeeMail],
-        ["Employee Name",           employeeName],
-        ["Target Domain / Host",    domain],
-        ["Subscription Tier",       userPlan],
-        ["Assessment Date",         new Date().toLocaleDateString("en-GB")],
-        ["Total Tools Executed",    `${scanResults.length} (${passedCount} Passed, ${failedCount} Failed)`],
-        ["Classification",          "Confidential"],
-        ["Assessment Status",       "Completed"]
-      ],
-      columnStyles: {
-        0: { fontStyle: "bold", cellWidth: 55, fillColor: [245, 245, 245] },
-        1: { cellWidth: 127 }
-      }
-    });
+      summaryDoc.setFont("helvetica", "bold");
+      summaryDoc.setFontSize(14);
+      summaryDoc.setTextColor(...C.bluePrimary);
+      summaryDoc.text(`CONSOLIDATED ${userPlan.toUpperCase()} TIER MULTI-TOOL AUDIT REPORT`, 105, 50, { align: "center" });
+      summaryDoc.line(14, 56, 196, 56);
 
-    let y = drawSectionHeader(doc, "Master Executive Audit Summary Table", doc.lastAutoTable.finalY + 10);
-
-    const summaryHeaders = [["#", "Tool Name", "Status", "Timestamp", "Audit Summary Finding"]];
-    const summaryData = scanResults.map((r, idx) => [
-      String(idx + 1),
-      r.name,
-      r.status.toUpperCase(),
-      r.timestamp,
-      r.status === "completed" 
-        ? "Scan completed cleanly. Full tool PDF report integrated below." 
-        : `Execution error: ${r.error}`
-    ]);
-
-    renderTable(doc, {
-      head: summaryHeaders,
-      body: summaryData,
-      startY: y,
-      columnStyles: {
-        0: { cellWidth: 10 },
-        1: { cellWidth: 45, fontStyle: "bold" },
-        2: { cellWidth: 25 },
-        3: { cellWidth: 30 },
-        4: { cellWidth: 72 }
-      }
-    });
-
-    // ── Stacked Pages: Integrated Tool PDF Generators ────────────────────────
-    for (let index = 0; index < scanResults.length; index++) {
-      const res = scanResults[index];
-      
-      if (res.status === "completed" && res.data) {
-        try {
-          if (res.route === "/api/subdomainEnumeration" || res.name === "Subdomain Scanner") {
-            const subs = Array.isArray(res.data) ? res.data : (res.data?.subdomains || []);
-            await generateSubdomainPDF(subs, res.data?.stats || {}, domain, null, doc);
-          } else if (res.route === "/api/whoisLookup" || res.name === "Whois Domain Lookup") {
-            await generateWhoisPDF(res.data, domain, doc);
-          } else if (res.route === "/api/meta-tag" || res.name === "Meta Tag Analyzer") {
-            await generateMetaPDF(res.data, domain, doc);
-          } else if (res.route === "/api/fingerPrint" || res.name === "Technology Fingerprinter") {
-            const techs = Array.isArray(res.data) ? res.data : (res.data?.results || res.data?.technologies || []);
-            await generateFingerprintPDF(techs, res.data?.meta || {}, domain, null, doc);
-          } else if (res.route === "/api/webrecon" || res.name === "Website Recon") {
-            await generateWebsiteReconPDF(res.data, null, doc);
-          } else {
-            renderToolFormattedPDFPage(doc, res, index, scanResults.length, domain);
-          }
-        } catch (err) {
-          console.error(`Error generating PDF for ${res.name}:`, err);
-          renderToolFormattedPDFPage(doc, res, index, scanResults.length, domain);
+      renderTable(summaryDoc, {
+        startY: 62,
+        head: [],
+        body: [
+          ["Assessment Performed by", employeeMail],
+          ["Employee Name",           employeeName],
+          ["Target Domain / Host",    cleanHost || domain],
+          ["Subscription Tier",       userPlan],
+          ["Assessment Date",         new Date().toLocaleDateString("en-GB")],
+          ["Total Tools Executed",    `${scanResults.length} (${passedCount} Passed, ${failedCount} Failed)`],
+          ["Classification",          "Confidential"],
+          ["Assessment Status",       "Completed"]
+        ],
+        columnStyles: {
+          0: { fontStyle: "bold", cellWidth: 55, fillColor: [245, 245, 245] },
+          1: { cellWidth: 127 }
         }
-      } else {
-        renderToolFormattedPDFPage(doc, res, index, scanResults.length, domain);
+      });
+
+      let y = drawSectionHeader(summaryDoc, "Master Executive Audit Summary Table", summaryDoc.lastAutoTable.finalY + 10);
+
+      const summaryHeaders = [["#", "Tool Name", "Status", "Timestamp", "Audit Summary Finding"]];
+      const summaryData = scanResults.map((r, idx) => [
+        String(idx + 1),
+        r.name,
+        r.status.toUpperCase(),
+        r.timestamp,
+        r.status === "completed" 
+          ? "Scan completed cleanly. PDF report saved to history and integrated below." 
+          : `Execution error: ${r.error}`
+      ]);
+
+      renderTable(summaryDoc, {
+        head: summaryHeaders,
+        body: summaryData,
+        startY: y,
+        columnStyles: {
+          0: { cellWidth: 10 },
+          1: { cellWidth: 45, fontStyle: "bold" },
+          2: { cellWidth: 25 },
+          3: { cellWidth: 30 },
+          4: { cellWidth: 72 }
+        }
+      });
+
+      // Add Table of Contents / Index page
+      summaryDoc.addPage();
+      let indexY = drawSectionHeader(summaryDoc, "REPORT INDEX & TOOL DIRECTORY", 20);
+
+      const indexHeaders = [["Index", "Tool Name", "Category / Focus Area", "Audit Result"]];
+      const indexData = scanResults.map((r, idx) => [
+        `Section ${idx + 1}`,
+        r.name,
+        r.route || "Security Audit",
+        r.status === "completed" ? "PASSED (Integrated)" : "FAILED (Skipped)"
+      ]);
+
+      renderTable(summaryDoc, {
+        head: indexHeaders,
+        body: indexData,
+        startY: indexY,
+        columnStyles: {
+          0: { cellWidth: 25, fontStyle: "bold" },
+          1: { cellWidth: 55, fontStyle: "bold" },
+          2: { cellWidth: 65 },
+          3: { cellWidth: 37 }
+        }
+      });
+
+      const integratedBuffers = [summaryDoc.output("arraybuffer")];
+      for (const res of scanResults) {
+        if (res.status === "completed" && res.pdfBuffer) {
+          integratedBuffers.push(res.pdfBuffer);
+        }
       }
+
+      const mergedPdf = await PDFDocument.create();
+      for (const buf of integratedBuffers) {
+        try {
+          const donorPdf = await PDFDocument.load(buf);
+          const copiedPages = await mergedPdf.copyPages(donorPdf, donorPdf.getPageIndices());
+          copiedPages.forEach(p => mergedPdf.addPage(p));
+        } catch (mergeErr) {
+          console.error("Error merging PDF donor buffer:", mergeErr);
+        }
+      }
+
+      const mergedBytes = await mergedPdf.save();
+      const blob = new Blob([mergedBytes], { type: "application/pdf" });
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement("a");
+      link.href = url;
+      link.download = `Nexcore_${userPlan}_Integrated_Security_Report_${Date.now()}.pdf`;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      URL.revokeObjectURL(url);
+
+    } catch (err) {
+      console.error("Failed to download integrated PDF:", err);
     }
-
-    // Apply master header / footer decorator
-    applyHeaderFooterDecorator(doc, `${userPlan} Integrated Security Audit`);
-
-    doc.save(`Nexcore_${userPlan}_Integrated_Security_Report_${Date.now()}.pdf`);
   };
 
   // ── Paywall Block Screen ──────────────────────────────────────────────────

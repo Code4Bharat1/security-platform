@@ -76,7 +76,7 @@ export const generateWebsiteOptimizationPDF = async (result, setPdfProgress) => 
     doc.setTextColor(...C.bluePrimary);
     doc.text("NEXCORE ALLIANCE", 105, 28, { align: "center" });
 
-    doc.setFont("helvetica", "oblique");
+    doc.setFont("helvetica", "italic");
     doc.setFontSize(9);
     doc.text("AI-Powered Cybersecurity & Information Security Solutions", 105, 34, { align: "center" });
 

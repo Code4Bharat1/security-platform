@@ -128,7 +128,7 @@ export const generateOpenRedirectPDF = async (report = {}, setPdfProgress) => {
     doc.setTextColor(...C.bluePrimary);
     doc.text("NEXCORE ALLIANCE", 105, 30, { align: "center" });
 
-    doc.setFont("helvetica", "oblique");
+    doc.setFont("helvetica", "italic");
     doc.setFontSize(10);
     doc.text("AI-Powered Cybersecurity & Information Security Solutions", 105, 36, { align: "center" });
 

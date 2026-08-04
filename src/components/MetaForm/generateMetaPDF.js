@@ -28,7 +28,8 @@ export const generateMetaPDF = async (report = {}, url = "", existingDoc = null)
   const corsVerdict = report.cors?.verdict || "Reasonable";
 
   try {
-    const doc = existingDoc ? (existingDoc.addPage(), existingDoc) : new jsPDF("p", "mm", "a4");
+    const isJsPDF = existingDoc && typeof existingDoc.addPage === "function";
+    const doc = isJsPDF ? (existingDoc.addPage(), existingDoc) : new jsPDF("p", "mm", "a4");
 
     // Dates
     const now = new Date();

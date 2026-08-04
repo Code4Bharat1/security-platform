@@ -27,14 +27,24 @@ export const generateAdvancedDynamicScanPDF = async (
     second: "2-digit",
   });
 
+  const safeResults = Array.isArray(results)
+    ? results
+    : (Array.isArray(results?.results)
+      ? results.results
+      : (Array.isArray(results?.findings)
+        ? results.findings
+        : (Array.isArray(results?.vulnerabilities)
+          ? results.vulnerabilities
+          : [])));
+
   // Aggregate counts
-  const totalVulns   = results.length;
-  const failedVulns  = results.filter((r) => r.status === "Fail").length;
-  const passedVulns  = results.filter((r) => r.status === "Pass").length;
-  const criticals    = results.filter((r) => r.status === "Fail" && r.severity === "Critical").length;
-  const highs        = results.filter((r) => r.status === "Fail" && r.severity === "High").length;
-  const mediums      = results.filter((r) => r.status === "Fail" && r.severity === "Medium").length;
-  const lows         = results.filter((r) => r.status === "Fail" && r.severity === "Low").length;
+  const totalVulns   = safeResults.length;
+  const failedVulns  = safeResults.filter((r) => r.status === "Fail").length;
+  const passedVulns  = safeResults.filter((r) => r.status === "Pass").length;
+  const criticals    = safeResults.filter((r) => r.status === "Fail" && r.severity === "Critical").length;
+  const highs        = safeResults.filter((r) => r.status === "Fail" && r.severity === "High").length;
+  const mediums      = safeResults.filter((r) => r.status === "Fail" && r.severity === "Medium").length;
+  const lows         = safeResults.filter((r) => r.status === "Fail" && r.severity === "Low").length;
 
   const riskBand =
     criticals > 0 ? "Critical Risk"
@@ -234,8 +244,8 @@ export const generateAdvancedDynamicScanPDF = async (
     y = drawSectionHeader(doc, "3. DETAILED FINDINGS", y);
 
     const findingRows =
-      results.length > 0
-        ? results.map((v) => [
+      safeResults.length > 0
+        ? safeResults.map((v) => [
             safe(v.control),
             safe(v.status).toUpperCase(),
             safe(v.severity).toUpperCase(),
@@ -277,8 +287,8 @@ export const generateAdvancedDynamicScanPDF = async (
     y = drawSectionHeader(doc, "3. DETAILED FINDINGS — EVIDENCE & DETAILS", y);
 
     const evidenceRows =
-      results.length > 0
-        ? results.map((v) => [
+      safeResults.length > 0
+        ? safeResults.map((v) => [
             safe(v.control),
             safe(v.severity).toUpperCase(),
             safe(v.details),
@@ -317,8 +327,8 @@ export const generateAdvancedDynamicScanPDF = async (
     y = drawSectionHeader(doc, "3. DETAILED FINDINGS — REMEDIATION GUIDE", y);
 
     const remediationRows =
-      results.length > 0
-        ? results.map((v) => [
+      safeResults.length > 0
+        ? safeResults.map((v) => [
             safe(v.control),
             safe(v.status).toUpperCase(),
             safe(v.severity).toUpperCase(),

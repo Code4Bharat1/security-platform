@@ -63,7 +63,8 @@ export const generateSubdomainPDF = async (results = [], stats = {}, targetDomai
   const { employeeName, employeeMail } = getAuditorInfo();
 
   try {
-    const doc = existingDoc ? (existingDoc.addPage(), existingDoc) : new jsPDF("p", "mm", "a4");
+    const isJsPDF = existingDoc && typeof existingDoc.addPage === "function";
+    const doc = isJsPDF ? (existingDoc.addPage(), existingDoc) : new jsPDF("p", "mm", "a4");
 
     // Dates
     const now = new Date();

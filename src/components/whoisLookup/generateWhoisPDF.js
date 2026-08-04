@@ -29,7 +29,8 @@ export const generateWhoisPDF = async (result = {}, targetDomain = "—", existi
   const assessmentOutcome = result?.ok ? "Successful" : "Lookup Failed";
 
   try {
-    const doc = existingDoc ? (existingDoc.addPage(), existingDoc) : new jsPDF("p", "mm", "a4");
+    const isJsPDF = existingDoc && typeof existingDoc.addPage === "function";
+    const doc = isJsPDF ? (existingDoc.addPage(), existingDoc) : new jsPDF("p", "mm", "a4");
 
     // ══════════════════════════════════════════════════════════════════════
     // PAGE 1 — COVER PAGE & ASSESSMENT INFORMATION
