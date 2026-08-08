@@ -227,9 +227,9 @@ const WordPressScanner = () => {
                   <p className="mb-2">The target website is not identified as a WordPress installation. WordPress-specific security assessment findings, version enumerations, and audits are not applicable.</p>
                   <button
                     onClick={() => generateWordPressPDF(scanData, url)}
-                    className="px-4 py-2.5 bg-zinc-900/40 hover:bg-red-500/5 text-zinc-350 hover:text-red-400 border border-zinc-800/80 hover:border-red-500/30 rounded-xl font-mono font-bold text-xs uppercase transition-all duration-300 flex items-center justify-center gap-1.5 cursor-pointer mx-auto"
+                    className="px-4 py-2.5 bg-zinc-800 text-white hover:bg-zinc-700 border border-zinc-600 hover:border-red-500 rounded-xl font-mono font-bold text-xs uppercase transition-all duration-300 flex items-center justify-center gap-1.5 cursor-pointer mx-auto shadow-md"
                   >
-                    <Download className="w-3.5 h-3.5" />
+                    <Download className="w-3.5 h-3.5 text-red-400" />
                     Download PDF Report
                   </button>
                 </div>
@@ -241,14 +241,14 @@ const WordPressScanner = () => {
                     <h3 className="text-lg font-mono font-bold text-zinc-100 uppercase tracking-wider">
                       WordPress Security Scorecard
                     </h3>
-                    <p className="text-xs font-mono text-zinc-550 mt-0.5 mb-3">
+                    <p className="text-xs font-mono text-zinc-400 mt-0.5 mb-3">
                       Vulnerability telemetry outcome report
                     </p>
                     <button
                       onClick={() => generateWordPressPDF(scanData, url)}
-                      className="px-4 py-2 bg-zinc-900/40 hover:bg-red-500/5 text-zinc-350 hover:text-red-400 border border-zinc-800/80 hover:border-red-500/30 rounded-xl font-mono font-bold text-xs uppercase transition-all duration-300 flex items-center gap-1.5 cursor-pointer"
+                      className="px-4 py-2 bg-zinc-800 text-white hover:bg-zinc-700 border border-zinc-600 hover:border-red-500 rounded-xl font-mono font-bold text-xs uppercase transition-all duration-300 flex items-center gap-1.5 cursor-pointer shadow-md"
                     >
-                      <Download className="w-3.5 h-3.5" />
+                      <Download className="w-3.5 h-3.5 text-red-400" />
                       Download PDF Report
                     </button>
                   </div>

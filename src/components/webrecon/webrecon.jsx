@@ -697,16 +697,16 @@ export default function Webrecon() {
                 <div className="flex flex-col sm:flex-row gap-4 pt-2">
                   <button
                     onClick={downloadCSV}
-                    className="flex-1 px-4 py-3 bg-zinc-900/40 hover:bg-red-500/5 text-zinc-300 hover:text-red-400 border border-zinc-800/80 hover:border-red-500/30 rounded-xl font-mono font-bold text-xs uppercase transition-all duration-300 flex items-center justify-center gap-1.5 cursor-pointer"
+                    className="flex-1 px-4 py-3 bg-zinc-800 text-white hover:bg-zinc-700 border border-zinc-600 hover:border-red-500 rounded-xl font-mono font-bold text-xs uppercase transition-all duration-300 flex items-center justify-center gap-1.5 cursor-pointer shadow-md"
                   >
-                    <FileSpreadsheet className="w-4 h-4" />
+                    <FileSpreadsheet className="w-4 h-4 text-red-400" />
                     Download CSV Audit Log
                   </button>
                   <button
                     onClick={downloadPDF}
-                    className="flex-1 px-4 py-3 bg-zinc-900/40 hover:bg-red-500/5 text-zinc-300 hover:text-red-400 border border-zinc-800/80 hover:border-red-500/30 rounded-xl font-mono font-bold text-xs uppercase transition-all duration-300 flex items-center justify-center gap-1.5 cursor-pointer"
+                    className="flex-1 px-4 py-3 bg-zinc-800 text-white hover:bg-zinc-700 border border-zinc-600 hover:border-red-500 rounded-xl font-mono font-bold text-xs uppercase transition-all duration-300 flex items-center justify-center gap-1.5 cursor-pointer shadow-md"
                   >
-                    <Download className="w-4 h-4" />
+                    <Download className="w-4 h-4 text-red-400" />
                     Download PDF Report
                   </button>
                 </div>

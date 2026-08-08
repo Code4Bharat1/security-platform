@@ -11,7 +11,7 @@ const SharePointScanner = () => {
 
   // Fallback for API base URL if env var is undefined
   const baseURL =
-    process.env.NEXT_PUBLIC_PROD_API_URL || "http://localhost:4180/api";
+    process.env.NEXT_PUBLIC_PROD_API_URL || "http://localhost:5000/api";
 
   const validateUrl = (url) => {
     const pattern = new RegExp(

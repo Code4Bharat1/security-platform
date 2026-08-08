@@ -1695,4 +1695,161 @@ html.theme-dark {
 
 .tool-detail-page :is(button, [role="button"], label):is([class*="border-zinc-800"], [class*="border-zinc-850"], [class*="border-zinc-700"]):not([class*="bg-red-"]):not([class*="bg-rose-"]):active {
   transform: translateY(0px) scale(0.99) !important;
-}
+}
+
+/* ==========================================================================
+   INSIDE-TOOL BUTTON CONTRAST & VISIBILITY ENHANCEMENTS
+   ========================================================================== */
+
+/* Fix all Download Buttons (PDF, JSON, CSV, PNG, etc.) inside tools */
+:is(.tool-detail-page, main, section, [class*="tool"]) :is(button, a, [role="button"]):is(
+  [id*="download"],
+  [class*="download"],
+  :has(svg[class*="lucide-download"]),
+  :has(svg[class*="lucide-file-down"]),
+  :has(svg[class*="lucide-file-spreadsheet"])
+) {
+  background-color: #27272a !important;
+  color: #ffffff !important;
+  border: 1px solid #52525b !important;
+  font-weight: 700 !important;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4) !important;
+  opacity: 1 !important;
+  visibility: visible !important;
+}
+
+:is(.tool-detail-page, main, section, [class*="tool"]) :is(button, a, [role="button"]):is(
+  [id*="download"],
+  [class*="download"],
+  :has(svg[class*="lucide-download"]),
+  :has(svg[class*="lucide-file-down"]),
+  :has(svg[class*="lucide-file-spreadsheet"])
+):hover {
+  background-color: #3f3f46 !important;
+  color: #ffffff !important;
+  border-color: #c7922e !important;
+  box-shadow: 0 0 16px rgba(199, 146, 46, 0.5) !important;
+  transform: translateY(-1px) !important;
+}
+
+:is(.tool-detail-page, main, section, [class*="tool"]) :is(button, a, [role="button"]):is(
+  [id*="download"],
+  [class*="download"],
+  :has(svg[class*="lucide-download"]),
+  :has(svg[class*="lucide-file-down"]),
+  :has(svg[class*="lucide-file-spreadsheet"])
+) * {
+  color: #ffffff !important;
+}
+
+/* Ensure tool action scan/submit buttons have strong contrast */
+:is(.tool-detail-page, main, section) button:is([type="submit"], [id*="scan"], [id*="submit"], [class*="scan"]) {
+  font-weight: 700 !important;
+  opacity: 1 !important;
+  visibility: visible !important;
+}
+
+/* ==========================================================================
+   NEON GLOWING TEAM TAB BUTTONS SYSTEM
+   ========================================================================== */
+
+.neon-tab-btn {
+  background-color: #08080a !important;
+  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1) !important;
+}
+
+/* 1. Integrated Reports (White Glow) */
+.neon-tab-btn-reports-active {
+  border: 2px solid #ffffff !important;
+  box-shadow: 0 0 10px rgba(255, 255, 255, 0.7), inset 0 0 4px rgba(255, 255, 255, 0.2) !important;
+  color: #ffffff !important;
+}
+.neon-tab-btn-reports-inactive {
+  border: 1.5px solid rgba(255, 255, 255, 0.25) !important;
+  color: rgba(255, 255, 255, 0.7) !important;
+}
+.neon-tab-btn-reports-inactive:hover {
+  border-color: #ffffff !important;
+  box-shadow: 0 0 8px rgba(255, 255, 255, 0.5) !important;
+  color: #ffffff !important;
+}
+
+/* 2. Red Team (Neon Red Glow) */
+.neon-tab-btn-red-active {
+  border: 2px solid #ff2a4b !important;
+  box-shadow: 0 0 10px rgba(255, 42, 75, 0.7), inset 0 0 4px rgba(255, 42, 75, 0.2) !important;
+  color: #ffffff !important;
+}
+.neon-tab-btn-red-inactive {
+  border: 1.5px solid rgba(255, 42, 75, 0.3) !important;
+  color: rgba(255, 255, 255, 0.7) !important;
+}
+.neon-tab-btn-red-inactive:hover {
+  border-color: #ff2a4b !important;
+  box-shadow: 0 0 8px rgba(255, 42, 75, 0.5) !important;
+  color: #ffffff !important;
+}
+
+/* 3. Blue Team (Neon Cyan/Blue Glow) */
+.neon-tab-btn-blue-active {
+  border: 2px solid #00d2ff !important;
+  box-shadow: 0 0 10px rgba(0, 210, 255, 0.7), inset 0 0 4px rgba(0, 210, 255, 0.2) !important;
+  color: #ffffff !important;
+}
+.neon-tab-btn-blue-inactive {
+  border: 1.5px solid rgba(0, 210, 255, 0.3) !important;
+  color: rgba(255, 255, 255, 0.7) !important;
+}
+.neon-tab-btn-blue-inactive:hover {
+  border-color: #00d2ff !important;
+  box-shadow: 0 0 8px rgba(0, 210, 255, 0.5) !important;
+  color: #ffffff !important;
+}
+
+/* 4. Green Team (Bright Neon Green Glow) */
+.neon-tab-btn-green-active {
+  border: 2px solid #39ff14 !important;
+  box-shadow: 0 0 10px rgba(57, 255, 20, 0.7), inset 0 0 4px rgba(57, 255, 20, 0.2) !important;
+  color: #ffffff !important;
+}
+.neon-tab-btn-green-inactive {
+  border: 1.5px solid rgba(57, 255, 20, 0.3) !important;
+  color: rgba(255, 255, 255, 0.7) !important;
+}
+.neon-tab-btn-green-inactive:hover {
+  border-color: #39ff14 !important;
+  box-shadow: 0 0 8px rgba(57, 255, 20, 0.5) !important;
+  color: #ffffff !important;
+}
+
+/* 5. Purple Team (Neon Purple Glow) */
+.neon-tab-btn-purple-active {
+  border: 2px solid #b829ff !important;
+  box-shadow: 0 0 10px rgba(184, 41, 255, 0.7), inset 0 0 4px rgba(184, 41, 255, 0.2) !important;
+  color: #ffffff !important;
+}
+.neon-tab-btn-purple-inactive {
+  border: 1.5px solid rgba(184, 41, 255, 0.3) !important;
+  color: rgba(255, 255, 255, 0.7) !important;
+}
+.neon-tab-btn-purple-inactive:hover {
+  border-color: #b829ff !important;
+  box-shadow: 0 0 8px rgba(184, 41, 255, 0.5) !important;
+  color: #ffffff !important;
+}
+
+/* 6. VA Yellow (Neon Yellow/Amber Glow) */
+.neon-tab-btn-va-active {
+  border: 2px solid #ffb700 !important;
+  box-shadow: 0 0 10px rgba(255, 183, 0, 0.7), inset 0 0 4px rgba(255, 183, 0, 0.2) !important;
+  color: #ffffff !important;
+}
+.neon-tab-btn-va-inactive {
+  border: 1.5px solid rgba(255, 183, 0, 0.3) !important;
+  color: rgba(255, 255, 255, 0.7) !important;
+}
+.neon-tab-btn-va-inactive:hover {
+  border-color: #ffb700 !important;
+  box-shadow: 0 0 8px rgba(255, 183, 0, 0.5) !important;
+  color: #ffffff !important;
+}

@@ -30,16 +30,22 @@ export const AuthProvider = ({ children }) => {
   }, []);
 
   // Standard Logout logic
-  const logout = useCallback(() => {
+  const logout = useCallback((options = {}) => {
+    const shouldRedirect = options?.redirect !== false;
     console.log("🔒 [AuthContext] User logging out...");
     localStorage.removeItem("token");
     localStorage.removeItem("refreshToken");
     localStorage.removeItem("user");
     localStorage.removeItem("redirectAfterLogin");
+    if (typeof window !== "undefined") {
+      localStorage.setItem("guestSessionStart", Date.now().toString());
+    }
     googleLogout();
     setUser(null);
     setToken(null);
-    router.replace("/gain-access");
+    if (shouldRedirect) {
+      router.replace("/gain-access");
+    }
   }, [router]);
 
   // Request token refresh using refreshToken
@@ -80,6 +86,7 @@ export const AuthProvider = ({ children }) => {
           console.log("✅ [AuthContext] Silent token refresh succeeded");
           localStorage.setItem("token", data.accessToken);
           localStorage.setItem("refreshToken", data.refreshToken);
+          localStorage.removeItem("guestSessionStart");
           setToken(data.accessToken);
           return data.accessToken;
         } else {
@@ -115,7 +122,7 @@ export const AuthProvider = ({ children }) => {
     const storedUser = localStorage.getItem("user");
 
     if (!activeToken || !storedUser) {
-      logout();
+      // Unauthenticated / guest user: do NOT trigger logout or redirect to /gain-access
       return false;
     }
 
@@ -150,6 +157,10 @@ export const AuthProvider = ({ children }) => {
       clearTimeout(idleTimerRef.current);
     }
 
+    // Only set idle timeout if user is logged in
+    const activeToken = localStorage.getItem("token");
+    if (!activeToken) return;
+
     idleTimerRef.current = setTimeout(() => {
       // Inactive. Warn user or perform automatic logout
       console.warn("⏰ [AuthContext] User idle limit reached. Automatic logout triggered.");
@@ -170,7 +181,8 @@ export const AuthProvider = ({ children }) => {
     if (!res.ok) throw new Error(data.message || "Google auth failed")
     localStorage.setItem("token", data.accessToken);
     localStorage.setItem("refreshToken", data.refreshToken);
-    localStorage.setItem("user", JSON.stringify(data.user))
+    localStorage.setItem("user", JSON.stringify(data.user));
+    localStorage.removeItem("guestSessionStart");
     setToken(data.accessToken);
     setUser(data.user);
     router.push(redirectPath);
@@ -203,13 +215,16 @@ export const AuthProvider = ({ children }) => {
             logout();
           }
         }
+      } else {
+        // Initialize guest browsing start timestamp if not set
+        if (!localStorage.getItem("guestSessionStart")) {
+          localStorage.setItem("guestSessionStart", Date.now().toString());
+        }
       }
       setLoading(false);
     };
 
     initializeAuth();
-
-    // (Global fetch interceptor removed — was incorrectly intercepting public API routes)
 
     // Listen to local storage changes to synchronize across tabs
     const handleStorageChange = (e) => {
@@ -217,6 +232,7 @@ export const AuthProvider = ({ children }) => {
         console.log("🔄 [AuthContext] Token cleared in another tab. Syncing logout...");
         setUser(null);
         setToken(null);
+        localStorage.setItem("guestSessionStart", Date.now().toString());
         router.replace("/gain-access");
       }
     };
@@ -229,10 +245,34 @@ export const AuthProvider = ({ children }) => {
     });
     resetIdleTimer();
 
-    // Periodic JWT validation worker (runs every 30 seconds)
+    // Session worker (runs every 15 seconds):
+    // 1. For logged-in users: verify session token
+    // 2. For guest users: allow at least 15 minutes of uninterrupted look-around before asking to log in
     const verificationInterval = setInterval(() => {
-      verifySession();
-    }, 30000);
+      const currentToken = localStorage.getItem("token");
+      if (currentToken) {
+        verifySession();
+      } else {
+        let startTimeStr = localStorage.getItem("guestSessionStart");
+        if (!startTimeStr) {
+          startTimeStr = Date.now().toString();
+          localStorage.setItem("guestSessionStart", startTimeStr);
+        }
+        const elapsedMs = Date.now() - Number(startTimeStr);
+        const GUEST_LIMIT = 15 * 60 * 1000; // 15 minutes
+
+        if (elapsedMs >= GUEST_LIMIT) {
+          const pathname = window.location.pathname;
+          const isAuthPage = pathname === "/gain-access" || pathname === "/join-the-network" || pathname === "/login";
+          if (!isAuthPage) {
+            console.warn("⏰ [AuthContext] Guest 15-minute preview limit reached. Asking for login.");
+            toast("Please log in or request access to continue using platform tools.", { icon: "🔐" });
+            localStorage.setItem("guestSessionStart", Date.now().toString());
+            router.replace("/gain-access");
+          }
+        }
+      }
+    }, 15000);
 
     return () => {
       window.removeEventListener("storage", handleStorageChange);

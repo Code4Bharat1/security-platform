@@ -67,7 +67,7 @@ export default function Navbar() {
       }),
       // Admin Dashboard only visible to admin users
       ...(user?.role === 'admin'
-        ? [{ href: 'http://localhost:3001/admin/dashboard', label: 'Admin Dashboard', adminOnly: true }]
+        ? [{ href: process.env.NEXT_PUBLIC_ADMIN_URL || 'http://localhost:3001/admin/dashboard', label: 'Admin Dashboard', adminOnly: true }]
         : [])
     ];
   }, [userName, user]);

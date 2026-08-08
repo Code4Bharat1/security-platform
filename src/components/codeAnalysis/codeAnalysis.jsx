@@ -7,7 +7,7 @@ import autoTable from 'jspdf-autotable';
 import { toast } from 'react-hot-toast';
 
 // Build a sane API base: prefer env, else /api, trim trailing slashes
-const API_BASE = (process.env.NEXT_PUBLIC_PROD_API_URL || 'http://localhost:4180/api').replace(/\/+$/, '');
+const API_BASE = (process.env.NEXT_PUBLIC_PROD_API_URL || 'http://localhost:5000/api').replace(/\/+$/, '');
 
 export default function AnalyzerPage() {
   const protectedAction = useProtectedAction();

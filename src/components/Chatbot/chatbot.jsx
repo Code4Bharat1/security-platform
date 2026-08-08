@@ -42,7 +42,8 @@ export default function Chatbot() {
     setIsLoading(true);
 
     try {
-      const response = await axios.post('http://localhost:5000/ask', {
+      const apiBase = (process.env.NEXT_PUBLIC_PROD_API_URL || "http://localhost:5000/api").replace(/\/+$/, "").replace(/\/api$/, "");
+      const response = await axios.post(`${apiBase}/ask`, {
         question: input
       });
 

@@ -217,6 +217,326 @@ export default function Home() {
         </div>
       </section>
 
+      {/* Platform Video & Use Case Showcase Section */}
+      <section className="border-b border-white/6 py-20 lg:py-20 overflow-hidden">
+        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 lg:gap-16 items-center">
+            
+            {/* LEFT COLUMN: Video Player Showcase */}
+            <motion.div 
+              initial={{ opacity: 0, y: 30 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ duration: 0.7 }}
+              className="lg:col-span-6 relative group"
+            >
+              {/* Glow Accent Backdrop */}
+              <div className="absolute -inset-1 rounded-2xl bg-gradient-to-r from-[var(--gold)]/20 via-red-500/10 to-cyan-500/20 blur-xl opacity-60 group-hover:opacity-100 transition duration-1000"></div>
+
+              <div className="relative rounded-2xl border border-white/12 bg-black/60 shadow-[0_25px_60px_rgba(0,0,0,0.8)] overflow-hidden pointer-events-none select-none">
+                {/* Video Container (Unclickable, muted, autoPlay loop) */}
+                <div className="relative aspect-video w-full bg-black overflow-hidden pointer-events-none select-none">
+                  <video
+                    autoPlay
+                    loop
+                    muted
+                    playsInline
+                    className="h-full w-full object-cover pointer-events-none select-none"
+                  >
+                    <source src="/security_platform_v.mp4" type="video/mp4" />
+                    Your browser does not support the video tag.
+                  </video>
+                </div>
+              </div>
+            </motion.div>
+
+            {/* RIGHT COLUMN: Explanatory Content & Value Proposition */}
+            <motion.div 
+              initial={{ opacity: 0, x: 30 }}
+              whileInView={{ opacity: 1, x: 0 }}
+              viewport={{ once: true }}
+              transition={{ duration: 0.7, delay: 0.2 }}
+              className="lg:col-span-6 space-y-6"
+            >
+              <div className="inline-flex items-center gap-2 rounded-full border border-[var(--gold)]/30 bg-[var(--gold)]/10 px-3.5 py-1 font-mono text-xs text-[var(--gold)] tracking-wider uppercase">
+                <ShieldCheck className="h-3.5 w-3.5" />
+                <span>Offensive & Defensive Security Platform</span>
+              </div>
+
+              <h2 className="font-mono text-3xl sm:text-4xl lg:text-5xl font-bold text-white leading-tight">
+                Security findings you can prioritize. In{" "}
+                <span className="text-[var(--gold)]">web apps, network, and cloud.</span>
+              </h2>
+
+              <p className="text-base sm:text-lg leading-relaxed text-white/70">
+                Nexcore discovers, exploits, and proves security issues in a unified workflow — so you prioritize on proven risk, not theoretical severity.
+              </p>
+
+              {/* Bullet Checklist */}
+              <div className="space-y-3.5 pt-2">
+                <div className="flex items-start gap-3 text-sm sm:text-base text-white/90">
+                  <span className="flex h-5.5 w-5.5 shrink-0 items-center justify-center rounded-full bg-[var(--gold)]/20 text-[var(--gold)] font-bold text-xs mt-0.5">✓</span>
+                  <span><strong>Cut manual triage</strong> with confirmed findings and automated scan execution</span>
+                </div>
+                <div className="flex items-start gap-3 text-sm sm:text-base text-white/90">
+                  <span className="flex h-5.5 w-5.5 shrink-0 items-center justify-center rounded-full bg-[var(--gold)]/20 text-[var(--gold)] font-bold text-xs mt-0.5">✓</span>
+                  <span><strong>Prioritize remediation</strong> on proof of exploitability & telemetry</span>
+                </div>
+                <div className="flex items-start gap-3 text-sm sm:text-base text-white/90">
+                  <span className="flex h-5.5 w-5.5 shrink-0 items-center justify-center rounded-full bg-[var(--gold)]/20 text-[var(--gold)] font-bold text-xs mt-0.5">✓</span>
+                  <span><strong>Report verifiable evidence</strong> for SOC 2, ISO 27001, and compliance</span>
+                </div>
+                <div className="flex items-start gap-3 text-sm sm:text-base text-white/90">
+                  <span className="flex h-5.5 w-5.5 shrink-0 items-center justify-center rounded-full bg-[var(--gold)]/20 text-[var(--gold)] font-bold text-xs mt-0.5">✓</span>
+                  <span><strong>62+ self-serve tool workflows</strong> replacing complex vendor sprawl</span>
+                </div>
+              </div>
+
+              {/* Action Buttons */}
+              <div className="flex flex-wrap gap-4 pt-4">
+                <Link
+                  href="/tools"
+                  className="gold-button !px-8 !py-3.5 !text-sm flex items-center gap-2"
+                >
+                  <span>Explore Platform Tools</span>
+                  <ArrowRight className="h-4 w-4" />
+                </Link>
+                <Link
+                  href="/gain-access"
+                  className="ghost-button !px-8 !py-3.5 !text-sm"
+                >
+                  Book a Live Demo
+                </Link>
+              </div>
+            </motion.div>
+
+          </div>
+        </div>
+      </section>
+
+      {/* Team & Tool Mindmap Architecture Section */}
+      <section className="border-b border-white/6 py-20 lg:py-28 overflow-hidden">
+        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+          <SectionIntro
+            eyebrow="// ARCHITECTURE & TOOL MATRIX"
+            title="Unified Security Telemetry & Integrated Reporting."
+            description="How 50+ specialized tools across Red, Blue, Green, and VA teams feed directly into a single consolidated reporting engine."
+            className="mb-16"
+          />
+
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 lg:gap-16 items-center">
+            
+            {/* LEFT COLUMN: Clean Organic Mindmap Diagram (Matching Site Aesthetic) */}
+            <motion.div
+              initial={{ opacity: 0, scale: 0.98 }}
+              whileInView={{ opacity: 1, scale: 1 }}
+              viewport={{ once: true }}
+              transition={{ duration: 0.7 }}
+              className="lg:col-span-7 relative flex items-center justify-center overflow-x-auto py-4"
+            >
+              <div className="min-w-[660px] w-full flex justify-center py-2">
+                <svg viewBox="0 0 680 500" className="w-full h-auto max-w-[680px] overflow-visible">
+                  
+                  {/* ========================================================
+                     1. RED TEAM (Color: #ef4444)
+                     ======================================================== */}
+                  <text x="25" y="16" fill="#a1a1aa" fontSize="11" fontFamily="monospace">Vulnerability Scanner</text>
+                  <path d="M 25 22 L 180 22 C 230 22, 230 60, 275 60" stroke="#ef4444" strokeWidth="1.5" strokeOpacity="0.8" fill="none" />
+
+                  <text x="25" y="41" fill="#a1a1aa" fontSize="11" fontFamily="monospace">Brute Force Scanner</text>
+                  <path d="M 25 47 L 180 47 C 230 47, 230 60, 275 60" stroke="#ef4444" strokeWidth="1.5" strokeOpacity="0.8" fill="none" />
+
+                  <text x="25" y="66" fill="#a1a1aa" fontSize="11" fontFamily="monospace">API Testing</text>
+                  <path d="M 25 72 L 180 72 C 230 72, 230 60, 275 60" stroke="#ef4444" strokeWidth="1.5" strokeOpacity="0.8" fill="none" />
+
+                  <text x="25" y="91" fill="#a1a1aa" fontSize="11" fontFamily="monospace">Subdomain Scanner</text>
+                  <path d="M 25 97 L 180 97 C 230 97, 230 60, 275 60" stroke="#ef4444" strokeWidth="1.5" strokeOpacity="0.8" fill="none" />
+
+                  {/* Red Team Node */}
+                  <g transform="translate(275, 42)">
+                    <rect x="0" y="0" width="95" height="34" rx="6" fill="#121215" stroke="#ef4444" strokeWidth="1.2" />
+                    <text x="47.5" y="21" fill="#f87171" fontSize="11" fontWeight="600" textAnchor="middle" fontFamily="monospace">Red Team</text>
+                  </g>
+
+                  {/* Red Team -> Integrated Report Arc */}
+                  <path d="M 370 60 C 445 60, 445 250, 500 250" stroke="#ef4444" strokeWidth="1.5" strokeOpacity="0.8" fill="none" />
+
+
+                  {/* ========================================================
+                     2. BLUE TEAM (Color: #38bdf8)
+                     ======================================================== */}
+                  <text x="25" y="136" fill="#a1a1aa" fontSize="11" fontFamily="monospace">HTTPS Security Checker</text>
+                  <path d="M 25 142 L 180 142 C 230 142, 230 180, 275 180" stroke="#38bdf8" strokeWidth="1.5" strokeOpacity="0.8" fill="none" />
+
+                  <text x="25" y="161" fill="#a1a1aa" fontSize="11" fontFamily="monospace">JWT Signature Validator</text>
+                  <path d="M 25 167 L 180 167 C 230 167, 230 180, 275 180" stroke="#38bdf8" strokeWidth="1.5" strokeOpacity="0.8" fill="none" />
+
+                  <text x="25" y="186" fill="#a1a1aa" fontSize="11" fontFamily="monospace">Obfuscation Detector</text>
+                  <path d="M 25 192 L 180 192 C 230 192, 230 180, 275 180" stroke="#38bdf8" strokeWidth="1.5" strokeOpacity="0.8" fill="none" />
+
+                  <text x="25" y="211" fill="#a1a1aa" fontSize="11" fontFamily="monospace">WAF Scanner</text>
+                  <path d="M 25 217 L 180 217 C 230 217, 230 180, 275 180" stroke="#38bdf8" strokeWidth="1.5" strokeOpacity="0.8" fill="none" />
+
+                  {/* Blue Team Node */}
+                  <g transform="translate(275, 162)">
+                    <rect x="0" y="0" width="95" height="34" rx="6" fill="#121215" stroke="#38bdf8" strokeWidth="1.2" />
+                    <text x="47.5" y="21" fill="#38bdf8" fontSize="11" fontWeight="600" textAnchor="middle" fontFamily="monospace">Blue Team</text>
+                  </g>
+
+                  {/* Blue Team -> Integrated Report Arc */}
+                  <path d="M 370 180 C 445 180, 445 250, 500 250" stroke="#38bdf8" strokeWidth="1.5" strokeOpacity="0.8" fill="none" />
+
+
+                  {/* ========================================================
+                     3. GREEN TEAM (Color: #4ade80)
+                     ======================================================== */}
+                  <text x="25" y="266" fill="#a1a1aa" fontSize="11" fontFamily="monospace">Meta Tag Analyzer</text>
+                  <path d="M 25 272 L 180 272 C 230 272, 230 310, 275 310" stroke="#4ade80" strokeWidth="1.5" strokeOpacity="0.8" fill="none" />
+
+                  <text x="25" y="291" fill="#a1a1aa" fontSize="11" fontFamily="monospace">Keyword Density Checker</text>
+                  <path d="M 25 297 L 180 297 C 230 297, 230 310, 275 310" stroke="#4ade80" strokeWidth="1.5" strokeOpacity="0.8" fill="none" />
+
+                  <text x="25" y="316" fill="#a1a1aa" fontSize="11" fontFamily="monospace">Link Detector</text>
+                  <path d="M 25 322 L 180 322 C 230 322, 230 310, 275 310" stroke="#4ade80" strokeWidth="1.5" strokeOpacity="0.8" fill="none" />
+
+                  <text x="25" y="341" fill="#a1a1aa" fontSize="11" fontFamily="monospace">SEO Score Analyzer Tool</text>
+                  <path d="M 25 347 L 180 347 C 230 347, 230 310, 275 310" stroke="#4ade80" strokeWidth="1.5" strokeOpacity="0.8" fill="none" />
+
+                  {/* Green Team Node */}
+                  <g transform="translate(275, 292)">
+                    <rect x="0" y="0" width="95" height="34" rx="6" fill="#121215" stroke="#4ade80" strokeWidth="1.2" />
+                    <text x="47.5" y="21" fill="#4ade80" fontSize="11" fontWeight="600" textAnchor="middle" fontFamily="monospace">Green Team</text>
+                  </g>
+
+                  {/* Green Team -> Integrated Report Arc */}
+                  <path d="M 370 310 C 445 310, 445 250, 500 250" stroke="#4ade80" strokeWidth="1.5" strokeOpacity="0.8" fill="none" />
+
+
+                  {/* ========================================================
+                     4. VA TEAM (Color: #facc15)
+                     ======================================================== */}
+                  <text x="25" y="396" fill="#a1a1aa" fontSize="11" fontFamily="monospace">Basic Network Scanning</text>
+                  <path d="M 25 402 L 180 402 C 230 402, 230 440, 275 440" stroke="#facc15" strokeWidth="1.5" strokeOpacity="0.8" fill="none" />
+
+                  <text x="25" y="421" fill="#a1a1aa" fontSize="11" fontFamily="monospace">AWS Credential Validation</text>
+                  <path d="M 25 427 L 180 427 C 230 427, 230 440, 275 440" stroke="#facc15" strokeWidth="1.5" strokeOpacity="0.8" fill="none" />
+
+                  <text x="25" y="446" fill="#a1a1aa" fontSize="11" fontFamily="monospace">Malware Scan</text>
+                  <path d="M 25 452 L 180 452 C 230 452, 230 440, 275 440" stroke="#facc15" strokeWidth="1.5" strokeOpacity="0.8" fill="none" />
+
+                  <text x="25" y="471" fill="#a1a1aa" fontSize="11" fontFamily="monospace">Active Directory Scan</text>
+                  <path d="M 25 477 L 180 477 C 230 477, 230 440, 275 440" stroke="#facc15" strokeWidth="1.5" strokeOpacity="0.8" fill="none" />
+
+                  {/* VA Team Node */}
+                  <g transform="translate(275, 422)">
+                    <rect x="0" y="0" width="95" height="34" rx="6" fill="#121215" stroke="#facc15" strokeWidth="1.2" />
+                    <text x="47.5" y="21" fill="#facc15" fontSize="11" fontWeight="600" textAnchor="middle" fontFamily="monospace">VA Team</text>
+                  </g>
+
+                  {/* VA Team -> Integrated Report Arc */}
+                  <path d="M 370 440 C 445 440, 445 250, 500 250" stroke="#facc15" strokeWidth="1.5" strokeOpacity="0.8" fill="none" />
+
+
+                  {/* ========================================================
+                     5. CENTRAL HUB: INTEGRATED REPORT NODE
+                     ======================================================== */}
+                  <g transform="translate(500, 228)">
+                    <rect x="0" y="0" width="155" height="44" rx="8" fill="#18181b" stroke="white" strokeWidth="1.5" />
+                    <text x="77.5" y="27" fill="white" fontSize="12" fontWeight="700" textAnchor="middle" fontFamily="monospace">Integrated Report</text>
+                  </g>
+                </svg>
+              </div>
+            </motion.div>
+
+            {/* RIGHT COLUMN: Clean Enterprise Explanatory Panel (Matching Site Style) */}
+            <motion.div
+              initial={{ opacity: 0, x: 30 }}
+              whileInView={{ opacity: 1, x: 0 }}
+              viewport={{ once: true }}
+              transition={{ duration: 0.8, delay: 0.2 }}
+              className="lg:col-span-5 space-y-8"
+            >
+              {/* Header & Export Formats */}
+              <div className="space-y-3 border-b border-white/10 pb-6">
+                <div className="flex flex-wrap items-center gap-2">
+                  <span className="font-mono text-xs font-semibold text-white/40 uppercase tracking-wider">Report Formats:</span>
+                  <span className="px-2.5 py-1 rounded border border-white/12 bg-white/5 font-mono text-xs text-white/80">PDF</span>
+                  <span className="px-2.5 py-1 rounded border border-white/12 bg-white/5 font-mono text-xs text-white/80">JSON</span>
+                  <span className="px-2.5 py-1 rounded border border-white/12 bg-white/5 font-mono text-xs text-white/80">TXT</span>
+                  <span className="px-2.5 py-1 rounded border border-white/12 bg-white/5 font-mono text-xs text-white/80">XML</span>
+                  <span className="px-2.5 py-1 rounded border border-white/12 bg-white/5 font-mono text-xs text-white/80">CSV</span>
+                </div>
+                <p className="text-sm text-white/70 leading-relaxed">
+                  Consolidate all scan telemetry into unified security reports. Instantly export executive summaries and detailed technical findings in <strong>PDF, JSON, TXT, XML, or CSV</strong> formats.
+                </p>
+              </div>
+
+              {/* Team Role Clean List */}
+              <div className="space-y-6">
+                
+                {/* Red Team */}
+                <div className="space-y-1">
+                  <h4 className="font-mono text-sm font-semibold text-[#f87171] flex items-center gap-2">
+                    <span className="h-1.5 w-1.5 rounded-full bg-[#f87171]"></span>
+                    What Red Team does:
+                  </h4>
+                  <p className="text-sm text-white/60 leading-relaxed pl-3.5">
+                    Offensive security tools to simulate adversary attacks, enumerate subdomains, scan vulnerabilities, and test API endpoints.
+                  </p>
+                </div>
+
+                {/* Blue Team */}
+                <div className="space-y-1">
+                  <h4 className="font-mono text-sm font-semibold text-[#38bdf8] flex items-center gap-2">
+                    <span className="h-1.5 w-1.5 rounded-full bg-[#38bdf8]"></span>
+                    What Blue Team does:
+                  </h4>
+                  <p className="text-sm text-white/60 leading-relaxed pl-3.5">
+                    Defensive monitoring and posture inspection including HTTPS verification, JWT signature validation, code obfuscation checks, and WAF audit.
+                  </p>
+                </div>
+
+                {/* Green Team */}
+                <div className="space-y-1">
+                  <h4 className="font-mono text-sm font-semibold text-[#4ade80] flex items-center gap-2">
+                    <span className="h-1.5 w-1.5 rounded-full bg-[#4ade80]"></span>
+                    What Green Team does:
+                  </h4>
+                  <p className="text-sm text-white/60 leading-relaxed pl-3.5">
+                    Digital presence & SEO health optimization tools for meta tag validation, link integrity detection, keyword density, and site score audits.
+                  </p>
+                </div>
+
+                {/* VA Team */}
+                <div className="space-y-1">
+                  <h4 className="font-mono text-sm font-semibold text-[#facc15] flex items-center gap-2">
+                    <span className="h-1.5 w-1.5 rounded-full bg-[#facc15]"></span>
+                    What VA Team does:
+                  </h4>
+                  <p className="text-sm text-white/60 leading-relaxed pl-3.5">
+                    Deep infrastructure vulnerability assessment covering network port activity, AWS credential validation, malware scanning, and Active Directory scans.
+                  </p>
+                </div>
+
+                {/* Purple Team */}
+                <div className="space-y-1">
+                  <h4 className="font-mono text-sm font-semibold text-[#c084fc] flex items-center gap-2">
+                    <span className="h-1.5 w-1.5 rounded-full bg-[#c084fc]"></span>
+                    What Purple Team does:
+                  </h4>
+                  <p className="text-sm text-white/60 leading-relaxed pl-3.5">
+                    Collaborative threat simulation aligning Red Team attack findings with Blue Team defense rules for continuous security posture hardening.
+                  </p>
+                </div>
+
+              </div>
+
+            </motion.div>
+
+          </div>
+        </div>
+      </section>
+
       <section className="border-b border-white/6">
         <div className="mx-auto max-w-7xl px-4 py-20 sm:px-6 lg:px-8">
           <SectionIntro

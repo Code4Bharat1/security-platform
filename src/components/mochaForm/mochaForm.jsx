@@ -239,7 +239,7 @@ export default function MochaForm() {
 
             {/* Connection Info */}
             <div className="mt-4 text-sm text-[color:var(--text-muted)]">
-              <p>Connected to: localhost:5000</p>
+              <p>Connected to: {(process.env.NEXT_PUBLIC_PROD_API_URL || 'http://localhost:5000').replace(/^https?:\/\//, '').replace(/\/.*$/, '')}</p>
             </div>
           </div>
         </div>

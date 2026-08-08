@@ -12,6 +12,7 @@
 
 import { NextResponse } from "next/server";
 import { razorpayInstance } from "@/lib/razorpay";
+import { saveOrderRecord } from "@/lib/orderService";
 
 // Plan whitelist to prevent tampered amounts from the client
 const PLAN_PRICE_MAP = {
@@ -48,8 +49,15 @@ export async function POST(req) {
 
     const order = await razorpayInstance.orders.create(options);
 
-    // TODO: Save pending order record in database
-    // await db.orders.create({ orderId: order.id, planName, amount: canonicalPrice, status: "created" });
+    // Persist pending order record in database (fail-safe)
+    await saveOrderRecord({
+      orderId: order.id,
+      planName,
+      amount: canonicalPrice,
+      currency: order.currency || "INR",
+      receipt: options.receipt,
+      status: "created",
+    });
 
     return NextResponse.json({
       success: true,

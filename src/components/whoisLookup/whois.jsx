@@ -366,15 +366,15 @@ export default function WhoisLookup() {
                 <div className="flex flex-wrap gap-3">
                   <button
                     onClick={downloadPDF}
-                    className="px-4 py-2.5 bg-zinc-900/40 hover:bg-red-500/5 text-zinc-350 hover:text-red-400 border border-zinc-800/80 hover:border-red-500/30 rounded-xl font-mono font-bold text-xs uppercase transition-all duration-300 flex items-center gap-1.5 cursor-pointer"
+                    className="px-4 py-2.5 bg-zinc-800 text-white hover:bg-zinc-700 border border-zinc-600 hover:border-red-500 rounded-xl font-mono font-bold text-xs uppercase transition-all duration-300 flex items-center gap-1.5 cursor-pointer shadow-md"
                   >
-                    <FileDown className="w-3.5 h-3.5" /> PDF Report
+                    <FileDown className="w-3.5 h-3.5 text-red-400" /> PDF Report
                   </button>
                   <button
                     onClick={downloadPNG}
-                    className="px-4 py-2.5 bg-zinc-900/40 hover:bg-red-50/5 text-zinc-350 hover:text-red-450 border border-zinc-800/80 hover:border-red-500/30 rounded-xl font-mono font-bold text-xs uppercase transition-all duration-350 flex items-center gap-1.5 cursor-pointer"
+                    className="px-4 py-2.5 bg-zinc-800 text-white hover:bg-zinc-700 border border-zinc-600 hover:border-red-500 rounded-xl font-mono font-bold text-xs uppercase transition-all duration-300 flex items-center gap-1.5 cursor-pointer shadow-md"
                   >
-                    <Download className="w-3.5 h-3.5" /> PNG Image
+                    <Download className="w-3.5 h-3.5 text-red-400" /> PNG Image
                   </button>
                 </div>
 

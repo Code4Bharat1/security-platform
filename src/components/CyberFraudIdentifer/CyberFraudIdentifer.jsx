@@ -20,7 +20,7 @@ export default function CyberFraudIdentifier() {
     console.log("Selected verification target:", selectedOption);
     let link = "";
     if (["upi-id", "mobile", "email", "bank-acc", "social-media"].includes(selectedOption)) {
-      link = "https://cybercrime.gov.in/Webform/suspect_search_repository.aspx";
+      link = "https://cybercrime.gov.in/";
     } else {
       link = "https://cybercrime.gov.in/Webform/suspect_search_websites.aspx";
     }

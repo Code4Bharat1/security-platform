@@ -15,6 +15,7 @@
 
 import { NextResponse } from "next/server";
 import { verifyWebhookSignature } from "@/lib/razorpay";
+import { updateOrderRecord, updateOrderRecordByPaymentId } from "@/lib/orderService";
 
 export async function POST(req) {
   try {
@@ -55,11 +56,12 @@ export async function POST(req) {
           `Amount: ₹${payment.amount / 100}, Order: ${payment.order_id}`
         );
 
-        // TODO: Confirm order fulfillment in database
-        // await db.orders.updateOne(
-        //   { orderId: payment.order_id },
-        //   { $set: { status: "paid", paymentId: payment.id, capturedAt: new Date() } }
-        // );
+        // Confirm order fulfillment in database (fail-safe)
+        await updateOrderRecord(payment.order_id, {
+          status: "paid",
+          paymentId: payment.id,
+          capturedAt: new Date(),
+        });
 
         break;
       }
@@ -72,11 +74,11 @@ export async function POST(req) {
           `Reason: ${payment.error_description}, Order: ${payment.order_id}`
         );
 
-        // TODO: Mark order as failed and optionally notify user
-        // await db.orders.updateOne(
-        //   { orderId: payment.order_id },
-        //   { $set: { status: "failed", failureReason: payment.error_description } }
-        // );
+        // Mark order as failed in database (fail-safe)
+        await updateOrderRecord(payment.order_id, {
+          status: "failed",
+          failureReason: payment.error_description || "Payment failed",
+        });
 
         break;
       }
@@ -88,7 +90,12 @@ export async function POST(req) {
           `[webhook] 💰 Order paid — ID: ${order.id}, Amount: ₹${order.amount / 100}`
         );
 
-        // TODO: Final order confirmation (idempotent check)
+        // Final order confirmation (idempotent check)
+        await updateOrderRecord(order.id, {
+          status: "paid",
+          capturedAt: new Date(),
+        });
+
         break;
       }
 
@@ -100,11 +107,11 @@ export async function POST(req) {
           `Amount: ₹${refund.amount / 100}, Payment: ${refund.payment_id}`
         );
 
-        // TODO: Handle refund — downgrade plan, revoke credits
-        // await db.orders.updateOne(
-        //   { paymentId: refund.payment_id },
-        //   { $set: { status: "refunded", refundId: refund.id } }
-        // );
+        // Handle refund status update in database (fail-safe)
+        await updateOrderRecordByPaymentId(refund.payment_id, {
+          status: "refunded",
+          refundId: refund.id,
+        });
 
         break;
       }

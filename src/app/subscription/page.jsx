@@ -13,12 +13,14 @@ import {
   Calendar,
   CreditCard,
   History,
-  ArrowRight
+  ArrowRight,
+  Download
 } from "lucide-react";
 import { toast } from "react-hot-toast";
 import ProtectedWrapper from "@/components/ProtectedWrapper";
 import SectionIntro from "@/components/marketing/SectionIntro";
 import RazorpayCheckoutButton from "@/components/payment/RazorpayCheckoutButton";
+import { generatePaymentReceiptPDF } from "@/components/payment/generatePaymentReceiptPDF";
 
 const PLAN_CARDS = [
   {
@@ -208,6 +210,60 @@ export default function SubscriptionPage() {
 
     // Refresh all subscription data from the backend
     await Promise.all([fetchCurrentSub(), fetchHistory(), fetchCredits()]);
+  };
+
+  const handleDownloadReceipt = async (inv) => {
+    try {
+      const toastId = toast.loading("Fetching receipt data...");
+      const token = localStorage.getItem("token");
+      let receiptData = null;
+
+      if (token && inv._id) {
+        try {
+          const res = await fetch(
+            `${process.env.NEXT_PUBLIC_PROD_API_URL}/subscription/receipt/${inv._id}`,
+            {
+              headers: {
+                Authorization: `Bearer ${token}`
+              }
+            }
+          );
+          if (res.ok) {
+            receiptData = await res.json();
+          }
+        } catch (fetchErr) {
+          console.warn("Could not fetch receipt from API, falling back to local invoice record:", fetchErr);
+        }
+      }
+
+      // Fallback: construct receipt object directly from invoice entry if API is unreachable
+      if (!receiptData) {
+        const storedUser = localStorage.getItem("user");
+        const userObj = storedUser ? JSON.parse(storedUser) : null;
+        const creditsMap = { Free: 10, Premium: 100, Pro: 500, Enterprise: 2000 };
+
+        receiptData = {
+          receiptId: inv.receiptId || `NXCR-${new Date(inv.createdAt || inv.startDate).getTime()}-${inv._id?.toString().substring(18).toUpperCase() || 'INV'}`,
+          userName: userObj?.name || userObj?.email?.split("@")[0] || "Subscriber",
+          userEmail: userObj?.email || "",
+          userId: userObj?.id || inv.userId || "N/A",
+          plan: inv.plan,
+          amount: inv.amount,
+          creditsGranted: creditsMap[inv.plan] || 0,
+          razorpayOrderId: inv.razorpayOrderId || "N/A",
+          razorpayPaymentId: inv.razorpayPaymentId || "N/A",
+          startDate: inv.startDate,
+          endDate: inv.endDate,
+          paidAt: inv.createdAt || inv.startDate
+        };
+      }
+
+      generatePaymentReceiptPDF(receiptData);
+      toast.success("Receipt PDF downloaded!", { id: toastId });
+    } catch (err) {
+      console.error("Error downloading receipt:", err);
+      toast.error("Failed to generate receipt PDF.");
+    }
   };
 
   const handleUpgrade = async (planName) => {
@@ -467,19 +523,20 @@ export default function SubscriptionPage() {
                       <th className="px-6 py-4">Amount Paid</th>
                       <th className="px-6 py-4">Payment Status</th>
                       <th className="px-6 py-4">Status</th>
+                      <th className="px-6 py-4 text-right">Receipt</th>
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-white/4">
                     {loadingHistory ? (
                       <tr>
-                        <td colSpan="5" className="text-center py-12 text-white/40 font-mono text-sm">
+                        <td colSpan="6" className="text-center py-12 text-white/40 font-mono text-sm">
                           <RefreshCw className="h-5 w-5 animate-spin mx-auto mb-2 text-[var(--gold)]" />
                           Loading invoice history...
                         </td>
                       </tr>
                     ) : invoices.length === 0 ? (
                       <tr>
-                        <td colSpan="5" className="text-center py-12 text-white/30 text-sm italic">
+                        <td colSpan="6" className="text-center py-12 text-white/30 text-sm italic">
                           No past invoices recorded. Upgrades and renewals will be logged here.
                         </td>
                       </tr>
@@ -522,6 +579,19 @@ export default function SubscriptionPage() {
                             >
                               {inv.status.toUpperCase()}
                             </span>
+                          </td>
+
+                          {/* Receipt PDF Download Action */}
+                          <td className="px-6 py-4 text-right">
+                            <button
+                              type="button"
+                              onClick={() => handleDownloadReceipt(inv)}
+                              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded text-xs font-mono font-semibold bg-white/5 text-[var(--gold)] border border-[var(--gold)]/30 hover:bg-[var(--gold)]/10 hover:border-[var(--gold)]/60 transition-all cursor-pointer"
+                              title="Download Receipt PDF"
+                            >
+                              <Download className="h-3.5 w-3.5" />
+                              <span>Download PDF</span>
+                            </button>
                           </td>
                         </tr>
                       ))

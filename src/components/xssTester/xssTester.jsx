@@ -253,18 +253,18 @@ export default function XssTester() {
                         type="button"
                         id="xss-download-pdf-btn"
                         onClick={makePdf}
-                        className="px-5 py-4 rounded-xl bg-zinc-900/40 hover:bg-red-50/5 text-zinc-350 hover:text-red-450 border border-zinc-800/80 hover:border-red-500/30 font-mono font-bold text-xs uppercase transition-all duration-350 flex items-center justify-center gap-2 cursor-pointer"
+                        className="px-5 py-4 rounded-xl bg-zinc-800 text-white hover:bg-zinc-700 border border-zinc-600 hover:border-red-500 font-mono font-bold text-xs uppercase transition-all duration-350 flex items-center justify-center gap-2 cursor-pointer shadow-md hover:shadow-[0_0_15px_rgba(239,68,68,0.4)]"
                       >
-                        <FileDown className="w-4 h-4" />
+                        <FileDown className="w-4 h-4 text-red-400" />
                         PDF Report
                       </button>
                       <button
                         type="button"
                         id="xss-download-json-btn"
                         onClick={downloadJson}
-                        className="px-5 py-4 rounded-xl bg-zinc-900/40 hover:bg-red-50/5 text-zinc-350 hover:text-red-450 border border-zinc-800/80 hover:border-red-500/30 font-mono font-bold text-xs uppercase transition-all duration-350 flex items-center justify-center gap-2 cursor-pointer"
+                        className="px-5 py-4 rounded-xl bg-zinc-800 text-white hover:bg-zinc-700 border border-zinc-600 hover:border-red-500 font-mono font-bold text-xs uppercase transition-all duration-350 flex items-center justify-center gap-2 cursor-pointer shadow-md hover:shadow-[0_0_15px_rgba(239,68,68,0.4)]"
                       >
-                        <Download className="w-4 h-4" />
+                        <Download className="w-4 h-4 text-red-400" />
                         JSON
                       </button>
                     </>

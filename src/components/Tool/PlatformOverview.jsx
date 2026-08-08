@@ -63,19 +63,17 @@ export default function PlatformOverview() {
             <div className="flex flex-wrap gap-3">
               {toolGroups.map((group) => {
                 const isActive = group.key === activeGroup;
+                const neonClass = `neon-tab-btn neon-tab-btn-${group.key}-${isActive ? "active" : "inactive"}`;
 
                 return (
                   <button
                     key={group.key}
                     type="button"
                     onClick={() => handleGroupChange(group.key)}
-                    className={`inline-flex items-center gap-3 rounded-sm border px-4 py-2 font-mono text-xs uppercase tracking-[0.2em] transition cursor-pointer ${isActive
-                        ? "border-[var(--gold)] bg-[var(--gold)] text-black"
-                        : "border-white/8 bg-white/[0.03] text-white/72 hover:border-[var(--gold)]/40 hover:text-white"
-                      }`}
+                    className={`inline-flex items-center gap-3 rounded-md px-4.5 py-2.5 font-mono text-xs uppercase tracking-[0.18em] transition-all duration-300 cursor-pointer ${neonClass}`}
                   >
-                    <span>{group.label}</span>
-                    <span className={`text-[0.68rem] ${isActive ? "text-black/65" : "text-white/35"}`}>
+                    <span className="font-bold">{group.label}</span>
+                    <span className={`text-[0.68rem] font-bold ${isActive ? "text-white opacity-100" : "text-white/50"}`}>
                       {group.count}
                     </span>
                   </button>
