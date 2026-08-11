@@ -217,7 +217,7 @@ export default function SitemapForm() {
 
               <form onSubmit={handleSubmit} className="space-y-4">
                 <div>
-                  <label className="block text-xs uppercase tracking-widest font-mono text-zinc-400 mb-2 font-semibold">Target Website URL</label>
+                  <label htmlFor="websiteUrl" className="block text-xs uppercase tracking-widest font-mono text-zinc-400 mb-2 font-semibold">Target Website URL</label>
                   <input
                     type="url"
                     id="websiteUrl"

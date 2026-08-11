@@ -115,8 +115,9 @@ export default function JoinNetwork() {
           {/* First & Last Name */}
           <div className="flex gap-3 mb-4">
             <div className="w-1/2">
-              <label className="mb-1 block text-sm font-medium text-[color:var(--text-body)]">First Name</label>
+              <label htmlFor="join-fname" className="mb-1 block text-sm font-medium text-[color:var(--text-body)]">First Name</label>
               <input
+                id="join-fname"
                 type="text"
                 name="fname"
                 placeholder="First Name"
@@ -129,8 +130,9 @@ export default function JoinNetwork() {
               {errors.fname && <p className="mt-1 text-sm text-[color:var(--danger)]">{errors.fname}</p>}
             </div>
             <div className="w-1/2">
-              <label className="mb-1 block text-sm font-medium text-[color:var(--text-body)]">Last Name</label>
+              <label htmlFor="join-lname" className="mb-1 block text-sm font-medium text-[color:var(--text-body)]">Last Name</label>
               <input
+                id="join-lname"
                 type="text"
                 name="lname"
                 placeholder="Last Name"
@@ -146,8 +148,9 @@ export default function JoinNetwork() {
 
           {/* Email */}
           <div className="mb-4">
-            <label className="mb-1 block text-sm font-medium text-[color:var(--text-body)]">Email</label>
+            <label htmlFor="join-email" className="mb-1 block text-sm font-medium text-[color:var(--text-body)]">Email</label>
             <input
+              id="join-email"
               type="email"
               name="email"
               placeholder="Enter your email"
@@ -162,8 +165,9 @@ export default function JoinNetwork() {
 
           {/* Password */}
           <div className="mb-4 relative">
-            <label className="mb-1 block text-sm font-medium text-[color:var(--text-body)]">Password</label>
+            <label htmlFor="join-password" className="mb-1 block text-sm font-medium text-[color:var(--text-body)]">Password</label>
             <input
+              id="join-password"
               type={showPassword ? 'text' : 'password'}
               name="password"
               placeholder="Enter your password"
@@ -186,8 +190,9 @@ export default function JoinNetwork() {
 
           {/* Confirm Password */}
           <div className="mb-4 relative">
-            <label className="mb-1 block text-sm font-medium text-[color:var(--text-body)]">Confirm Password</label>
+            <label htmlFor="join-confirm-password" className="mb-1 block text-sm font-medium text-[color:var(--text-body)]">Confirm Password</label>
             <input
+              id="join-confirm-password"
               type={showConfirmPassword ? 'text' : 'password'}
               name="confirmPassword"
               placeholder="Confirm your password"

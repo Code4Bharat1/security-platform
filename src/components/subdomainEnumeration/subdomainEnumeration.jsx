@@ -213,12 +213,13 @@ export default function SubdomainScanner() {
               <div className="space-y-4">
                 {/* Domain Input */}
                 <div>
-                  <label className="block text-xs uppercase tracking-wider font-mono text-zinc-400 mb-2 font-semibold">
+                  <label htmlFor="subdomain-enum-domain" className="block text-xs uppercase tracking-wider font-mono text-zinc-400 mb-2 font-semibold">
                     Target Domain
                   </label>
                   <div className="relative">
                     <Globe className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-650" />
                     <input
+                      id="subdomain-enum-domain"
                       type="text"
                       placeholder="Enter target domain (e.g. example.com)"
                       value={domain}

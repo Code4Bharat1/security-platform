@@ -387,12 +387,13 @@ export default function OwnershipVerificationWizard({
       {!verification ? (
         <div className="mt-5 grid gap-4 lg:grid-cols-[1.2fr_0.8fr]">
           <div className="space-y-3">
-            <label className="block text-sm font-medium text-[var(--text-body)]">
+            <label htmlFor="ownership-work-email" className="block text-sm font-medium text-[var(--text-body)]">
               Work email
             </label>
             <div className="relative">
               <Mail className="pointer-events-none absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-white/35" />
               <input
+                id="ownership-work-email"
                 type="email"
                 value={workEmail}
                 onChange={(event) => setWorkEmail(event.target.value)}
@@ -448,10 +449,11 @@ export default function OwnershipVerificationWizard({
             ) : null}
           </div>
           <div className="space-y-3">
-            <label className="block text-sm font-medium text-[var(--text-body)]">
+            <label htmlFor="ownership-verification-code" className="block text-sm font-medium text-[var(--text-body)]">
               Verification code
             </label>
             <input
+              id="ownership-verification-code"
               type="text"
               value={code}
               onChange={(event) => setCode(event.target.value)}

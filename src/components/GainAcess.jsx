@@ -241,7 +241,7 @@ export default function GainAccess() {
               setFlowMode("login");
               setErrors({});
             } else {
-              router.back();
+              router.push("/");
             }
           }}
           className="absolute top-3 right-3 text-[color:var(--text-muted)] hover:text-[color:var(--text-heading)] transition-colors"
@@ -262,10 +262,11 @@ export default function GainAccess() {
             <form onSubmit={handleSubmit}>
               {/* Email */}
               <div className="mb-4">
-                <label className="mb-1 block text-sm font-medium text-[color:var(--text-body)]">
+                <label htmlFor="gain-access-email" className="mb-1 block text-sm font-medium text-[color:var(--text-body)]">
                   Email
                 </label>
                 <input
+                  id="gain-access-email"
                   type="email"
                   name="email"
                   placeholder="Enter your email"
@@ -283,10 +284,11 @@ export default function GainAccess() {
 
               {/* Password */}
               <div className="mb-2 relative">
-                <label className="mb-1 block text-sm font-medium text-[color:var(--text-body)]">
+                <label htmlFor="gain-access-password" className="mb-1 block text-sm font-medium text-[color:var(--text-body)]">
                   Password
                 </label>
                 <input
+                  id="gain-access-password"
                   type={showPassword ? "text" : "password"}
                   name="password"
                   placeholder="Enter your password"
@@ -372,10 +374,11 @@ export default function GainAccess() {
 
             <form onSubmit={handleRequestOtp}>
               <div className="mb-4">
-                <label className="mb-1 block text-sm font-medium text-[color:var(--text-body)]">
+                <label htmlFor="forgot-email-input" className="mb-1 block text-sm font-medium text-[color:var(--text-body)]">
                   Email Address
                 </label>
                 <input
+                  id="forgot-email-input"
                   type="email"
                   placeholder="name@company.com"
                   value={forgotEmail}
@@ -428,10 +431,11 @@ export default function GainAccess() {
 
             <form onSubmit={handleVerifyOtp}>
               <div className="mb-4">
-                <label className="mb-1 block text-sm font-medium text-[color:var(--text-body)]">
+                <label htmlFor="otp-code-input" className="mb-1 block text-sm font-medium text-[color:var(--text-body)]">
                   Verification Code
                 </label>
                 <input
+                  id="otp-code-input"
                   type="text"
                   placeholder="Enter 6-digit OTP"
                   value={otpCode}
@@ -486,10 +490,11 @@ export default function GainAccess() {
             <form onSubmit={handleResetPassword}>
               {/* New Password */}
               <div className="mb-4 relative">
-                <label className="mb-1 block text-sm font-medium text-[color:var(--text-body)]">
+                <label htmlFor="new-password-input" className="mb-1 block text-sm font-medium text-[color:var(--text-body)]">
                   New Password
                 </label>
                 <input
+                  id="new-password-input"
                   type={showNewPassword ? "text" : "password"}
                   placeholder="Enter new password (min 8 chars)"
                   value={newPassword}
@@ -517,10 +522,11 @@ export default function GainAccess() {
 
               {/* Confirm Password */}
               <div className="mb-4 relative">
-                <label className="mb-1 block text-sm font-medium text-[color:var(--text-body)]">
+                <label htmlFor="confirm-password-input" className="mb-1 block text-sm font-medium text-[color:var(--text-body)]">
                   Confirm Password
                 </label>
                 <input
+                  id="confirm-password-input"
                   type={showConfirmPassword ? "text" : "password"}
                   placeholder="Confirm new password"
                   value={confirmPassword}

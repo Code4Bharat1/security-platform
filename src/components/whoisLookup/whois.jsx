@@ -197,12 +197,13 @@ export default function WhoisLookup() {
 
               <form onSubmit={handleLookup} className="space-y-4">
                 <div>
-                  <label className="block text-xs uppercase tracking-wider font-mono text-zinc-400 mb-2 font-semibold">
+                  <label htmlFor="whois-domain-input" className="block text-xs uppercase tracking-wider font-mono text-zinc-400 mb-2 font-semibold">
                     Domain Name
                   </label>
                   <div className="relative">
                     <Globe className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-650" />
                     <input
+                      id="whois-domain-input"
                       type="text"
                       placeholder="example.com"
                       value={domain}

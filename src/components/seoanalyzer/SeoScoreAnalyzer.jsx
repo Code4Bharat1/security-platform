@@ -166,12 +166,13 @@ export default function SeoScoreAnalyzer() {
 
               <div className="space-y-4">
                 <div>
-                  <label className="block text-xs uppercase tracking-widest font-mono text-zinc-400 mb-2 font-semibold">
+                  <label htmlFor="seo-target-url" className="block text-xs uppercase tracking-widest font-mono text-zinc-400 mb-2 font-semibold">
                     Target Website URL
                   </label>
                   <div className="relative">
                     <Globe className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-zinc-500" />
                     <input
+                      id="seo-target-url"
                       type="text"
                       placeholder="https://example.com"
                       value={url}

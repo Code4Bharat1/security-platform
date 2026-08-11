@@ -310,11 +310,12 @@ export default function ReverseDNSLookup() {
 
               <div className="space-y-4">
                 <div>
-                  <label className="block text-xs uppercase tracking-wider font-mono text-zinc-400 mb-2 font-semibold">
+                  <label htmlFor="rdns-ip-input" className="block text-xs uppercase tracking-wider font-mono text-zinc-400 mb-2 font-semibold">
                     IP Address
                   </label>
                   <div className="relative">
                     <input
+                      id="rdns-ip-input"
                       type="text"
                       placeholder="e.g. 8.8.8.8 or 2001:4860:4860::8888"
                       value={ip}

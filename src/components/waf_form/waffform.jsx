@@ -398,10 +398,11 @@ const Wafform = () => {
               
               <form onSubmit={handleSubmit} className="space-y-4">
                 <div>
-                  <label className="block text-xs uppercase tracking-wider font-mono text-zinc-400 mb-2 font-semibold">
+                  <label htmlFor="waf-target-url" className="block text-xs uppercase tracking-wider font-mono text-zinc-400 mb-2 font-semibold">
                     Target Website URL
                   </label>
                   <input 
+                    id="waf-target-url"
                     type="url" 
                     value={url}
                     onChange={(e) => setUrl(e.target.value.trim())}

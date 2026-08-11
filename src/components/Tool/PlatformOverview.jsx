@@ -81,13 +81,15 @@ export default function PlatformOverview() {
               })}
             </div>
 
-            <label className="relative block w-full max-w-sm">
+            <label htmlFor="platform-tool-search" className="relative block w-full max-w-sm">
               <Search className="pointer-events-none absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-white/30" />
               <input
+                id="platform-tool-search"
                 type="search"
                 value={query}
                 onChange={(event) => setQuery(event.target.value)}
                 placeholder={`Search ${currentGroup.label} tools`}
+                aria-label={`Search ${currentGroup.label} tools`}
                 className="w-full border border-white/8 bg-white/[0.03] px-11 py-3 text-sm text-white placeholder:text-white/28 focus:border-[var(--gold)]/40 focus:outline-none"
               />
             </label>

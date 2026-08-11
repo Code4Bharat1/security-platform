@@ -252,10 +252,11 @@ export default function WebAppAudit() {
               
               <form onSubmit={handleStartScan} className="space-y-4">
                 <div>
-                  <label className="block text-xs uppercase tracking-wider font-mono text-zinc-400 mb-2 font-semibold">
+                  <label htmlFor="webapp-target-url" className="block text-xs uppercase tracking-wider font-mono text-zinc-400 mb-2 font-semibold">
                     Target URL / Hostname
                   </label>
                   <input 
+                    id="webapp-target-url"
                     type="text"
                     value={url}
                     onChange={(e) => setUrl(e.target.value)}

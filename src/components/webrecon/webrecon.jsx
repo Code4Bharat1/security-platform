@@ -299,10 +299,11 @@ export default function Webrecon() {
 
               <div className="space-y-4">
                 <div>
-                  <label className="block text-xs uppercase tracking-wider font-mono text-zinc-400 mb-2 font-semibold">
+                  <label htmlFor="webrecon-target-domain" className="block text-xs uppercase tracking-wider font-mono text-zinc-400 mb-2 font-semibold">
                     Target Domain
                   </label>
                   <input
+                    id="webrecon-target-domain"
                     type="text"
                     placeholder="Enter domain (e.g., example.com)"
                     value={domain}

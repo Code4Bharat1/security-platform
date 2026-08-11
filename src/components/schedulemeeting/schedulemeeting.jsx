@@ -175,25 +175,40 @@ export default function ScheduleMeeting() {
             </div>
 
             {/* Title */}
-            <input type="text" value={meetingData.title} onChange={(e) => updateField("title", e.target.value)} placeholder="Meeting title" className="w-full px-5 py-4 bg-white/5 border border-white/10 rounded-2xl text-white mb-4" />
+            <div className="mb-4">
+              <label htmlFor="meeting-title" className="block text-gray-300 font-medium mb-2">Meeting Title</label>
+              <input id="meeting-title" type="text" value={meetingData.title} onChange={(e) => updateField("title", e.target.value)} placeholder="Meeting title" className="w-full px-5 py-4 bg-white/5 border border-white/10 rounded-2xl text-white" />
+            </div>
 
             {/* Agenda */}
-            <textarea value={meetingData.agenda} onChange={(e) => updateField("agenda", e.target.value)} placeholder="Meeting purpose" rows={4} className="w-full px-5 py-4 bg-white/5 border border-white/10 rounded-2xl text-white mb-4" />
+            <div className="mb-4">
+              <label htmlFor="meeting-agenda" className="block text-gray-300 font-medium mb-2">Meeting Purpose / Agenda</label>
+              <textarea id="meeting-agenda" value={meetingData.agenda} onChange={(e) => updateField("agenda", e.target.value)} placeholder="Meeting purpose" rows={4} className="w-full px-5 py-4 bg-white/5 border border-white/10 rounded-2xl text-white" />
+            </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-4">
-              <input type="date" value={meetingData.selectedDate} onChange={(e) => updateField("selectedDate", e.target.value)} min={new Date().toISOString().split("T")[0]} className="px-5 py-4 bg-white/5 border border-white/10 rounded-2xl text-white" />
-              <select value={meetingData.selectedTime} onChange={(e) => updateField("selectedTime", e.target.value)} className="px-5 py-4 bg-white/5 border border-white/10 rounded-2xl text-white">
-                <option value="">Choose time</option>
-                {availableTimes.map(t => <option key={t} value={t}>{t}</option>)}
-              </select>
+              <div>
+                <label htmlFor="meeting-date" className="block text-gray-300 font-medium mb-2">Date</label>
+                <input id="meeting-date" type="date" value={meetingData.selectedDate} onChange={(e) => updateField("selectedDate", e.target.value)} min={new Date().toISOString().split("T")[0]} className="w-full px-5 py-4 bg-white/5 border border-white/10 rounded-2xl text-white" />
+              </div>
+              <div>
+                <label htmlFor="meeting-time" className="block text-gray-300 font-medium mb-2">Time</label>
+                <select id="meeting-time" value={meetingData.selectedTime} onChange={(e) => updateField("selectedTime", e.target.value)} className="w-full px-5 py-4 bg-white/5 border border-white/10 rounded-2xl text-white">
+                  <option value="">Choose time</option>
+                  {availableTimes.map(t => <option key={t} value={t}>{t}</option>)}
+                </select>
+              </div>
             </div>
 
             {/* Host Email */}
-            <input type="email" value={meetingData.hostEmail} onChange={(e) => updateField("hostEmail", e.target.value)} placeholder="Your registered email" className="w-full px-5 py-4 bg-white/5 border border-white/10 rounded-2xl text-white mb-4" />
+            <div className="mb-4">
+              <label htmlFor="meeting-email" className="block text-gray-300 font-medium mb-2">Your Registered Email</label>
+              <input id="meeting-email" type="email" value={meetingData.hostEmail} onChange={(e) => updateField("hostEmail", e.target.value)} placeholder="Your registered email" className="w-full px-5 py-4 bg-white/5 border border-white/10 rounded-2xl text-white" />
+            </div>
 
             {/* Duration */}
             <div className="mb-4">
-              <label className="block text-gray-300 font-medium mb-3">Duration</label>
+              <span className="block text-gray-300 font-medium mb-3">Duration</span>
               <div className="grid grid-cols-3 md:grid-cols-6 gap-3">
                 {durationOptions.map(opt => (
                   <button key={opt.minutes} onClick={() => updateField("duration", opt.minutes)} type="button" className={`p-3 rounded-xl font-medium ${meetingData.duration === opt.minutes ? 'bg-gradient-to-r from-cyan-500 to-blue-500 text-white' : 'bg-white/10 text-gray-300'}`}>
@@ -205,7 +220,7 @@ export default function ScheduleMeeting() {
 
             {/* Meeting Type */}
             <div className="mb-4">
-              <label className="block text-gray-300 font-medium mb-3">Meeting Type</label>
+              <span className="block text-gray-300 font-medium mb-3">Meeting Type</span>
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                 {meetingTypes.map(type => {
                   const Icon = type.icon;
@@ -219,7 +234,10 @@ export default function ScheduleMeeting() {
               </div>
             </div>
 
-            <input type="text" value={meetingData.venue} onChange={(e) => updateField("venue", e.target.value)} placeholder="Meeting link or location" className="w-full px-5 py-4 bg-white/5 border border-white/10 rounded-2xl text-white" />
+            <div className="mb-4">
+              <label htmlFor="meeting-venue" className="block text-gray-300 font-medium mb-2">Meeting Venue / Link</label>
+              <input id="meeting-venue" type="text" value={meetingData.venue} onChange={(e) => updateField("venue", e.target.value)} placeholder="Meeting link or location" className="w-full px-5 py-4 bg-white/5 border border-white/10 rounded-2xl text-white" />
+            </div>
           </div>
 
           <div className="text-center">

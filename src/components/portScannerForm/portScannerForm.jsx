@@ -292,12 +292,13 @@ export default function PortScannerForm() {
               <form onSubmit={handleSubmit} className="space-y-4">
                 {/* Host */}
                 <div>
-                  <label className="block text-xs uppercase tracking-wider font-mono text-zinc-400 mb-2 font-semibold">
+                  <label htmlFor="portscan-host-input" className="block text-xs uppercase tracking-wider font-mono text-zinc-400 mb-2 font-semibold">
                     Hostname or IP Address
                   </label>
                   <div className="relative">
                     <Globe className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-650" />
                     <input
+                      id="portscan-host-input"
                       type="text"
                       value={host}
                       onChange={(e) => setHost(e.target.value)}
@@ -310,12 +311,13 @@ export default function PortScannerForm() {
 
                 {/* Ports */}
                 <div>
-                  <label className="block text-xs uppercase tracking-wider font-mono text-zinc-400 mb-2 font-semibold">
+                  <label htmlFor="portscan-ports-input" className="block text-xs uppercase tracking-wider font-mono text-zinc-400 mb-2 font-semibold">
                     Port or Port Range
                   </label>
                   <div className="relative">
                     <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-650" />
                     <input
+                      id="portscan-ports-input"
                       type="text"
                       value={portInput}
                       onChange={(e) => setPortInput(e.target.value)}
@@ -332,11 +334,12 @@ export default function PortScannerForm() {
                 {/* Filter and Hostname options */}
                 <div className="grid gap-4 sm:grid-cols-2">
                   <div>
-                    <label className="block text-xs uppercase tracking-wider font-mono text-zinc-400 mb-2 font-semibold">
+                    <label htmlFor="portscan-filter-select" className="block text-xs uppercase tracking-wider font-mono text-zinc-400 mb-2 font-semibold">
                       Port Status Filter
                     </label>
                     <div className="relative">
                       <select
+                        id="portscan-filter-select"
                         value={filter}
                         onChange={(e) => setFilter(e.target.value)}
                         className="w-full bg-zinc-900/40 text-zinc-100 border border-zinc-800/80 rounded-xl p-3.5 text-sm focus:border-red-500/50 focus:ring-1 focus:ring-red-500/30 focus:outline-none transition-all font-mono appearance-none"

@@ -161,12 +161,13 @@ const WordPressScanner = () => {
 
               <div className="space-y-4">
                 <div>
-                  <label className="block text-xs uppercase tracking-wider font-mono text-zinc-400 mb-2 font-semibold">
+                  <label htmlFor="wordpress-target-url" className="block text-xs uppercase tracking-wider font-mono text-zinc-400 mb-2 font-semibold">
                     Website URL
                   </label>
                   <div className="relative">
                     <Globe className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-650" />
                     <input
+                      id="wordpress-target-url"
                       type="url"
                       value={url}
                       onChange={(e) => setUrl(e.target.value.trim())}
