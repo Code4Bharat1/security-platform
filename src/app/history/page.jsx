@@ -92,7 +92,7 @@ export default function HistoryPage() {
       setRecords(data.data.records || []);
       setPagination(data.data.pagination || { total: 0, page: 1, limit: 10, pages: 1 });
     } catch (err) {
-      console.error("Fetch history error:", err);
+      console.warn("Fetch history warning:", err.message || err);
       setError(err.message || "Something went wrong while loading history.");
     } finally {
       setLoading(false);

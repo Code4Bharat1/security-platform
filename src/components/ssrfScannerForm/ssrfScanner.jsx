@@ -16,7 +16,7 @@ useEffect(() => {
         const data = await res.json();
         setHistory(data.scans || []);
       } catch (err) {
-        console.error('Failed to load SSRF scan history', err);
+        console.warn('Failed to load SSRF scan history', err);
       }
     };
 

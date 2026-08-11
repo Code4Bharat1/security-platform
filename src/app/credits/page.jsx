@@ -107,7 +107,7 @@ export default function CreditsPage() {
       if (!res.ok) throw new Error(data.message || "Failed to fetch transaction logs.");
       setHistoryData(data);
     } catch (err) {
-      console.error(err);
+      console.warn("Fetch credits history warning:", err.message || err);
       setErrorMsg(err.message || "Could not retrieve credit transaction history.");
     } finally {
       setLoadingHistory(false);

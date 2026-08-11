@@ -96,7 +96,7 @@ export default function Vulnscanner() {
       const data = await res.json();
       setHistory(data);
     } catch (e) {
-      console.error("Fetch history error:", e);
+      console.warn("Fetch history warning:", e);
       setHistory({ error: e.message });
     }
   };

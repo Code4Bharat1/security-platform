@@ -95,7 +95,7 @@ export default function SubscriptionPage() {
         setUserCredits(data.available);
       }
     } catch (err) {
-      console.error("Error fetching credits:", err);
+      console.warn("Error fetching credits:", err);
     }
   };
 
@@ -165,7 +165,7 @@ export default function SubscriptionPage() {
       if (!res.ok) throw new Error(data.message || "Failed to load purchase history.");
       setInvoices(data);
     } catch (err) {
-      console.error(err);
+      console.warn("Fetch history warning:", err.message || err);
       setErrorMsg(err.message || "Could not retrieve invoice lists.");
     } finally {
       setLoadingHistory(false);
@@ -183,7 +183,7 @@ export default function SubscriptionPage() {
         setPlanFeatures(data);
       }
     } catch (err) {
-      console.error("Error fetching plan features:", err);
+      console.warn("Error fetching plan features:", err);
     } finally {
       setLoadingFeatures(false);
     }
