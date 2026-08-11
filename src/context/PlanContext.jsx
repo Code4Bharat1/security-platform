@@ -61,7 +61,17 @@ export function PlanProvider({ children }) {
       })
       .then((data) => setPlanFeaturesMap(data))
       .catch((err) => {
-        console.warn("[PlanContext] Could not load plan features:", err.message || err);
+        console.warn("[PlanContext] Could not load plan features, using catalog fallback:", err.message || err);
+        const fallbackTools = ALL_CATALOG_TOOLS.map(t => ({
+          route: `/api/${slugBase(t.slug)}`,
+          name: t.name
+        }));
+        setPlanFeaturesMap({
+          Free: fallbackTools,
+          Premium: fallbackTools,
+          Pro: fallbackTools,
+          Enterprise: fallbackTools
+        });
       })
       .finally(() => setLoadingFeatures(false));
   }, []);
