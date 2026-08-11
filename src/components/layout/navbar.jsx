@@ -58,6 +58,22 @@ export default function Navbar() {
     return `${parts[0][0] ?? ''}${parts[1][0] ?? ''}`.toUpperCase();
   }, [userName]);
 
+  const adminDashboardHref = useMemo(() => {
+    if (process.env.NEXT_PUBLIC_ADMIN_URL) {
+      return process.env.NEXT_PUBLIC_ADMIN_URL;
+    }
+    if (typeof window !== 'undefined') {
+      const host = window.location.hostname;
+      if (host === 'security.nexcorealliance.com') {
+        return 'https://admin-security.nexcorealliance.com/admin/dashboard';
+      }
+      if (host !== 'localhost' && host !== '127.0.0.1') {
+        return `${window.location.protocol}//admin-${host}/admin/dashboard`;
+      }
+    }
+    return 'http://localhost:3001/admin/dashboard';
+  }, []);
+
   const visibleNavItems = useMemo(() => {
     return [
       ...navItems.filter((item) => {
@@ -67,10 +83,10 @@ export default function Navbar() {
       }),
       // Admin Dashboard only visible to admin users
       ...(user?.role === 'admin'
-        ? [{ href: process.env.NEXT_PUBLIC_ADMIN_URL || 'http://localhost:3001/admin/dashboard', label: 'Admin Dashboard', adminOnly: true }]
+        ? [{ href: adminDashboardHref, label: 'Admin Dashboard', adminOnly: true }]
         : [])
     ];
-  }, [userName, user]);
+  }, [userName, user, adminDashboardHref]);
 
   const handleLogout = () => {
     contextLogout();
