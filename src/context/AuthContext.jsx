@@ -93,14 +93,14 @@ export const AuthProvider = ({ children }) => {
           throw new Error("Missing tokens in refresh payload");
         }
       } catch (err) {
-        console.error("💥 [AuthContext] Silent refresh failed:", err.message);
+        console.warn("💥 [AuthContext] Silent refresh failed:", err.message);
         const isNetworkError = err.message && (
           err.message.toLowerCase().includes("failed to fetch") || 
           err.message.toLowerCase().includes("networkerror") || 
           err.message.toLowerCase().includes("load failed")
         );
         if (isNetworkError) {
-          toast.error("Network error. Unable to sync session with security server.");
+          console.warn("Network error. Unable to sync session with security server.");
         } else {
           toast.error("Session expired. Please log in again.");
           logout();
@@ -128,6 +128,7 @@ export const AuthProvider = ({ children }) => {
 
     const payload = decodeJWT(activeToken);
     if (!payload || !payload.exp) {
+      toast.error("Session invalid. Please log in again.");
       logout();
       return false;
     }
@@ -138,7 +139,12 @@ export const AuthProvider = ({ children }) => {
     if (timeUntilExpiry <= 0) {
       console.warn("⏰ [AuthContext] Access token has expired locally.");
       const refreshed = await refreshSession(activeRefreshToken);
-      return !!refreshed;
+      if (!refreshed) {
+        toast.error("Session expired. Please log in again.");
+        logout();
+        return false;
+      }
+      return true;
     }
 
     // If token is close to expiry (within 5 minutes), refresh it silently in background

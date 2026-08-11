@@ -39,8 +39,10 @@ const ALL_CATALOG_TOOLS = [
   ...reportsTools,
 ];
 
+import { toast } from "react-hot-toast";
+
 export function PlanProvider({ children }) {
-  const { token } = useAuth();
+  const { token, logout } = useAuth();
 
   /** { Free: [{route, name}, …], Premium: […], … } */
   const [planFeaturesMap, setPlanFeaturesMap] = useState(null);
@@ -58,9 +60,9 @@ export function PlanProvider({ children }) {
         return res.json();
       })
       .then((data) => setPlanFeaturesMap(data))
-      .catch((err) =>
-        console.error("[PlanContext] Failed to load plan features:", err)
-      )
+      .catch((err) => {
+        console.warn("[PlanContext] Could not load plan features:", err.message || err);
+      })
       .finally(() => setLoadingFeatures(false));
   }, []);
 
@@ -75,15 +77,23 @@ export function PlanProvider({ children }) {
       headers: { Authorization: `Bearer ${token}` },
     })
       .then((res) => {
+        if (res.status === 401 || res.status === 403) {
+          throw new Error("UNAUTHORIZED");
+        }
         if (!res.ok) throw new Error(`subscription/current returned ${res.status}`);
         return res.json();
       })
       .then((data) => setUserPlan(data.plan || "Free"))
-      .catch((err) =>
-        console.error("[PlanContext] Failed to load user plan:", err)
-      )
+      .catch((err) => {
+        if (err.message === "UNAUTHORIZED") {
+          toast.error("Session expired. You have been logged out.");
+          if (logout) logout();
+        } else {
+          console.warn("[PlanContext] Could not load user plan:", err.message || err);
+        }
+      })
       .finally(() => setLoadingPlan(false));
-  }, [token]);
+  }, [token, logout]);
 
   /**
    * Returns true when the user is allowed to access the tool identified by

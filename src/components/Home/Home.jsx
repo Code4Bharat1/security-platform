@@ -315,7 +315,7 @@ export default function Home() {
       </section>
 
       {/* Team & Tool Mindmap Architecture Section */}
-      <section className="border-b border-white/6 py-20 lg:py-28 overflow-hidden">
+      <section className="border-b border-white/6 py-20 lg:py-20 overflow-hidden">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <SectionIntro
             eyebrow="// ARCHITECTURE & TOOL MATRIX"
@@ -404,7 +404,7 @@ export default function Home() {
 
                   {/* Green Team Node */}
                   <g transform="translate(275, 292)">
-                    <rect x="0" y="0" width="95" height="34" rx="6" fill="#121215" stroke="#4ade80" strokeWidth="1.2" />
+                    <rect x="0" y="0" width="95" height="34" rx="6" fill="#121215" stroke="#4ade80" strokeWidth="1.2" /> 
                     <text x="47.5" y="21" fill="#4ade80" fontSize="11" fontWeight="600" textAnchor="middle" fontFamily="monospace">Green Team</text>
                   </g>
 
@@ -443,7 +443,7 @@ export default function Home() {
                   <g transform="translate(500, 228)">
                     <rect x="0" y="0" width="155" height="44" rx="8" fill="#18181b" stroke="white" strokeWidth="1.5" />
                     <text x="77.5" y="27" fill="white" fontSize="12" fontWeight="700" textAnchor="middle" fontFamily="monospace">Integrated Report</text>
-                  </g>
+                  </g>12
                 </svg>
               </div>
             </motion.div>

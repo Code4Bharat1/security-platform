@@ -117,7 +117,8 @@ export default function SubscriptionPage() {
         }
       );
 
-      if (res.status === 401) {
+      if (res.status === 401 || res.status === 403) {
+        toast.error("Session expired. Please log in again.");
         localStorage.removeItem("token");
         localStorage.removeItem("user");
         window.location.href = "/gain-access";
@@ -128,7 +129,7 @@ export default function SubscriptionPage() {
       if (!res.ok) throw new Error(data.message || "Failed to load current plan.");
       setCurrentSub(data);
     } catch (err) {
-      console.error(err);
+      console.warn("Unable to fetch current subscription:", err.message || err);
       setErrorMsg(err.message || "Error fetching subscription profile.");
     } finally {
       setLoadingCurrent(false);

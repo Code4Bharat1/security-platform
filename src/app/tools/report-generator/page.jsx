@@ -266,7 +266,7 @@ function ReportGeneratorContent() {
         setCurrentSub(data);
       }
     } catch (err) {
-      console.error("Error fetching current subscription:", err);
+      console.warn("Unable to fetch current subscription:", err.message || err);
     } finally {
       setLoadingCurrent(false);
     }
@@ -282,7 +282,7 @@ function ReportGeneratorContent() {
         setPlanFeatures(data);
       }
     } catch (err) {
-      console.error("Error fetching plan features:", err);
+      console.warn("Unable to fetch plan features:", err.message || err);
     } finally {
       setLoadingFeatures(false);
     }
