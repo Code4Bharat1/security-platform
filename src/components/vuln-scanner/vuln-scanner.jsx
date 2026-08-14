@@ -133,6 +133,20 @@ export default function Vulnscanner() {
           body: JSON.stringify({ url: `https://${domain}` }),
         });
 
+        if (!response.ok) {
+          let errMsg = `Scan failed (HTTP ${response.status})`;
+          try {
+            const errObj = await response.json();
+            errMsg = errObj.message || errObj.error || errMsg;
+          } catch (_) {
+            const text = await response.text();
+            if (text) errMsg = text.slice(0, 100);
+          }
+          setError(errMsg);
+          setLoading(false);
+          return;
+        }
+
         const result = await response.json();
 
         console.log("SCAN RESULT:", result);
@@ -159,7 +173,7 @@ export default function Vulnscanner() {
         await fetchHistory(domain, token);
       } catch (err) {
         console.error("Error:", err);
-        setError("Something went wrong.");
+        setError(err.message || "Something went wrong while connecting to the scan server.");
       } finally {
         setLoading(false);
       }
