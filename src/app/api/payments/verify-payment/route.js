@@ -69,7 +69,8 @@ export async function POST(req) {
     //   - Logging credit transaction
     //   - Generating receipt data
     const authHeader = req.headers.get("authorization");
-    const apiBase = (process.env.NEXT_PUBLIC_PROD_API_URL || "").replace(/\/+$/, "");
+    const rawApi = (process.env.NEXT_PUBLIC_PROD_API_URL || "http://localhost:5000").replace(/\/+$/, "");
+    const apiBase = rawApi.endsWith("/api") ? rawApi : `${rawApi}/api`;
 
     const backendRes = await fetch(`${apiBase}/subscription/upgrade`, {
       method: "POST",

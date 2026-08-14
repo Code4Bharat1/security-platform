@@ -288,7 +288,7 @@ export default function Home() {
                 </div>
                 <div className="flex items-start gap-3 text-sm sm:text-base text-white/90">
                   <span className="flex h-5.5 w-5.5 shrink-0 items-center justify-center rounded-full bg-[var(--gold)]/20 text-[var(--gold)] font-bold text-xs mt-0.5">✓</span>
-                  <span><strong>62+ self-serve tool workflows</strong> replacing complex vendor sprawl</span>
+                  <span><strong>50+ self-serve tool workflows</strong> replacing complex vendor sprawl</span>
                 </div>
               </div>
 

@@ -55,7 +55,7 @@ export default function PlatformOverview() {
           <SectionIntro
             eyebrow="Security Platform"
             title="One platform for offensive and defensive security."
-            description="62+ self-serve workflows across red team, blue team, privacy, posture, and vulnerability assessment — replacing the vendor sprawl your team is juggling today."
+            description="50+ self-serve workflows across red team, blue team, privacy, posture, and vulnerability assessment — replacing the vendor sprawl your team is juggling today."
             accentWords={["security"]}
           />
 
