@@ -59,18 +59,29 @@ export default function Navbar() {
   }, [userName]);
 
   const adminDashboardHref = useMemo(() => {
-    if (process.env.NEXT_PUBLIC_ADMIN_URL) {
-      return process.env.NEXT_PUBLIC_ADMIN_URL;
-    }
+    // 1. Dynamic browser hostname detection (highest reliability on live deployments)
     if (typeof window !== 'undefined') {
       const host = window.location.hostname;
-      if (host === 'security.nexcorealliance.com') {
+      if (host === 'security.nexcorealliance.com' || host.endsWith('.nexcorealliance.com')) {
         return 'https://admin-security.nexcorealliance.com/admin/dashboard';
       }
-      if (host !== 'localhost' && host !== '127.0.0.1') {
+      if (host !== 'localhost' && host !== '127.0.0.1' && host !== '::1') {
         return `${window.location.protocol}//admin-${host}/admin/dashboard`;
       }
     }
+
+    // 2. Explicit environment variable check (with sanitization if /api was appended)
+    if (process.env.NEXT_PUBLIC_ADMIN_URL) {
+      let url = process.env.NEXT_PUBLIC_ADMIN_URL.trim().replace(/\/+$/, '');
+      if (url.endsWith('/api')) {
+        url = url.slice(0, -4);
+      }
+      if (!url.includes('/admin/dashboard') && !url.includes('/login')) {
+        url = `${url}/admin/dashboard`;
+      }
+      return url;
+    }
+
     return 'http://localhost:3001/admin/dashboard';
   }, []);
 
