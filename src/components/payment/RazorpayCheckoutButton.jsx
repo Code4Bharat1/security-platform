@@ -117,31 +117,54 @@ export default function RazorpayCheckoutButton({
               toast.success(
                 verifyData.message || "Subscription upgraded successfully!"
               );
+
+              // Update local user state immediately
+              try {
+                const storedUser = localStorage.getItem("user");
+                if (storedUser) {
+                  const parsed = JSON.parse(storedUser);
+                  if (verifyData.credits !== undefined) parsed.credits = verifyData.credits;
+                  if (verifyData.plan) parsed.plan = verifyData.plan;
+                  localStorage.setItem("user", JSON.stringify(parsed));
+                }
+              } catch (e) {
+                console.warn("Could not sync user in local storage:", e);
+              }
+
               if (onPaymentSuccess) {
                 onPaymentSuccess(verifyData);
               }
+
               // Generate PDF receipt if backend returned receipt data
               if (verifyData.receipt) {
                 try {
                   generatePaymentReceiptPDF(verifyData.receipt);
                 } catch (pdfErr) {
                   console.error("[RazorpayCheckout] Failed to generate PDF receipt:", pdfErr);
-                  toast.error("Payment successful, but failed to generate receipt PDF.");
                 }
               }
+
+              // Refresh the entire website after a short delay so all state takes effect immediately
+              setTimeout(() => {
+                window.location.reload();
+              }, 1500);
             } else {
               toast.error(
-                verifyData.message || "Payment verification failed."
+                verifyData.message || "Payment verification failed. Please try again."
               );
+              setTimeout(() => {
+                window.location.reload();
+              }, 1800);
             }
           } catch (verifyErr) {
             console.error("[RazorpayCheckout] Verification error:", verifyErr);
-            toast.error("Payment verification failed. Contact support if charged.");
+            toast.error("Payment verification failed. Please try again.");
+            setTimeout(() => {
+              window.location.reload();
+            }, 1800);
           }
         },
         prefill: {
-          // These will be auto-populated if the user is logged in
-          // You can enhance this by reading from AuthContext
           name: "",
           email: "",
         },
@@ -161,8 +184,11 @@ export default function RazorpayCheckoutButton({
       paymentObject.on("payment.failed", function (response) {
         console.error("[RazorpayCheckout] Payment failed:", response.error);
         toast.error(
-          response.error.description || "Payment failed. Please try again."
+          response.error?.description || "Payment failed. Refreshing page..."
         );
+        setTimeout(() => {
+          window.location.reload();
+        }, 1800);
       });
 
       paymentObject.open();

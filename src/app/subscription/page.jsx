@@ -198,11 +198,12 @@ export default function SubscriptionPage() {
 
   // Called by RazorpayCheckoutButton after a successful payment verification
   const refreshSubscriptionState = async (verifyData) => {
-    // Update local storage user credits if available
+    // Update local storage user credits and plan if available
     const storedUser = localStorage.getItem("user");
-    if (storedUser && verifyData?.credits) {
+    if (storedUser) {
       const parsed = JSON.parse(storedUser);
-      parsed.credits = verifyData.credits;
+      if (verifyData?.credits !== undefined) parsed.credits = verifyData.credits;
+      if (verifyData?.plan) parsed.plan = verifyData.plan;
       localStorage.setItem("user", JSON.stringify(parsed));
     }
 
