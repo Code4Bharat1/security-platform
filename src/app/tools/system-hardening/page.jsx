@@ -22,7 +22,7 @@ import useProtectedAction from "@/components/UseProtectedAction/UseProtectedActi
 export default function SystemHardeningPage() {
   const router = useRouter();
   const protectedAction = useProtectedAction();
-  const [target, setTarget] = useState("127.0.0.1");
+  const [target, setTarget] = useState("");
   const [scanning, setScanning] = useState(false);
   const [consoleLogs, setConsoleLogs] = useState([]);
   const [reportReady, setReportReady] = useState(false);
@@ -178,13 +178,10 @@ export default function SystemHardeningPage() {
           </div>
         </div>
 
-        {/* 2-Column Split Layout */}
-        <div className="grid gap-8 lg:grid-cols-[1fr_400px]">
+        <div className="grid gap-8 lg:grid-cols-[minmax(0,1fr)_400px] items-start min-w-0">
           
-          {/* Left Column */}
-          <div className="space-y-6">
+          <div className="space-y-6 min-w-0">
             
-            {/* Input Form Card */}
             <div className="bg-zinc-950/20 backdrop-blur-md border border-zinc-800/80 rounded-2xl p-6 shadow-[0_8px_30px_rgb(0,0,0,0.2)] hover:border-amber-500/10 transition-all duration-300 space-y-4">
               <h2 className="text-lg font-mono font-medium text-zinc-100 mb-2 flex items-center gap-2">
                 <Terminal className="h-5 w-5 text-amber-400" />
@@ -201,8 +198,8 @@ export default function SystemHardeningPage() {
                     value={target}
                     onChange={(e) => setTarget(e.target.value)}
                     disabled={scanning}
-                    placeholder="e.g. 127.0.0.1"
-                    className="w-full bg-zinc-900/40 text-zinc-100 border border-zinc-800/80 rounded-xl p-3.5 text-sm focus:border-amber-500/50 focus:ring-1 focus:ring-amber-500/30 focus:outline-none transition-all placeholder:text-zinc-600 font-mono"
+                    placeholder="e.g. 192.168.1.1 or server.internal"
+                    className="w-full bg-zinc-900/40 text-zinc-100 border border-zinc-800/80 rounded-xl p-3.5 text-sm focus:outline-none transition-all placeholder:text-zinc-600 font-mono focus:ring-1 focus:border-amber-500 focus:ring-amber-500/30 disabled:opacity-50"
                     required
                   />
                 </div>
@@ -211,17 +208,17 @@ export default function SystemHardeningPage() {
                   <button
                     type="submit"
                     disabled={scanning}
-                    className="w-full bg-amber-500 hover:bg-amber-600 text-black rounded-xl font-mono font-bold text-xs uppercase py-4 transition-all duration-300 hover:scale-[1.01] active:scale-[0.99] flex items-center justify-center gap-2 cursor-pointer hover:shadow-[0_0_20px_rgba(245,158,11,0.2)] focus:outline-none disabled:opacity-40"
+                    className="w-full bg-amber-500 hover:bg-amber-400 text-black font-mono font-bold text-sm uppercase py-4 rounded-xl transition duration-200 flex items-center justify-center gap-2 cursor-pointer shadow-md disabled:opacity-50 disabled:pointer-events-none"
                   >
                     {scanning ? (
                       <>
                         <Loader2 className="h-4 w-4 animate-spin text-black" />
-                        Auditing Host Controls...
+                        Hardening Assessment in Progress...
                       </>
                     ) : (
                       <>
-                        <Activity className="h-4 w-4 text-black" />
-                        Execute Configuration Audit
+                        <ShieldAlert className="h-4 w-4" />
+                        Run System Hardening Audit
                       </>
                     )}
                   </button>
@@ -229,20 +226,29 @@ export default function SystemHardeningPage() {
               </form>
             </div>
 
-            {/* Console Output */}
+            {errorMsg && (
+              <div className="border border-red-500/30 bg-red-500/10 rounded-2xl p-4 flex items-start gap-3">
+                <AlertTriangle className="h-5 w-5 text-red-400 flex-shrink-0 mt-0.5" />
+                <div>
+                  <p className="text-sm font-mono font-semibold text-red-400">Scan Error</p>
+                  <p className="text-xs text-red-300/70 mt-1 leading-relaxed">{errorMsg}</p>
+                </div>
+              </div>
+            )}
+
             {(scanning || consoleLogs.length > 0) && (
-              <div className="border border-zinc-800/80 bg-zinc-950/40 backdrop-blur-md rounded-2xl p-6 font-mono text-xs text-zinc-300 space-y-4 shadow-lg">
-                <div className="flex items-center justify-between border-b border-zinc-900 pb-3">
+              <div className="border border-zinc-800/80 bg-zinc-950/20 backdrop-blur-md rounded-2xl p-6 font-mono text-xs text-white/80 space-y-4 shadow-[0_8px_30px_rgb(0,0,0,0.12)]">
+                <div className="flex items-center justify-between border-b border-zinc-800/40 pb-3">
                   <span className="flex items-center gap-2 font-bold text-amber-400">
                     <Terminal className="h-4 w-4" />
-                    AUDIT CONSOLE OUTPUT
+                    AUDIT LOG STREAM
                   </span>
-                  {scanning && <span className="text-amber-450 animate-pulse">● RUNNING</span>}
+                  {scanning && <span className="text-amber-400 animate-pulse">● EXECUTING</span>}
                 </div>
                 
                 <div 
                   ref={logContainerRef}
-                  className="h-64 overflow-y-auto space-y-2 pr-2 custom-scrollbar text-zinc-400"
+                  className="h-44 overflow-y-auto space-y-2 pr-2 custom-scrollbar text-zinc-400 font-mono"
                 >
                   {consoleLogs.map((log, index) => {
                     let color = "text-zinc-400";
@@ -251,7 +257,7 @@ export default function SystemHardeningPage() {
                     if (log.includes("[ALERT]")) color = "text-red-500 font-bold";
                     
                     return (
-                      <div key={index} className={`leading-relaxed ${color}`}>
+                      <div key={index} className={`leading-relaxed break-words ${color}`}>
                         {log}
                       </div>
                     );
@@ -260,147 +266,119 @@ export default function SystemHardeningPage() {
               </div>
             )}
 
-            {/* Interactive Findings Table */}
-            {reportReady && results.length > 0 && (
-              <div className="border border-zinc-800/80 bg-zinc-950/20 backdrop-blur-md rounded-2xl p-6 space-y-4 shadow-lg">
-                <div className="flex flex-col sm:flex-row sm:items-center justify-between border-b border-zinc-900 pb-4 gap-4">
-                  <div>
-                    <h2 className="text-lg font-mono font-medium text-zinc-100 flex items-center gap-2">
-                      <ShieldCheck className="h-5 w-5 text-amber-400" />
-                      Policy Compliance Audit Findings
-                    </h2>
-                    <p className="text-xs text-zinc-400 mt-1 font-mono">
-                      Showing {filteredResults.length} of {results.length} checks resolved.
-                    </p>
-                  </div>
-                  
-                  {/* Filters */}
-                  <div className="flex flex-wrap gap-2">
-                    <select
-                      value={statusFilter}
-                      onChange={(e) => {
-                        setStatusFilter(e.target.value);
-                        setExpandedRow(null);
-                      }}
-                      className="bg-zinc-900/60 border border-zinc-800 text-zinc-300 text-xs rounded-lg px-2.5 py-1.5 focus:outline-none focus:border-amber-500 font-mono cursor-pointer"
-                    >
-                      <option value="All">All Statuses</option>
-                      <option value="Pass">Pass</option>
-                      <option value="Fail">Fail</option>
-                    </select>
-                    <select
-                      value={severityFilter}
-                      onChange={(e) => {
-                        setSeverityFilter(e.target.value);
-                        setExpandedRow(null);
-                      }}
-                      className="bg-zinc-900/60 border border-zinc-800 text-zinc-300 text-xs rounded-lg px-2.5 py-1.5 focus:outline-none focus:border-amber-500 font-mono cursor-pointer"
-                    >
-                      <option value="All">All Severities</option>
-                      <option value="High">High</option>
-                      <option value="Medium">Medium</option>
-                      <option value="Low">Low</option>
-                    </select>
-                  </div>
+            {reportReady && results.length > 0 && !scanning && (
+              <div className="space-y-4 min-w-0">
+                <div className="flex items-center justify-between px-1">
+                  <span className="text-xs uppercase font-mono font-bold text-zinc-300">Policy Hardening Controls</span>
+                  <button
+                    onClick={() => setShowOnlyFailures(prev => !prev)}
+                    className={`flex items-center gap-1.5 text-[0.65rem] font-mono px-2.5 py-1.2 rounded-lg border transition-all ${
+                      showOnlyFailures
+                        ? "border-amber-500/40 text-amber-400 bg-amber-500/10"
+                        : "border-zinc-700/60 text-zinc-500 hover:border-zinc-650"
+                    }`}
+                  >
+                    <Filter className="h-3 w-3" />
+                    {showOnlyFailures ? "Showing Failures Only" : "Show Failures Only"}
+                  </button>
                 </div>
 
-                <div className="overflow-x-auto">
-                  <table className="w-full min-w-full table-fixed text-left font-mono text-xs border-collapse">
-                    <thead>
-                      <tr className="border-b border-zinc-900 text-zinc-400 uppercase tracking-wider text-[10px]">
-                        <th className="py-3 px-2 w-[45%]">Control Policy Check</th>
-                        <th className="py-3 px-2 w-[15%] text-center">Status</th>
-                        <th className="py-3 px-2 w-[20%] text-center">Severity</th>
-                        <th className="py-3 px-2 w-[20%] text-right">Details</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {filteredResults.map((finding, idx) => {
-                        const isExpanded = expandedRow === idx;
-                        const statusColor = finding.status === 'Pass' 
-                          ? 'text-emerald-400 border-emerald-500/20 bg-emerald-500/5' 
-                          : 'text-red-450 border-red-500/20 bg-red-500/5';
-                        const severityColor = finding.severity === 'High' 
-                          ? 'text-red-400 font-bold' 
-                          : finding.severity === 'Medium' 
-                            ? 'text-orange-400' 
-                            : 'text-zinc-500';
-                        return (
-                          <React.Fragment key={idx}>
-                            <tr 
-                              onClick={() => setExpandedRow(isExpanded ? null : idx)}
-                              className="border-b border-zinc-900 hover:bg-zinc-900/10 cursor-pointer transition-colors"
-                            >
-                              <td className="py-4 px-2 text-zinc-200 font-semibold">{finding.control}</td>
-                              <td className="py-4 px-2 text-center">
-                                <span className={`inline-block px-2.5 py-0.5 rounded-lg border text-[10px] uppercase font-bold tracking-wider ${statusColor}`}>
-                                  {finding.status}
-                                </span>
-                              </td>
-                              <td className={`py-4 px-2 text-center font-bold uppercase ${severityColor}`}>{finding.severity}</td>
-                              <td className="py-4 px-2 text-right text-amber-400 text-[10px] hover:underline select-none">
-                                {isExpanded ? 'Collapse ▲' : 'Inspect ▼'}
-                              </td>
-                            </tr>
-                            {isExpanded && (
-                              <tr>
-                                <td colSpan="4" className="bg-zinc-900/20 px-4 py-4 border-b border-zinc-900 space-y-3.5 leading-relaxed text-zinc-350">
-                                  <div>
-                                    <h4 className="text-[10px] uppercase tracking-wider text-zinc-400 font-bold mb-1.5">Detailed Discovery Evidence:</h4>
-                                    <p className="text-xs font-mono bg-zinc-950/40 border border-zinc-900 rounded-xl p-3 text-zinc-300">
-                                      {finding.details}
-                                    </p>
-                                  </div>
-                                  <div>
-                                    <h4 className="text-[10px] uppercase tracking-wider text-zinc-400 font-bold mb-1.5">Actionable Remediation Guidance:</h4>
-                                    <div className={`flex gap-2 items-start text-xs font-mono border rounded-xl p-3 text-zinc-300 bg-transparent ${
-                                      finding.status === 'Pass'
-                                        ? 'border-zinc-800/80'
-                                        : 'border-amber-500/10'
-                                    }`}>
-                                      <ShieldCheck className="w-4 h-4 text-amber-400 mt-0.5 flex-shrink-0" />
-                                      <div>{finding.remediation}</div>
-                                    </div>
-                                  </div>
+                <div className="border border-zinc-800/80 rounded-2xl overflow-hidden min-w-0">
+                  <div className="overflow-x-auto min-w-0">
+                    <table className="w-full min-w-[500px] table-fixed text-left font-mono text-xs border-collapse">
+                      <thead>
+                        <tr className="border-b border-zinc-900 text-zinc-400 uppercase tracking-wider text-[10px]">
+                          <th className="py-3 px-3 w-[45%]">Control Standard</th>
+                          <th className="py-3 px-2 w-[15%] text-center">Status</th>
+                          <th className="py-3 px-2 w-[20%] text-center">Severity</th>
+                          <th className="py-3 px-3 w-[20%] text-right">Details</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {filteredResults.map((finding, idx) => {
+                          const isExpanded = expandedRow === idx;
+                          const statusColor = finding.status === 'Pass' 
+                            ? 'text-emerald-400 border-emerald-500/20 bg-emerald-500/5' 
+                            : 'text-red-400 border-red-500/20 bg-red-500/5';
+                          const severityColor = finding.severity === 'High' 
+                            ? 'text-red-400 font-bold' 
+                            : finding.severity === 'Medium' 
+                              ? 'text-orange-400' 
+                              : 'text-zinc-500';
+                          return (
+                            <React.Fragment key={idx}>
+                              <tr 
+                                onClick={() => setExpandedRow(isExpanded ? null : idx)}
+                                className="border-b border-zinc-900 hover:bg-zinc-900/10 cursor-pointer transition-colors"
+                              >
+                                <td className="py-4 px-3 text-zinc-200 font-semibold">{finding.control}</td>
+                                <td className="py-4 px-2 text-center">
+                                  <span className={`inline-block px-2.5 py-0.5 rounded-lg border text-[10px] uppercase font-bold tracking-wider ${statusColor}`}>
+                                    {finding.status}
+                                  </span>
+                                </td>
+                                <td className={`py-4 px-2 text-center font-bold uppercase ${severityColor}`}>{finding.severity}</td>
+                                <td className="py-4 px-3 text-right text-amber-400 text-[10px] hover:underline select-none">
+                                  {isExpanded ? 'Collapse ▲' : 'Inspect ▼'}
                                 </td>
                               </tr>
-                            )}
-                          </React.Fragment>
-                        );
-                      })}
-                    </tbody>
-                  </table>
+                              {isExpanded && (
+                                <tr>
+                                  <td colSpan="4" className="bg-zinc-900/20 px-4 py-4 border-b border-zinc-900 space-y-3.5 leading-relaxed text-zinc-300">
+                                    <div>
+                                      <h4 className="text-[10px] uppercase tracking-wider text-zinc-400 font-bold mb-1.5">Detailed Discovery Evidence:</h4>
+                                      <p className="text-xs font-mono bg-zinc-950/40 border border-zinc-900 rounded-xl p-3 text-zinc-300 break-words">
+                                        {finding.details}
+                                      </p>
+                                    </div>
+                                    <div>
+                                      <h4 className="text-[10px] uppercase tracking-wider text-zinc-400 font-bold mb-1.5">Actionable Remediation Guidance:</h4>
+                                      <div className={`flex gap-2 items-start text-xs font-mono border rounded-xl p-3 text-zinc-300 bg-transparent ${
+                                        finding.status === 'Pass'
+                                          ? 'border-zinc-800/80'
+                                          : 'border-amber-500/10'
+                                      }`}>
+                                        <ShieldCheck className="w-4 h-4 text-amber-400 mt-0.5 flex-shrink-0" />
+                                        <div className="break-words">{finding.remediation}</div>
+                                      </div>
+                                    </div>
+                                  </td>
+                                </tr>
+                              )}
+                            </React.Fragment>
+                          );
+                        })}
+                      </tbody>
+                    </table>
+                  </div>
                 </div>
               </div>
             )}
 
           </div>
 
-          {/* Right Column */}
-          <div className="space-y-6">
-            
-            {/* Sidebar Results Summary Card */}
+          <div className="space-y-6 min-w-0">
             {reportReady ? (
-              <div className="border border-zinc-800/80 bg-transparent rounded-2xl p-6 space-y-6 shadow-lg">
+              <div className="border border-zinc-800/80 bg-transparent rounded-2xl p-6 space-y-6 shadow-lg min-w-0">
                 <div className="text-center space-y-2">
                   <div className="inline-flex h-12 w-12 items-center justify-center border border-amber-500/30 text-amber-400 rounded-full bg-amber-500/10 mb-2">
                     <Award className="h-6 w-6" />
                   </div>
                   <h3 className="text-xl font-mono font-bold text-zinc-100">Audit Complete</h3>
-                  <p className="text-xs text-zinc-550">Findings compiled for {target}</p>
+                  <p className="text-xs text-zinc-400 break-all">Findings compiled for {target}</p>
                 </div>
 
                 <div className="border-t border-zinc-900 pt-4 space-y-3 font-mono text-xs">
-                  <div className="flex justify-between">
-                    <span className="text-zinc-450">Checks Failed:</span>
+                  <div className="flex justify-between gap-2">
+                    <span className="text-zinc-400">Checks Failed:</span>
                     <span className="text-red-400 font-bold">{checksFailed} {checksFailed === 1 ? 'Policy' : 'Policies'}</span>
                   </div>
-                  <div className="flex justify-between">
-                    <span className="text-zinc-450">Checks Passed:</span>
+                  <div className="flex justify-between gap-2">
+                    <span className="text-zinc-400">Checks Passed:</span>
                     <span className="text-emerald-400 font-bold">{checksPassed} {checksPassed === 1 ? 'Policy' : 'Policies'}</span>
                   </div>
-                  <div className="flex justify-between">
-                    <span className="text-zinc-450">Risk Band:</span>
+                  <div className="flex justify-between gap-2">
+                    <span className="text-zinc-400">Risk Band:</span>
                     <span className={`${riskColor} font-bold`}>{riskBand}</span>
                   </div>
                 </div>
@@ -408,9 +386,9 @@ export default function SystemHardeningPage() {
                 <div className="space-y-2">
                   <button 
                     onClick={handleDownloadPDF}
-                    className="w-full bg-amber-500 hover:bg-amber-600 text-black font-mono font-bold text-xs uppercase py-3.5 rounded-xl transition duration-200 flex items-center justify-center gap-2 cursor-pointer shadow-md border-none"
+                    className="w-full bg-yellow-400 hover:bg-yellow-300 text-black border border-yellow-300 font-mono font-bold text-xs uppercase py-3.5 rounded-xl transition duration-200 flex items-center justify-center gap-2 cursor-pointer shadow-[0_0_20px_rgba(250,204,21,0.35)]"
                   >
-                    <Download className="h-4 w-4" />
+                    <Download className="h-4 w-4 text-black stroke-[2.5]" />
                     Download PDF Report
                   </button>
                 </div>

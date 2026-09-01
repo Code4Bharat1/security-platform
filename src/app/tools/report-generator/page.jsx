@@ -179,6 +179,46 @@ const TOOL_ENDPOINT_MAP = {
   "/api/web-app-audit": { endpoint: "/scan/web-app-audit", method: "POST", field: "url", useFullUrl: true }
 };
 
+// ── Canonical 25 URL-Compatible Security Tools for Integrated Reports ────────
+const URL_TOOL_LIST = [
+  { name: "Brute Force Scanner", route: "/api/bruteForce" },
+  { name: "WordPress Scanner", route: "/api/wordpressForm" },
+  { name: "Clickjacking Tester", route: "/api/clickjackingTester" },
+  { name: "Website Recon", route: "/api/webrecon" },
+  { name: "Vulnerability Scanner", route: "/api/vuln-scanner" },
+  { name: "Whois Domain Lookup", route: "/api/whoisLookup" },
+  { name: "Subdomain Scanner", route: "/api/subdomainEnumeration" },
+  { name: "XSS Tester", route: "/api/xssTester" },
+  { name: "Open Redirect Tester", route: "/api/openRedirectTester" },
+  { name: "Technology Fingerprinter", route: "/api/fingerPrint" },
+  { name: "SQLi Scanner", route: "/api/nexpose-scan" },
+  { name: "HTTPS Security Checker", route: "/api/httpsCheckerForm" },
+  { name: "WAF Scanner", route: "/api/firewallDashboard" },
+  { name: "MDR Monitor", route: "/api/mdr-monitor" },
+  { name: "Keyword Density Checker", route: "/api/keyword-checker" },
+  { name: "Meta Tag Analyzer", route: "/api/meta-tag" },
+  { name: "Sitemap Generator", route: "/api/sitemapForm" },
+  { name: "Link Detector", route: "/api/check-link" },
+  { name: "IP Address Info Finder", route: "/api/ip-address-info-finder" },
+  { name: "SEO Score Analyzer Tool", route: "/api/seo-score-analyzer-tool" },
+  { name: "Keyword Generator", route: "/api/KeywordGenerator" },
+  { name: "Website Optimization Tool", route: "/api/website-optimization-tool" },
+  { name: "Advanced Dynamic Scan", route: "/api/advanced-dynamic-scan" },
+  { name: "Basic Network Scanning", route: "/api/basic-network-scan" },
+  { name: "Web Application Test", route: "/api/web-app-audit" }
+];
+
+const isSameTool = (t1, t2) => {
+  if (!t1 || !t2) return false;
+  const r1 = (t1.route || "").toLowerCase().replace(/^\/api\//, "");
+  const r2 = (t2.route || "").toLowerCase().replace(/^\/api\//, "");
+  if (r1 && r2 && r1 === r2) return true;
+  const n1 = (t1.name || "").trim().toLowerCase();
+  const n2 = (t2.name || "").trim().toLowerCase();
+  if (n1 && n2 && n1 === n2) return true;
+  return false;
+};
+
 const API_BASE = (process.env.NEXT_PUBLIC_PROD_API_URL || "http://localhost:5000/api").replace(/\/+$/, "");
 
 // ── Clean Formatter to Convert Raw Nested Objects/Arrays to Readable PDF Rows ──
@@ -235,7 +275,7 @@ function ReportGeneratorContent() {
   const protectedAction = useProtectedAction();
   
   // General State
-  const [domain, setDomain] = useState("example.com");
+  const [domain, setDomain] = useState("");
   const [scanning, setScanning] = useState(false);
   const [consoleLogs, setConsoleLogs] = useState([]);
   const [reportReady, setReportReady] = useState(false);
@@ -294,15 +334,64 @@ function ReportGeneratorContent() {
   }, []);
 
   const userPlan = currentSub?.plan || "Free";
+  const tierLabel = useMemo(() => {
+    return requestedTier.charAt(0).toUpperCase() + requestedTier.slice(1).toLowerCase();
+  }, [requestedTier]);
 
-  // Derive tools assigned to user's plan — Filter out non-URL tools
-  const currentPlanTools = useMemo(() => {
-    const rawTools = planFeatures[userPlan] || planFeatures["Free"] || [];
-    return rawTools.filter(tool => 
-      !EXCLUDED_TOOL_NAMES_AND_ROUTES.has(tool.name) && 
-      !EXCLUDED_TOOL_NAMES_AND_ROUTES.has(tool.route)
+  // Helper to get raw tools assigned to a specific plan from planFeatures
+  const getToolsForPlan = useCallback((planName) => {
+    if (!planFeatures || typeof planFeatures !== "object") return [];
+    const normalized = (planName || "Free").trim().toLowerCase();
+    const matchKey = Object.keys(planFeatures).find(
+      (k) => k.toLowerCase() === normalized
     );
-  }, [planFeatures, userPlan]);
+    const tools = matchKey ? planFeatures[matchKey] : planFeatures[planName];
+    if (Array.isArray(tools) && tools.length > 0) {
+      return tools;
+    }
+    // If plan is Enterprise and empty in DB (full bypass), default to URL_TOOL_LIST
+    if (normalized === "enterprise") {
+      return URL_TOOL_LIST;
+    }
+    return Array.isArray(tools) ? tools : [];
+  }, [planFeatures]);
+
+  // Derive tools for the clicked report tier intersected with user's plan access
+  const currentPlanTools = useMemo(() => {
+    // 1. Get raw tools configured for the Clicked Report's tier (e.g. Free, Premium, Pro, Enterprise)
+    const clickedTierRawTools = getToolsForPlan(tierLabel);
+
+    // 2. Get user's plan and permissions
+    const isUserEnterprise = (userPlan || "").trim().toLowerCase() === "enterprise";
+    const userPlanRawTools = getToolsForPlan(userPlan);
+
+    // 3. Filter: tool must be in Clicked Report tier AND user must have access to it in their plan AND it must be a URL report tool
+    const filtered = clickedTierRawTools.filter((tool) => {
+      // Exclude non-URL / code / token / file tools
+      if (EXCLUDED_TOOL_NAMES_AND_ROUTES.has(tool.name) || EXCLUDED_TOOL_NAMES_AND_ROUTES.has(tool.route)) {
+        return false;
+      }
+
+      // Check if it belongs to the 25 URL tools
+      const isUrlReportTool = Boolean(TOOL_ENDPOINT_MAP[tool.route]) || URL_TOOL_LIST.some((u) => isSameTool(u, tool));
+      if (!isUrlReportTool) {
+        return false;
+      }
+
+      // Check if user's plan includes this tool (Enterprise has full access; otherwise check user's plan tools)
+      const userHasAccess = isUserEnterprise || userPlanRawTools.some((uTool) => isSameTool(uTool, tool));
+      return userHasAccess;
+    });
+
+    // Map each tool to its canonical name & route
+    return filtered.map((tool) => {
+      const canonical = URL_TOOL_LIST.find((u) => isSameTool(u, tool));
+      return {
+        name: canonical ? canonical.name : tool.name,
+        route: canonical ? canonical.route : tool.route
+      };
+    });
+  }, [planFeatures, userPlan, tierLabel, getToolsForPlan]);
 
   const dynamicToolsList = useMemo(() => {
     return currentPlanTools.map((tool, idx) => ({
@@ -494,7 +583,7 @@ function ReportGeneratorContent() {
     const cleanHost = domain.replace(/^https?:\/\//i, "").replace(/\/.*$/, "");
     const targetUrl = domain.startsWith("http") ? domain : `https://${cleanHost}`;
 
-    appendLog(`[INFO] Starting Multi-Tool Security Audit for ${userPlan.toUpperCase()} Plan...`);
+    appendLog(`[INFO] Starting Multi-Tool Security Audit for ${tierLabel.toUpperCase()} Tier Report...`);
     appendLog(`[INFO] Target Host: ${cleanHost} (${targetUrl})`);
     appendLog(`[WARNING] DO NOT CLOSE OR REFRESH THIS TAB while the sequential audit is running.`);
     appendLog(`[NOTICE] Email notification for completed reports is planned for upcoming phase.`);
@@ -627,7 +716,7 @@ function ReportGeneratorContent() {
         summaryDoc.setFont("helvetica", "bold");
         summaryDoc.setFontSize(15);
         summaryDoc.setTextColor(...C.bluePrimary);
-        summaryDoc.text("CONSOLIDATED INTEGRATED SECURITY REPORT", 105, 50, { align: "center" });
+        summaryDoc.text(`CONSOLIDATED ${tierLabel.toUpperCase()} INTEGRATED SECURITY REPORT`, 105, 50, { align: "center" });
 
         summaryDoc.line(14, 55, 196, 55);
 
@@ -645,6 +734,8 @@ function ReportGeneratorContent() {
             ["Auditor Mail ID",         employeeMail],
             ["Target Domain / Host",    cleanHost],
             ["Target URL",              targetUrl],
+            ["Subscription Plan",       userPlan],
+            ["Report Tier",             `${tierLabel} Tier Report`],
             ["Assessment Date",         scanDate],
             ["Assessment Time",         scanTime],
             ["Total Tools Assessed",    `${accumulatedResults.length} Tools`],
@@ -659,7 +750,7 @@ function ReportGeneratorContent() {
           }
         });
 
-        applyHeaderFooterDecorator(summaryDoc, "Consolidated Integrated Security Report");
+        applyHeaderFooterDecorator(summaryDoc, `Consolidated ${tierLabel} Integrated Security Report`);
 
         // Index / Table of Contents Page
         summaryDoc.addPage();
@@ -705,14 +796,14 @@ function ReportGeneratorContent() {
 
         const mergedBytes = await mergedPdf.save();
         await uploadPdfToHistory(
-          "Integrated Security Report",
-          `Integrated_Security_Report_${cleanHost}.pdf`,
+          `${tierLabel} Integrated Security Report`,
+          `Integrated_${tierLabel}_Security_Report_${cleanHost}.pdf`,
           mergedBytes.buffer,
           cleanHost,
-          { status: "completed", totalTools: accumulatedResults.length, passed, failed },
+          { status: "completed", reportTier: tierLabel, userPlan, totalTools: accumulatedResults.length, passed, failed },
           token
         );
-        appendLog(`[HISTORY] Consolidated Integrated Security Report saved to history.`);
+        appendLog(`[HISTORY] Consolidated ${tierLabel} Integrated Security Report saved to history.`);
 
       } catch (integratedErr) {
         console.error("Failed compiling Integrated PDF:", integratedErr);
@@ -857,7 +948,7 @@ function ReportGeneratorContent() {
       summaryDoc.setFont("helvetica", "bold");
       summaryDoc.setFontSize(14);
       summaryDoc.setTextColor(...C.bluePrimary);
-      summaryDoc.text(`CONSOLIDATED ${userPlan.toUpperCase()} TIER MULTI-TOOL AUDIT REPORT`, 105, 50, { align: "center" });
+      summaryDoc.text(`CONSOLIDATED ${tierLabel.toUpperCase()} TIER MULTI-TOOL AUDIT REPORT`, 105, 50, { align: "center" });
       summaryDoc.line(14, 56, 196, 56);
 
       renderTable(summaryDoc, {
@@ -868,6 +959,7 @@ function ReportGeneratorContent() {
           ["Employee Name",           employeeName],
           ["Target Domain / Host",    cleanHost || domain],
           ["Subscription Tier",       userPlan],
+          ["Report Tier",             `${tierLabel} Tier Report`],
           ["Assessment Date",         new Date().toLocaleDateString("en-GB")],
           ["Total Tools Executed",    `${scanResults.length} (${passedCount} Passed, ${failedCount} Failed)`],
           ["Classification",          "Confidential"],
@@ -952,7 +1044,7 @@ function ReportGeneratorContent() {
       const url = URL.createObjectURL(blob);
       const link = document.createElement("a");
       link.href = url;
-      link.download = `Nexcore_${userPlan}_Integrated_Security_Report_${Date.now()}.pdf`;
+      link.download = `Nexcore_${tierLabel}_Integrated_Security_Report_${Date.now()}.pdf`;
       document.body.appendChild(link);
       link.click();
       document.body.removeChild(link);
@@ -965,7 +1057,7 @@ function ReportGeneratorContent() {
 
   // ── Paywall Block Screen ──────────────────────────────────────────────────
   if (!loadingCurrent && !hasAccess) {
-    const requiredPlan = requestedTier.charAt(0).toUpperCase() + requestedTier.slice(1);
+    const requiredPlan = tierLabel;
     return (
       <div className="min-h-screen bg-[#050505] flex items-center justify-center text-white px-4">
         <div className="max-w-md w-full bg-white/[0.02] border border-white/10 rounded-2xl p-8 text-center space-y-6 shadow-2xl">
@@ -998,8 +1090,6 @@ function ReportGeneratorContent() {
     );
   }
 
-  const tierLabel = requestedTier.charAt(0).toUpperCase() + requestedTier.slice(1);
-
   return (
     <div className="tool-detail-page min-h-screen bg-[#050505] text-white">
       <div className="tool-detail-shell mx-auto max-w-7xl px-4 py-12 sm:px-6 lg:px-8">
@@ -1024,7 +1114,7 @@ function ReportGeneratorContent() {
             CONSOLIDATED <span className="text-[var(--gold)]">{tierLabel.toUpperCase()} REPORT</span>
           </h1>
           <p className="mt-2 text-[var(--muted)] max-w-3xl text-sm leading-relaxed">
-            Sequential multi-tool security engine. Runs all {dynamicToolsList.length} tools assigned to your <span className="text-white font-medium">{userPlan}</span> plan one-by-one against your target URL, handles exceptions automatically, and stacks findings into a unified PDF report.
+            Sequential multi-tool security engine. Runs all {dynamicToolsList.length} tools assigned to the {tierLabel} tier (accessible under your <span className="text-white font-medium">{userPlan}</span> plan) one-by-one against your target URL, handles exceptions automatically, and stacks findings into a unified PDF report.
           </p>
         </div>
 
@@ -1133,7 +1223,7 @@ function ReportGeneratorContent() {
           <div className="space-y-6">
             <div className="border border-white/10 bg-white/[0.01] rounded-xl p-6 space-y-5">
               <h3 className="text-sm font-mono font-bold uppercase tracking-wider text-white border-b border-white/10 pb-3">
-                {userPlan} Plan Tools Checklist
+                {tierLabel} Report Tools Checklist
               </h3>
               <div className="space-y-3.5">
                 {loadingFeatures ? (
@@ -1203,9 +1293,9 @@ function ReportGeneratorContent() {
               </div>
               <button 
                 onClick={handleDownloadPDF}
-                className="bg-[var(--gold)] hover:bg-[var(--gold)]/90 text-black font-mono font-bold text-xs uppercase px-6 py-3 rounded-lg transition duration-200 flex items-center justify-center gap-2 cursor-pointer shadow-md"
+                className="bg-white hover:bg-zinc-200 text-black border border-white font-mono font-bold text-xs uppercase px-6 py-3 rounded-lg transition duration-200 flex items-center justify-center gap-2 cursor-pointer shadow-[0_0_15px_rgba(255,255,255,0.3)]"
               >
-                <Download className="h-4 w-4" />
+                <Download className="h-4 w-4 text-black stroke-[2.5]" />
                 Download Stacked PDF Report
               </button>
             </div>
@@ -1236,8 +1326,8 @@ function ReportGeneratorContent() {
               {activeTab === "summary" && (
                 <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
                   <div className="bg-white/[0.01] border border-white/8 rounded-xl p-5 space-y-3">
-                    <span className="text-[10px] font-mono uppercase tracking-wider text-[var(--gold)] font-bold">Plan Tiers</span>
-                    <h4 className="text-xl font-bold font-mono">{userPlan} Tier</h4>
+                    <span className="text-[10px] font-mono uppercase tracking-wider text-[var(--gold)] font-bold">Report Tier</span>
+                    <h4 className="text-xl font-bold font-mono">{tierLabel} Tier</h4>
                     <p className="text-xs text-[var(--muted)]">{scanResults.length} tools executed sequentially.</p>
                   </div>
                   <div className="bg-white/[0.01] border border-white/8 rounded-xl p-5 space-y-3">

@@ -65,7 +65,7 @@ export default function CloudSecurityPage() {
   const protectedAction = useProtectedAction();
 
   // Connection fields
-  const [target, setTarget] = useState("AWS-Production-Profile");
+  const [target, setTarget] = useState("");
   const [provider, setProvider] = useState("AWS");
   const [awsAccessKeyId, setAwsAccessKeyId] = useState("");
   const [awsSecretAccessKey, setAwsSecretAccessKey] = useState("");
@@ -328,10 +328,10 @@ export default function CloudSecurityPage() {
         </div>
 
         {/* 2-Column Layout */}
-        <div className="grid gap-8 lg:grid-cols-[1fr_380px]">
+        <div className="grid gap-8 lg:grid-cols-[minmax(0,1fr)_380px] items-start min-w-0">
           
           {/* Left Column */}
-          <div className="space-y-6">
+          <div className="space-y-6 min-w-0">
             
             {/* Form card */}
             <div className="bg-zinc-950/20 backdrop-blur-md border border-zinc-800/80 rounded-2xl p-6 shadow-[0_8px_30px_rgb(0,0,0,0.2)] hover:border-amber-500/10 transition-all duration-300">
@@ -341,7 +341,7 @@ export default function CloudSecurityPage() {
               </h2>
               
               <form onSubmit={handleStartScan} className="space-y-4">
-                <div className="grid grid-cols-2 gap-4">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div>
                     <label className="block text-xs uppercase tracking-wider font-mono text-zinc-400 mb-2 font-semibold">
                       Cloud Provider
@@ -372,48 +372,52 @@ export default function CloudSecurityPage() {
                   </div>
                 </div>
 
-                <div className="border-t border-zinc-800/40 my-3 pt-3 space-y-4">
-                  <div className="border border-amber-500/10 p-3.5 rounded-xl">
-                    <p className="text-[0.68rem] text-zinc-400 font-mono leading-relaxed flex items-start gap-2">
-                      <Lock className="h-4.5 w-4.5 text-amber-400 flex-shrink-0 mt-0.5" />
-                      <span>
-                        <b>Optional:</b> Enter temporary AWS Access Keys below to query a live AWS account. Credentials are not stored on disk and are only used in memory for Signature V4 request signing. Leave blank for simulated sandbox audits.
-                      </span>
-                    </p>
+                <div className="space-y-4 pt-2">
+                  <div>
+                    <label className="block text-xs uppercase tracking-wider font-mono text-zinc-400 mb-2 font-semibold">
+                      AWS Access Key ID
+                    </label>
+                    <input 
+                      type="text" 
+                      value={awsAccessKeyId}
+                      onChange={(e) => setAwsAccessKeyId(e.target.value)}
+                      disabled={scanning}
+                      placeholder="AKIA..."
+                      className="w-full bg-zinc-900/40 text-zinc-100 border border-zinc-800/80 rounded-xl p-3 text-sm focus:border-amber-500/50 focus:outline-none transition-all font-mono"
+                      required
+                    />
                   </div>
 
-                  <div className="grid grid-cols-2 gap-4">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     <div>
-                      <label className="block text-[0.62rem] uppercase tracking-wider font-mono text-zinc-400 mb-1.5 font-bold">
-                        AWS Access Key ID
-                      </label>
-                      <input 
-                        type="text"
-                        value={awsAccessKeyId}
-                        onChange={(e) => setAwsAccessKeyId(e.target.value)}
-                        disabled={scanning}
-                        placeholder="AKIA..."
-                        className="w-full bg-zinc-900/40 text-zinc-100 border border-zinc-800/80 rounded-xl p-2.5 text-xs focus:border-amber-500/50 focus:outline-none font-mono"
-                      />
-                    </div>
-
-                    <div>
-                      <label className="block text-[0.62rem] uppercase tracking-wider font-mono text-zinc-400 mb-1.5 font-bold">
+                      <label className="block text-xs uppercase tracking-wider font-mono text-zinc-400 mb-2 font-semibold">
                         AWS Secret Access Key
                       </label>
                       <input 
-                        type="password"
+                        type="password" 
                         value={awsSecretAccessKey}
                         onChange={(e) => setAwsSecretAccessKey(e.target.value)}
                         disabled={scanning}
                         placeholder="••••••••••••••••"
-                        className="w-full bg-zinc-900/40 text-zinc-100 border border-zinc-800/80 rounded-xl p-2.5 text-xs focus:border-amber-500/50 focus:outline-none font-mono"
+                        className="w-full bg-zinc-900/40 text-zinc-100 border border-zinc-800/80 rounded-xl p-3 text-sm focus:border-amber-500/50 focus:outline-none transition-all font-mono"
+                        required
                       />
+                    </div>
+
+                    <div>
+                      <label className="block text-xs uppercase tracking-wider font-mono text-zinc-400 mb-2 font-semibold">
+                        Region
+                      </label>
+                      <select 
+                        className="w-full bg-zinc-900/40 text-zinc-100 border border-zinc-800/80 rounded-xl p-3 text-sm focus:border-amber-500/50 focus:outline-none transition-all font-mono"
+                      >
+                        <option value="us-east-1" className="bg-zinc-950 text-zinc-100">us-east-1 (N. Virginia)</option>
+                      </select>
                     </div>
                   </div>
 
                   <div>
-                    <label className="block text-[0.62rem] uppercase tracking-wider font-mono text-zinc-400 mb-1.5 font-bold">
+                    <label className="block text-xs uppercase tracking-wider font-mono text-zinc-400 mb-2 font-semibold">
                       AWS Session Token (Optional)
                     </label>
                     <input 
@@ -421,8 +425,8 @@ export default function CloudSecurityPage() {
                       value={awsSessionToken}
                       onChange={(e) => setAwsSessionToken(e.target.value)}
                       disabled={scanning}
-                      placeholder="IQoJb3JpZ2luX2Vj..."
-                      className="w-full bg-zinc-900/40 text-zinc-100 border border-zinc-800/80 rounded-xl p-2.5 text-xs focus:border-amber-500/50 focus:outline-none font-mono"
+                      placeholder="Optional Session Token"
+                      className="w-full bg-zinc-900/40 text-zinc-100 border border-zinc-800/80 rounded-xl p-3 text-sm focus:border-amber-500/50 focus:outline-none transition-all font-mono"
                     />
                   </div>
                 </div>
@@ -482,7 +486,7 @@ export default function CloudSecurityPage() {
                     if (log.includes("[ALERT]")) color = "text-red-500 font-bold";
                     
                     return (
-                      <div key={index} className={`leading-relaxed ${color}`}>
+                      <div key={index} className={`leading-relaxed break-words ${color}`}>
                         {log}
                       </div>
                     );
@@ -493,7 +497,7 @@ export default function CloudSecurityPage() {
 
             {/* Detailed Findings Table */}
             {reportReady && results.length > 0 && !scanning && (
-              <div className="space-y-4">
+              <div className="space-y-4 min-w-0">
                 <div className="flex items-center justify-between px-1">
                   <span className="text-xs uppercase font-mono font-bold text-zinc-300">Compliance Audit Controls</span>
                   <button
@@ -509,7 +513,7 @@ export default function CloudSecurityPage() {
                   </button>
                 </div>
 
-                <div className="border border-zinc-800/80 rounded-2xl overflow-hidden">
+                <div className="border border-zinc-800/80 rounded-2xl overflow-hidden min-w-0">
                   <div className="divide-y divide-zinc-850 max-h-[500px] overflow-y-auto">
                     {filteredFindings.map((finding, idx) => (
                       <div key={idx} className="p-4 bg-zinc-950/10 space-y-2 hover:bg-amber-500/[0.02] transition-all">
@@ -520,9 +524,9 @@ export default function CloudSecurityPage() {
                             <SeverityBadge severity={finding.severity} />
                           </div>
                         </div>
-                        <p className="text-xs text-zinc-400 font-mono leading-relaxed">{finding.details}</p>
+                        <p className="text-xs text-zinc-400 font-mono leading-relaxed break-words">{finding.details}</p>
                         {finding.status === "Fail" && (
-                          <div className="border-t border-dashed border-zinc-850 pt-2 text-[0.68rem] font-mono text-zinc-500">
+                          <div className="border-t border-dashed border-zinc-850 pt-2 text-[0.68rem] font-mono text-zinc-500 break-words">
                             <span className="text-amber-500 font-semibold uppercase">Remediation Guide: </span>
                             {finding.remediation}
                           </div>
@@ -536,9 +540,9 @@ export default function CloudSecurityPage() {
           </div>
 
           {/* Right Column */}
-          <div className="space-y-6">
+          <div className="space-y-6 min-w-0">
             {reportReady && !scanning ? (
-              <div className="border border-amber-500/30 bg-zinc-950/20 backdrop-blur-md rounded-2xl p-6 space-y-6 shadow-[0_8px_30px_rgb(0,0,0,0.15)] animate-[fadeIn_0.3s_ease-out]">
+              <div className="border border-amber-500/30 bg-zinc-950/20 backdrop-blur-md rounded-2xl p-6 space-y-6 shadow-[0_8px_30px_rgb(0,0,0,0.15)] animate-[fadeIn_0.3s_ease-out] min-w-0">
                 <div className="text-center space-y-2">
                   <div className="inline-flex h-12 w-12 items-center justify-center border border-amber-500/25 text-amber-400 rounded-full bg-amber-500/10 mb-2">
                     {riskScore > 30 ? (
@@ -548,7 +552,7 @@ export default function CloudSecurityPage() {
                     )}
                   </div>
                   <h3 className="text-xl font-mono font-bold text-zinc-100">Audit Complete</h3>
-                  <p className="text-xs text-zinc-400">{target}</p>
+                  <p className="text-xs text-zinc-400 break-all">{target}</p>
                 </div>
 
                 <div className="border-t border-zinc-800/40 pt-4 space-y-3 font-mono text-xs">
@@ -569,9 +573,9 @@ export default function CloudSecurityPage() {
                 <div className="space-y-2">
                   <button 
                     onClick={handleDownloadPDF}
-                    className="w-full bg-amber-500/5 hover:bg-amber-500/10 text-amber-400 border border-amber-500/20 hover:border-amber-500/50 rounded-xl font-mono font-bold text-xs uppercase py-4 transition-all duration-300 hover:scale-[1.01] active:scale-[0.99] flex items-center justify-center gap-2 cursor-pointer hover:shadow-[0_0_20px_rgba(245,158,11,0.15)] focus:outline-none"
+                    className="w-full bg-yellow-400 hover:bg-yellow-300 text-black border border-yellow-300 rounded-xl font-mono font-bold text-xs uppercase py-3.5 transition-all duration-300 hover:scale-[1.01] active:scale-[0.99] flex items-center justify-center gap-2 cursor-pointer shadow-[0_0_20px_rgba(250,204,21,0.35)] focus:outline-none"
                   >
-                    <Download className="h-4 w-4" />
+                    <Download className="h-4 w-4 text-black stroke-[2.5]" />
                     Download PDF Report
                   </button>
                 </div>

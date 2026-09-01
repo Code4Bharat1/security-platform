@@ -1,8 +1,11 @@
-import GainAccess from '@/components/GainAcess'
+import { Suspense } from 'react';
+import GainAccess from '@/components/GainAcess';
 
 export default function Page() {
   return (
-      <GainAccess/>
-  )
+    <Suspense fallback={null}>
+      <GainAccess />
+    </Suspense>
+  );
 }
 

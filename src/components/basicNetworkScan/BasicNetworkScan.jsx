@@ -342,10 +342,10 @@ export default function BasicNetworkScan() {
         </div>
 
         {/* Main grid */}
-        <div className="grid gap-8 lg:grid-cols-[1fr_360px]">
+        <div className="grid gap-8 lg:grid-cols-[minmax(0,1fr)_360px] items-start min-w-0">
 
           {/* ─── Left: scan form + results ─── */}
-          <div className="space-y-6">
+          <div className="space-y-6 min-w-0">
 
             {/* Scan form card */}
             <div className="bg-zinc-950/20 backdrop-blur-md border border-zinc-800/80 rounded-2xl p-6 shadow-[0_8px_30px_rgb(0,0,0,0.2)] hover:border-amber-500/10 transition-all duration-300">
@@ -453,6 +453,21 @@ export default function BasicNetworkScan() {
                     />
                   </div>
                 )}
+                
+                {/* Specific port list */}
+                {preset === "specific" && (
+                  <div>
+                    <label className="block text-xs font-mono text-zinc-400 mb-1.5 uppercase tracking-wider">Port List (comma separated)</label>
+                    <input
+                      type="text"
+                      value={customList}
+                      onChange={(e) => setCustomList(e.target.value)}
+                      disabled={loading}
+                      placeholder="e.g. 80, 443, 8080"
+                      className="w-full bg-zinc-900/40 text-zinc-100 border border-zinc-800/80 rounded-xl px-3 py-2.5 text-sm font-mono focus:border-amber-500/50 focus:ring-1 focus:ring-amber-500/30 focus:outline-none disabled:opacity-50"
+                    />
+                  </div>
+                )}
 
                 {/* Submit */}
                 <button
@@ -504,9 +519,9 @@ export default function BasicNetworkScan() {
 
             {/* Scan results summary */}
             {result?.hostResults && !loading && (
-              <div className="space-y-6">
+              <div className="space-y-6 min-w-0">
                 {/* Aggregated statistics bar */}
-                <div className="grid grid-cols-4 gap-3 bg-zinc-950/10 border border-zinc-800/60 rounded-2xl p-4">
+                <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 bg-zinc-950/10 border border-zinc-800/60 rounded-2xl p-4">
                   <div className="text-center">
                     <div className="text-2xl font-mono font-bold text-zinc-100">{result.summary?.totalHosts}</div>
                     <div className="text-[0.55rem] uppercase font-mono tracking-wider text-zinc-500 mt-0.5">Total Hosts</div>
@@ -558,25 +573,25 @@ export default function BasicNetworkScan() {
 
                 {/* Active Host Details */}
                 {activeHostResult && (
-                  <div className="space-y-4">
+                  <div className="space-y-4 min-w-0">
                     {/* Host Header Info */}
                     <div className="flex flex-col sm:flex-row sm:items-center justify-between border-b border-zinc-800/60 pb-3 gap-2 px-1">
-                      <div>
-                        <div className="text-lg font-mono font-bold text-zinc-100 flex items-center gap-2">
-                          <Globe className="h-4 w-4 text-amber-400" />
-                          {activeHostResult.target}
+                      <div className="min-w-0">
+                        <div className="text-lg font-mono font-bold text-zinc-100 flex items-center gap-2 break-all">
+                          <Globe className="h-4 w-4 text-amber-400 flex-shrink-0" />
+                          <span>{activeHostResult.target}</span>
                         </div>
-                        <div className="text-[0.65rem] text-zinc-550 font-mono mt-0.5">
+                        <div className="text-[0.65rem] text-zinc-400 font-mono mt-0.5 break-all">
                           IP: {activeHostResult.resolvedIp || "DNS lookup failed"} · Status: <span className={activeHostResult.alive ? "text-emerald-400 font-bold" : "text-zinc-500"}>{activeHostResult.alive ? "ONLINE" : "OFFLINE"}</span>
                         </div>
                       </div>
-                      <div className="flex items-center gap-2">
+                      <div className="flex items-center gap-2 flex-shrink-0">
                         <button
                           type="button"
                           onClick={() => generateBasicNetworkScanPDF(result, target)}
-                          className="flex items-center gap-1.5 text-[0.65rem] font-mono px-2.5 py-1 rounded-lg border border-amber-500/25 text-amber-400 bg-amber-500/5 hover:bg-amber-500/10 transition-all hover:scale-[1.01] active:scale-[0.99] cursor-pointer"
+                          className="flex items-center gap-1.5 text-xs font-mono font-bold px-3 py-1.5 rounded-lg border border-yellow-300 text-black bg-yellow-400 hover:bg-yellow-300 transition-all hover:scale-[1.02] active:scale-[0.98] cursor-pointer shadow-[0_0_15px_rgba(250,204,21,0.35)]"
                         >
-                          <Download className="h-3 w-3" />
+                          <Download className="h-3.5 w-3.5 text-black stroke-[2.5]" />
                           PDF Report
                         </button>
                         <button
@@ -608,8 +623,8 @@ export default function BasicNetworkScan() {
                     {/* Online Results */}
                     {activeHostResult.alive && (
                       <>
-                        {/* Port table */}
-                        <div className="border border-zinc-800/80 rounded-2xl overflow-hidden">
+                        {/* Port table with horizontal overflow protection */}
+                        <div className="border border-zinc-800/80 rounded-2xl overflow-hidden min-w-0 bg-zinc-950/20">
                           <div className="bg-zinc-950/40 border-b border-zinc-800/60 px-4 py-3 flex items-center justify-between">
                             <div className="flex items-center gap-2">
                               <Activity className="h-4 w-4 text-amber-400" />
@@ -619,55 +634,59 @@ export default function BasicNetworkScan() {
                             </div>
                           </div>
 
-                          <div className="divide-y divide-zinc-800/40 max-h-[520px] overflow-y-auto">
-                            {displayPorts.length === 0 ? (
-                              <div className="p-8 text-center">
-                                <CheckCircle2 className="h-10 w-10 text-emerald-500/40 mx-auto mb-3" />
-                                <p className="text-sm font-mono text-zinc-400">All scanned ports closed</p>
-                                <p className="text-xs text-zinc-600 mt-1">No open services detected on the scanned ports.</p>
+                          <div className="overflow-x-auto min-w-0">
+                            <div className="min-w-[560px]">
+                              {/* Table header (sticky top) */}
+                              <div className="bg-zinc-950/60 border-b border-zinc-800/60 px-4 py-2.5 grid grid-cols-[60px_70px_80px_110px_90px_1fr] gap-2">
+                                {["Port", "Proto", "State", "Service", "Risk", "Notes"].map((h) => (
+                                  <span key={h} className="text-[0.65rem] uppercase font-mono tracking-widest text-zinc-400 font-bold">{h}</span>
+                                ))}
                               </div>
-                            ) : (
-                              displayPorts.map((portInfo) => {
-                                const isOpen = portInfo.state === 'open' || portInfo.state === 'open|filtered';
-                                const svc = getServiceInfo(portInfo.port);
-                                const serviceName = portInfo.service || svc.name;
-                                const displayRisk = isOpen ? (portInfo.risk || svc.risk) : 'none';
-                                return (
-                                  <div
-                                    key={`${portInfo.port}-${portInfo.protocol}`}
-                                    className="bns-port-row grid grid-cols-[60px_70px_80px_100px_90px_1fr] items-center gap-2 px-4 py-3"
-                                  >
-                                    {/* Port */}
-                                    <span className="font-mono text-sm font-bold text-zinc-200">{portInfo.port}</span>
-                                    {/* Protocol */}
-                                    <span className="font-mono text-[10px] uppercase font-bold text-zinc-500">{portInfo.protocol}</span>
-                                    {/* State */}
-                                    <StateBadge state={portInfo.state} />
-                                    {/* Service */}
-                                    <span className="font-mono text-xs text-zinc-300">{isOpen ? serviceName : '—'}</span>
-                                    {/* Risk */}
-                                    <RiskBadge risk={displayRisk} />
-                                    {/* Note */}
-                                    <span className="text-[0.65rem] text-zinc-500 truncate leading-tight">
-                                      {isOpen ? (portInfo.impact || svc.note) : 'Port is closed'}
-                                    </span>
-                                  </div>
-                                );
-                              })
-                            )}
-                          </div>
 
-                          {/* Table header (sticky top) */}
-                          <div className="bg-zinc-950/60 border-t border-zinc-800/60 px-4 py-2 grid grid-cols-[60px_70px_80px_100px_90px_1fr] gap-2">
-                            {["Port", "Proto", "State", "Service", "Risk", "Notes"].map((h) => (
-                              <span key={h} className="text-[0.6rem] uppercase font-mono tracking-widest text-zinc-650 font-bold">{h}</span>
-                            ))}
+                              <div className="divide-y divide-zinc-800/40 max-h-[520px] overflow-y-auto">
+                                {displayPorts.length === 0 ? (
+                                  <div className="p-8 text-center">
+                                    <CheckCircle2 className="h-10 w-10 text-emerald-500/40 mx-auto mb-3" />
+                                    <p className="text-sm font-mono text-zinc-400">All scanned ports closed</p>
+                                    <p className="text-xs text-zinc-600 mt-1">No open services detected on the scanned ports.</p>
+                                  </div>
+                                ) : (
+                                  displayPorts.map((portInfo) => {
+                                    const isOpen = portInfo.state === 'open' || portInfo.state === 'open|filtered';
+                                    const svc = getServiceInfo(portInfo.port);
+                                    const serviceName = portInfo.service || svc.name;
+                                    const displayRisk = isOpen ? (portInfo.risk || svc.risk) : 'none';
+                                    return (
+                                      <div
+                                        key={`${portInfo.port}-${portInfo.protocol}`}
+                                        className="bns-port-row grid grid-cols-[60px_70px_80px_110px_90px_1fr] items-center gap-2 px-4 py-3"
+                                      >
+                                        {/* Port */}
+                                        <span className="font-mono text-sm font-bold text-zinc-200">{portInfo.port}</span>
+                                        {/* Protocol */}
+                                        <span className="font-mono text-[10px] uppercase font-bold text-zinc-500">{portInfo.protocol}</span>
+                                        {/* State */}
+                                        <StateBadge state={portInfo.state} />
+                                        {/* Service */}
+                                        <span className="font-mono text-xs text-zinc-300 truncate">{isOpen ? serviceName : '—'}</span>
+                                        {/* Risk */}
+                                        <RiskBadge risk={displayRisk} />
+                                        {/* Note */}
+                                        <span className="text-[0.65rem] text-zinc-400 truncate leading-tight">
+                                          {isOpen ? (portInfo.impact || svc.note) : 'Port is closed'}
+                                        </span>
+                                      </div>
+                                    );
+                                  })
+                                )}
+                              </div>
+                            </div>
                           </div>
                         </div>
 
                         {/* Open port detail cards (only if open ports exist) */}
                         {activeHostResult.openPorts.length > 0 && (
-                          <div className="border border-zinc-800/80 rounded-2xl overflow-hidden">
+                          <div className="border border-zinc-800/80 rounded-2xl overflow-hidden min-w-0">
                             <div className="bg-zinc-950/40 border-b border-zinc-800/60 px-4 py-3 flex items-center gap-2">
                               <ShieldAlert className="h-4 w-4 text-amber-400" />
                               <span className="text-xs font-mono font-bold text-zinc-300 uppercase tracking-wider">
@@ -693,11 +712,11 @@ export default function BasicNetworkScan() {
                                         <span className="font-mono text-xs font-bold text-zinc-200">Port {portInfo.port}/{portInfo.protocol} — {serviceName}</span>
                                         <RiskBadge risk={portInfo.risk} />
                                       </div>
-                                      <p className="text-[0.65rem] text-zinc-450 mt-0.5 leading-relaxed">
+                                      <p className="text-[0.65rem] text-zinc-400 mt-0.5 leading-relaxed break-words">
                                         {portInfo.impact || svc.note}
                                       </p>
                                       {portInfo.banner && (
-                                        <p className="text-[0.6rem] text-zinc-600 mt-1 font-mono bg-zinc-950/40 border border-zinc-900/60 px-2 py-1 rounded-lg truncate">
+                                        <p className="text-[0.6rem] text-zinc-400 mt-1 font-mono bg-zinc-950/40 border border-zinc-900/60 px-2 py-1 rounded-lg break-all">
                                           Banner: {portInfo.banner}
                                         </p>
                                       )}
@@ -717,7 +736,7 @@ export default function BasicNetworkScan() {
           </div>
 
           {/* ─── Right: info sidebar ─── */}
-          <div className="space-y-6">
+          <div className="space-y-6 min-w-0">
 
             {/* Scan status card */}
             {!result && !loading && (
@@ -732,7 +751,7 @@ export default function BasicNetworkScan() {
 
             {/* Real-time result mini card */}
             {activeHostResult && scanMeta && (
-              <div className="border border-amber-500/30 bg-zinc-950/20 backdrop-blur-md rounded-2xl p-6 space-y-4">
+              <div className="border border-amber-500/30 bg-zinc-950/20 backdrop-blur-md rounded-2xl p-6 space-y-4 min-w-0">
                 <div className="text-center space-y-2">
                   <div className="inline-flex h-12 w-12 items-center justify-center border border-amber-500/25 text-amber-400 rounded-full bg-amber-500/10 mb-2">
                     {activeHostResult.openPorts.length > 0 ? (
@@ -742,39 +761,39 @@ export default function BasicNetworkScan() {
                     )}
                   </div>
                   <h3 className="text-xl font-mono font-bold text-zinc-100">Scan Complete</h3>
-                  <p className="text-xs text-zinc-400">{activeHostResult.target}</p>
+                  <p className="text-xs text-zinc-400 break-all">{activeHostResult.target}</p>
                   {activeHostResult.resolvedIp && activeHostResult.resolvedIp !== activeHostResult.target && (
-                    <p className="text-[0.6rem] text-zinc-655 font-mono">Resolved IP → {activeHostResult.resolvedIp}</p>
+                    <p className="text-[0.65rem] text-zinc-400 font-mono break-all">Resolved IP → {activeHostResult.resolvedIp}</p>
                   )}
                 </div>
                 <div className="border-t border-zinc-800/40 pt-4 space-y-2 font-mono text-xs">
-                  <div className="flex justify-between">
+                  <div className="flex justify-between gap-2">
                     <span className="text-zinc-400">Scan Mode:</span>
-                    <span className="text-zinc-300">TCP Connect + UDP</span>
+                    <span className="text-zinc-300 text-right">TCP Connect + UDP</span>
                   </div>
-                  <div className="flex justify-between">
+                  <div className="flex justify-between gap-2">
                     <span className="text-zinc-400">Target Status:</span>
-                    <span className={`font-bold ${activeHostResult.alive ? "text-emerald-400" : "text-zinc-550"}`}>{activeHostResult.alive ? "ONLINE" : "OFFLINE"}</span>
+                    <span className={`font-bold ${activeHostResult.alive ? "text-emerald-400" : "text-zinc-500"}`}>{activeHostResult.alive ? "ONLINE" : "OFFLINE"}</span>
                   </div>
-                  <div className="flex justify-between">
+                  <div className="flex justify-between gap-2">
                     <span className="text-zinc-400">Ports Checked:</span>
                     <span className="text-zinc-200 font-bold">{activeHostResult.ports.length}</span>
                   </div>
-                  <div className="flex justify-between">
+                  <div className="flex justify-between gap-2">
                     <span className="text-zinc-400">Open Ports:</span>
                     <span className={`font-bold ${activeHostResult.openPorts.length > 0 ? "text-amber-400" : "text-emerald-400"}`}>{activeHostResult.openPorts.length}</span>
                   </div>
-                  <div className="flex justify-between">
+                  <div className="flex justify-between gap-2">
                     <span className="text-zinc-400">Closed Ports:</span>
                     <span className="text-zinc-300 font-bold">{activeHostResult.closedPorts.length}</span>
                   </div>
                   {activeHostResult.filteredPorts?.length > 0 && (
-                    <div className="flex justify-between">
+                    <div className="flex justify-between gap-2">
                       <span className="text-zinc-400">Filtered:</span>
                       <span className="text-amber-500 font-bold">{activeHostResult.filteredPorts.length}</span>
                     </div>
                   )}
-                  <div className="flex justify-between">
+                  <div className="flex justify-between gap-2">
                     <span className="text-zinc-400">Host Risk:</span>
                     <span className={`font-bold ${activeHostRisk?.color}`}>{activeHostRisk?.level}</span>
                   </div>

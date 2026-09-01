@@ -238,10 +238,10 @@ export default function WebAppAudit() {
         </div>
 
         {/* 2-Column Layout */}
-        <div className="grid gap-8 lg:grid-cols-[1fr_380px]">
+        <div className="grid gap-8 lg:grid-cols-[minmax(0,1fr)_380px] items-start min-w-0">
           
           {/* Left Column */}
-          <div className="space-y-6">
+          <div className="space-y-6 min-w-0">
             
             {/* Input Form */}
             <div className="bg-zinc-950/20 backdrop-blur-md border border-zinc-800/80 rounded-2xl p-6 shadow-[0_8px_30px_rgb(0,0,0,0.2)] hover:border-amber-500/10 transition-all duration-300">
@@ -583,9 +583,9 @@ export default function WebAppAudit() {
           </div>
 
           {/* Right Column */}
-          <div className="space-y-6">
+          <div className="space-y-6 min-w-0">
             {scanData && !scanning ? (
-              <div className="border border-amber-500/30 bg-zinc-950/20 backdrop-blur-md rounded-2xl p-6 space-y-6 shadow-[0_8px_30px_rgb(0,0,0,0.15)] animate-[fadeIn_0.3s_ease-out]">
+              <div className="border border-amber-500/30 bg-zinc-950/20 backdrop-blur-md rounded-2xl p-6 space-y-6 shadow-[0_8px_30px_rgb(0,0,0,0.15)] animate-[fadeIn_0.3s_ease-out] min-w-0">
                 <div className="text-center space-y-2">
                   <div className="inline-flex h-12 w-12 items-center justify-center border border-amber-500/25 text-amber-400 rounded-full bg-amber-500/10 mb-2">
                     {scanData.vulnerabilities?.length > 3 ? (
@@ -595,21 +595,21 @@ export default function WebAppAudit() {
                     )}
                   </div>
                   <h3 className="text-xl font-mono font-bold text-zinc-100">Scan Complete</h3>
-                  <p className="text-xs text-zinc-400">{scanData.domain}</p>
+                  <p className="text-xs text-zinc-400 break-all">{scanData.domain}</p>
                 </div>
 
                 <div className="border-t border-zinc-800/40 pt-4 space-y-3 font-mono text-xs">
-                  <div className="flex justify-between">
+                  <div className="flex justify-between gap-2">
                     <span className="text-zinc-400">Vulnerabilities:</span>
                     <span className="text-amber-400 font-bold font-mono">{scanData.vulnerabilities?.length || 0} Findings</span>
                   </div>
-                  <div className="flex justify-between">
+                  <div className="flex justify-between gap-2">
                     <span className="text-zinc-400">SSL Certificate:</span>
-                    <span className={`font-bold ${scanData.ssl?.valid ? "text-emerald-450" : "text-red-400"}`}>
+                    <span className={`font-bold ${scanData.ssl?.valid ? "text-emerald-400" : "text-red-400"}`}>
                       {scanData.ssl?.valid ? "Valid" : "Weak/Expired"}
                     </span>
                   </div>
-                  <div className="flex justify-between">
+                  <div className="flex justify-between gap-2">
                     <span className="text-zinc-400">Firewall Shield:</span>
                     <span className="text-zinc-200 font-bold">{scanData.firewall?.detected ? "Enabled" : "Disabled"}</span>
                   </div>
@@ -618,9 +618,9 @@ export default function WebAppAudit() {
                 <div className="space-y-2">
                   <button 
                     onClick={handleDownloadPDF}
-                    className="w-full bg-amber-500/5 hover:bg-amber-500/10 text-amber-400 border border-amber-500/20 hover:border-amber-500/50 rounded-xl font-mono font-bold text-xs uppercase py-4 transition-all duration-300 hover:scale-[1.01] active:scale-[0.99] flex items-center justify-center gap-2 cursor-pointer hover:shadow-[0_0_20px_rgba(245,158,11,0.15)] focus:outline-none"
+                    className="w-full bg-yellow-400 hover:bg-yellow-300 text-black border border-yellow-300 rounded-xl font-mono font-bold text-xs uppercase py-3.5 transition-all duration-300 hover:scale-[1.01] active:scale-[0.99] flex items-center justify-center gap-2 cursor-pointer shadow-[0_0_20px_rgba(250,204,21,0.35)] focus:outline-none"
                   >
-                    <Download className="h-4 w-4" />
+                    <Download className="h-4 w-4 text-black stroke-[2.5]" />
                     Download PDF Report
                   </button>
                 </div>

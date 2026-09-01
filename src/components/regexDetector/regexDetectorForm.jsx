@@ -46,10 +46,7 @@ function tokenizeRegex(source = "") {
 }
 
 export default function RegexDetector() {
-  const [code, setCode] = useState(
-    `const userInput = getInput();
-const regex = new RegExp(userInput); // Unescaped input`
-  );
+  const [code, setCode] = useState("");
   const [results, setResults] = useState([]);
   const [fixes, setFixes] = useState([]);
   const [loading, setLoading] = useState(false);

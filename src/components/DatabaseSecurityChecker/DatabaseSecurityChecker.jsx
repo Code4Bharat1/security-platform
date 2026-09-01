@@ -21,8 +21,8 @@ import { generateDbPDF } from "./generateDbPDF";
 export default function DbSecurityChecker() {
   const [form, setForm] = useState({
     dbType: "MongoDB",
-    host: "127.0.0.1",
-    port: "27017",
+    host: "",
+    port: "",
     username: "",
     password: "",
     checks: [],
@@ -172,6 +172,7 @@ export default function DbSecurityChecker() {
                       type="text"
                       value={form.host}
                       onChange={(e) => setForm({ ...form, host: e.target.value })}
+                      placeholder="127.0.0.1"
                       className="w-full bg-zinc-900/40 text-zinc-100 border border-zinc-800/80 rounded-xl p-3.5 text-sm focus:border-red-500/50 focus:ring-1 focus:ring-red-500/30 focus:outline-none transition-all font-mono"
                     />
                   </div>
@@ -186,6 +187,7 @@ export default function DbSecurityChecker() {
                       type="text"
                       value={form.port}
                       onChange={(e) => setForm({ ...form, port: e.target.value })}
+                      placeholder="27017"
                       className="w-full bg-zinc-900/40 text-zinc-100 border border-zinc-800/80 rounded-xl p-3.5 text-sm focus:border-red-500/50 focus:ring-1 focus:ring-red-500/30 focus:outline-none transition-all font-mono"
                     />
                   </div>

@@ -60,7 +60,7 @@ export default function AdvancedDynamicScan() {
   const protectedAction = useProtectedAction();
 
   // State parameters
-  const [targetUrl, setTargetUrl] = useState("https://example.com");
+  const [targetUrl, setTargetUrl] = useState("");
   const [crawlingEnabled, setCrawlingEnabled] = useState(true);
   const [fuzzingEnabled, setFuzzingEnabled] = useState(true);
 
@@ -248,10 +248,10 @@ export default function AdvancedDynamicScan() {
         </div>
 
         {/* Grid layout */}
-        <div className="grid gap-8 lg:grid-cols-[1fr_380px]">
+        <div className="grid gap-8 lg:grid-cols-[minmax(0,1fr)_380px] items-start min-w-0">
 
           {/* Left Column */}
-          <div className="space-y-6">
+          <div className="space-y-6 min-w-0">
 
             {/* Control Config Card */}
             <div className="bg-zinc-950/20 backdrop-blur-md border border-zinc-800/80 rounded-2xl p-6 shadow-[0_8px_30px_rgb(0,0,0,0.2)] hover:border-amber-500/10 transition-all duration-300">
@@ -276,7 +276,7 @@ export default function AdvancedDynamicScan() {
                   />
                 </div>
 
-                <div className="grid grid-cols-2 gap-4 pt-2">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-2">
                   <label className="flex items-center gap-2 text-xs font-mono text-zinc-350 cursor-pointer">
                     <input
                       type="checkbox"
@@ -444,9 +444,9 @@ export default function AdvancedDynamicScan() {
           </div>
 
           {/* Right Column */}
-          <div className="space-y-6">
+          <div className="space-y-6 min-w-0">
             {reportReady && !loading ? (
-              <div className="border border-amber-500/30 bg-zinc-950/20 backdrop-blur-md rounded-2xl p-6 space-y-6 shadow-[0_8px_30px_rgb(0,0,0,0.15)] animate-[fadeIn_0.3s_ease-out]">
+              <div className="border border-amber-500/30 bg-zinc-950/20 backdrop-blur-md rounded-2xl p-6 space-y-6 shadow-[0_8px_30px_rgb(0,0,0,0.15)] animate-[fadeIn_0.3s_ease-out] min-w-0">
                 <div className="text-center space-y-2">
                   <div className="inline-flex h-12 w-12 items-center justify-center border border-amber-500/25 text-amber-400 rounded-full bg-amber-500/10 mb-2">
                     {riskScore > 30 ? (
@@ -456,30 +456,30 @@ export default function AdvancedDynamicScan() {
                     )}
                   </div>
                   <h3 className="text-xl font-mono font-bold text-zinc-100">Scan Complete</h3>
-                  <p className="text-[10px] text-zinc-400 truncate font-mono">{targetUrl}</p>
+                  <p className="text-xs text-zinc-400 break-all font-mono">{targetUrl}</p>
                 </div>
 
                 <div className="border-t border-zinc-800/40 pt-4 space-y-3 font-mono text-xs">
-                  <div className="flex justify-between">
+                  <div className="flex justify-between gap-2">
                     <span className="text-zinc-400">Total Checked:</span>
                     <span className="text-zinc-200 font-bold">{results.length}</span>
                   </div>
-                  <div className="flex justify-between">
+                  <div className="flex justify-between gap-2">
                     <span className="text-zinc-400">Vulnerabilities:</span>
                     <span className="text-orange-400 font-bold">{results.filter(f => f.status === 'Fail').length}</span>
                   </div>
-                  <div className="flex justify-between">
+                  <div className="flex justify-between gap-2">
                     <span className="text-zinc-400">Risk score:</span>
-                    <span className={`font-bold ${riskScore > 50 ? "text-red-500" : riskScore > 20 ? "text-amber-400" : "text-emerald-405"}`}>{riskScore}/100</span>
+                    <span className={`font-bold ${riskScore > 50 ? "text-red-500" : riskScore > 20 ? "text-amber-400" : "text-emerald-400"}`}>{riskScore}/100</span>
                   </div>
                 </div>
 
                 <div className="space-y-2">
                   <button
                     onClick={handleDownloadPDF}
-                    className="w-full bg-amber-500/5 hover:bg-amber-500/10 text-amber-400 border border-amber-500/20 hover:border-amber-500/50 rounded-xl font-mono font-bold text-xs uppercase py-4 transition-all duration-300 hover:scale-[1.01] active:scale-[0.99] flex items-center justify-center gap-2 cursor-pointer hover:shadow-[0_0_20px_rgba(245,158,11,0.15)] focus:outline-none"
+                    className="w-full bg-yellow-400 hover:bg-yellow-300 text-black border border-yellow-300 rounded-xl font-mono font-bold text-xs uppercase py-3.5 transition-all duration-300 hover:scale-[1.01] active:scale-[0.99] flex items-center justify-center gap-2 cursor-pointer shadow-[0_0_20px_rgba(250,204,21,0.35)] focus:outline-none"
                   >
-                    <Download className="h-4 w-4" />
+                    <Download className="h-4 w-4 text-black stroke-[2.5]" />
                     Download PDF Report
                   </button>
                 </div>

@@ -1,6 +1,6 @@
 "use client";
 
-import { usePathname } from "next/navigation";
+import { usePathname, useSearchParams } from "next/navigation";
 
 import { usePlan } from "@/context/PlanContext";
 import { useAuth } from "@/context/AuthContext";
@@ -25,7 +25,7 @@ const GROUP_PAGES = new Set([
 ]);
 
 // Strips query-string variants: "report-generator?plan=free" → "report-generator"
-const slugBase = (slug) => slug.split("?")[0];
+const slugBase = (slug) => (slug || "").split("?")[0];
 
 // Build a flat lookup from the tool catalog so we can resolve a display name
 // when showing the PlanAccessDenied screen
@@ -39,6 +39,11 @@ const ALL_CATALOG_TOOLS = [
 ];
 
 function getToolName(slug) {
+  const directMatch = ALL_CATALOG_TOOLS.find(
+    (t) => t.slug.toLowerCase() === (slug || "").toLowerCase()
+  );
+  if (directMatch) return directMatch.name;
+
   const base = slugBase(slug);
   const found = ALL_CATALOG_TOOLS.find((t) => slugBase(t.slug) === base);
   return found ? found.name : null;
@@ -46,8 +51,9 @@ function getToolName(slug) {
 
 export default function ToolRouteGuidanceGate({ children }) {
   const pathname = usePathname();
+  const searchParams = useSearchParams();
   const { canAccessTool, loading: planLoading } = usePlan();
-  const { loading: authLoading } = useAuth();
+  const { token, loading: authLoading } = useAuth();
 
   // Extract the tool slug from the path: /tools/<slug>/…
   const segments = pathname.split("/").filter(Boolean);
@@ -75,10 +81,13 @@ export default function ToolRouteGuidanceGate({ children }) {
     );
   }
 
-  // Access check — renders lock screen if the tool is not in the user's plan
-  if (!canAccessTool(toolSlug)) {
-    const toolName = getToolName(toolSlug);
-    return <PlanAccessDenied toolName={toolName} toolSlug={toolSlug} />;
+  const planQuery = searchParams.get("plan");
+  const fullSlug = planQuery ? `${toolSlug}?plan=${planQuery}` : toolSlug;
+
+  // Access check — renders lock screen if user is not logged in OR if tool is not in user's plan
+  if (!token || !canAccessTool(fullSlug)) {
+    const toolName = getToolName(fullSlug);
+    return <PlanAccessDenied toolName={toolName} toolSlug={fullSlug} />;
   }
 
   return children;

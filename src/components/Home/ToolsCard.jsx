@@ -1,9 +1,12 @@
 "use client";
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
+import { usePlan } from "@/context/PlanContext";
+import { Lock } from "lucide-react";
 
 export default function ToolsCard() {
   const { push } = useRouter();
+  const { canAccessTool, loading: planLoading } = usePlan();
 
   // --- Tool Lists ---
   const buttonList = [
@@ -461,18 +464,23 @@ export default function ToolsCard() {
 
       {/* Tools Section */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-        {buttons.map((tool, i) => (
-          <SampleToolCard
-            key={i}
-            img_path={tool.image}
-            title={tool.name}
-            subtitle={tool.description}
-            slug={tool.slug}
-            push={push}
-            buttonColor={activeButtonStyle}
-            borderGlow={activeBorderGlow}
-          />
-        ))}
+        {buttons.map((tool, i) => {
+          const isLocked = !canAccessTool(tool.slug);
+
+          return (
+            <SampleToolCard
+              key={i}
+              img_path={tool.image}
+              title={tool.name}
+              subtitle={tool.description}
+              slug={tool.slug}
+              push={push}
+              buttonColor={activeButtonStyle}
+              borderGlow={activeBorderGlow}
+              isLocked={isLocked}
+            />
+          );
+        })}
       </div>
 
       {/* View All */}
@@ -510,12 +518,24 @@ function SampleToolCard({
   push,
   buttonColor,
   borderGlow,
+  isLocked,
 }) {
   return (
     <div
-      className={`bg-white/10 backdrop-blur-md rounded-xl p-5 border border-white/20 transition-all duration-300 scale-90 hover:scale-[1.00] cursor-pointer h-full ${borderGlow}`}
+      className={`relative bg-white/10 backdrop-blur-md rounded-xl p-5 border transition-all duration-300 scale-90 hover:scale-[1.00] cursor-pointer h-full ${
+        isLocked
+          ? "border-amber-500/40 hover:border-amber-400 shadow-[0_0_20px_rgba(245,158,11,0.15)]"
+          : `border-white/20 ${borderGlow}`
+      }`}
       onClick={() => push(`/tools/${slug}`)}
     >
+      {isLocked && (
+        <div className="absolute top-3 right-3 flex items-center gap-1.5 bg-amber-400 border border-amber-300 text-black text-[0.65rem] font-mono font-extrabold px-2.5 py-1 rounded-full uppercase tracking-wider shadow-[0_0_12px_rgba(251,191,36,0.45)]">
+          <Lock className="w-3 h-3 text-black stroke-[2.5]" />
+          <span>Locked</span>
+        </div>
+      )}
+
       <div className="flex flex-col items-center h-full">
         <img
           src={img_path}
@@ -527,9 +547,14 @@ function SampleToolCard({
         </h3>
         <p className="text-gray-300 text-sm text-center flex-grow">{subtitle}</p>
         <button
-          className={`mt-4 ${buttonColor} text-white py-2 px-4 rounded-lg text-sm transition-colors cursor-pointer`}
+          className={`mt-4 ${
+            isLocked
+              ? "bg-amber-400 hover:bg-amber-300 text-black font-extrabold shadow-[0_0_15px_rgba(251,191,36,0.35)]"
+              : `${buttonColor} text-white`
+          } py-2 px-4 rounded-lg text-sm transition-colors cursor-pointer flex items-center justify-center gap-1.5`}
         >
-          Check Security
+          {isLocked && <Lock className="w-3.5 h-3.5 text-black stroke-[2.5]" />}
+          <span>{isLocked ? "Upgrade Plan" : "Check Security"}</span>
         </button>
       </div>
     </div>

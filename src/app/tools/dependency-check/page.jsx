@@ -246,10 +246,10 @@ export default function DependencyCheckPage() {
         </div>
 
         {/* 2-Column Layout */}
-        <div className="grid gap-8 lg:grid-cols-[1fr_380px]">
+        <div className="grid gap-8 lg:grid-cols-[minmax(0,1fr)_380px] items-start min-w-0">
           
           {/* Left Column */}
-          <div className="space-y-6">
+          <div className="space-y-6 min-w-0">
             
             {/* Form card */}
             <div className="bg-zinc-950/20 backdrop-blur-md border border-zinc-800/80 rounded-2xl p-6 shadow-[0_8px_30px_rgb(0,0,0,0.2)] hover:border-amber-500/10 transition-all duration-300">
@@ -406,9 +406,9 @@ export default function DependencyCheckPage() {
           </div>
 
           {/* Right Column */}
-          <div className="space-y-6">
+          <div className="space-y-6 min-w-0">
             {reportReady && !scanning ? (
-              <div className="border border-amber-500/30 bg-zinc-950/20 backdrop-blur-md rounded-2xl p-6 space-y-6 shadow-[0_8px_30px_rgb(0,0,0,0.15)] animate-[fadeIn_0.3s_ease-out]">
+              <div className="border border-amber-500/30 bg-zinc-950/20 backdrop-blur-md rounded-2xl p-6 space-y-6 shadow-[0_8px_30px_rgb(0,0,0,0.15)] animate-[fadeIn_0.3s_ease-out] min-w-0">
                 <div className="text-center space-y-2">
                   <div className="inline-flex h-12 w-12 items-center justify-center border border-amber-500/25 text-amber-400 rounded-full bg-amber-500/10 mb-2">
                     {riskScore > 35 ? (
@@ -418,30 +418,30 @@ export default function DependencyCheckPage() {
                     )}
                   </div>
                   <h3 className="text-xl font-mono font-bold text-zinc-100">Scan Complete</h3>
-                  <p className="text-xs text-zinc-400">{fileName}</p>
+                  <p className="text-xs text-zinc-400 break-all">{fileName}</p>
                 </div>
 
                 <div className="border-t border-zinc-800/40 pt-4 space-y-3 font-mono text-xs">
-                  <div className="flex justify-between">
+                  <div className="flex justify-between gap-2">
                     <span className="text-zinc-400">Total Checked:</span>
                     <span className="text-zinc-200 font-bold">{results.length} Issues</span>
                   </div>
-                  <div className="flex justify-between">
+                  <div className="flex justify-between gap-2">
                     <span className="text-zinc-400">Critical Threats:</span>
                     <span className="text-red-500 font-bold">{results.filter(r => r.severity === 'Critical').length}</span>
                   </div>
-                  <div className="flex justify-between">
+                  <div className="flex justify-between gap-2">
                     <span className="text-zinc-400">Risk index:</span>
-                    <span className={`font-bold ${riskScore > 50 ? "text-red-500" : riskScore > 20 ? "text-amber-400" : "text-emerald-450"}`}>{riskScore}/100</span>
+                    <span className={`font-bold ${riskScore > 50 ? "text-red-500" : riskScore > 20 ? "text-amber-400" : "text-emerald-400"}`}>{riskScore}/100</span>
                   </div>
                 </div>
 
                 <div className="space-y-2">
                   <button 
                     onClick={handleDownloadPDF}
-                    className="w-full bg-amber-500/5 hover:bg-amber-500/10 text-amber-400 border border-amber-500/20 hover:border-amber-500/50 rounded-xl font-mono font-bold text-xs uppercase py-4 transition-all duration-300 hover:scale-[1.01] active:scale-[0.99] flex items-center justify-center gap-2 cursor-pointer hover:shadow-[0_0_20px_rgba(245,158,11,0.15)] focus:outline-none"
+                    className="w-full bg-yellow-400 hover:bg-yellow-300 text-black border border-yellow-300 rounded-xl font-mono font-bold text-xs uppercase py-3.5 transition-all duration-300 hover:scale-[1.01] active:scale-[0.99] flex items-center justify-center gap-2 cursor-pointer shadow-[0_0_20px_rgba(250,204,21,0.35)] focus:outline-none"
                   >
-                    <Download className="h-4 w-4" />
+                    <Download className="h-4 w-4 text-black stroke-[2.5]" />
                     Download PDF Report
                   </button>
                 </div>

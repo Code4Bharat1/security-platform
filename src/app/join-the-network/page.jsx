@@ -1,8 +1,11 @@
-import JoinNetwork from '@/components/JoinNetwork'
+import { Suspense } from 'react';
+import JoinNetwork from '@/components/JoinNetwork';
 
 export default function Page() {
   return (
-      <JoinNetwork/>
-  )
+    <Suspense fallback={null}>
+      <JoinNetwork />
+    </Suspense>
+  );
 }
 

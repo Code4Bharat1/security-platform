@@ -1853,3 +1853,72 @@ html.theme-dark {
   box-shadow: 0 0 8px rgba(255, 183, 0, 0.5) !important;
   color: #ffffff !important;
 }
+
+/* =========================================================================
+   GLOBAL TOOL DETAIL RESPONSIVENESS & LAYOUT STABILIZATION
+   ========================================================================= */
+.tool-detail-page {
+  width: 100%;
+  max-width: 100vw;
+  min-width: 0;
+  overflow-x: hidden;
+  box-sizing: border-box;
+}
+
+.tool-detail-shell {
+  width: 100%;
+  max-width: 80rem;
+  margin-left: auto;
+  margin-right: auto;
+  padding-left: 1rem;
+  padding-right: 1rem;
+  padding-top: 2rem;
+  padding-bottom: 5rem;
+  min-width: 0;
+  box-sizing: border-box;
+}
+
+@media (min-width: 640px) {
+  .tool-detail-shell {
+    padding-left: 1.5rem;
+    padding-right: 1.5rem;
+  }
+}
+
+@media (min-width: 1024px) {
+  .tool-detail-shell {
+    padding-left: 2rem;
+    padding-right: 2rem;
+    padding-top: 2.5rem;
+  }
+}
+
+/* Prevent flex and grid tracks from overflowing during live scan rendering */
+.tool-detail-page :is(.grid, [class*="grid-cols"]) {
+  min-width: 0;
+}
+
+.tool-detail-page [class*="lg:grid-cols-[1fr_"],
+.tool-detail-page [class*="lg:grid-cols-[1.1fr_"] {
+  grid-template-columns: minmax(0, 1fr) minmax(300px, 400px);
+  align-items: start;
+}
+
+@media (max-width: 1023px) {
+  .tool-detail-page [class*="lg:grid-cols-[1fr_"],
+  .tool-detail-page [class*="lg:grid-cols-[1.1fr_"] {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+/* Prevent long text, hostnames, and pre blocks from causing horizontal spill */
+.tool-detail-page :is(pre, code, [class*="font-mono"]) {
+  word-break: break-word;
+  overflow-wrap: anywhere;
+}
+
+.tool-detail-page :is(table, [role="table"], .overflow-x-auto) {
+  max-width: 100%;
+  min-width: 0;
+}
+

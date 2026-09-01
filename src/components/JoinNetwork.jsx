@@ -1,9 +1,11 @@
 'use client';
 import { useState } from 'react';
 import Link from 'next/link';
-import { Eye, EyeOff, X } from 'lucide-react'; // <-- Added X icon
+import { Eye, EyeOff, X } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import axios from 'axios';
+import { toast } from 'react-hot-toast';
+
 export default function JoinNetwork() {
   // State to manage form data
   const [formData, setFormData] = useState({
@@ -42,15 +44,35 @@ export default function JoinNetwork() {
     e.preventDefault();
     const newErrors = {};
 
-    // Basic form validation
-    if (!formData.fname) newErrors.fname = 'First name is required';
-    if (!formData.lname) newErrors.lname = 'Last name is required';
-    if (!formData.email) newErrors.email = 'Email is required';
-    if (!formData.password) newErrors.password = 'Password is required';
-    if (formData.password !== formData.confirmPassword) {
+    const trimmedFname = formData.fname.trim();
+    const trimmedLname = formData.lname.trim();
+    const trimmedEmail = formData.email.trim().toLowerCase();
+    const password = formData.password;
+    const confirmPassword = formData.confirmPassword;
+
+    // Field validations
+    if (!trimmedFname) newErrors.fname = 'First name is required';
+    if (!trimmedLname) newErrors.lname = 'Last name is required';
+    
+    if (!trimmedEmail) {
+      newErrors.email = 'Email is required';
+    } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(trimmedEmail)) {
+      newErrors.email = 'Please enter a valid email address';
+    }
+
+    if (!password) {
+      newErrors.password = 'Password is required';
+    } else if (password.length < 6) {
+      newErrors.password = 'Password must be at least 6 characters long';
+    }
+
+    if (password !== confirmPassword) {
       newErrors.confirmPassword = 'Passwords do not match';
     }
-    if (!accepted) newErrors.accepted = 'Please accept the terms';
+
+    if (!accepted) {
+      newErrors.accepted = 'Please accept the Terms of Use & Privacy Policy';
+    }
 
     setErrors(newErrors);
     setMessage('');
@@ -62,9 +84,9 @@ export default function JoinNetwork() {
         const res = await axios.post(
           `${process.env.NEXT_PUBLIC_PROD_API_URL}/auth/signup`,
           {
-            name: `${formData.fname} ${formData.lname}`,
-            email: formData.email,
-            password: formData.password,
+            name: `${trimmedFname} ${trimmedLname}`.trim(),
+            email: trimmedEmail,
+            password: password,
           },
           {
             headers: {
@@ -76,15 +98,24 @@ export default function JoinNetwork() {
         const result = res.data;
 
         if (res.status === 200 || res.status === 201) {
-          setMessage('Signup successful! Please login.');
-          // Optional: redirect to login page
-          // router.push('/login');
+          const successMsg = 'Account created successfully! Redirecting to Gain Access...';
+          setMessage(successMsg);
+          toast.success(successMsg);
+
+          // Automatically redirect to /gain-access with prefilled email
+          setTimeout(() => {
+            router.push(`/gain-access?email=${encodeURIComponent(trimmedEmail)}&registered=true`);
+          }, 1200);
         } else {
-          setMessage(result.message || 'Signup failed');
+          const errMsg = result.message || 'Signup failed';
+          setMessage(errMsg);
+          toast.error(errMsg);
         }
       } catch (err) {
         console.error('Signup error:', err);
-        setMessage(err.response?.data?.message || 'Something went wrong.');
+        const errMsg = err.response?.data?.message || 'Something went wrong. Please try again.';
+        setMessage(errMsg);
+        toast.error(errMsg);
       } finally {
         setLoading(false);
       }

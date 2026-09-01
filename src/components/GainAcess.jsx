@@ -3,7 +3,7 @@ import { useState, useEffect } from "react";
 import { Eye, EyeOff, X } from "lucide-react";
 import Link from "next/link";
 import axios from "axios";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { toast } from 'react-hot-toast';
 import { useAuth } from "@/context/AuthContext";
 import GoogleLoginButton from "@/components/Auth/GoogleLoginButton.jsx";
@@ -16,6 +16,7 @@ export default function GainAccess() {
   const [loading, setLoading] = useState(false);
   const [checkingAuth, setCheckingAuth] = useState(true);
   const router = useRouter();
+  const searchParams = useSearchParams();
 
   // Forgot password wizard state variables
   const [flowMode, setFlowMode] = useState("login"); // 'login', 'forgot_email', 'forgot_otp', 'forgot_reset'
@@ -25,6 +26,18 @@ export default function GainAccess() {
   const [confirmPassword, setConfirmPassword] = useState("");
   const [showNewPassword, setShowNewPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+
+  // Check URL query parameters (e.g. from registration redirect)
+  useEffect(() => {
+    const emailParam = searchParams?.get("email");
+    const registeredParam = searchParams?.get("registered");
+    if (emailParam) {
+      setFormData((prev) => ({ ...prev, email: emailParam }));
+    }
+    if (registeredParam === "true") {
+      toast.success("Account created successfully! Please enter your password to gain access.");
+    }
+  }, [searchParams]);
 
   useEffect(() => {
     const checkRedirect = async () => {
@@ -78,9 +91,16 @@ export default function GainAccess() {
   const handleSubmit = async (e) => {
     e.preventDefault();
 
+    const trimmedEmail = formData.email.trim().toLowerCase();
+    const password = formData.password;
+
     const newErrors = {};
-    if (!formData.email) newErrors.email = "Email is required";
-    if (!formData.password) newErrors.password = "Password is required";
+    if (!trimmedEmail) {
+      newErrors.email = "Email is required";
+    } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(trimmedEmail)) {
+      newErrors.email = "Please enter a valid email address";
+    }
+    if (!password) newErrors.password = "Password is required";
     setErrors(newErrors);
 
     if (Object.keys(newErrors).length === 0) {
@@ -89,7 +109,10 @@ export default function GainAccess() {
 
         const res = await axios.post(
           `${process.env.NEXT_PUBLIC_PROD_API_URL}/auth/login`,
-          formData, // ✅ Payload goes here directly
+          {
+            email: trimmedEmail,
+            password: password,
+          },
           {
             headers: {
               "Content-Type": "application/json",

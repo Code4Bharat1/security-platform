@@ -29,12 +29,12 @@ const columns = [
   {
     title: 'Resources',
     links: [
-      { label: 'Integrated Reports', href: '/tools' },
-      { label: 'Red Team', href: '/tools' },
-      { label: 'Green Team Research', href: '/tools' },
-      { label: 'Blue Team', href: '/tools' },
-      { label: 'Purple Team', href: '/tools' },
-      { label: 'VA', href: '/tools' },
+      { label: 'Integrated Reports', href: '/tools?tab=reports#platform-tools' },
+      { label: 'Red Team', href: '/tools?tab=red#platform-tools' },
+      { label: 'Green Team', href: '/tools?tab=green#platform-tools' },
+      { label: 'Blue Team', href: '/tools?tab=blue#platform-tools' },
+      { label: 'Purple Team', href: '/tools?tab=purple#platform-tools' },
+      { label: 'VA', href: '/tools?tab=va#platform-tools' },
     ],
   },
   {

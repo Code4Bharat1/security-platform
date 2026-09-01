@@ -19,7 +19,7 @@ import useProtectedAction from "@/components/UseProtectedAction/UseProtectedActi
 
 export default function ActiveDirectoryScanPage() {
   const protectedAction = useProtectedAction();
-  const [domain, setDomain] = useState("corp.local");
+  const [domain, setDomain] = useState("");
   const [scope, setScope] = useState("full");
   
   // Advanced Configuration states
@@ -192,9 +192,9 @@ export default function ActiveDirectoryScanPage() {
         </div>
 
         {/* 2-Column Layout */}
-        <div className="grid gap-8 lg:grid-cols-[1fr_400px]">
+        <div className="grid gap-8 lg:grid-cols-[minmax(0,1fr)_400px] items-start min-w-0">
           {/* Left Column — Inputs + Console */}
-          <div className="space-y-6">
+          <div className="space-y-6 min-w-0">
             {/* Configuration Card */}
             <div className="bg-zinc-950/20 backdrop-blur-md border border-zinc-800/80 rounded-2xl p-6 shadow-[0_8px_30px_rgb(0,0,0,0.2)] hover:border-amber-500/10 transition-all duration-300">
               <h2 className="text-lg font-mono font-medium text-zinc-100 mb-6 flex items-center gap-2">
@@ -491,28 +491,28 @@ export default function ActiveDirectoryScanPage() {
           </div>
 
           {/* Right Column — Sidebar */}
-          <div className="space-y-6">
+          <div className="space-y-6 min-w-0">
             {/* Report Ready Card */}
             {reportReady && (
-              <div className="border border-zinc-800/80 bg-transparent rounded-2xl p-6 space-y-5 shadow-[0_8px_30px_rgb(0,0,0,0.15)]">
+              <div className="border border-zinc-800/80 bg-transparent rounded-2xl p-6 space-y-5 shadow-[0_8px_30px_rgb(0,0,0,0.15)] min-w-0">
                 <div className="text-center space-y-2">
                   <div className="inline-flex h-12 w-12 items-center justify-center border border-amber-500/25 text-amber-400 rounded-full bg-amber-500/10 mb-2">
                     <Award className="h-6 w-6" />
                   </div>
                   <h3 className="text-lg font-mono font-bold text-zinc-100">Report Generated</h3>
-                  <p className="text-xs text-zinc-400 font-mono">Audit completed for {domain}</p>
+                  <p className="text-xs text-zinc-400 font-mono break-all">Audit completed for {domain}</p>
                 </div>
 
                 <div className="border-t border-zinc-800/50 pt-4 space-y-3 font-mono text-xs">
-                  <div className="flex justify-between items-center">
+                  <div className="flex justify-between items-center gap-2">
                     <span className="text-zinc-500">Report Type:</span>
                     <span className="text-zinc-100 font-semibold">AD Security Scan</span>
                   </div>
-                  <div className="flex justify-between items-center">
+                  <div className="flex justify-between items-center gap-2">
                     <span className="text-zinc-500">Total Findings:</span>
                     <span className="text-red-400 font-bold">{checksFailed} {checksFailed === 1 ? 'Warning' : 'Warnings'}</span>
                   </div>
-                  <div className="flex justify-between items-center">
+                  <div className="flex justify-between items-center gap-2">
                     <span className="text-zinc-500">Risk Band:</span>
                     <span className={`${riskColor} font-bold`}>{riskBand}</span>
                   </div>
@@ -520,9 +520,9 @@ export default function ActiveDirectoryScanPage() {
 
                 <button
                   onClick={handleDownloadPDF}
-                  className="w-full bg-amber-500 hover:bg-amber-600 text-black font-mono font-bold text-xs uppercase py-3.5 rounded-xl transition-all duration-300 hover:scale-[1.01] active:scale-[0.99] flex items-center justify-center gap-2 cursor-pointer hover:shadow-[0_0_20px_rgba(245,158,11,0.2)] border-none"
+                  className="w-full bg-yellow-400 hover:bg-yellow-300 text-black border border-yellow-300 font-mono font-bold text-xs uppercase py-3.5 rounded-xl transition-all duration-300 hover:scale-[1.01] active:scale-[0.99] flex items-center justify-center gap-2 cursor-pointer shadow-[0_0_20px_rgba(250,204,21,0.35)]"
                 >
-                  <Download className="h-4 w-4 text-black" />
+                  <Download className="h-4 w-4 text-black stroke-[2.5]" />
                   Download PDF Report
                 </button>
               </div>

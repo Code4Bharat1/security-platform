@@ -51,6 +51,65 @@ export function PlanProvider({ children }) {
   const [loadingFeatures, setLoadingFeatures] = useState(true);
   const [loadingPlan, setLoadingPlan] = useState(false);
 
+const PLAN_RANKS = {
+  free: 0,
+  premium: 1,
+  pro: 2,
+  enterprise: 3,
+};
+const planRank = (p) => PLAN_RANKS[(p || "free").trim().toLowerCase()] ?? 0;
+const normKey = (s) => (s || "").toString().toLowerCase().replace(/[^a-z0-9]/g, "");
+
+const DEFAULT_FREE_ROUTES = [
+  "bruteforce",
+  "wordpressform",
+  "clickjackingtester",
+  "portscannerform",
+  "csrfchecker",
+  "obfuscationchecker",
+  "httpscheckerform",
+  "metatag",
+  "sitemapform",
+  "checklink",
+  "securecrypt",
+  "dependencycheck",
+  "systemhardening",
+];
+
+const DEFAULT_PREMIUM_ROUTES = [
+  ...DEFAULT_FREE_ROUTES,
+  "sessionfixationchecker",
+  "webrecon",
+  "vulnscanner",
+  "whoislookup",
+  "subdomainenumeration",
+  "xsstester",
+  "reversednslookup",
+  "regexdetector",
+  "firewalldashboard",
+  "oauthtokeninspector",
+  "folderthreatscanner",
+  "emailattachmentanalyzer",
+  "ipaddressinfofinder",
+  "fakeqrcodedetector",
+  "seoscoreanalyzertool",
+  "activedirectoryscan",
+  "credentialpathaudit",
+];
+
+const DEFAULT_PRO_ROUTES = [
+  ...DEFAULT_PREMIUM_ROUTES,
+  "mdrmonitor",
+  "jwtsignaturevalidator",
+  "cyberfraudidentifier",
+  "keywordgenerator",
+  "websiteoptimizationtool",
+  "passwordchecker",
+  "urlshortener",
+  "advanceddynamicscan",
+  "basicnetworkscan",
+];
+
   // ── Fetch the global plan→tools map (public, no auth needed) ─────────────
   useEffect(() => {
     setLoadingFeatures(true);
@@ -62,15 +121,22 @@ export function PlanProvider({ children }) {
       .then((data) => setPlanFeaturesMap(data))
       .catch((err) => {
         console.warn("[PlanContext] Could not load plan features, using catalog fallback:", err.message || err);
-        const fallbackTools = ALL_CATALOG_TOOLS.map(t => ({
-          route: `/api/${slugBase(t.slug)}`,
-          name: t.name
-        }));
+        const toolsForKeys = (keys) =>
+          ALL_CATALOG_TOOLS.filter((t) =>
+            keys.includes(normKey(slugBase(t.slug))) || keys.includes(normKey(t.name))
+          ).map((t) => ({
+            route: `/api/${slugBase(t.slug)}`,
+            name: t.name,
+          }));
+
         setPlanFeaturesMap({
-          Free: fallbackTools,
-          Premium: fallbackTools,
-          Pro: fallbackTools,
-          Enterprise: fallbackTools
+          Free: toolsForKeys(DEFAULT_FREE_ROUTES),
+          Premium: toolsForKeys(DEFAULT_PREMIUM_ROUTES),
+          Pro: toolsForKeys(DEFAULT_PRO_ROUTES),
+          Enterprise: ALL_CATALOG_TOOLS.map((t) => ({
+            route: `/api/${slugBase(t.slug)}`,
+            name: t.name,
+          })),
         });
       })
       .finally(() => setLoadingFeatures(false));
@@ -110,38 +176,54 @@ export function PlanProvider({ children }) {
    * `slug` (the URL segment after /tools/).
    *
    * Access rules:
-   *  • No token               → false  (must log in first)
-   *  • Plan data not yet loaded → true  (optimistic — gate shows spinner)
    *  • Enterprise plan        → true   (full bypass)
-   *  • Reports tools          → true   (no gating on report-generator)
-   *  • Otherwise              → check planFeaturesMap[userPlan]
+   *  • Reports tools          → tiered rank check (Free < Premium < Pro < Enterprise)
+   *  • Otherwise              → check planFeaturesMap[userPlan || "Free"]
    */
   const canAccessTool = useCallback(
     (slug) => {
-      if (!token) return false;
-      if (!planFeaturesMap || !userPlan) return true; // still loading — optimistic
-      if (userPlan === "Enterprise") return true;
+      const effectivePlan = userPlan || "Free";
+      if (effectivePlan.toLowerCase() === "enterprise") return true;
 
       const base = slugBase(slug);
 
-      // Reports are always accessible (handled separately)
-      if (base === "report-generator") return true;
+      // Reports tools tiered gating
+      if (base === "report-generator") {
+        const queryMatch = slug.match(/[?&]plan=([^&]+)/i);
+        const requestedPlan = queryMatch ? queryMatch[1].toLowerCase() : "free";
+        return planRank(effectivePlan) >= planRank(requestedPlan);
+      }
 
-      const allowedTools = planFeaturesMap[userPlan] || [];
+      const activeMap = planFeaturesMap || {
+        Free: DEFAULT_FREE_ROUTES.map((r) => ({ route: `/api/${r}`, name: r })),
+        Premium: DEFAULT_PREMIUM_ROUTES.map((r) => ({ route: `/api/${r}`, name: r })),
+        Pro: DEFAULT_PRO_ROUTES.map((r) => ({ route: `/api/${r}`, name: r })),
+      };
+
+      const matchKey = Object.keys(activeMap).find(
+        (k) => k.toLowerCase() === effectivePlan.toLowerCase()
+      );
+      const allowedTools = matchKey ? activeMap[matchKey] : (activeMap[effectivePlan] || []);
+
       const catalogTool = ALL_CATALOG_TOOLS.find(
-        (t) => slugBase(t.slug) === base
+        (t) => slugBase(t.slug) === base || normKey(t.name) === normKey(base)
       );
       const catalogName = catalogTool ? catalogTool.name : null;
+      const normBase = normKey(base);
+      const normCatalogName = catalogName ? normKey(catalogName) : null;
 
-      // Backend stores tools as { route: "/api/...", name: "..." }
-      return allowedTools.some(
-        (t) =>
-          t.route === `/api/${base}` ||
-          t.name === base ||
-          (catalogName && t.name === catalogName)
-      );
+      return allowedTools.some((t) => {
+        const toolRouteClean = normKey((t.route || "").replace(/^\/api\//i, ""));
+        const toolNameClean = normKey(t.name);
+        return (
+          toolRouteClean === normBase ||
+          toolNameClean === normBase ||
+          (normCatalogName && toolNameClean === normCatalogName) ||
+          (catalogTool && toolRouteClean === normKey(slugBase(catalogTool.slug)))
+        );
+      });
     },
-    [token, planFeaturesMap, userPlan]
+    [planFeaturesMap, userPlan]
   );
 
   const loading = loadingFeatures || loadingPlan;
