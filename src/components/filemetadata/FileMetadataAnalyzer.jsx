@@ -4,6 +4,7 @@ import { FileSearch } from "lucide-react";
 
 export default function FileMetadataAnalyzer() {
   const [file, setFile] = useState(null);
+  const [scannedFileName, setScannedFileName] = useState("");
   const [loading, setLoading] = useState(false);
   const [result, setResult] = useState(null);
 
@@ -14,6 +15,7 @@ export default function FileMetadataAnalyzer() {
 
   const handleAnalyze = async () => {
     if (!file) return;
+    setScannedFileName(file.name);
     setLoading(true);
     setResult(null);
 
@@ -47,8 +49,9 @@ export default function FileMetadataAnalyzer() {
       <div className="bg-white shadow-lg rounded-xl p-6 w-full max-w-lg text-center">
         <input
           type="file"
+          disabled={loading}
           onChange={handleChange}
-          className="mb-4 px-4 py-2 w-full border border-gray-300 rounded-md text-gray-700 cursor-pointer file:bg-green-700 file:text-white file:font-semibold file:px-4 file:py-2 file:rounded-md"
+          className="mb-4 px-4 py-2 w-full border border-gray-300 rounded-md text-gray-700 cursor-pointer file:bg-green-700 file:text-white file:font-semibold file:px-4 file:py-2 file:rounded-md disabled:opacity-50 disabled:cursor-not-allowed"
         />
 
         <button

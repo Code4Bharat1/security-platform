@@ -36,6 +36,7 @@ export default function WhoisLookup() {
   const SKIP_DOMAIN_VERIFICATION_FOR_TESTING = true;
 
   const [domain, setDomain] = useState("");
+  const [scannedDomain, setScannedDomain] = useState("");
   const [result, setResult] = useState(null);
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
@@ -68,6 +69,8 @@ export default function WhoisLookup() {
       setDomain(v);
     }
 
+    setScannedDomain(v);
+
     if (!ownershipVerified && !SKIP_DOMAIN_VERIFICATION_FOR_TESTING) {
       return setError("Verify ownership of this domain before running a WHOIS scan.");
     }
@@ -91,7 +94,7 @@ export default function WhoisLookup() {
         if (!res.ok) {
           setError(json.error || `Request failed: ${res.status}`);
         } else {
-          setResult(json);
+          setResult({ ...json, input: v, summary: { ...(json.summary || {}), domainName: json.summary?.domainName || v } });
         }
       } catch (err) {
         console.error("Lookup error", err);
@@ -104,7 +107,7 @@ export default function WhoisLookup() {
 
   const downloadPDF = () => {
     if (!result) return;
-    generateWhoisPDF(result);
+    generateWhoisPDF(result, scannedDomain || domain);
   };
 
   const downloadPNG = async () => {
@@ -208,6 +211,7 @@ export default function WhoisLookup() {
                       placeholder="example.com"
                       value={domain}
                       onChange={(e) => setDomain(e.target.value)}
+                      disabled={loading}
                       className="w-full bg-zinc-900/40 text-zinc-100 border border-zinc-800/80 rounded-xl p-3.5 pl-12 text-sm focus:border-red-500/50 focus:ring-1 focus:ring-red-500/30 focus:shadow-[0_0_12px_rgba(239,68,68,0.08)] focus:outline-none transition-all placeholder:text-zinc-600 font-mono"
                     />
                   </div>
@@ -367,9 +371,9 @@ export default function WhoisLookup() {
                 <div className="flex flex-wrap gap-3">
                   <button
                     onClick={downloadPDF}
-                    className="px-4 py-2.5 bg-zinc-800 text-white hover:bg-zinc-700 border border-zinc-600 hover:border-red-500 rounded-xl font-mono font-bold text-xs uppercase transition-all duration-300 flex items-center gap-1.5 cursor-pointer shadow-md"
+                    className="px-4 py-2.5 bg-red-500 hover:bg-red-600 text-black border border-red-400 rounded-xl font-mono font-bold text-xs uppercase transition-all duration-300 hover:scale-[1.01] active:scale-[0.99] flex items-center gap-1.5 cursor-pointer shadow-[0_0_20px_rgba(239,68,68,0.35)]"
                   >
-                    <FileDown className="w-3.5 h-3.5 text-red-400" /> PDF Report
+                    <FileDown className="w-3.5 h-3.5 text-black stroke-[2.5]" /> PDF Report
                   </button>
                   <button
                     onClick={downloadPNG}

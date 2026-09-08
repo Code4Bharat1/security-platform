@@ -47,6 +47,7 @@ function tokenizeRegex(source = "") {
 
 export default function RegexDetector() {
   const [code, setCode] = useState("");
+  const [scannedCode, setScannedCode] = useState("");
   const [results, setResults] = useState([]);
   const [fixes, setFixes] = useState([]);
   const [loading, setLoading] = useState(false);
@@ -95,10 +96,12 @@ export default function RegexDetector() {
     );
 
   const scanCode = async () => {
-    if (!code.trim()) {
+    const activeCode = code.trim();
+    if (!activeCode) {
       addToast("Please enter some code to scan", "error");
       return;
     }
+    setScannedCode(activeCode);
     setLoading(true);
     setActiveTab("results");
     setResults([]);
@@ -111,7 +114,7 @@ export default function RegexDetector() {
             "Content-Type": "application/json",
             Authorization: `Bearer ${userToken}`,
           },
-          body: JSON.stringify({ code }),
+          body: JSON.stringify({ code: activeCode }),
         });
         if (!res.ok) {
           const e = await res.json().catch(() => ({}));
@@ -171,7 +174,7 @@ export default function RegexDetector() {
   };
 
   const downloadPDF = () => {
-    generateRegexPDF(results, code, fileName);
+    generateRegexPDF(results, scannedCode || code, fileName);
   };
 
   const downloadTXT = () => {
@@ -337,7 +340,7 @@ export default function RegexDetector() {
               {/* File upload */}
               <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 border-b border-zinc-800/40 pb-4">
                 <div className="flex items-center gap-4">
-                  <label htmlFor="file-upload" className="inline-flex items-center gap-2 cursor-pointer bg-zinc-900/40 border border-zinc-800/80 hover:border-blue-500/30 hover:bg-blue-500/5 text-zinc-300 hover:text-blue-400 px-5 py-2.5 rounded-xl transition-all text-xs font-bold font-mono uppercase tracking-wider">
+                  <label htmlFor="file-upload" className={`inline-flex items-center gap-2 ${loading ? 'cursor-not-allowed opacity-50' : 'cursor-pointer'} bg-zinc-900/40 border border-zinc-800/80 hover:border-blue-500/30 hover:bg-blue-500/5 text-zinc-300 hover:text-blue-400 px-5 py-2.5 rounded-xl transition-all text-xs font-bold font-mono uppercase tracking-wider`}>
                     <Upload className="w-4 h-4" />
                     Choose File
                   </label>
@@ -346,6 +349,7 @@ export default function RegexDetector() {
                     type="file"
                     accept=".js,.jsx,.ts,.tsx,.txt"
                     className="hidden"
+                    disabled={loading}
                     onChange={handleFileUpload}
                   />
                   <p className="text-xs font-mono text-zinc-500">
@@ -356,10 +360,10 @@ export default function RegexDetector() {
                 <div className="flex gap-2">
                   <button
                     onClick={downloadPDF}
-                    className="px-4 py-2.5 bg-zinc-900/40 hover:bg-blue-500/5 text-zinc-300 hover:text-blue-400 border border-zinc-800/80 hover:border-blue-500/30 rounded-xl font-mono font-bold text-xs uppercase transition-all duration-300 hover:scale-[1.01] active:scale-[0.99] flex items-center justify-center gap-1.5"
+                    className="px-4 py-2.5 bg-blue-500 hover:bg-blue-400 text-black border border-blue-400 rounded-xl font-mono font-bold text-xs uppercase transition-all duration-300 hover:scale-[1.01] active:scale-[0.99] flex items-center justify-center gap-1.5 cursor-pointer shadow-[0_0_20px_rgba(59,130,246,0.35)]"
                   >
-                    <Download className="w-3.5 h-3.5" />
-                    PDF
+                    <Download className="w-3.5 h-3.5 text-black stroke-[2.5]" />
+                    PDF Report
                   </button>
                   <button
                     onClick={downloadTXT}
@@ -381,6 +385,7 @@ export default function RegexDetector() {
                   className="w-full bg-zinc-900/40 text-zinc-100 border border-zinc-800/80 rounded-xl p-3.5 text-xs focus:border-blue-500/50 focus:ring-1 focus:ring-blue-500/30 focus:shadow-[0_0_12px_rgba(59,130,246,0.08)] focus:outline-none transition-all placeholder:text-zinc-650 font-mono resize-none"
                   placeholder="Paste your JavaScript code here..."
                   value={code}
+                  disabled={loading}
                   onChange={(e) => setCode(e.target.value)}
                 />
               </div>

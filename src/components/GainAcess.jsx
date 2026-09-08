@@ -1,6 +1,6 @@
 "use client";
 import { useState, useEffect } from "react";
-import { Eye, EyeOff, X } from "lucide-react";
+import { Eye, EyeOff, X, AlertTriangle, ArrowRight } from "lucide-react";
 import Link from "next/link";
 import axios from "axios";
 import { useRouter, useSearchParams } from "next/navigation";
@@ -15,6 +15,7 @@ export default function GainAccess() {
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const [checkingAuth, setCheckingAuth] = useState(true);
+  const [suspensionNotice, setSuspensionNotice] = useState("");
   const router = useRouter();
   const searchParams = useSearchParams();
 
@@ -62,6 +63,11 @@ export default function GainAccess() {
           if (res.ok && data.valid) {
             router.push("/tools");
           } else {
+            if (res.status === 403 || data.suspended) {
+              localStorage.removeItem("token");
+              localStorage.removeItem("user");
+              setSuspensionNotice(data.message || "Your account has been suspended by an administrator.");
+            }
             setCheckingAuth(false);
           }
         } catch (err) {
@@ -153,9 +159,11 @@ export default function GainAccess() {
         }
       } catch (err) {
         console.error("Login error:", err);
-        toast.error(
-          err.response?.data?.message || "Something went wrong. Try again."
-        );
+        const errorMsg = err.response?.data?.message || "Something went wrong. Try again.";
+        if (err.response?.status === 403 || err.response?.data?.suspended) {
+          setSuspensionNotice(errorMsg);
+        }
+        toast.error(errorMsg, { duration: 7000 });
       } finally {
         setLoading(false);
       }
@@ -281,6 +289,32 @@ export default function GainAccess() {
             <p className="mb-6 text-center text-sm text-[color:var(--text-muted)]">
               Please enter your credentials to Gain Access
             </p>
+
+            {suspensionNotice && (
+              <div className="mb-5 p-4 rounded-xl bg-red-950/40 border border-red-500/40 text-left">
+                <div className="flex items-start gap-3">
+                  <AlertTriangle className="h-5 w-5 text-red-400 shrink-0 mt-0.5" />
+                  <div className="space-y-2 text-xs">
+                    <p className="text-red-200 font-medium leading-relaxed">{suspensionNotice}</p>
+                    <div className="flex flex-wrap items-center gap-3 pt-1">
+                      <Link
+                        href="/connect"
+                        className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-red-500/20 hover:bg-red-500/30 text-red-300 hover:text-white border border-red-500/30 text-[11px] font-mono transition-all"
+                      >
+                        <span>Contact & Assessment Form</span>
+                        <ArrowRight className="h-3 w-3" />
+                      </Link>
+                      <a
+                        href="mailto:support@nexcorealliance.com"
+                        className="text-[11px] font-mono text-[var(--gold)] hover:underline"
+                      >
+                        Email Support
+                      </a>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            )}
 
             <form onSubmit={handleSubmit}>
               {/* Email */}

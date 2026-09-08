@@ -17,6 +17,7 @@ export default function DashboardPage() {
   const SKIP_DOMAIN_VERIFICATION_FOR_TESTING = true;
 
   const [url, setUrl] = useState("");
+  const [scannedUrl, setScannedUrl] = useState("");
   const [data, setData] = useState(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
@@ -30,6 +31,10 @@ export default function DashboardPage() {
       setError("Verify ownership of this website before running the WAF scan.");
       return;
     }
+    const activeUrl = url.trim();
+    if (!activeUrl) return;
+
+    setScannedUrl(activeUrl);
     setLoading(true);
     setError(null);
     setData(null);
@@ -44,14 +49,14 @@ export default function DashboardPage() {
               "Content-Type": "application/json",
               Authorization: `Bearer ${token}`,
             },
-            body: JSON.stringify({ url }),
+            body: JSON.stringify({ url: activeUrl }),
           }
         );
 
         const json = await res.json();
 
         if (res.ok) {
-          setData(json.dashboard || { message: json.message });
+          setData({ ...(json.dashboard || { message: json.message }), url: activeUrl, target: activeUrl });
         } else {
           setError(json.message || "Something went wrong");
         }
@@ -148,6 +153,7 @@ export default function DashboardPage() {
                       placeholder="e.g. https://example.com"
                       value={url}
                       onChange={(e) => setUrl(e.target.value.trim())}
+                      disabled={loading}
                       required
                       className="w-full bg-zinc-900/40 text-zinc-100 border border-zinc-800/80 rounded-xl p-3.5 pl-12 text-sm focus:border-blue-500/50 focus:ring-1 focus:ring-blue-500/30 focus:shadow-[0_0_12px_rgba(59,130,246,0.08)] focus:outline-none transition-all placeholder:text-zinc-600 font-mono"
                     />

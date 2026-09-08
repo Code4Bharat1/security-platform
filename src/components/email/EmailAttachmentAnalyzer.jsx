@@ -19,6 +19,7 @@ import { generateEmailPDF } from "./generateEmailPDF";
 
 export default function EmailAttachmentAnalyzer() {
   const [file, setFile] = useState(null);
+  const [scannedFileName, setScannedFileName] = useState("");
   const [loading, setLoading] = useState(false);
   const [result, setResult] = useState(null);
   const [error, setError] = useState("");
@@ -59,6 +60,8 @@ export default function EmailAttachmentAnalyzer() {
 
   const handleAnalyze = async () => {
     if (!file) return;
+    const currentName = file.name || "Attachment";
+    setScannedFileName(currentName);
     setLoading(true);
     setResult(null);
     setError("");
@@ -199,10 +202,11 @@ export default function EmailAttachmentAnalyzer() {
                   Drag and drop your attachment file or <span className="text-emerald-400">.eml</span> here
                 </p>
                 <span className="text-xs text-zinc-600 my-2">OR</span>
-                <label className="bg-zinc-900 hover:bg-zinc-800 text-zinc-300 border border-zinc-850 hover:border-zinc-750 px-4 py-2 rounded-xl text-xs font-mono font-bold uppercase tracking-wider cursor-pointer transition-all">
+                <label className={`bg-zinc-900 hover:bg-zinc-800 text-zinc-300 border border-zinc-850 hover:border-zinc-750 px-4 py-2 rounded-xl text-xs font-mono font-bold uppercase tracking-wider cursor-pointer transition-all ${loading ? "opacity-50 pointer-events-none cursor-not-allowed" : ""}`}>
                   Browse Files
                   <input
                     type="file"
+                    disabled={loading}
                     onChange={handleFileChange}
                     className="hidden"
                   />
@@ -221,10 +225,12 @@ export default function EmailAttachmentAnalyzer() {
                   <button
                     onClick={() => {
                       setFile(null);
+                      setScannedFileName("");
                       setResult(null);
                       setError("");
                     }}
-                    className="text-zinc-500 hover:text-rose-400 text-xs font-mono font-bold uppercase cursor-pointer"
+                    disabled={loading}
+                    className="text-zinc-500 hover:text-rose-400 text-xs font-mono font-bold uppercase cursor-pointer disabled:opacity-50 disabled:pointer-events-none"
                   >
                     Clear
                   </button>
@@ -271,10 +277,10 @@ export default function EmailAttachmentAnalyzer() {
                     </span>
                   </div>
                   <button
-                    onClick={() => generateEmailPDF(result, file?.name)}
-                    className="bg-emerald-500/5 hover:bg-emerald-500/10 text-emerald-400 border border-emerald-500/25 hover:border-emerald-500/50 px-3.5 py-1.5 rounded-xl transition-all duration-300 font-mono font-bold text-[11px] uppercase tracking-wider flex items-center gap-2 cursor-pointer hover:scale-[1.01] active:scale-[0.99] hover:shadow-[0_0_15px_rgba(16,185,129,0.1)] focus:outline-none self-start sm:self-auto"
+                    onClick={() => generateEmailPDF(result, result?.fileName || scannedFileName || file?.name || "Attachment")}
+                    className="bg-emerald-500 hover:bg-emerald-400 text-black border border-emerald-400 px-4 py-2 rounded-xl transition-all duration-300 font-mono font-bold text-xs uppercase tracking-wider flex items-center gap-2 cursor-pointer hover:scale-[1.01] active:scale-[0.99] shadow-[0_0_20px_rgba(16,185,129,0.35)] focus:outline-none self-start sm:self-auto"
                   >
-                    <Download size={14} /> PDF Report
+                    <Download size={14} className="text-black stroke-[2.5]" /> PDF Report
                   </button>
                 </div>
 

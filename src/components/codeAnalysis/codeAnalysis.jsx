@@ -12,6 +12,7 @@ const API_BASE = (process.env.NEXT_PUBLIC_PROD_API_URL || 'http://localhost:5000
 export default function AnalyzerPage() {
   const protectedAction = useProtectedAction();
   const [code, setCode] = useState('');
+  const [scannedCode, setScannedCode] = useState('');
   const [language, setLanguage] = useState('javascript'); // 'javascript'|'typescript'|'react'|'vue'|'php'
   const [issues, setIssues] = useState([]);
   const [riskScore, setRiskScore] = useState(0);
@@ -101,6 +102,10 @@ el.textContent = someUserInput; // safe
   };
 
   async function analyze() {
+    const activeCode = code.trim();
+    if (!activeCode) return;
+
+    setScannedCode(activeCode);
     await protectedAction (async (token) => {
 
 
@@ -111,7 +116,7 @@ el.textContent = someUserInput; // safe
     
     try {
       const response = await axios.post(`${API_BASE}/analyze/analyzeCode`, {
-        code,
+        code: activeCode,
         language
       },
     {headers:{Authorization: `Bearer ${token}`}}
@@ -276,17 +281,6 @@ el.textContent = someUserInput; // safe
     URL.revokeObjectURL(url);
   };
 
-  const exportJSON = () => {
-    const payload = { language, riskScore, riskBand, issues: filtered, analytics };
-    const blob = new Blob([JSON.stringify(payload, null, 2)], { type: 'application/json' });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = 'security_report.json';
-    a.click();
-    URL.revokeObjectURL(url);
-  };
-
   const copySnippet = async (text) => {
     try {
       await navigator.clipboard.writeText(text);
@@ -396,6 +390,7 @@ el.textContent = someUserInput; // safe
               <select
                 value={language}
                 onChange={(e) => setLanguage(e.target.value)}
+                disabled={isLoading}
                 className="w-full bg-gray-800 text-white border border-white-600 rounded p-2"
               >
                 <option value="javascript">JS/JSX</option>
@@ -408,14 +403,14 @@ el.textContent = someUserInput; // safe
             <div>
               <label className="block text-gray-300 text-sm font-medium mb-2">Quick Samples</label>
               <div className="flex flex-wrap gap-2">
-                <button onClick={() => loadSample('jsxss')} className="px-3 py-1 bg-red-600 hover:bg-red-700 text-white rounded text-sm">JS XSS</button>
-                <button onClick={() => loadSample('react')} className="px-3 py-1 bg-red-600 hover:bg-red-700 text-white rounded text-sm">React</button>
-                <button onClick={() => loadSample('vue')} className="px-3 py-1 bg-red-600 hover:bg-red-700 text-white rounded text-sm">Vue</button>
-                <button onClick={() => loadSample('php')} className="px-3 py-1 bg-red-600 hover:bg-red-700 text-white rounded text-sm">PHP</button>
-                <button onClick={() => loadSample('evaldanger')} className="px-3 py-1 bg-red-600 hover:bg-red-700 text-white rounded text-sm">EVAL</button>
-                <button onClick={() => loadSample('domclobber')} className="px-3 py-1 bg-red-600 hover:bg-red-700 text-white rounded text-sm">DOM Clobber</button>
-                <button onClick={() => loadSample('prototype')} className="px-3 py-1 bg-red-600 hover:bg-red-700 text-white rounded text-sm">Prototype</button>
-                <button onClick={() => loadSample('safe')} className="px-3 py-1 bg-red-600 hover:bg-red-700 text-white rounded text-sm">SAFE</button>
+                <button disabled={isLoading} onClick={() => loadSample('jsxss')} className="px-3 py-1 bg-red-600 hover:bg-red-700 text-white rounded text-sm disabled:opacity-50">JS XSS</button>
+                <button disabled={isLoading} onClick={() => loadSample('react')} className="px-3 py-1 bg-red-600 hover:bg-red-700 text-white rounded text-sm disabled:opacity-50">React</button>
+                <button disabled={isLoading} onClick={() => loadSample('vue')} className="px-3 py-1 bg-red-600 hover:bg-red-700 text-white rounded text-sm disabled:opacity-50">Vue</button>
+                <button disabled={isLoading} onClick={() => loadSample('php')} className="px-3 py-1 bg-red-600 hover:bg-red-700 text-white rounded text-sm disabled:opacity-50">PHP</button>
+                <button disabled={isLoading} onClick={() => loadSample('evaldanger')} className="px-3 py-1 bg-red-600 hover:bg-red-700 text-white rounded text-sm disabled:opacity-50">EVAL</button>
+                <button disabled={isLoading} onClick={() => loadSample('domclobber')} className="px-3 py-1 bg-red-600 hover:bg-red-700 text-white rounded text-sm disabled:opacity-50">DOM Clobber</button>
+                <button disabled={isLoading} onClick={() => loadSample('prototype')} className="px-3 py-1 bg-red-600 hover:bg-red-700 text-white rounded text-sm disabled:opacity-50">Prototype</button>
+                <button disabled={isLoading} onClick={() => loadSample('safe')} className="px-3 py-1 bg-red-600 hover:bg-red-700 text-white rounded text-sm disabled:opacity-50">SAFE</button>
               </div>
             </div>
           </div>
@@ -425,6 +420,7 @@ el.textContent = someUserInput; // safe
             <label className="block text-gray-300 text-sm font-medium mb-2">Code to Analyze</label>
             <textarea
               value={code}
+              disabled={isLoading}
               onChange={(e) => setCode(e.target.value)}
               placeholder="Paste/Examples/text......"
               className="w-full h-32 bg-gray-800 text-white border border-white-600 rounded p-3 font-mono text-sm resize-none"
@@ -587,13 +583,10 @@ el.textContent = someUserInput; // safe
           <button onClick={exportTXT} className="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded">
             Export TXT
           </button>
-          <button onClick={exportJSON} className="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded">
-            Export JSON
-          </button>
           <button onClick={exportCSV} className="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded">
             Export CSV
           </button>
-          <button onClick={exportPDF} className="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded">
+          <button onClick={exportPDF} className="bg-red-500 hover:bg-red-600 text-black font-bold px-4 py-2 rounded-xl border border-red-400 shadow-[0_0_20px_rgba(239,68,68,0.35)] cursor-pointer transition-all">
             Export PDF
           </button>
         </div>

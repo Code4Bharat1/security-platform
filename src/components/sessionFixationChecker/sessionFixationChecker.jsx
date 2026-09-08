@@ -23,6 +23,7 @@ import { generateSessionFixationPDF } from "./generateSessionFixationPDF";
 
 export default function SessionFixationChecker() {
   const [code, setCode] = useState("");
+  const [scannedCode, setScannedCode] = useState("");
   const [report, setReport] = useState(null);
   const [summary, setSummary] = useState(null);
   const [metrics, setMetrics] = useState(null);
@@ -59,6 +60,8 @@ export default function SessionFixationChecker() {
       addToast("Please enter some code to analyze", "error");
       return;
     }
+
+    setScannedCode(v);
     if (!apiBase) {
       addToast(
         "API base URL not set. Define NEXT_PUBLIC_PROD_API_URL.",
@@ -308,17 +311,19 @@ export default function SessionFixationChecker() {
                 <textarea
                   rows={8}
                   value={code}
+                  disabled={loading}
                   onChange={(e) => setCode(e.target.value)}
                   placeholder="Paste login logic, cookie handling routines, or session middlewares here..."
                   className="w-full bg-zinc-900/40 text-zinc-100 border border-zinc-800/80 rounded-xl p-4 font-mono text-xs focus:outline-none focus:ring-1 focus:ring-red-500/50 focus:border-red-500/50 resize-none placeholder:text-zinc-650"
                 />
 
                 <div className="flex flex-col sm:flex-row gap-3">
-                  <label className="flex-1 cursor-pointer">
+                  <label className={`flex-1 ${loading ? 'cursor-not-allowed opacity-50' : 'cursor-pointer'}`}>
                     <input
                       type="file"
                       accept=".js,.jsx,.ts,.tsx,.php,.py,.java,.cs,.rb,.go,.txt"
                       className="hidden"
+                      disabled={loading}
                       onChange={handleFileUpload}
                     />
                     <div className="flex items-center justify-center gap-2 px-4 py-4 bg-zinc-900/40 hover:bg-red-50/5 text-zinc-350 hover:text-red-450 border border-zinc-800/80 hover:border-red-500/30 rounded-xl font-mono font-bold text-xs uppercase tracking-wider transition-all duration-300">
@@ -365,9 +370,9 @@ export default function SessionFixationChecker() {
                 <div className="flex justify-center gap-4 flex-wrap">
                   <button
                     onClick={downloadPDF}
-                    className="px-6 py-3 bg-red-500 hover:bg-red-600 text-black rounded-xl font-mono font-bold text-xs uppercase tracking-wider transition-all duration-300 flex items-center gap-2 cursor-pointer hover:shadow-[0_0_20px_rgba(239,68,68,0.2)]"
+                    className="px-6 py-3 bg-red-500 hover:bg-red-600 text-black border border-red-400 rounded-xl font-mono font-bold text-xs uppercase tracking-wider transition-all duration-300 hover:scale-[1.01] active:scale-[0.99] flex items-center gap-2 cursor-pointer shadow-[0_0_20px_rgba(239,68,68,0.35)]"
                   >
-                    <Download className="w-4 h-4 text-black" />
+                    <Download className="w-4 h-4 text-black stroke-[2.5]" />
                     Download Report
                   </button>
                   <button

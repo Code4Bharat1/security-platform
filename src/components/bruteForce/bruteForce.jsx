@@ -23,6 +23,7 @@ import {
 export default function DirectoryBruteForcer() {
   const protectedAction = useProtectedAction();
   const [target, setTarget] = useState('');
+  const [scannedTarget, setScannedTarget] = useState('');
   const [recursive, setRecursive] = useState(true);
   const [results, setResults] = useState([]);
   const [meta, setMeta] = useState(null);
@@ -35,6 +36,7 @@ export default function DirectoryBruteForcer() {
     await protectedAction(async (token) => {
       const cleanTarget = target.trim();
       if (!cleanTarget) return;
+      setScannedTarget(cleanTarget);
       setLoading(true);
       setResults([]);
       setMeta(null);
@@ -77,7 +79,7 @@ export default function DirectoryBruteForcer() {
   };
 
   const downloadPDF = () => {
-    generateBruteForcePDF(results, meta, target);
+    generateBruteForcePDF(results, meta, scannedTarget || target);
   };
 
   const viewFoundSite = (path) => {
@@ -188,6 +190,7 @@ export default function DirectoryBruteForcer() {
                       placeholder="https://example.com"
                       value={target}
                       onChange={(e) => setTarget(e.target.value)}
+                      disabled={loading}
                       className="w-full bg-zinc-900/40 text-zinc-100 border border-zinc-800/80 rounded-xl p-3.5 pl-12 text-sm focus:border-red-500/50 focus:ring-1 focus:ring-red-500/30 focus:shadow-[0_0_12px_rgba(239,68,68,0.08)] focus:outline-none transition-all placeholder:text-zinc-600 font-mono"
                     />
                   </div>
@@ -200,6 +203,7 @@ export default function DirectoryBruteForcer() {
                       type="checkbox"
                       checked={recursive}
                       onChange={(e) => setRecursive(e.target.checked)}
+                      disabled={loading}
                       className="sr-only peer"
                     />
                     <div className="w-9 h-5 bg-zinc-850 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-zinc-450 after:border-zinc-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-red-500 peer-checked:after:bg-black peer-checked:after:border-black"></div>
@@ -267,9 +271,9 @@ export default function DirectoryBruteForcer() {
                   <div className="flex items-center gap-3">
                     <button
                       onClick={downloadPDF}
-                      className="px-4 py-2.5 bg-zinc-900/40 hover:bg-red-500/5 text-zinc-300 hover:text-red-400 border border-zinc-800/80 hover:border-red-500/30 rounded-xl font-mono font-bold text-xs uppercase transition-all duration-300 flex items-center justify-center gap-1.5 cursor-pointer"
+                      className="px-4 py-2.5 bg-red-500 hover:bg-red-600 text-black border border-red-400 rounded-xl font-mono font-bold text-xs uppercase transition-all duration-300 hover:scale-[1.01] active:scale-[0.99] flex items-center justify-center gap-1.5 cursor-pointer shadow-[0_0_20px_rgba(239,68,68,0.35)]"
                     >
-                      <Download className="w-3.5 h-3.5" />
+                      <Download className="w-3.5 h-3.5 text-black stroke-[2.5]" />
                       Download PDF
                     </button>
 

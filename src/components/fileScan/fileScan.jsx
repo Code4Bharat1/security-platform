@@ -5,6 +5,7 @@ import { toast } from "react-hot-toast";
 
 export default function FileScan() {
   const [file, setFile] = useState(null);
+  const [scannedFileName, setScannedFileName] = useState("");
   const [result, setResult] = useState(null);
   const [loading, setLoading] = useState(false);
 
@@ -19,6 +20,8 @@ export default function FileScan() {
       return;
     }
 
+    const currentName = file.name;
+    setScannedFileName(currentName);
     setLoading(true);
     setResult(null);
 
@@ -75,12 +78,13 @@ export default function FileScan() {
               <input
                 type="file"
                 id="file-upload"
+                disabled={loading}
                 onChange={handleFileChange}
                 className="hidden"
               />
               <label
                 htmlFor="file-upload"
-                className="flex flex-col items-center justify-center w-full h-48 border-2 border-dashed border-gray-600 rounded-xl cursor-pointer bg-[#1c1c21] hover:bg-[#23232a] hover:border-blue-500 transition-all duration-300"
+                className={`flex flex-col items-center justify-center w-full h-48 border-2 border-dashed border-gray-600 rounded-xl cursor-pointer bg-[#1c1c21] hover:bg-[#23232a] hover:border-blue-500 transition-all duration-300 ${loading ? "opacity-50 pointer-events-none cursor-not-allowed" : ""}`}
               >
                 <div className="flex flex-col items-center justify-center pt-5 pb-6">
                   <svg className="w-12 h-12 mb-4 text-gray-400 group-hover:text-blue-500 transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24">

@@ -35,6 +35,8 @@ const getStatusBadge = (status) => {
 export default function OsintTool() {
   const [queryType, setQueryType] = useState("username");
   const [queryValue, setQueryValue] = useState("");
+  const [scannedQueryType, setScannedQueryType] = useState("username");
+  const [scannedQueryValue, setScannedQueryValue] = useState("");
   const [loading, setLoading] = useState(false);
   const [results, setResults] = useState(null);
   const [error, setError] = useState("");
@@ -43,14 +45,18 @@ export default function OsintTool() {
   const handleDownloadPDF = () => {
     if (!results) return;
     generateDataBreachPDF({
-      queryType:  results.queryType  || queryType,
-      queryValue: results.queryValue || queryValue,
+      queryType:  results.queryType  || scannedQueryType  || queryType,
+      queryValue: results.queryValue || scannedQueryValue || queryValue,
       details:    results.details    || [],
     });
   };
 
   const handleCheck = async () => {
-    if (!queryValue.trim()) return;
+    const val = queryValue.trim();
+    if (!val) return;
+    const type = queryType;
+    setScannedQueryType(type);
+    setScannedQueryValue(val);
     setLoading(true);
     setResults(null);
     setError("");
@@ -65,7 +71,7 @@ export default function OsintTool() {
               "Content-Type": "application/json",
               Authorization: `Bearer ${userToken}`,
             },
-            body: JSON.stringify({ [queryType]: queryValue }),
+            body: JSON.stringify({ [type]: val }),
           }
         );
         const data = await res.json();
@@ -73,7 +79,11 @@ export default function OsintTool() {
           setError(data.message || "Scan failed");
           toast.error("Vulnerability scan failed.");
         } else {
-          setResults(data);
+          setResults({
+            ...data,
+            queryType: type,
+            queryValue: val,
+          });
           toast.success("Security query completed!");
         }
       } catch (e) {
@@ -179,8 +189,9 @@ export default function OsintTool() {
                   </label>
                   <select
                     value={queryType}
+                    disabled={loading}
                     onChange={(e) => setQueryType(e.target.value)}
-                    className="w-full bg-zinc-900/40 text-zinc-100 border border-zinc-800/80 rounded-xl p-3 text-sm focus:border-emerald-500/50 focus:ring-1 focus:ring-emerald-500/30 focus:outline-none transition-all font-mono cursor-pointer"
+                    className="w-full bg-zinc-900/40 text-zinc-100 border border-zinc-800/80 rounded-xl p-3 text-sm focus:border-emerald-500/50 focus:ring-1 focus:ring-emerald-500/30 focus:outline-none transition-all font-mono cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
                   >
                     <option value="username" className="bg-zinc-950 text-zinc-100">Username</option>
                     <option value="email" className="bg-zinc-950 text-zinc-100">Email</option>
@@ -194,10 +205,11 @@ export default function OsintTool() {
                   </label>
                   <input
                     type="text"
+                    disabled={loading}
                     placeholder={`Enter target ${queryType}…`}
                     value={queryValue}
                     onChange={(e) => setQueryValue(e.target.value)}
-                    className="w-full bg-zinc-900/40 text-zinc-100 border border-zinc-800/80 rounded-xl p-3 text-sm focus:border-emerald-500/50 focus:ring-1 focus:ring-emerald-500/30 focus:shadow-[0_0_12px_rgba(16,185,129,0.08)] focus:outline-none transition-all placeholder:text-zinc-600 font-mono"
+                    className="w-full bg-zinc-900/40 text-zinc-100 border border-zinc-800/80 rounded-xl p-3 text-sm focus:border-emerald-500/50 focus:ring-1 focus:ring-emerald-500/30 focus:shadow-[0_0_12px_rgba(16,185,129,0.08)] focus:outline-none transition-all placeholder:text-zinc-650 font-mono disabled:opacity-50 disabled:cursor-not-allowed"
                   />
                 </div>
               </div>
@@ -313,9 +325,9 @@ export default function OsintTool() {
                 {/* Download PDF Report button */}
                 <button
                   onClick={handleDownloadPDF}
-                  className="w-full flex items-center justify-center gap-2 py-3 mt-2 rounded-xl border border-emerald-500/30 bg-emerald-500/5 hover:bg-emerald-500/10 text-emerald-400 font-mono font-bold text-xs uppercase tracking-wider transition-all duration-200 hover:border-emerald-500/50 hover:scale-[1.01] active:scale-[0.99] cursor-pointer"
+                  className="w-full flex items-center justify-center gap-2 py-3.5 mt-2 rounded-xl border border-emerald-400 bg-emerald-500 hover:bg-emerald-400 text-black font-mono font-bold text-xs uppercase tracking-wider transition-all duration-300 hover:scale-[1.01] active:scale-[0.99] shadow-[0_0_20px_rgba(16,185,129,0.35)] cursor-pointer focus:outline-none"
                 >
-                  <Download className="w-4 h-4" />
+                  <Download className="w-4 h-4 text-black stroke-[2.5]" />
                   Download PDF Report
                 </button>
               </div>

@@ -61,6 +61,7 @@ export default function AdvancedDynamicScan() {
 
   // State parameters
   const [targetUrl, setTargetUrl] = useState("");
+  const [scannedUrl, setScannedUrl] = useState("");
   const [crawlingEnabled, setCrawlingEnabled] = useState(true);
   const [fuzzingEnabled, setFuzzingEnabled] = useState(true);
 
@@ -86,8 +87,10 @@ export default function AdvancedDynamicScan() {
   // Execute Dynamic Scan
   const handleStartScan = async (e) => {
     e.preventDefault();
-    if (!targetUrl.trim()) return;
+    const activeTarget = targetUrl.trim();
+    if (!activeTarget) return;
 
+    setScannedUrl(activeTarget);
     setLoading(true);
     setReportReady(false);
     setErrorMsg("");
@@ -127,7 +130,7 @@ export default function AdvancedDynamicScan() {
             Authorization: `Bearer ${token}`
           },
           body: JSON.stringify({
-            targetUrl: targetUrl.trim(),
+            targetUrl: activeTarget,
             crawlingEnabled,
             fuzzingEnabled
           })
@@ -181,7 +184,7 @@ export default function AdvancedDynamicScan() {
 
   // Export PDF Report
   const handleDownloadPDF = () => {
-    generateAdvancedDynamicScanPDF(results, targetUrl, riskScore, urlsCrawled, summaryText);
+    generateAdvancedDynamicScanPDF(results, scannedUrl || targetUrl, riskScore, urlsCrawled, summaryText);
   };
 
   return (

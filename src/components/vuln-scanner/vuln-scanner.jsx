@@ -27,6 +27,7 @@ import {
   Lock,
   Menu,
   Terminal,
+  Download,
 } from "lucide-react";
 import { generateVulnScannerPDF } from "./generateVulnScannerPDF";
 import useProtectedAction from "../UseProtectedAction/UseProtectedAction";
@@ -46,6 +47,7 @@ export default function Vulnscanner() {
 
   const router = useRouter();
   const [url, setUrl] = useState("");
+  const [scannedUrl, setScannedUrl] = useState("");
   const [error, setError] = useState("");
   const [scanData, setScanData] = useState(null);
   const [loading, setLoading] = useState(false);
@@ -114,7 +116,9 @@ export default function Vulnscanner() {
       return;
     }
 
-    const domain = domainFromUrl(url);
+    const activeUrl = url.trim();
+    const domain = domainFromUrl(activeUrl);
+    setScannedUrl(activeUrl);
     setError("");
     setLoading(true);
     setScanData(null);
@@ -166,7 +170,7 @@ export default function Vulnscanner() {
           return;
         }
 
-        setScanData(result);
+        setScanData({ ...result, domain: result?.domain || domain, url: activeUrl });
         console.log("Scan Result:", result);
 
         setActiveTab("overview");
@@ -371,7 +375,9 @@ export default function Vulnscanner() {
 
   const generatePDF = async () => {
     const { generateVulnScannerPDF } = await import("./generateVulnScannerPDF");
-    await generateVulnScannerPDF(scanData, setPdfProgress, history);
+    const targetDomain = scanData?.domain || domainFromUrl(scannedUrl || url) || "Unknown Target";
+    const targetFullUrl = scanData?.url || scannedUrl || url || `https://${targetDomain}`;
+    await generateVulnScannerPDF({ ...scanData, domain: targetDomain, url: targetFullUrl }, setPdfProgress, history);
   };
 
   // generatePDF_old has been moved to generateVulnScannerPDF.js
@@ -596,6 +602,7 @@ export default function Vulnscanner() {
                     name="websiteUrl"
                     value={url}
                     onChange={(e) => setUrl(e.target.value)}
+                    disabled={loading}
                     placeholder="https://example.com"
                     required
                     className="flex-1 bg-zinc-900/40 text-zinc-100 border border-zinc-800/80 rounded-xl p-3.5 text-sm focus:outline-none transition-all placeholder:text-zinc-650 font-mono focus:ring-1 focus:border-[var(--gold)] focus:ring-[var(--gold)]/30"
@@ -5414,13 +5421,13 @@ export default function Vulnscanner() {
                   <div className="flex justify-center sm:justify-end mt-6 pt-6 border-t border-zinc-900">
                     <button 
                       onClick={generatePDF} 
-                      className={`px-4 py-2.5 text-black rounded-xl font-mono font-bold text-xs uppercase transition-all duration-300 flex items-center justify-center gap-1.5 cursor-pointer shadow-md ${
+                      className={`px-4 py-2.5 text-black rounded-xl font-mono font-bold text-xs uppercase transition-all duration-300 hover:scale-[1.01] active:scale-[0.99] flex items-center justify-center gap-1.5 cursor-pointer ${
                         isVaTeam 
-                          ? "bg-amber-500 hover:bg-amber-600 hover:shadow-[0_0_20px_rgba(245,158,11,0.2)]" 
-                          : "bg-red-500 hover:bg-red-600 hover:shadow-[0_0_20px_rgba(239,68,68,0.2)]"
+                          ? "bg-yellow-400 hover:bg-yellow-300 border border-yellow-300 shadow-[0_0_20px_rgba(250,204,21,0.35)]" 
+                          : "bg-red-500 hover:bg-red-600 border border-red-400 shadow-[0_0_20px_rgba(239,68,68,0.35)]"
                       }`}
                     >
-                      <FileText className="h-4 w-4 text-black" />
+                      <Download className="h-4 w-4 text-black stroke-[2.5]" />
                       <span>Download PDF Report</span>
                     </button>
                   </div>

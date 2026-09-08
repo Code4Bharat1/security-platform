@@ -5,6 +5,7 @@ import { Loader2, LockIcon } from "lucide-react";
 
 const SharePointScanner = () => {
   const [url, setUrl] = useState("");
+  const [scannedUrl, setScannedUrl] = useState("");
   const [error, setError] = useState("");
   const [scanData, setScanData] = useState(null);
   const [loading, setLoading] = useState(false);
@@ -24,11 +25,13 @@ const SharePointScanner = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    if (!validateUrl(url)) {
+    const activeUrl = url.trim();
+    if (!validateUrl(activeUrl)) {
       setError("Please enter a valid SharePoint URL.");
       return;
     }
 
+    setScannedUrl(activeUrl);
     setError("");
     setLoading(true);
     setScanData(null);
@@ -36,7 +39,7 @@ const SharePointScanner = () => {
     try {
       const response = await axios.post(
         `${baseURL}/sharepoint/sharepoint-scanner`,
-        { url }
+        { url: activeUrl }
       );
 
       const result = response.data;
@@ -44,7 +47,7 @@ const SharePointScanner = () => {
       if (result?.error) {
         setError(result.error || "Failed to scan SharePoint site.");
       } else {
-        setScanData(result);
+        setScanData({ ...result, url: activeUrl, target: activeUrl });
       }
     } catch (err) {
       console.error("Axios error:", err);
@@ -84,6 +87,7 @@ const SharePointScanner = () => {
             placeholder="https://company.sharepoint.com/sites/teamsite"
             value={url}
             onChange={(e) => setUrl(e.target.value.trim())}
+            disabled={loading}
             required
             className="w-full border border-gray-300 rounded-lg p-2 mb-3 focus:outline-none focus:ring-2 focus:ring-green-800"
           />

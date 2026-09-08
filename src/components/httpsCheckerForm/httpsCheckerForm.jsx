@@ -15,7 +15,8 @@ import {
   Loader2,
   Lock,
   ArrowRight,
-  Terminal
+  Terminal,
+  Download
 } from "lucide-react";
 import useProtectedAction from "../UseProtectedAction/UseProtectedAction";
 import OwnershipVerificationWizard from "@/components/ownership/OwnershipVerificationWizard";
@@ -56,6 +57,7 @@ export default function HttpsCheckerPage() {
   const SKIP_DOMAIN_VERIFICATION_FOR_TESTING = true;
 
   const [domain, setDomain] = useState("");
+  const [scannedDomain, setScannedDomain] = useState("");
   const [loading, setLoading] = useState(false);
   const [result, setResult] = useState(null);
   const [error, setError] = useState("");
@@ -80,6 +82,7 @@ export default function HttpsCheckerPage() {
       setError("Verify ownership of this domain before checking HTTPS security.");
       return;
     }
+    setScannedDomain(cleanDomain);
     setLoading(true);
     setError("");
     setResult(null);
@@ -116,7 +119,7 @@ export default function HttpsCheckerPage() {
           return;
         }
         if (data.success) {
-          setResult(data);
+          setResult({ ...data, target: data.target || cleanDomain, domain: cleanDomain });
         } else {
           if (
             data.error &&
@@ -245,7 +248,7 @@ export default function HttpsCheckerPage() {
 
   const handleDownloadPDF = () => {
     if (!result) return;
-    generateHttpsPDF(result, setPdfProgress);
+    generateHttpsPDF({ ...result, target: result?.target || scannedDomain || domain }, setPdfProgress);
   };
 
   const handleDownloadTXT = () => {
@@ -427,6 +430,7 @@ export default function HttpsCheckerPage() {
                       placeholder="Enter domain (e.g. example.com)"
                       value={domain}
                       onChange={(e) => setDomain(e.target.value.trim())}
+                      disabled={loading}
                       onKeyPress={handleKeyPress}
                       className="w-full bg-zinc-900/40 text-zinc-100 border border-zinc-800/80 rounded-xl p-3.5 pl-12 text-sm focus:border-blue-500/50 focus:ring-1 focus:ring-blue-500/30 focus:shadow-[0_0_12px_rgba(59,130,246,0.08)] focus:outline-none transition-all placeholder:text-zinc-600 font-mono"
                     />
@@ -489,9 +493,9 @@ export default function HttpsCheckerPage() {
                   <div className="flex gap-2">
                     <button
                       onClick={handleDownloadPDF}
-                      className="px-4 py-2.5 bg-zinc-900/40 hover:bg-blue-500/5 text-zinc-300 hover:text-blue-400 border border-zinc-800/80 hover:border-blue-500/30 rounded-xl font-mono font-bold text-xs uppercase transition-all duration-300 hover:scale-[1.01] active:scale-[0.99] flex items-center justify-center gap-1.5"
+                      className="px-4 py-2.5 bg-blue-500 hover:bg-blue-400 text-black border border-blue-400 rounded-xl font-mono font-bold text-xs uppercase transition-all duration-300 hover:scale-[1.01] active:scale-[0.99] flex items-center justify-center gap-1.5 cursor-pointer shadow-[0_0_20px_rgba(59,130,246,0.35)]"
                     >
-                      <FileText className="w-3.5 h-3.5" />
+                      <Download className="w-3.5 h-3.5 text-black stroke-[2.5]" />
                       PDF Report
                     </button>
                     <button

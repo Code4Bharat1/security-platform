@@ -151,16 +151,16 @@ export default function FirewallDashboard({ data }) {
           <button
             onClick={handleDownloadPdf}
             disabled={pdfProgress !== null}
-            className="px-4 py-2.5 bg-zinc-900/40 hover:bg-blue-500/5 text-zinc-300 hover:text-blue-400 border border-zinc-800/80 hover:border-blue-500/30 rounded-xl font-mono font-bold text-xs uppercase transition-all duration-300 hover:scale-[1.01] active:scale-[0.99] flex items-center justify-center gap-1.5 disabled:opacity-50 disabled:pointer-events-none"
+            className="px-4 py-2.5 bg-blue-500 hover:bg-blue-400 text-black border border-blue-400 rounded-xl font-mono font-bold text-xs uppercase transition-all duration-300 hover:scale-[1.01] active:scale-[0.99] flex items-center justify-center gap-1.5 disabled:opacity-50 disabled:pointer-events-none cursor-pointer shadow-[0_0_20px_rgba(59,130,246,0.35)]"
           >
             {pdfProgress ? (
               <>
-                <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                <Loader2 className="w-3.5 h-3.5 animate-spin text-black" />
                 Generating...
               </>
             ) : (
               <>
-                <Download className="w-3.5 h-3.5" />
+                <Download className="w-3.5 h-3.5 text-black stroke-[2.5]" />
                 PDF Report
               </>
             )}

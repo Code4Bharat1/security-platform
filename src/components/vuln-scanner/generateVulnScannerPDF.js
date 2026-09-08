@@ -7,7 +7,7 @@ import {
   getAuditorInfo,
   applyHeaderFooterDecorator,
   getSeverityColor
-} from "../../utils/pdfFramework";
+} from "../../utils/pdfFramework.js";
 
 // ── Extended Design System Color Tokens (Inherits shared color system) ──
 const C = {
@@ -1066,14 +1066,22 @@ export const generateVulnScannerPDF = async (scanData, setPdfProgress, history) 
     // ══════════════════════════════════════════════════════════════════════
     // DRAW PAGE HEADERS & FOOTERS (Post-processing decorator)
     // ══════════════════════════════════════════════════════════════════════
-    setPdfProgress("Finalising document...");
+    if (typeof setPdfProgress === "function") setPdfProgress("Finalising document...");
     addFooters(doc);
 
-    setPdfProgress("Saving PDF...");
-    doc.save(`${domain}-VAPT-Report-${Date.now()}.pdf`);
+    try {
+      if (typeof window !== "undefined") {
+        if (typeof setPdfProgress === "function") setPdfProgress("Saving PDF...");
+        doc.save(`${domain}-VAPT-Report-${Date.now()}.pdf`);
+      }
+    } catch (saveErr) {
+      console.warn("Browser doc.save skipped:", saveErr.message);
+    }
+    return doc;
   } catch (err) {
     console.error("Failed to generate PDF:", err);
+    throw err;
   } finally {
-    setPdfProgress(null);
+    if (typeof setPdfProgress === "function") setPdfProgress(null);
   }
 };

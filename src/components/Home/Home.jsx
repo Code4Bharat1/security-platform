@@ -461,13 +461,12 @@ export default function Home() {
                 <div className="flex flex-wrap items-center gap-2">
                   <span className="font-mono text-xs font-semibold text-white/40 uppercase tracking-wider">Report Formats:</span>
                   <span className="px-2.5 py-1 rounded border border-white/12 bg-white/5 font-mono text-xs text-white/80">PDF</span>
-                  <span className="px-2.5 py-1 rounded border border-white/12 bg-white/5 font-mono text-xs text-white/80">JSON</span>
                   <span className="px-2.5 py-1 rounded border border-white/12 bg-white/5 font-mono text-xs text-white/80">TXT</span>
                   <span className="px-2.5 py-1 rounded border border-white/12 bg-white/5 font-mono text-xs text-white/80">XML</span>
                   <span className="px-2.5 py-1 rounded border border-white/12 bg-white/5 font-mono text-xs text-white/80">CSV</span>
                 </div>
                 <p className="text-sm text-white/70 leading-relaxed">
-                  Consolidate all scan telemetry into unified security reports. Instantly export executive summaries and detailed technical findings in <strong>PDF, JSON, TXT, XML, or CSV</strong> formats.
+                  Consolidate all scan telemetry into unified security reports. Instantly export executive summaries and detailed technical findings in <strong>PDF, TXT, XML, or CSV</strong> formats.
                 </p>
               </div>
 

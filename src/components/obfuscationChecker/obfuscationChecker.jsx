@@ -45,6 +45,7 @@ function safeName(s) {
 export default function CodeObfuscationChecker() {
   const [code, setCode] = useState("");
   const [files, setFiles] = useState([]); // [{name, content}]
+  const [scannedPayload, setScannedPayload] = useState([]);
   const [result, setResult] = useState(null); // {results: [...]}
   const [loading, setLoading] = useState(false);
   const [err, setErr] = useState("");
@@ -77,18 +78,20 @@ export default function CodeObfuscationChecker() {
 
   const analyze = async () => {
     setErr("");
-    if (!payload.length) {
+    const activePayload = [...payload];
+    if (!activePayload.length) {
       setErr("Provide code via paste or upload one or more files.");
       return;
     }
+    setScannedPayload(activePayload);
     setLoading(true);
 
     await protectedAction(async (userToken) => {
       try {
         const body =
-          payload.length === 1 && !files.length
-            ? { code: payload[0].content }
-            : { files: payload };
+          activePayload.length === 1 && !files.length
+            ? { code: activePayload[0].content }
+            : { files: activePayload };
 
         const res = await fetch(ENDPOINT, {
           method: "POST",
@@ -101,7 +104,7 @@ export default function CodeObfuscationChecker() {
         const data = await res.json().catch(() => ({}));
         if (!res.ok || data?.error)
           throw new Error(data?.error || `HTTP ${res.status}`);
-        setResult(data);
+        setResult({ ...data, scannedPayload: activePayload });
       } catch (e) {
         setErr(e.message || "Failed to analyze code");
       } finally {
@@ -251,6 +254,7 @@ export default function CodeObfuscationChecker() {
                 className="w-full h-48 bg-zinc-900/40 text-zinc-100 border border-zinc-800/80 rounded-xl p-3.5 text-xs focus:border-blue-500/50 focus:ring-1 focus:ring-blue-500/30 focus:shadow-[0_0_12px_rgba(59,130,246,0.08)] focus:outline-none transition-all placeholder:text-zinc-650 font-mono resize-none"
                 placeholder="Paste code snippet here to analyze..."
                 value={code}
+                disabled={loading}
                 onChange={(e) => setCode(e.target.value)}
               />
             </div>
@@ -267,7 +271,8 @@ export default function CodeObfuscationChecker() {
                 </div>
                 <button
                   onClick={clearAll}
-                  className="px-5 py-2.5 bg-zinc-900/40 hover:bg-blue-500/5 text-zinc-300 hover:text-blue-400 border border-zinc-800/80 hover:border-blue-500/30 rounded-xl font-mono font-bold text-xs uppercase transition-all duration-300 hover:scale-[1.01] active:scale-[0.99] flex items-center justify-center gap-1.5 cursor-pointer"
+                  disabled={loading}
+                  className="px-5 py-2.5 bg-zinc-900/40 hover:bg-blue-500/5 text-zinc-300 hover:text-blue-400 border border-zinc-800/80 hover:border-blue-500/30 rounded-xl font-mono font-bold text-xs uppercase transition-all duration-300 hover:scale-[1.01] active:scale-[0.99] flex items-center justify-center gap-1.5 cursor-pointer disabled:opacity-50"
                 >
                   <RefreshCw className="w-3.5 h-3.5" />
                   Clear
@@ -280,8 +285,9 @@ export default function CodeObfuscationChecker() {
                     type="file"
                     accept=".js,.jsx,.ts,.tsx,.mjs,.cjs,.py,.rb,.php,.java,.go,.cs,.txt"
                     onChange={handleFileChange}
+                    disabled={loading}
                     multiple
-                    className="block w-full text-zinc-450 file:mr-4 file:py-2.5 file:px-5 file:rounded-xl file:border file:border-zinc-850 file:bg-zinc-900/60 file:text-zinc-300 file:font-mono file:text-xs file:font-bold hover:file:bg-blue-500/5 hover:file:text-blue-400 hover:file:border-blue-500/30 file:cursor-pointer cursor-pointer transition-all"
+                    className="block w-full text-zinc-450 file:mr-4 file:py-2.5 file:px-5 file:rounded-xl file:border file:border-zinc-850 file:bg-zinc-900/60 file:text-zinc-300 file:font-mono file:text-xs file:font-bold hover:file:bg-blue-500/5 hover:file:text-blue-400 hover:file:border-blue-500/30 file:cursor-pointer cursor-pointer transition-all disabled:opacity-50"
                   />
                 </label>
               </div>
@@ -328,9 +334,9 @@ export default function CodeObfuscationChecker() {
               <button
                 onClick={exportPdfAll}
                 disabled={!result?.results?.length}
-                className="px-6 py-4 bg-zinc-900/40 hover:bg-blue-500/5 text-zinc-300 hover:text-blue-400 border border-zinc-800/80 hover:border-blue-500/30 rounded-xl font-mono font-bold text-xs uppercase py-3.5 transition-all duration-300 hover:scale-[1.01] active:scale-[0.99] flex items-center justify-center gap-2 cursor-pointer disabled:opacity-40 disabled:pointer-events-none"
+                className="px-6 py-3.5 bg-blue-500 hover:bg-blue-400 text-black border border-blue-400 rounded-xl font-mono font-bold text-xs uppercase transition-all duration-300 hover:scale-[1.01] active:scale-[0.99] flex items-center justify-center gap-2 cursor-pointer disabled:opacity-40 disabled:pointer-events-none shadow-[0_0_20px_rgba(59,130,246,0.35)]"
               >
-                <Download className="w-4 h-4" />
+                <Download className="w-4 h-4 text-black stroke-[2.5]" />
                 Download PDF (ALL)
               </button>
 
@@ -482,7 +488,7 @@ function FileResult({
         <div className="flex gap-2">
           <button
             onClick={exportPdf}
-            className="px-4 py-2 bg-zinc-900/40 hover:bg-blue-500/5 text-zinc-300 hover:text-blue-400 border border-zinc-800/80 hover:border-blue-500/30 rounded-xl font-mono font-bold text-xs uppercase transition-all duration-300 hover:scale-[1.01] active:scale-[0.99]"
+            className="px-4 py-2 bg-blue-500 hover:bg-blue-400 text-black border border-blue-400 rounded-xl font-mono font-bold text-xs uppercase transition-all duration-300 hover:scale-[1.01] active:scale-[0.99] cursor-pointer shadow-[0_0_15px_rgba(59,130,246,0.35)]"
           >
             PDF
           </button>

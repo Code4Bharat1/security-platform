@@ -23,6 +23,7 @@ export default function SubdomainScanner() {
 
   const protectedAction = useProtectedAction();
   const [domain, setDomain] = useState("");
+  const [scannedDomain, setScannedDomain] = useState("");
   const [results, setResults] = useState([]);
   const [stats, setStats] = useState(null);
   const [loading, setLoading] = useState(false);
@@ -66,6 +67,7 @@ export default function SubdomainScanner() {
         setLoading(false);
         return;
       }
+      setScannedDomain(cleanDomain);
       if (!ownershipVerified && !SKIP_DOMAIN_VERIFICATION_FOR_TESTING) {
         setError("Verify ownership of this domain before scanning subdomains.");
         setLoading(false);
@@ -103,7 +105,7 @@ export default function SubdomainScanner() {
 
   const downloadPDF = async () => {
     if (!results || results.length === 0) return;
-    const cleanDomain = domain.trim().toLowerCase();
+    const cleanDomain = (scannedDomain || domain).trim().toLowerCase() || "unknown-domain";
     
     // Import toast if not already in context
     const { toast } = await import("react-hot-toast");
@@ -224,6 +226,7 @@ export default function SubdomainScanner() {
                       placeholder="Enter target domain (e.g. example.com)"
                       value={domain}
                       onChange={(e) => setDomain(e.target.value.trim())}
+                      disabled={loading}
                       className="w-full bg-zinc-900/40 text-zinc-100 border border-zinc-800/80 rounded-xl p-3.5 pl-12 text-sm focus:border-red-500/50 focus:ring-1 focus:ring-red-500/30 focus:shadow-[0_0_12px_rgba(239,68,68,0.08)] focus:outline-none transition-all placeholder:text-zinc-600 font-mono"
                     />
                   </div>
@@ -316,9 +319,9 @@ export default function SubdomainScanner() {
 
                   <button
                     onClick={downloadPDF}
-                    className="px-4 py-2.5 bg-zinc-900/40 hover:bg-red-500/5 text-zinc-300 hover:text-red-400 border border-zinc-800/80 hover:border-red-500/30 rounded-xl font-mono font-bold text-xs uppercase transition-all duration-300 flex items-center justify-center gap-1.5 cursor-pointer"
+                    className="px-4 py-2.5 bg-red-500 hover:bg-red-600 text-black border border-red-400 rounded-xl font-mono font-bold text-xs uppercase transition-all duration-300 hover:scale-[1.01] active:scale-[0.99] flex items-center justify-center gap-1.5 cursor-pointer shadow-[0_0_20px_rgba(239,68,68,0.35)]"
                   >
-                    <Download className="w-3.5 h-3.5" />
+                    <Download className="w-3.5 h-3.5 text-black stroke-[2.5]" />
                     Download PDF
                   </button>
                 </div>

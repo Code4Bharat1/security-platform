@@ -47,30 +47,35 @@ export const drawSectionHeader = (doc, title, y) => {
 
 // Shared Helper: Render standard autoTables
 export const renderTable = (doc, opts) => {
-  autoTable(doc, {
-    theme: "grid",
-    styles: {
-      fontSize: 8,
-      cellPadding: { top: 3.5, right: 4, bottom: 3.5, left: 4 },
-      fillColor: C.bg,
-      textColor: C.textMain,
-      lineColor: C.lineColor,
-      lineWidth: 0.15,
-      font: "helvetica",
-      overflow: "linebreak",
-    },
-    headStyles: {
-      fillColor: C.bgHeader,
-      textColor: C.white,
-      fontStyle: "bold",
-      fontSize: 8,
-      lineColor: C.bluePrimary,
-      lineWidth: 0.15,
-    },
-    alternateRowStyles: { fillColor: C.bgAlt },
-    margin: { top: 20, bottom: 20, left: 14, right: 14 },
-    ...opts,
-  });
+  const tableFn = typeof autoTable === "function" ? autoTable : (autoTable?.default || (typeof doc?.autoTable === "function" ? (d, o) => d.autoTable(o) : null));
+  if (typeof tableFn === "function") {
+    tableFn(doc, {
+      theme: "grid",
+      styles: {
+        fontSize: 8,
+        cellPadding: { top: 3.5, right: 4, bottom: 3.5, left: 4 },
+        fillColor: C.bg,
+        textColor: C.textMain,
+        lineColor: C.lineColor,
+        lineWidth: 0.15,
+        font: "helvetica",
+        overflow: "linebreak",
+      },
+      headStyles: {
+        fillColor: C.bgHeader,
+        textColor: C.white,
+        fontStyle: "bold",
+        fontSize: 8,
+        lineColor: C.bluePrimary,
+        lineWidth: 0.15,
+      },
+      alternateRowStyles: { fillColor: C.bgAlt },
+      margin: { top: 20, bottom: 20, left: 14, right: 14 },
+      ...opts,
+    });
+  } else if (typeof doc?.autoTable === "function") {
+    doc.autoTable(opts);
+  }
 };
 
 // Shared Helper: Get auditor profile details

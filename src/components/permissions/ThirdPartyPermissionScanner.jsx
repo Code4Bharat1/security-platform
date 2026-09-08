@@ -4,13 +4,16 @@ import { ShieldCheck } from "lucide-react";
 
 export default function ThirdPartyPermissionScanner() {
   const [appName, setAppName] = useState("");
+  const [scannedAppName, setScannedAppName] = useState("");
   const [loading, setLoading] = useState(false);
   const [result, setResult] = useState(null);
   const [error, setError] = useState("");
 
   const handleScan = async () => {
-    if (!appName.trim()) return;
+    const activeName = appName.trim();
+    if (!activeName) return;
 
+    setScannedAppName(activeName);
     setLoading(true);
     setResult(null);
     setError("");
@@ -21,20 +24,23 @@ export default function ThirdPartyPermissionScanner() {
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({ appName }),
+        body: JSON.stringify({ appName: activeName }),
       });
 
       const data = await res.json();
       if (res.ok) {
-        setResult(data);
+        setResult({
+          ...data,
+          appName: data.appName || activeName,
+        });
       } else {
         setError(data.message || "❌ Failed to fetch permissions.");
       }
     } catch (err) {
       setError("❌ Server error. Try again later.");
+    } finally {
+      setLoading(false);
     }
-
-    setLoading(false);
   };
 
   return (
@@ -54,12 +60,14 @@ export default function ThirdPartyPermissionScanner() {
           type="text"
           placeholder="Enter App Name (e.g. Facebook Lite)"
           value={appName}
-          onChange={(e) => setAppName(e.target.value.trim())}         className="w-full px-4 py-2 border rounded-md mb-4"
+          disabled={loading}
+          onChange={(e) => setAppName(e.target.value)}
+          className="w-full px-4 py-2 border rounded-md mb-4 disabled:opacity-50 disabled:cursor-not-allowed"
         />
 
         <button
           onClick={handleScan}
-          disabled={loading || !appName}
+          disabled={loading || !appName.trim()}
           className={`w-full py-3 rounded-md text-white font-semibold ${
             loading ? "bg-green-400 cursor-not-allowed" : "bg-green-700 hover:bg-green-800"
           }`}

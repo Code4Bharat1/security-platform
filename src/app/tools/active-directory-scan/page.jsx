@@ -20,6 +20,7 @@ import useProtectedAction from "@/components/UseProtectedAction/UseProtectedActi
 export default function ActiveDirectoryScanPage() {
   const protectedAction = useProtectedAction();
   const [domain, setDomain] = useState("");
+  const [scannedDomain, setScannedDomain] = useState("");
   const [scope, setScope] = useState("full");
   
   // Advanced Configuration states
@@ -45,8 +46,10 @@ export default function ActiveDirectoryScanPage() {
 
   const handleStartScan = async (e) => {
     e.preventDefault();
-    if (!domain.trim()) return;
+    const activeDomain = domain.trim();
+    if (!activeDomain) return;
 
+    setScannedDomain(activeDomain);
     setScanning(true);
     setReportReady(false);
     setConsoleLogs([]);
@@ -57,7 +60,7 @@ export default function ActiveDirectoryScanPage() {
     await protectedAction(async (token) => {
       try {
         const streamUrl = `${API_BASE}/active-directory/scan-stream?domain=${encodeURIComponent(
-          domain
+          activeDomain
         )}&dcIp=${encodeURIComponent(dcIp)}&scope=${scope}&username=${encodeURIComponent(
           username
         )}&password=${encodeURIComponent(password)}&token=${encodeURIComponent(token)}`;
@@ -101,7 +104,7 @@ export default function ActiveDirectoryScanPage() {
   };
 
   const handleDownloadPDF = () => {
-    generateActiveDirectoryScanPDF(results, domain, scope);
+    generateActiveDirectoryScanPDF(results, scannedDomain || domain, scope);
   };
 
   const checksFailed = results.filter(r => r.status === 'Fail').length;

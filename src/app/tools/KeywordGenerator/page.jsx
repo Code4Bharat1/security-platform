@@ -35,6 +35,7 @@ const ENDPOINT = "/keywords/generate";
 
 export default function KeywordIntelligencePage() {
   const [url, setUrl] = useState("");
+  const [scannedUrl, setScannedUrl] = useState("");
   const [competitor, setCompetitor] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
@@ -95,6 +96,7 @@ export default function KeywordIntelligencePage() {
       return;
     }
 
+    setScannedUrl(normalized);
     setLoading(true);
     await protectedAction(async (userToken) => {
       try {
@@ -238,15 +240,16 @@ export default function KeywordIntelligencePage() {
   }
 
   async function exportPDF() {
+    const activeUrl = scannedUrl || url;
     await generateKeywordPDF({
-      url,
+      url: activeUrl,
       totalWords,
       overOptimization,
       readability,
       highPriority,
       longTail,
       overlap
-    }, url);
+    }, activeUrl);
   }
 
   const hasData = highPriority.length + longTail.length > 0;
@@ -413,9 +416,9 @@ export default function KeywordIntelligencePage() {
                 <button
                   onClick={exportPDF}
                   disabled={!hasData || loading}
-                  className="bg-emerald-500/5 hover:bg-emerald-500/10 text-emerald-400 border border-emerald-500/25 hover:border-emerald-500/50 px-4 py-3 rounded-xl transition-all duration-300 font-mono font-bold text-[11px] uppercase tracking-wider flex items-center gap-2 cursor-pointer hover:scale-[1.01] active:scale-[0.99] focus:outline-none"
+                  className="bg-emerald-500 hover:bg-emerald-400 text-black border border-emerald-400 px-4 py-3 rounded-xl transition-all duration-300 font-mono font-bold text-xs uppercase tracking-wider flex items-center gap-2 cursor-pointer hover:scale-[1.01] active:scale-[0.99] focus:outline-none shadow-[0_0_20px_rgba(16,185,129,0.35)] disabled:opacity-50 disabled:pointer-events-none"
                 >
-                  <Download size={14} /> PDF
+                  <Download size={14} className="text-black stroke-[2.5]" /> PDF Report
                 </button>
               </div>
             </div>

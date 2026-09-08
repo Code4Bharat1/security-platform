@@ -40,6 +40,7 @@ function Toast({ message, type, onClose }) {
 // ASN Lookup Component
 export default function ASNLookupFullPage() {
   const [ip, setIp] = useState("");
+  const [scannedIp, setScannedIp] = useState("");
   const [result, setResult] = useState(null);
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
@@ -55,18 +56,20 @@ export default function ASNLookupFullPage() {
     setError("");
     setResult(null);
 
-    if (!ip.trim()) {
+    const activeIp = ip.trim();
+    if (!activeIp) {
       setError("Please enter an IP address.");
       return;
     }
 
+    setScannedIp(activeIp);
     setLoading(true);
 
     try {
       const res = await fetch(`${process.env.NEXT_PUBLIC_PROD_API_URL}/asnLookup/lookupasn`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ ip }),
+        body: JSON.stringify({ ip: activeIp }),
       });
 
       const data = await res.json();
@@ -75,7 +78,7 @@ export default function ASNLookupFullPage() {
         setError(data.error || "Unknown error");
         showToast("Failed to lookup ASN information", "error");
       } else {
-        setResult(data.asnInfo);
+        setResult({ ...(data.asnInfo || {}), ip: activeIp, target: activeIp });
         showToast("ASN information retrieved successfully!", "success");
       }
     } catch (err) {
@@ -134,7 +137,9 @@ export default function ASNLookupFullPage() {
                       id="ip-input"
                       type="text"
                       value={ip}
-                      onChange={(e) => setIp(e.target.value.trim())}                     placeholder="Enter IPv4 or IPv6 address (e.g., 8.8.8.8)"
+                      onChange={(e) => setIp(e.target.value.trim())}
+                      disabled={loading}
+                      placeholder="Enter IPv4 or IPv6 address (e.g., 8.8.8.8)"
                       className="w-full rounded-xl border pl-12 pr-4 py-3 text-[color:var(--text-body)] placeholder:text-[color:var(--text-muted)] focus:outline-none"
                     />
                     <Search className="absolute left-4 top-1/2 h-5 w-5 -translate-y-1/2 text-[color:var(--gold)]" />

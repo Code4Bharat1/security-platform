@@ -82,6 +82,7 @@ const buildErrorText = (data) => {
 
 export default function ClickjackingTester() {
   const [url, setUrl] = useState("");
+  const [scannedUrl, setScannedUrl] = useState("");
   const [result, setResult] = useState(null);
   const [loading, setLoading] = useState(false);
   const [tab, setTab] = useState("results");
@@ -95,6 +96,7 @@ export default function ClickjackingTester() {
     if (!isValidUrl(normalized))
       return setResult({ error: "Invalid URL. Example: https://example.com" });
 
+    setScannedUrl(normalized);
     setLoading(true);
     setResult(null);
 
@@ -123,7 +125,7 @@ export default function ClickjackingTester() {
           return;
         }
 
-        setResult(data);
+        setResult({ ...data, url: normalized });
         setTab("results");
       } catch (err) {
         let m = "Request failed. Please try again.";
@@ -157,7 +159,7 @@ export default function ClickjackingTester() {
 
   const downloadPdf = () => {
     if (!result || result.ok === false) return;
-    generateClickjackingPDF(result, null);
+    generateClickjackingPDF({ ...result, url: result?.url || scannedUrl || url }, null);
   };
 
   const serverSnippets = {
@@ -286,6 +288,7 @@ def frame_headers(get_response):
                       type="text"
                       value={url}
                       onChange={(e) => setUrl(e.target.value)}
+                      disabled={loading}
                       onKeyDown={(e) => e.key === "Enter" && handleTest()}
                       placeholder="https://example.com"
                       className="w-full bg-zinc-900/40 text-zinc-100 border border-zinc-800/80 rounded-xl p-3.5 pl-12 text-sm focus:border-red-500/50 focus:ring-1 focus:ring-red-500/30 focus:shadow-[0_0_12px_rgba(239,68,68,0.08)] focus:outline-none transition-all placeholder:text-zinc-600 font-mono"
@@ -315,9 +318,9 @@ def frame_headers(get_response):
                   {result && result.ok !== false && !result.error && (
                     <button
                       onClick={downloadPdf}
-                      className="px-4 py-4 rounded-xl bg-zinc-900/40 hover:bg-red-500/5 text-zinc-350 hover:text-red-400 border border-zinc-800/80 hover:border-red-500/30 font-mono font-bold text-xs uppercase transition-all duration-300 flex items-center justify-center gap-2 cursor-pointer"
+                      className="px-4 py-4 rounded-xl bg-red-500 hover:bg-red-600 text-black border border-red-400 font-mono font-bold text-xs uppercase transition-all duration-300 hover:scale-[1.01] active:scale-[0.99] flex items-center justify-center gap-2 cursor-pointer shadow-[0_0_20px_rgba(239,68,68,0.35)]"
                     >
-                      <FileDown className="w-4 h-4" />
+                      <FileDown className="w-4 h-4 text-black stroke-[2.5]" />
                       PDF Report
                     </button>
                   )}

@@ -29,6 +29,8 @@ export default function SourceCodeAnalyzer() {
   const [code, setCode] = useState("");
   const [file, setFile] = useState(null);
   const [loading, setLoading] = useState(false);
+  const [scannedCode, setScannedCode] = useState("");
+  const [scannedFileName, setScannedFileName] = useState("");
   const [selectedTemplate, setSelectedTemplate] = useState(null);
   const fileInputRef = useRef(null);
   
@@ -132,6 +134,8 @@ export default function SourceCodeAnalyzer() {
     });
 
     setSelectedTemplate(null);
+    setScannedCode("");
+    setScannedFileName("");
     
     // Reset scan results and analytics
     setResult(null);
@@ -168,6 +172,7 @@ export default function SourceCodeAnalyzer() {
     await protectedAction(async (token) => {
       try {
         let finalCode = code;
+        let fName = file ? file.name : "Code Snippet";
         if (file) {
           finalCode = await readFileAsText(file);
         }
@@ -177,6 +182,9 @@ export default function SourceCodeAnalyzer() {
           setLoading(false);
           return;
         }
+
+        setScannedCode(finalCode);
+        setScannedFileName(fName);
 
         const res = await fetch(
           `${process.env.NEXT_PUBLIC_PROD_API_URL}/analyze/analyzeCode`,
@@ -292,7 +300,10 @@ export default function SourceCodeAnalyzer() {
       }
       await generateSourceCodePDF(
         result,
-        { code: finalCode, fileName: file ? file.name : "Code Snippet" },
+        {
+          code: scannedCode || finalCode,
+          fileName: scannedFileName || (file ? file.name : "Code Snippet"),
+        },
         (msg) => {
           if (msg) {
             toast.loading(msg, { id: "pdf-gen" });
@@ -320,25 +331,6 @@ export default function SourceCodeAnalyzer() {
     a.click();
     URL.revokeObjectURL(url);
     toast.success("TXT report downloaded!");
-  };
-
-  const exportJSON = () => {
-    const payload = {
-      scanDate: new Date().toISOString(),
-      language: detectedLanguage,
-      riskScore,
-      riskBand,
-      totalIssues: issues.length,
-      findings: filteredIssues
-    };
-    const blob = new Blob([JSON.stringify(payload, null, 2)], { type: "application/json" });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement("a");
-    a.href = url;
-    a.download = "source_code_security_report.json";
-    a.click();
-    URL.revokeObjectURL(url);
-    toast.success("JSON report downloaded!");
   };
 
   const issueDescriptions = {
@@ -424,7 +416,8 @@ export default function SourceCodeAnalyzer() {
                 {code && (
                   <button 
                     onClick={() => setCode("")} 
-                    className="text-xs text-red-400 hover:text-red-300 font-mono transition"
+                    disabled={loading}
+                    className="text-xs text-red-400 hover:text-red-300 font-mono transition disabled:opacity-50 disabled:cursor-not-allowed"
                   >
                     [Clear Editor]
                   </button>
@@ -434,9 +427,10 @@ export default function SourceCodeAnalyzer() {
               <div className="space-y-4">
                 {/* Textarea Editor */}
                 <textarea
-                  className="w-full h-64 resize-none bg-zinc-900/40 text-zinc-100 border border-zinc-800/80 rounded-xl p-4 font-mono text-xs focus:border-red-500/50 focus:ring-1 focus:ring-red-500/30 focus:shadow-[0_0_12px_rgba(239,68,68,0.08)] focus:outline-none transition-all placeholder:text-zinc-650"
+                  className="w-full h-64 resize-none bg-zinc-900/40 text-zinc-100 border border-zinc-800/80 rounded-xl p-4 font-mono text-xs focus:border-red-500/50 focus:ring-1 focus:ring-red-500/30 focus:shadow-[0_0_12px_rgba(239,68,68,0.08)] focus:outline-none transition-all placeholder:text-zinc-650 disabled:opacity-50 disabled:cursor-not-allowed"
                   placeholder="Paste your HTML, JS, PHP, or Vue code here..."
                   value={code}
+                  disabled={loading}
                   onChange={(e) => {
                     setCode(e.target.value);
                     if (file) setFile(null);
@@ -447,12 +441,13 @@ export default function SourceCodeAnalyzer() {
                 {/* Upload and Reset row */}
                 <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-t border-zinc-800/40 pt-4">
                   <div className="flex items-center gap-3">
-                    <label className="flex items-center gap-2 px-4 py-2.5 rounded-xl border border-zinc-800/80 bg-zinc-900/40 hover:bg-zinc-900/80 cursor-pointer text-xs font-semibold text-zinc-300 hover:text-white transition">
+                    <label className={`flex items-center gap-2 px-4 py-2.5 rounded-xl border border-zinc-800/80 bg-zinc-900/40 hover:bg-zinc-900/80 cursor-pointer text-xs font-semibold text-zinc-300 hover:text-white transition ${loading ? "opacity-50 pointer-events-none cursor-not-allowed" : ""}`}>
                       <Upload size={14} className="text-red-400" />
                       Attach File
                       <input
                         ref={fileInputRef}
                         type="file"
+                        disabled={loading}
                         accept=".js,.jsx,.ts,.tsx,.html,.php,.txt"
                         onChange={handleFileChange}
                         className="hidden"
@@ -468,7 +463,8 @@ export default function SourceCodeAnalyzer() {
                   {(code || file) && (
                     <button
                       onClick={clearInputs}
-                      className="text-xs text-zinc-400 hover:text-white flex items-center gap-1.5 transition px-3.5 py-2.5 border border-zinc-800/80 rounded-xl bg-zinc-900/40"
+                      disabled={loading}
+                      className="text-xs text-zinc-400 hover:text-white flex items-center gap-1.5 transition px-3.5 py-2.5 border border-zinc-800/80 rounded-xl bg-zinc-900/40 disabled:opacity-50 disabled:cursor-not-allowed"
                     >
                       <Trash2 size={13} />
                       Reset Form
@@ -512,49 +508,57 @@ export default function SourceCodeAnalyzer() {
               <div className="grid gap-3 sm:grid-cols-2">
                 <button
                   onClick={() => loadSample("jsxss")}
-                  className={getTemplateBtnClass("jsxss")}
+                  disabled={loading}
+                  className={`${getTemplateBtnClass("jsxss")} ${loading ? "opacity-50 pointer-events-none cursor-not-allowed" : ""}`}
                 >
                   DOM XSS
                 </button>
                 <button
                   onClick={() => loadSample("react")}
-                  className={getTemplateBtnClass("react")}
+                  disabled={loading}
+                  className={`${getTemplateBtnClass("react")} ${loading ? "opacity-50 pointer-events-none cursor-not-allowed" : ""}`}
                 >
                   React innerHTML
                 </button>
                 <button
                   onClick={() => loadSample("vue")}
-                  className={getTemplateBtnClass("vue")}
+                  disabled={loading}
+                  className={`${getTemplateBtnClass("vue")} ${loading ? "opacity-50 pointer-events-none cursor-not-allowed" : ""}`}
                 >
                   Vue v-html
                 </button>
                 <button
                   onClick={() => loadSample("php")}
-                  className={getTemplateBtnClass("php")}
+                  disabled={loading}
+                  className={`${getTemplateBtnClass("php")} ${loading ? "opacity-50 pointer-events-none cursor-not-allowed" : ""}`}
                 >
                   PHP SQLi
                 </button>
                 <button
                   onClick={() => loadSample("evaldanger")}
-                  className={getTemplateBtnClass("evaldanger")}
+                  disabled={loading}
+                  className={`${getTemplateBtnClass("evaldanger")} ${loading ? "opacity-50 pointer-events-none cursor-not-allowed" : ""}`}
                 >
                   Dangerous Eval
                 </button>
                 <button
                   onClick={() => loadSample("domclobber")}
-                  className={getTemplateBtnClass("domclobber")}
+                  disabled={loading}
+                  className={`${getTemplateBtnClass("domclobber")} ${loading ? "opacity-50 pointer-events-none cursor-not-allowed" : ""}`}
                 >
                   DOM Clobbering
                 </button>
                 <button
                   onClick={() => loadSample("prototype")}
-                  className={getTemplateBtnClass("prototype")}
+                  disabled={loading}
+                  className={`${getTemplateBtnClass("prototype")} ${loading ? "opacity-50 pointer-events-none cursor-not-allowed" : ""}`}
                 >
                   Proto Pollution
                 </button>
                 <button
                   onClick={() => loadSample("safe")}
-                  className={getTemplateBtnClass("safe")}
+                  disabled={loading}
+                  className={`${getTemplateBtnClass("safe")} ${loading ? "opacity-50 pointer-events-none cursor-not-allowed" : ""}`}
                 >
                   Secure Standard
                 </button>
@@ -681,19 +685,11 @@ export default function SourceCodeAnalyzer() {
                       TXT
                     </button>
                     <button
-                      onClick={exportJSON}
-                      className="px-4 py-3 bg-zinc-900/40 hover:bg-red-500/5 text-zinc-300 hover:text-red-400 border border-zinc-800/80 hover:border-red-500/30 rounded-xl font-mono font-bold text-xs uppercase transition-all duration-300 flex items-center justify-center gap-1.5 cursor-pointer"
-                      title="JSON Export"
-                    >
-                      <Download size={12} />
-                      JSON
-                    </button>
-                    <button
                       onClick={exportPDF}
-                      className="px-4 py-3 bg-zinc-900/40 hover:bg-red-500/5 text-zinc-300 hover:text-red-400 border border-zinc-800/80 hover:border-red-500/30 rounded-xl font-mono font-bold text-xs uppercase transition-all duration-300 flex items-center justify-center gap-1.5 cursor-pointer"
+                      className="px-4 py-3 bg-red-500 hover:bg-red-600 text-black border border-red-400 rounded-xl font-mono font-bold text-xs uppercase transition-all duration-300 hover:scale-[1.01] active:scale-[0.99] flex items-center justify-center gap-1.5 cursor-pointer shadow-[0_0_20px_rgba(239,68,68,0.35)]"
                       title="PDF Download Report"
                     >
-                      <FileDown size={12} />
+                      <FileDown size={12} className="text-black stroke-[2.5]" />
                       PDF
                     </button>
                   </div>

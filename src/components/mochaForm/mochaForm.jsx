@@ -19,6 +19,7 @@ import useProtectedAction from "../UseProtectedAction/UseProtectedAction";
 
 export default function MochaForm() {
   const [endpoint, setEndpoint] = useState("");
+  const [scannedEndpoint, setScannedEndpoint] = useState("");
   const [method, setMethod] = useState("GET");
   const [headers, setHeaders] = useState("");
   const [body, setBody] = useState("");
@@ -50,7 +51,8 @@ export default function MochaForm() {
   const protectedAction = useProtectedAction();
 
   const handleSubmit = async () => {
-    if (!validateEndpoint(endpoint)) {
+    const activeEndpoint = endpoint.trim();
+    if (!validateEndpoint(activeEndpoint)) {
       const msg =
         "Please enter a valid API endpoint URL (must start with http:// or https://).";
       setError(msg);
@@ -58,6 +60,7 @@ export default function MochaForm() {
       return;
     }
 
+    setScannedEndpoint(activeEndpoint);
     setError("");
     setLoading(true);
     setTestResults(null);
@@ -99,7 +102,7 @@ export default function MochaForm() {
               Authorization: `Bearer ${token}`, // ✅ added from protectedAction
             },
             body: JSON.stringify({
-              endpoint,
+              endpoint: activeEndpoint,
               method,
               headers: headerObj,
               body: bodyObj,
@@ -257,7 +260,8 @@ export default function MochaForm() {
               </h2>
               <button
                 onClick={quickFillExample}
-                className="bg-orange-500 hover:bg-orange-600 text-white px-4 py-2 rounded text-sm font-medium transition-all duration-200 flex items-center gap-2"
+                disabled={loading}
+                className="bg-orange-500 hover:bg-orange-600 text-white px-4 py-2 rounded text-sm font-medium transition-all duration-200 flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 <HelpCircle className="h-4 w-4" />
                 Try Example
@@ -276,9 +280,10 @@ export default function MochaForm() {
               <input
                 type="text"
                 value={endpoint}
+                disabled={loading}
                 onChange={(e) => setEndpoint(e.target.value.trim())}
                 placeholder="https://example.com"
-                className="w-full bg-gray-700 border border-white-600 rounded p-3 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500 transition-all duration-200"
+                className="w-full bg-gray-700 border border-white-600 rounded p-3 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
               />
               <p className="text-xs text-gray-400">
                 Must be a valid URL starting with http:// or https://
@@ -293,8 +298,9 @@ export default function MochaForm() {
               </label>
               <select
                 value={method}
+                disabled={loading}
                 onChange={(e) => setMethod(e.target.value.trim())}
-                className="w-full bg-gray-700 border border-white-600 rounded p-3 text-white focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500 transition-all duration-200"
+                className="w-full bg-gray-700 border border-white-600 rounded p-3 text-white focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 <option value="GET">GET - Retrieve data</option>
                 <option value="POST">POST - Create new data</option>
@@ -313,9 +319,10 @@ export default function MochaForm() {
               <input
                 type="text"
                 value={testDescription}
+                disabled={loading}
                 onChange={(e) => setTestDescription(e.target.value.trim())}
                 placeholder="Describe what this test should do..."
-                className="w-full bg-gray-700 border border-white-600 rounded p-3 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500 transition-all duration-200"
+                className="w-full bg-gray-700 border border-white-600 rounded p-3 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
               />
             </div>
 
@@ -326,10 +333,11 @@ export default function MochaForm() {
               </label>
               <textarea
                 value={headers}
+                disabled={loading}
                 onChange={(e) => setHeaders(e.target.value.trim())}
                 placeholder={getHeadersPlaceholder()}
                 rows={3}
-                className="w-full bg-gray-700 border border-white-600 rounded p-3 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500 transition-all duration-200 font-mono text-sm"
+                className="w-full bg-gray-700 border border-white-600 rounded p-3 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500 transition-all duration-200 font-mono text-sm disabled:opacity-50 disabled:cursor-not-allowed"
               />
             </div>
 
@@ -341,10 +349,11 @@ export default function MochaForm() {
                 </label>
                 <textarea
                   value={body}
+                  disabled={loading}
                   onChange={(e) => setBody(e.target.value.trim())}
                   placeholder='{\n  "name": "John Doe",\n  "email": "john@example.com"\n}'
                   rows={4}
-                  className="w-full bg-gray-700 border border-white-600 rounded p-3 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500 transition-all duration-200 font-mono text-sm"
+                  className="w-full bg-gray-700 border border-white-600 rounded p-3 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500 transition-all duration-200 font-mono text-sm disabled:opacity-50 disabled:cursor-not-allowed"
                 />
               </div>
             )}
@@ -359,10 +368,11 @@ export default function MochaForm() {
                 min={1000}
                 step={500}
                 value={timeoutMs}
+                disabled={loading}
                 onChange={(e) =>
                   setTimeoutMs(Math.max(0, Number(e.target.value || 0)))
                 }
-                className="w-56 bg-gray-700 border border-white-600 rounded p-3 text-white focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500 transition-all duration-200"
+                className="w-56 bg-gray-700 border border-white-600 rounded p-3 text-white focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
               />
               <p className="text-xs text-gray-400">
                 Request will be aborted if it exceeds this duration.
@@ -385,7 +395,7 @@ export default function MochaForm() {
             {/* Submit Button */}
             <button
               onClick={handleSubmit}
-              disabled={loading}
+              disabled={loading || !endpoint.trim()}
               className="w-full bg-red-600 hover:bg-red-700 text-white py-4 px-6 rounded font-semibold text-lg transition-all duration-200 flex items-center justify-center gap-3 disabled:opacity-50 disabled:cursor-not-allowed"
             >
               {loading ? (

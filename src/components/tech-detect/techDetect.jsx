@@ -3,19 +3,25 @@ import { useState } from 'react';
 
 export default function TechDetectPage() {
   const [domain, setDomain] = useState('');
+  const [scannedDomain, setScannedDomain] = useState('');
+  const [loading, setLoading] = useState(false);
   const [result, setResult] = useState(null);
   const [error, setError] = useState('');
 
   const detectTech = async () => {
     setError('');
     setResult(null);
-    if (!domain) return;
+    const activeDomain = domain.trim();
+    if (!activeDomain) return;
+
+    setScannedDomain(activeDomain);
+    setLoading(true);
 
     try {
       const res = await fetch(`${process.env.NEXT_PUBLIC_PROD_API_URL}/tech-detect`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ domain }),
+        body: JSON.stringify({ domain: activeDomain }),
       });
 
       const data = await res.json();
@@ -24,9 +30,11 @@ export default function TechDetectPage() {
         return;
       }
       
-      setResult(data);
+      setResult({ ...data, domain: activeDomain, target: activeDomain });
     } catch (err) {
       setError('Could not reach API.');
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -39,13 +47,16 @@ export default function TechDetectPage() {
         placeholder="Enter domain (e.g., vercel.com)"
         className="border p-2 w-full rounded"
         value={domain}
-        onChange={(e) => setDomain(e.target.value.trim())}     />
+        disabled={loading}
+        onChange={(e) => setDomain(e.target.value.trim())}
+      />
 
       <button
         onClick={detectTech}
-        className="mt-3 px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
+        disabled={loading || !domain}
+        className="mt-3 px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 disabled:opacity-50"
       >
-        Detect
+        {loading ? 'Detecting...' : 'Detect'}
       </button>
 
       {error && <p className="mt-4 text-red-500">{error}</p>}

@@ -242,7 +242,7 @@ export default function SubscriptionPage() {
       if (!receiptData) {
         const storedUser = localStorage.getItem("user");
         const userObj = storedUser ? JSON.parse(storedUser) : null;
-        const creditsMap = { Free: 10, Premium: 100, Pro: 500, Enterprise: 2000 };
+        const creditsMap = planFeatures?.credits || { Free: 10, Premium: 100, Pro: 500, Enterprise: 2000 };
 
         receiptData = {
           receiptId: inv.receiptId || `NXCR-${new Date(inv.createdAt || inv.startDate).getTime()}-${inv._id?.toString().substring(18).toUpperCase() || 'INV'}`,
@@ -437,7 +437,9 @@ export default function SubscriptionPage() {
                         <div className="flex items-center justify-between border-b border-white/5 pb-4">
                           <div>
                             <h4 className="font-mono font-bold text-lg text-white/95">{card.name}</h4>
-                            <span className="text-xs font-mono text-white/40">{card.credits} scan credits</span>
+                            <span className="text-xs font-mono text-white/40">
+                              {(planFeatures?.credits?.[card.name] !== undefined ? planFeatures.credits[card.name] : card.credits)} scan credits
+                            </span>
                           </div>
                           <Icon className={`h-6 w-6 ${card.iconColor}`} />
                         </div>

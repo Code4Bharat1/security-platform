@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import React, { useMemo, useState } from "react";
 import {
   Radar,
   ChevronDown,
@@ -13,13 +13,13 @@ import {
   Clock,
   Server,
   FileDown,
-  Download,
   Info,
   Terminal,
   Activity,
   Layers,
   Cpu,
-  ShieldAlert
+  ShieldAlert,
+  Loader2
 } from "lucide-react";
 import useProtectedAction from "../UseProtectedAction/UseProtectedAction";
 import { generateSQLiPDF } from "./generateSQLiPDF";
@@ -37,6 +37,7 @@ function isValidHttpUrl(value) {
 
 export default function NexposeScanner() {
   const [url, setUrl] = useState("");
+  const [scannedUrl, setScannedUrl] = useState("");
   const [paramName] = useState("test");
   const [method] = useState("GET");
   const [postEncoder] = useState("form");
@@ -48,6 +49,7 @@ export default function NexposeScanner() {
   const [openIdx, setOpenIdx] = useState(null);
   const [showPositivesOnly, setShowPositivesOnly] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
+  const [downloadingPdf, setDownloadingPdf] = useState(false);
   
   const protectedAction = useProtectedAction();
   const urlIsValid = isValidHttpUrl(url);
@@ -77,6 +79,9 @@ export default function NexposeScanner() {
       return;
     }
 
+    const activeUrl = url.trim();
+    setScannedUrl(activeUrl);
+
     await protectedAction(async (token) => {
       setScanning(true);
 
@@ -100,7 +105,7 @@ export default function NexposeScanner() {
             ...headers,
           },
           body: JSON.stringify({
-            url,
+            url: activeUrl,
             method,
             paramName,
             headers,
@@ -112,7 +117,7 @@ export default function NexposeScanner() {
         if (!res.ok) {
           throw new Error(data?.message || `HTTP ${res.status}`);
         }
-        setResult(data);
+        setResult({ ...data, url: activeUrl, target: activeUrl });
       } catch (e) {
         setError(e.message || "Failed to scan.");
       } finally {
@@ -125,22 +130,63 @@ export default function NexposeScanner() {
     navigator.clipboard.writeText(text).catch(() => {});
   }
 
-  function exportPDF() {
+  async function exportPDF() {
     if (!result) return;
-    generateSQLiPDF(result);
-  };
+    try {
+      setDownloadingPdf(true);
+      const targetPayload = { ...result, url: result?.url || scannedUrl || url };
+      await generateSQLiPDF(targetPayload);
+    } catch (e) {
+      console.error("Standard PDF export failed, using robust fallback:", e);
+      try {
+        const { jsPDF } = await import("jspdf");
+        const autoTableMod = await import("jspdf-autotable");
+        const autoTable = autoTableMod.default || autoTableMod;
+        const doc = new jsPDF({ orientation: "p", unit: "pt", format: "a4" });
+        doc.setFillColor(18, 18, 18);
+        doc.rect(0, 0, 595, 55, "F");
+        doc.setTextColor(239, 68, 68);
+        doc.setFont("helvetica", "bold");
+        doc.setFontSize(16);
+        doc.text("SQL INJECTION SCAN REPORT", 40, 35);
+        doc.setTextColor(255, 255, 255);
+        doc.setFontSize(9);
+        doc.text(`Target: ${result.url || scannedUrl || url || "N/A"}`, 40, 48);
+        doc.setTextColor(50, 50, 50);
+        doc.setFontSize(9);
+        doc.text(`Method: ${result.method || "N/A"} (param: ${result.paramName || "N/A"})`, 40, 75);
+        doc.text(`Risk: ${result.riskScore ?? 0}/100 (${result.riskLevel || "N/A"})`, 40, 90);
+        doc.text(`Coverage: ${result.payloadsAttempted ?? 0} payloads`, 40, 105);
 
-  function exportJSON() {
-    if (!result) return;
-    const blob = new Blob([JSON.stringify(result, null, 2)], {
-      type: "application/json",
-    });
-    const href = URL.createObjectURL(blob);
-    const a = document.createElement("a");
-    a.href = href;
-    a.download = "sqli_scan_result.json";
-    a.click();
-    URL.revokeObjectURL(href);
+        const head = [["#", "Type", "Payload/Pair", "Evidence", "Status", "Time(ms)"]];
+        const rows = (result.tests || []).map((f, i) => [
+          String(i + 1),
+          String(f.type || "—"),
+          String(f.payload || "").slice(0, 96),
+          String(f.evidence || (f.error ? "Request failed" : "—")).slice(0, 96),
+          String(f.status ?? "—"),
+          String(f.timeMs ?? "—"),
+        ]);
+
+        const tableFn = typeof autoTable === "function" ? autoTable : (autoTable?.default || doc.autoTable);
+        if (typeof tableFn === "function") {
+          tableFn(doc, {
+            startY: 125,
+            head,
+            body: rows,
+            theme: "grid",
+            styles: { fontSize: 8, cellPadding: 3, overflow: "linebreak" },
+            headStyles: { fillColor: [239, 68, 68] },
+            margin: { left: 40, right: 40 },
+          });
+        }
+        doc.save(`SQLi-Scanner-Report-${Date.now()}.pdf`);
+      } catch (err) {
+        console.error("Critical fallback PDF error:", err);
+      }
+    } finally {
+      setDownloadingPdf(false);
+    }
   }
 
   const rows = useMemo(() => {
@@ -231,6 +277,7 @@ export default function NexposeScanner() {
                       type="url"
                       value={url}
                       onChange={(e) => onUrlChange(e.target.value)}
+                      disabled={scanning}
                       placeholder="https://example.com/search?id=1"
                       className="w-full bg-zinc-900/40 text-zinc-100 border border-zinc-800/80 rounded-xl p-3.5 pl-12 text-sm focus:border-red-500/50 focus:ring-1 focus:ring-red-500/30 focus:shadow-[0_0_12px_rgba(239,68,68,0.08)] focus:outline-none transition-all placeholder:text-zinc-600 font-mono"
                     />
@@ -456,7 +503,7 @@ export default function NexposeScanner() {
                           <table className="min-w-full text-[11px] text-zinc-350 leading-relaxed table-fixed">
                             <colgroup>
                               <col className="w-12" />
-                              <col className="w-28" />
+                              <col className="w-32" />
                               <col />
                               <col className="w-16" />
                               <col className="w-20" />
@@ -469,7 +516,7 @@ export default function NexposeScanner() {
                                 <th className="px-4 py-3 text-left">Evidence / Error</th>
                                 <th className="px-4 py-3 text-left">HTTP</th>
                                 <th className="px-4 py-3 text-left">Time(ms)</th>
-                                <th className="px-4 py-3 text-left">Details</th>
+                                <th className="px-4 py-3 text-center">Details</th>
                               </tr>
                             </thead>
                             <tbody>
@@ -477,54 +524,133 @@ export default function NexposeScanner() {
                                 const globalIdx = startIdx + localIdx;
                                 const open = openIdx === globalIdx;
                                 return (
-                                  <tr key={globalIdx} className="border-t border-zinc-900 align-top hover:bg-zinc-900/40 transition-colors">
-                                    <td className="px-4 py-3 text-zinc-650 font-bold">{globalIdx + 1}</td>
-                                    <td className="px-4 py-3 text-zinc-300 font-semibold">{f.type}</td>
-                                    <td className="px-4 py-3 text-zinc-400 break-all">
-                                      {f.evidence || (f.error ? "Request failed" : "—")}
-                                    </td>
-                                    <td className="px-4 py-3 text-zinc-400">{String(f.status)}</td>
-                                    <td className="px-4 py-3 text-zinc-450">{String(f.timeMs)}</td>
-                                    <td className="px-4 py-3">
-                                      <button
-                                        onClick={() => setOpenIdx(open ? null : globalIdx)}
-                                        className="px-2.5 py-1 text-[10px] bg-zinc-900 border border-zinc-850 text-zinc-300 rounded-lg inline-flex items-center gap-1 hover:border-zinc-700 cursor-pointer uppercase font-bold select-none"
-                                      >
-                                        {open ? "Hide" : "View"}
-                                        {open ? (
-                                          <ChevronUp size={12} />
-                                        ) : (
-                                          <ChevronDown size={12} />
-                                        )}
-                                      </button>
-                                      {open && (
-                                        <div className="mt-3 p-3.5 bg-zinc-950/70 border border-zinc-850 rounded-xl space-y-1.5 leading-relaxed text-zinc-400 text-[10px]">
-                                          <div>
-                                            <span className="font-bold text-zinc-600">Parameter Key:</span> {f.param}
-                                          </div>
-                                          <div>
-                                            <span className="font-bold text-zinc-600">Method:</span> {f.method}
-                                          </div>
-                                          <div className="break-all">
-                                            <span className="font-bold text-zinc-600">Payload:</span> {f.payload}
-                                          </div>
-                                          {f.pocUrl && (
-                                            <div className="break-all">
-                                              <span className="font-bold text-zinc-600">PoC URL:</span> {f.pocUrl}
-                                            </div>
+                                  <React.Fragment key={globalIdx}>
+                                    <tr className={`border-t border-zinc-900 align-middle hover:bg-zinc-900/40 transition-colors ${open ? "bg-zinc-900/20" : ""}`}>
+                                      <td className="px-4 py-3 text-zinc-650 font-bold">{globalIdx + 1}</td>
+                                      <td className="px-4 py-3 text-zinc-300 font-semibold">{f.type}</td>
+                                      <td className="px-4 py-3 text-zinc-400 break-all">
+                                        {f.evidence || (f.error ? "Request failed" : "—")}
+                                      </td>
+                                      <td className="px-4 py-3 text-zinc-400 font-mono">{String(f.status)}</td>
+                                      <td className="px-4 py-3 text-zinc-450 font-mono">{String(f.timeMs)}</td>
+                                      <td className="px-4 py-3 text-center">
+                                        <button
+                                          onClick={() => setOpenIdx(open ? null : globalIdx)}
+                                          className={`px-2.5 py-1 text-[10px] border rounded-lg inline-flex items-center gap-1 cursor-pointer uppercase font-bold select-none transition-all ${
+                                            open
+                                              ? "bg-red-500/10 text-red-400 border-red-500/30"
+                                              : "bg-zinc-900 border-zinc-850 text-zinc-300 hover:border-zinc-700"
+                                          }`}
+                                        >
+                                          {open ? "Hide" : "View"}
+                                          {open ? (
+                                            <ChevronUp size={12} />
+                                          ) : (
+                                            <ChevronDown size={12} />
                                           )}
-                                          <div>
-                                            <span className="font-bold text-zinc-600">Risk rating:</span> {f.risk}
-                                          </div>
-                                          {f.error && (
-                                            <div className="text-red-400">
-                                              <span className="font-bold">Error status:</span> {f.error}
+                                        </button>
+                                      </td>
+                                    </tr>
+                                    {open && (
+                                      <tr className="border-t border-zinc-900/80 bg-zinc-950/70">
+                                        <td colSpan={6} className="p-0">
+                                          <div className="p-4 sm:p-5 border-y border-zinc-850/80 bg-zinc-950/90 space-y-3 font-mono text-xs">
+                                            <div className="flex flex-wrap items-center justify-between gap-3 border-b border-zinc-900 pb-3">
+                                              <div className="flex flex-wrap items-center gap-4 text-[11px]">
+                                                <div>
+                                                  <span className="font-semibold text-zinc-550 uppercase tracking-wider text-[10px]">Parameter Key:</span>{" "}
+                                                  <span className="text-zinc-200 font-bold">{f.param || "—"}</span>
+                                                </div>
+                                                <span className="text-zinc-700">|</span>
+                                                <div>
+                                                  <span className="font-semibold text-zinc-550 uppercase tracking-wider text-[10px]">Method:</span>{" "}
+                                                  <span className="text-zinc-200 font-bold">{f.method || "—"}</span>
+                                                </div>
+                                                <span className="text-zinc-700">|</span>
+                                                <div>
+                                                  <span className="font-semibold text-zinc-550 uppercase tracking-wider text-[10px]">HTTP Status:</span>{" "}
+                                                  <span className="text-zinc-200 font-bold">{String(f.status)}</span>
+                                                </div>
+                                                <span className="text-zinc-700">|</span>
+                                                <div>
+                                                  <span className="font-semibold text-zinc-550 uppercase tracking-wider text-[10px]">Latency:</span>{" "}
+                                                  <span className="text-zinc-200 font-bold">{String(f.timeMs)}ms</span>
+                                                </div>
+                                              </div>
+
+                                              <div className="flex items-center gap-2">
+                                                <span className="text-[10px] uppercase tracking-wider text-zinc-500 font-bold">Risk Rating:</span>
+                                                <span className={`px-2.5 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider ${
+                                                  f.risk === "Critical" || f.risk === "High"
+                                                    ? "bg-red-500/10 text-red-400 border border-red-500/30"
+                                                    : f.risk === "Medium"
+                                                    ? "bg-amber-500/10 text-amber-400 border border-amber-500/30"
+                                                    : "bg-zinc-900 text-zinc-400 border border-zinc-800"
+                                                }`}>
+                                                  {f.risk || "Info"}
+                                                </span>
+                                              </div>
                                             </div>
-                                          )}
-                                        </div>
-                                      )}
-                                    </td>
-                                  </tr>
+
+                                            {/* Injected Payload */}
+                                            <div className="space-y-1.5">
+                                              <span className="text-[10px] text-zinc-500 font-bold uppercase tracking-wider block">
+                                                Injected Payload
+                                              </span>
+                                              <div className="flex items-center gap-2">
+                                                <code className="flex-1 break-all bg-zinc-900/60 border border-zinc-800 px-3.5 py-2.5 rounded-xl text-red-400 font-mono text-xs leading-relaxed select-all">
+                                                  {f.payload || "—"}
+                                                </code>
+                                                {f.payload && (
+                                                  <button
+                                                    onClick={() => copy(f.payload)}
+                                                    className="px-3 py-2 text-[10px] bg-zinc-900 hover:bg-zinc-800 text-zinc-300 border border-zinc-800 hover:border-zinc-700 rounded-xl flex items-center gap-1.5 cursor-pointer uppercase font-bold shrink-0 transition-colors"
+                                                  >
+                                                    <Clipboard size={12} /> Copy
+                                                  </button>
+                                                )}
+                                              </div>
+                                            </div>
+
+                                            {/* PoC URL */}
+                                            {f.pocUrl && (
+                                              <div className="space-y-1.5">
+                                                <span className="text-[10px] text-zinc-500 font-bold uppercase tracking-wider block">
+                                                  Proof of Concept (PoC) URL
+                                                </span>
+                                                <div className="flex items-center gap-2">
+                                                  <a
+                                                    href={f.pocUrl}
+                                                    target="_blank"
+                                                    rel="noreferrer"
+                                                    className="flex-1 break-all bg-zinc-900/40 border border-zinc-850 px-3.5 py-2 rounded-xl text-red-400 hover:text-red-300 underline font-mono text-xs"
+                                                  >
+                                                    {f.pocUrl}
+                                                  </a>
+                                                  <button
+                                                    onClick={() => copy(f.pocUrl)}
+                                                    className="px-3 py-2 text-[10px] bg-zinc-900 hover:bg-zinc-800 text-zinc-300 border border-zinc-800 hover:border-zinc-700 rounded-xl flex items-center gap-1.5 cursor-pointer uppercase font-bold shrink-0 transition-colors"
+                                                  >
+                                                    <Clipboard size={12} /> Copy
+                                                  </button>
+                                                </div>
+                                              </div>
+                                            )}
+
+                                            {/* Error status if any */}
+                                            {f.error && (
+                                              <div className="p-3 bg-red-955/20 border border-red-500/25 rounded-xl text-red-400 text-xs flex items-start gap-2">
+                                                <ShieldAlert size={14} className="mt-0.5 shrink-0" />
+                                                <div>
+                                                  <span className="font-bold">Error status:</span> {f.error}
+                                                </div>
+                                              </div>
+                                            )}
+                                          </div>
+                                        </td>
+                                      </tr>
+                                    )}
+                                  </React.Fragment>
                                 );
                               })}
                               {!rows.length && (
@@ -573,16 +699,20 @@ export default function NexposeScanner() {
                 {/* Export Options */}
                 <div className="flex flex-wrap gap-3">
                   <button
-                    onClick={exportJSON}
-                    className="px-4 py-2.5 bg-zinc-900/40 hover:bg-red-500/5 text-zinc-350 hover:text-red-400 border border-zinc-800/80 hover:border-red-500/30 rounded-xl font-mono font-bold text-xs uppercase transition-all duration-300 flex items-center gap-1.5 cursor-pointer"
-                  >
-                    <Download className="w-3.5 h-3.5" /> JSON Export
-                  </button>
-                  <button
                     onClick={exportPDF}
-                    className="px-4 py-2.5 bg-zinc-900/40 hover:bg-red-500/5 text-zinc-350 hover:text-red-400 border border-zinc-800/80 hover:border-red-500/30 rounded-xl font-mono font-bold text-xs uppercase transition-all duration-300 flex items-center gap-1.5 cursor-pointer"
+                    disabled={downloadingPdf}
+                    className="px-4 py-2.5 bg-red-500 hover:bg-red-600 disabled:opacity-50 text-black border border-red-400 rounded-xl font-mono font-bold text-xs uppercase transition-all duration-300 hover:scale-[1.01] active:scale-[0.99] flex items-center gap-1.5 cursor-pointer shadow-[0_0_20px_rgba(239,68,68,0.35)]"
                   >
-                    <FileDown className="w-3.5 h-3.5" /> PDF Report
+                    {downloadingPdf ? (
+                      <>
+                        <Loader2 className="w-3.5 h-3.5 text-black animate-spin" />
+                        Generating PDF...
+                      </>
+                    ) : (
+                      <>
+                        <FileDown className="w-3.5 h-3.5 text-black stroke-[2.5]" /> PDF Report
+                      </>
+                    )}
                   </button>
                 </div>
 

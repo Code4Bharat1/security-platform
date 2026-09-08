@@ -87,8 +87,9 @@ const ENDPOINT = `${API_BASE}${USE_API_PREFIX ? "/api" : ""}/auth/oauthTokenInsp
 
 export default function OAuthTokenInspector() {
   const [token, setToken] = useState("");
-  const [loading, setLoading] = useState(false);
+  const [scannedToken, setScannedToken] = useState("");
   const [result, setResult] = useState(null);
+  const [loading, setLoading] = useState(false);
   const [toast, setToast] = useState(null);
   const [now, setNow] = useState(() => Math.floor(Date.now() / 1000));
   const [pdfProgress, setPdfProgress] = useState(null);
@@ -111,6 +112,10 @@ export default function OAuthTokenInspector() {
   const showToast = (message, type = "success") => setToast({ message, type });
 
   const analyzeToken = async () => {
+    const activeToken = token.trim();
+    if (!activeToken) return;
+
+    setScannedToken(activeToken);
     setLoading(true);
     setResult(null);
 
@@ -122,10 +127,10 @@ export default function OAuthTokenInspector() {
             "Content-Type": "application/json",
             Authorization: `Bearer ${userToken}`,
           },
-          body: JSON.stringify({ token }),
+          body: JSON.stringify({ token: activeToken }),
         });
         const data = await res.json().catch(() => ({}));
-        setResult(data);
+        setResult({ ...data, token: activeToken, target: activeToken });
         if (!res.ok || data?.error) {
           showToast(data?.error || `Analysis failed (${res.status})`, "error");
         } else {
@@ -229,7 +234,7 @@ export default function OAuthTokenInspector() {
 
   const handleDownloadPdf = async () => {
     if (!result || result.error) return;
-    await generateOAuthPDF(result, token, setPdfProgress);
+    await generateOAuthPDF(result, scannedToken || token, setPdfProgress);
   };
 
   return (
@@ -337,6 +342,7 @@ export default function OAuthTokenInspector() {
                     placeholder="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
                     value={token}
                     onChange={(e) => setToken(e.target.value)}
+                    disabled={loading}
                     className="w-full bg-zinc-900/40 text-zinc-100 border border-zinc-800/80 rounded-xl p-3.5 text-xs focus:border-blue-500/50 focus:ring-1 focus:ring-blue-500/30 focus:shadow-[0_0_12px_rgba(59,130,246,0.08)] focus:outline-none transition-all placeholder:text-zinc-650 font-mono resize-none"
                   />
                 </div>
@@ -386,16 +392,16 @@ export default function OAuthTokenInspector() {
                       <button
                         onClick={handleDownloadPdf}
                         disabled={pdfProgress !== null}
-                        className="flex-1 bg-zinc-900/40 hover:bg-blue-500/5 text-zinc-300 hover:text-blue-400 border border-zinc-800/80 hover:border-blue-500/30 rounded-xl font-mono font-bold text-xs uppercase py-3.5 transition-all duration-300 hover:scale-[1.01] active:scale-[0.99] flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50"
+                        className="flex-1 bg-blue-500 hover:bg-blue-400 text-black border border-blue-400 rounded-xl font-mono font-bold text-xs uppercase py-3.5 transition-all duration-300 hover:scale-[1.01] active:scale-[0.99] flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50 shadow-[0_0_20px_rgba(59,130,246,0.35)]"
                       >
                         {pdfProgress ? (
                           <>
-                            <Loader2 className="h-4 w-4 animate-spin text-blue-400" />
+                            <Loader2 className="h-4 w-4 animate-spin text-black" />
                             <span>{pdfProgress}</span>
                           </>
                         ) : (
                           <>
-                            <Download className="w-4 h-4" />
+                            <Download className="w-4 h-4 text-black stroke-[2.5]" />
                             <span>Download PDF Report</span>
                           </>
                         )}

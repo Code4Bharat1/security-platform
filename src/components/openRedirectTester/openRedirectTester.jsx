@@ -14,7 +14,8 @@ import {
   Activity,
   Layers,
   Cpu,
-  ChevronDown
+  ChevronDown,
+  ShieldAlert
 } from "lucide-react";
 import { jsPDF } from "jspdf";
 import autoTable from "jspdf-autotable";
@@ -45,6 +46,7 @@ const SEV_BADGE = {
 
 export default function DarkThemeOpenRedirectTester() {
   const [inputUrl, setInputUrl] = useState("");
+  const [scannedUrl, setScannedUrl] = useState("");
   const [manualParam, setManualParam] = useState("redirect");
   const [autoScan, setAutoScan] = useState(true);
   const [customParams, setCustomParams] = useState(DEFAULT_PARAMS.join(","));
@@ -71,11 +73,13 @@ export default function DarkThemeOpenRedirectTester() {
     setReport(null);
     setCurrentPage(1);
 
-    if (!inputUrl) {
+    const activeUrl = inputUrl.trim();
+    if (!activeUrl) {
       setError("Please enter a URL.");
       return;
     }
 
+    setScannedUrl(activeUrl);
     setLoading(true);
 
     await protectedAction(async (token) => {
@@ -101,7 +105,7 @@ export default function DarkThemeOpenRedirectTester() {
 
         if (!res.ok) throw new Error(data?.error || "Failed to test URL");
 
-        setReport(data);
+        setReport({ ...data, url: activeUrl, target: activeUrl });
       } catch (err) {
         setError(err.message || "Unexpected error");
       } finally {
@@ -125,7 +129,7 @@ export default function DarkThemeOpenRedirectTester() {
     try {
       const { generateOpenRedirectPDF } = await import("./generateOpenRedirectPDF");
       await generateOpenRedirectPDF(
-        report,
+        { ...report, url: report?.url || scannedUrl || inputUrl },
         (msg) => {
           if (msg) {
             toast.loading(msg, { id: "pdf-gen" });
@@ -229,6 +233,7 @@ export default function DarkThemeOpenRedirectTester() {
                       type="url"
                       value={inputUrl}
                       onChange={(e) => setInputUrl(e.target.value)}
+                      disabled={loading}
                       placeholder="https://example.com/login"
                       required
                       className="w-full bg-zinc-900/40 text-zinc-100 border border-zinc-800/80 rounded-xl p-3.5 pl-12 text-sm focus:border-red-500/50 focus:ring-1 focus:ring-red-500/30 focus:shadow-[0_0_12px_rgba(239,68,68,0.08)] focus:outline-none transition-all placeholder:text-zinc-600 font-mono"
@@ -257,6 +262,7 @@ export default function DarkThemeOpenRedirectTester() {
                       type="text"
                       value={manualParam}
                       onChange={(e) => setManualParam(e.target.value)}
+                      disabled={loading}
                       className="w-full bg-zinc-900/40 text-zinc-100 border border-zinc-800/80 rounded-xl p-3.5 text-sm focus:border-red-500/50 focus:ring-1 focus:ring-red-500/30 focus:outline-none transition-all font-mono"
                     />
                   </div>
@@ -269,6 +275,7 @@ export default function DarkThemeOpenRedirectTester() {
                       type="text"
                       value={customParams}
                       onChange={(e) => setCustomParams(e.target.value)}
+                      disabled={loading}
                       className="w-full bg-zinc-900/40 text-zinc-100 border border-zinc-800/80 rounded-xl p-3.5 text-sm focus:border-red-500/50 focus:ring-1 focus:ring-red-500/30 focus:outline-none transition-all font-mono"
                     />
                     <small className="text-[10px] text-zinc-550 mt-1.5 block font-mono">
@@ -300,9 +307,9 @@ export default function DarkThemeOpenRedirectTester() {
                     <button
                       type="button"
                       onClick={exportPDF}
-                      className="px-6 py-4 rounded-xl bg-zinc-900/40 hover:bg-red-500/5 text-zinc-350 hover:text-red-400 border border-zinc-800/80 hover:border-red-500/30 font-mono font-bold text-xs uppercase transition-all duration-300 flex items-center justify-center gap-2 cursor-pointer"
+                      className="px-6 py-4 rounded-xl bg-red-500 hover:bg-red-600 text-black border border-red-400 font-mono font-bold text-xs uppercase transition-all duration-300 hover:scale-[1.01] active:scale-[0.99] flex items-center justify-center gap-2 cursor-pointer shadow-[0_0_20px_rgba(239,68,68,0.35)]"
                     >
-                      <FileDown className="w-4 h-4" />
+                      <FileDown className="w-4 h-4 text-black stroke-[2.5]" />
                       PDF Report
                     </button>
                   )}

@@ -4,13 +4,16 @@ import { useState } from "react";
 
 export default function SocialAnalyzer() {
   const [url, setUrl] = useState("");
+  const [scannedUrl, setScannedUrl] = useState("");
   const [scanning, setScanning] = useState(false);
   const [result, setResult] = useState(null);
   const [risks, setRisks] = useState([]);
 
   const handleAnalyze = async () => {
-    if (!url) return;
+    const activeUrl = url.trim();
+    if (!activeUrl) return;
 
+    setScannedUrl(activeUrl);
     setScanning(true);
     setResult(null);
     setRisks([]);
@@ -21,7 +24,7 @@ export default function SocialAnalyzer() {
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({ url }),
+        body: JSON.stringify({ url: activeUrl }),
       });
 
       const data = await res.json();
@@ -51,7 +54,9 @@ export default function SocialAnalyzer() {
           type="text"
           placeholder="Enter your social media profile URL"
           value={url}
-          onChange={(e) => setUrl(e.target.value.trim())}         className="w-full px-4 py-3 mb-4 border rounded-md focus:outline-none focus:ring-2 focus:ring-green-500"
+          onChange={(e) => setUrl(e.target.value.trim())}
+          disabled={scanning}
+          className="w-full px-4 py-3 mb-4 border rounded-md focus:outline-none focus:ring-2 focus:ring-green-500"
         />
 
         <button

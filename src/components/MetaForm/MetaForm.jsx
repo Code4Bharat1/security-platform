@@ -9,7 +9,6 @@ import {
   XCircle,
   Eye,
   FileText,
-  FileJson,
   Download,
   Loader2,
   Info,
@@ -37,6 +36,7 @@ const chip = (tone) =>
 
 export default function MetaForm() {
   const [url, setUrl] = useState("");
+  const [scannedUrl, setScannedUrl] = useState("");
   const [report, setReport] = useState(null);
   const [loading, setLoading] = useState(false);
   const apiBase = useMemo(
@@ -51,12 +51,14 @@ export default function MetaForm() {
   };
   async function analyze(e) {
     e?.preventDefault?.();
-    if (!url) return;
+    const targetUrl = url.trim();
+    if (!targetUrl) return;
+
+    setScannedUrl(targetUrl);
     setLoading(true);
     setReport(null);
     await protectedAction(async (userToken) => {
       try {
-        const targetUrl = url.trim();
         const res = await fetch(`${apiBase}/meta/meta-analyze`, {
           method: "POST",
           headers: {
@@ -74,7 +76,7 @@ export default function MetaForm() {
           });
           return;
         }
-        setReport(data);
+        setReport({ ...data, url: targetUrl, targetUrl: data?.targetUrl || targetUrl });
       } catch (err) {
         console.error(err);
         setReport({ error: "Failed to analyze" });
@@ -94,13 +96,6 @@ export default function MetaForm() {
     a.click();
     a.remove();
     URL.revokeObjectURL(u);
-  }
-  function downloadJSON() {
-    if (!report) return;
-    dlBlob(
-      new Blob([JSON.stringify(report, null, 2)], { type: "application/json" }),
-      `meta-report.json`
-    );
   }
   function downloadTXT() {
     if (!report) return;
@@ -253,7 +248,10 @@ table{border-collapse:collapse;width:100%;font-size:13px} td,th{border:1px solid
   }
   async function downloadPDF() {
     if (!report) return;
-    await generateMetaPDF(report, url);
+    await generateMetaPDF(
+      { ...report, url: report?.url || scannedUrl || url, targetUrl: report?.targetUrl || scannedUrl || url },
+      scannedUrl || report?.url || url
+    );
   }
   return (
     <div className="tool-detail-page min-h-screen" style={{
@@ -456,21 +454,15 @@ table{border-collapse:collapse;width:100%;font-size:13px} td,th{border:1px solid
                   <div className="flex flex-wrap gap-2">
                     <button
                       onClick={downloadPDF}
-                      className="bg-emerald-500/5 hover:bg-emerald-500/10 text-emerald-400 border border-emerald-500/25 hover:border-emerald-500/50 px-3.5 py-2 rounded-xl transition-all duration-300 font-mono font-bold text-[11px] uppercase tracking-wider flex items-center gap-2 cursor-pointer hover:scale-[1.01] active:scale-[0.99] hover:shadow-[0_0_15px_rgba(16,185,129,0.1)] focus:outline-none"
+                      className="bg-emerald-500 hover:bg-emerald-400 text-black border border-emerald-400 px-4 py-2 rounded-xl transition-all duration-300 font-mono font-bold text-xs uppercase tracking-wider flex items-center gap-2 cursor-pointer hover:scale-[1.01] active:scale-[0.99] shadow-[0_0_20px_rgba(16,185,129,0.35)] focus:outline-none"
                     >
-                      <FileText className="h-4 w-4" /> PDF
+                      <FileText className="h-4 w-4 text-black stroke-[2.5]" /> PDF Report
                     </button>
                     <button
                       onClick={downloadHTML}
                       className="bg-emerald-500/5 hover:bg-emerald-500/10 text-emerald-400 border border-emerald-500/25 hover:border-emerald-500/50 px-3.5 py-2 rounded-xl transition-all duration-300 font-mono font-bold text-[11px] uppercase tracking-wider flex items-center gap-2 cursor-pointer hover:scale-[1.01] active:scale-[0.99] hover:shadow-[0_0_15px_rgba(16,185,129,0.1)] focus:outline-none"
                     >
                       <Download className="h-4 w-4" /> HTML
-                    </button>
-                    <button
-                      onClick={downloadJSON}
-                      className="bg-emerald-500/5 hover:bg-emerald-500/10 text-emerald-400 border border-emerald-500/25 hover:border-emerald-500/50 px-3.5 py-2 rounded-xl transition-all duration-300 font-mono font-bold text-[11px] uppercase tracking-wider flex items-center gap-2 cursor-pointer hover:scale-[1.01] active:scale-[0.99] hover:shadow-[0_0_15px_rgba(16,185,129,0.1)] focus:outline-none"
-                    >
-                      <FileJson className="h-4 w-4" /> JSON
                     </button>
                     <button
                       onClick={downloadTXT}

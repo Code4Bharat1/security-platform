@@ -318,6 +318,7 @@ export const generateSubdomainPDF = async (results = [], stats = {}, targetDomai
     // Apply header / footer decorator
     applyHeaderFooterDecorator(doc, "Subdomain Scanner");
 
+    const dStr = Date.now();
     if (!existingDoc) {
       doc.save(`Subdomain_Scanner_Report_${dStr}.pdf`);
     }

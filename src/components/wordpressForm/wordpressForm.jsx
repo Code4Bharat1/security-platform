@@ -29,6 +29,7 @@ const WordPressScanner = () => {
   const SKIP_DOMAIN_VERIFICATION_FOR_TESTING = true;
 
   const [url, setUrl] = useState("");
+  const [scannedUrl, setScannedUrl] = useState("");
   const [error, setError] = useState("");
   const [scanData, setScanData] = useState(null);
   const [loading, setLoading] = useState(false);
@@ -57,6 +58,8 @@ const WordPressScanner = () => {
       return;
     }
 
+    const activeUrl = url.trim();
+    setScannedUrl(activeUrl);
     setError("");
     setLoading(true);
     setScanData(null);
@@ -65,7 +68,7 @@ const WordPressScanner = () => {
       try {
         const response = await axios.post(
           `${API_URL}/wordpress/wordpress-scan`,
-          { url },
+          { url: activeUrl },
           {
             headers: {
               Authorization: `Bearer ${token}`,
@@ -76,7 +79,7 @@ const WordPressScanner = () => {
         if (response.data.error) {
           setError(response.data.error);
         } else {
-          setScanData(response.data);
+          setScanData({ ...response.data, url: activeUrl });
         }
       } catch (error) {
         console.error("Error:", error);
@@ -171,6 +174,7 @@ const WordPressScanner = () => {
                       type="url"
                       value={url}
                       onChange={(e) => setUrl(e.target.value.trim())}
+                      disabled={loading}
                       placeholder="https://example.com"
                       required
                       className="w-full bg-zinc-900/40 text-zinc-100 border border-zinc-800/80 rounded-xl p-3.5 pl-12 text-sm focus:border-red-500/50 focus:ring-1 focus:ring-red-500/30 focus:shadow-[0_0_12px_rgba(239,68,68,0.08)] focus:outline-none transition-all placeholder:text-zinc-600 font-mono"
@@ -227,10 +231,10 @@ const WordPressScanner = () => {
                   <p className="font-semibold text-zinc-200 text-sm">Non-WordPress Website Detected</p>
                   <p className="mb-2">The target website is not identified as a WordPress installation. WordPress-specific security assessment findings, version enumerations, and audits are not applicable.</p>
                   <button
-                    onClick={() => generateWordPressPDF(scanData, url)}
-                    className="px-4 py-2.5 bg-zinc-800 text-white hover:bg-zinc-700 border border-zinc-600 hover:border-red-500 rounded-xl font-mono font-bold text-xs uppercase transition-all duration-300 flex items-center justify-center gap-1.5 cursor-pointer mx-auto shadow-md"
+                    onClick={() => generateWordPressPDF(scanData, scannedUrl || scanData?.url || url)}
+                    className="px-4 py-2.5 bg-red-500 hover:bg-red-600 text-black border border-red-400 rounded-xl font-mono font-bold text-xs uppercase transition-all duration-300 hover:scale-[1.01] active:scale-[0.99] flex items-center justify-center gap-1.5 cursor-pointer mx-auto shadow-[0_0_20px_rgba(239,68,68,0.35)]"
                   >
-                    <Download className="w-3.5 h-3.5 text-red-400" />
+                    <Download className="w-3.5 h-3.5 text-black stroke-[2.5]" />
                     Download PDF Report
                   </button>
                 </div>
@@ -246,10 +250,10 @@ const WordPressScanner = () => {
                       Vulnerability telemetry outcome report
                     </p>
                     <button
-                      onClick={() => generateWordPressPDF(scanData, url)}
-                      className="px-4 py-2 bg-zinc-800 text-white hover:bg-zinc-700 border border-zinc-600 hover:border-red-500 rounded-xl font-mono font-bold text-xs uppercase transition-all duration-300 flex items-center gap-1.5 cursor-pointer shadow-md"
+                      onClick={() => generateWordPressPDF(scanData, scannedUrl || scanData?.url || url)}
+                      className="px-4 py-2.5 bg-red-500 hover:bg-red-600 text-black border border-red-400 rounded-xl font-mono font-bold text-xs uppercase transition-all duration-300 hover:scale-[1.01] active:scale-[0.99] flex items-center gap-1.5 cursor-pointer shadow-[0_0_20px_rgba(239,68,68,0.35)]"
                     >
-                      <Download className="w-3.5 h-3.5 text-red-400" />
+                      <Download className="w-3.5 h-3.5 text-black stroke-[2.5]" />
                       Download PDF Report
                     </button>
                   </div>

@@ -28,6 +28,7 @@ export default function SecureCrypt() {
 
   const [mode, setMode] = useState("encrypt");
   const [text, setText] = useState("");
+  const [scannedText, setScannedText] = useState("");
   const [passphrase, setPassphrase] = useState("");
   const [keyB64, setKeyB64] = useState("");
   const [loading, setLoading] = useState(false);
@@ -75,6 +76,10 @@ export default function SecureCrypt() {
   };
 
   const encrypt = async () => {
+    const activeText = text.trim();
+    if (!activeText) return;
+
+    setScannedText(activeText);
     setLoading(true);
     setResultText("");
     setReport(null);
@@ -83,7 +88,7 @@ export default function SecureCrypt() {
 
     await protectedAction(async (userToken) => {
       try {
-        const body = { text: text.trim() };
+        const body = { text: activeText };
         if (passphrase.trim()) body.passphrase = passphrase;
         if (keyB64.trim()) body.keyB64 = keyB64.trim();
 
@@ -115,10 +120,12 @@ export default function SecureCrypt() {
   };
 
   const decrypt = async () => {
+    const activeText = text.trim();
     if (!passphrase.trim() && !keyB64.trim()) {
        setResultText("ERROR: Missing decryption key. Please enter either the Passphrase or the Base64 Key used during encryption.");
        return;
      }
+    setScannedText(activeText);
     setLoading(true);
     setResultText("");
     setReport(null);
@@ -126,7 +133,7 @@ export default function SecureCrypt() {
 
     await protectedAction(async (userToken) => {
       try {
-        const body = { package: text.trim() };
+        const body = { package: activeText };
         if (passphrase.trim()) body.passphrase = passphrase.trim();
         if (keyB64.trim()) body.keyB64 = keyB64.trim();
 
@@ -177,7 +184,7 @@ export default function SecureCrypt() {
   };
 
   const downloadPdf = (r) => {
-    generateSecureCryptPDF(r, mode, text, resultText);
+    generateSecureCryptPDF(r, mode, scannedText || text, resultText);
   };
 
   const resultIsError = resultText.startsWith("ERROR:");
@@ -278,6 +285,7 @@ export default function SecureCrypt() {
                       type="radio"
                       name="mode"
                       value={value}
+                      disabled={loading}
                       checked={mode === value}
                       onChange={() => {
                         setMode(value);
@@ -473,9 +481,9 @@ export default function SecureCrypt() {
                       </button>
                       <button
                         onClick={() => downloadPdf(report)}
-                        className="bg-emerald-500/5 hover:bg-emerald-500/10 text-emerald-400 border border-emerald-500/25 hover:border-emerald-500/50 px-3.5 py-2 rounded-xl transition-all duration-300 font-mono font-bold text-[11px] uppercase tracking-wider flex items-center gap-2 cursor-pointer hover:scale-[1.01] active:scale-[0.99] hover:shadow-[0_0_15px_rgba(16,185,129,0.1)] focus:outline-none"
+                        className="bg-emerald-500 hover:bg-emerald-400 text-black border border-emerald-400 px-4 py-2 rounded-xl transition-all duration-300 font-mono font-bold text-xs uppercase tracking-wider flex items-center gap-2 cursor-pointer hover:scale-[1.01] active:scale-[0.99] shadow-[0_0_20px_rgba(16,185,129,0.35)] focus:outline-none"
                       >
-                        <Download size={14} /> PDF
+                        <Download size={14} className="text-black stroke-[2.5]" /> PDF Report
                       </button>
                     </div>
                   )}

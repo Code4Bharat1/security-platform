@@ -18,7 +18,8 @@ import { generateSeoScoreAnalyzerPDF } from "./generateSeoScoreAnalyzerPDF";
 import useProtectedAction from "../UseProtectedAction/UseProtectedAction";
 
 export default function SeoScoreAnalyzer() {
-  const [url, setUrl]           = useState("");
+  const [url, setUrl] = useState("");
+  const [scannedUrl, setScannedUrl] = useState("");
   const [result, setResult]     = useState(null);
   const [loading, setLoading]   = useState(false);
   const [error, setError]       = useState("");
@@ -28,7 +29,7 @@ export default function SeoScoreAnalyzer() {
   // ── PDF download using Unified PDF Reporting Framework ──────────────────
   const downloadPDF = async () => {
     if (!result) return;
-    await generateSeoScoreAnalyzerPDF(result, setPdfProgress);
+    await generateSeoScoreAnalyzerPDF({ ...result, url: result?.url || scannedUrl || url }, setPdfProgress);
   };
 
   const strengths = result?.strengths || [];
@@ -50,6 +51,7 @@ export default function SeoScoreAnalyzer() {
         const normalizedUrl = /^https?:\/\//i.test(url.trim())
           ? url.trim()
           : `https://${url.trim()}`;
+        setScannedUrl(normalizedUrl);
         const res = await fetch(
           `${process.env.NEXT_PUBLIC_PROD_API_URL}/seo/analyze`,
           {
@@ -65,7 +67,7 @@ export default function SeoScoreAnalyzer() {
         const data = await res.json();
 
         if (res.ok) {
-          setResult(data);
+          setResult({ ...data, url: data?.url || normalizedUrl, target: normalizedUrl });
         } else {
           setError(data.message || "Something went wrong!");
         }
@@ -347,12 +349,12 @@ export default function SeoScoreAnalyzer() {
                   <button
                     onClick={downloadPDF}
                     disabled={pdfProgress !== null}
-                    className="w-full bg-emerald-500/5 hover:bg-emerald-500/10 text-emerald-400 border border-emerald-500/25 hover:border-emerald-500/50 px-4 py-3 rounded-xl font-mono font-bold text-[11px] uppercase tracking-wider flex items-center justify-center gap-2 transition-all hover:scale-[1.01] active:scale-[0.99] focus:outline-none cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
+                    className="w-full bg-emerald-500 hover:bg-emerald-400 text-black border border-emerald-400 px-4 py-3.5 rounded-xl font-mono font-bold text-xs uppercase tracking-wider flex items-center justify-center gap-2 transition-all duration-300 hover:scale-[1.01] active:scale-[0.99] shadow-[0_0_20px_rgba(16,185,129,0.35)] focus:outline-none cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
                   >
                     {pdfProgress ? (
-                      <><Loader2 className="w-4 h-4 animate-spin" /> {pdfProgress}</>
+                      <><Loader2 className="w-4 h-4 animate-spin text-black" /> {pdfProgress}</>
                     ) : (
-                      <><FileDown className="w-4 h-4" /> Download PDF Report</>
+                      <><FileDown className="w-4 h-4 text-black stroke-[2.5]" /> Download PDF Report</>
                     )}
                   </button>
                 </div>

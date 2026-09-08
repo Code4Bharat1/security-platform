@@ -4,23 +4,30 @@ import axios from 'axios';
 
 const DomainToIP = () => {
   const [domain, setDomain] = useState('');
+  const [scannedDomain, setScannedDomain] = useState('');
+  const [loading, setLoading] = useState(false);
   const [ip, setIp] = useState(null);
   const [error, setError] = useState('');
 
   const handleDomainChange = (e) => setDomain(e.target.value);
 
   const handleConvert = async () => {
-    if (!domain) {
+    const activeDomain = domain.trim();
+    if (!activeDomain) {
       setError('Domain is required');
       return;
     }
 
+    setScannedDomain(activeDomain);
+    setLoading(true);
     try {
-      const response = await axios.post(`${process.env.NEXT_PUBLIC_PROD_API_URL}/domain/convert`, { domain });
+      const response = await axios.post(`${process.env.NEXT_PUBLIC_PROD_API_URL}/domain/convert`, { domain: activeDomain });
       setIp(response.data.ip);
       setError('');
     } catch (error) {
       setError('Error resolving domain');
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -32,14 +39,16 @@ const DomainToIP = () => {
           type="text"
           value={domain}
           onChange={handleDomainChange}
+          disabled={loading}
           className="w-full p-2 bg-gray-800 text-white rounded-lg mb-4"
           placeholder="Enter domain"
         />
         <button
           onClick={handleConvert}
-          className="w-full bg-blue-500 text-white p-2 rounded-lg"
+          disabled={loading || !domain}
+          className="w-full bg-blue-500 text-white p-2 rounded-lg disabled:opacity-50"
         >
-          Convert
+          {loading ? 'Converting...' : 'Convert'}
         </button>
       </div>
 

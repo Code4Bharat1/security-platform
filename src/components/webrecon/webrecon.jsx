@@ -59,6 +59,7 @@ export default function Webrecon() {
 
   const protectedAction = useProtectedAction();
   const [domain, setDomain] = useState("");
+  const [scannedDomain, setScannedDomain] = useState("");
   const [recordType, setRecordType] = useState("ALL");
   const [result, setResult] = useState(null);
   const [error, setError] = useState("");
@@ -85,6 +86,7 @@ export default function Webrecon() {
         return;
       }
 
+      setScannedDomain(target);
       setLoading(true);
       try {
         if (recordType === "ALL") {
@@ -151,6 +153,7 @@ export default function Webrecon() {
         setScanLoading(false);
         return;
       }
+      setScannedDomain(target);
       if (!ownershipVerified && !SKIP_DOMAIN_VERIFICATION_FOR_TESTING) {
         setScanError("Verify ownership of this domain before running the deep scan.");
         setScanLoading(false);
@@ -172,7 +175,7 @@ export default function Webrecon() {
           throw new Error(data?.error || `Request failed (${res.status})`);
         }
 
-        setScan(data);
+        setScan({ ...data, domain: target, urlUsed: target });
       } catch (err) {
         setScanError(err?.message || "Deep scan failed");
       } finally {
@@ -222,7 +225,7 @@ export default function Webrecon() {
 
   const downloadPDF = () => {
     if (!scan) return;
-    generateWebsiteReconPDF(scan, null);
+    generateWebsiteReconPDF({ ...scan, domain: scannedDomain || scan?.domain || domain, urlUsed: scannedDomain || scan?.urlUsed || domain }, null);
   };
 
   return (
@@ -308,6 +311,7 @@ export default function Webrecon() {
                     placeholder="Enter domain (e.g., example.com)"
                     value={domain}
                     onChange={(e) => setDomain(e.target.value)}
+                    disabled={loading || scanLoading}
                     className="w-full bg-zinc-900/40 text-zinc-100 border border-zinc-800/80 rounded-xl p-3.5 text-sm focus:border-red-500/50 focus:ring-1 focus:ring-red-500/30 focus:outline-none transition-all placeholder:text-zinc-600 font-mono"
                   />
                 </div>
@@ -376,9 +380,9 @@ export default function Webrecon() {
                   </h3>
                   <button
                     onClick={() => generateDnsPDF(result, domain, recordType)}
-                    className="px-3 py-1.5 bg-zinc-900/40 hover:bg-red-500/5 text-zinc-350 hover:text-red-400 border border-zinc-800/80 hover:border-red-500/30 rounded-xl font-mono font-bold text-xs uppercase transition-all duration-300 flex items-center justify-center gap-1.5 cursor-pointer"
+                    className="px-3.5 py-1.5 bg-red-500 hover:bg-red-600 text-black border border-red-400 rounded-xl font-mono font-bold text-xs uppercase transition-all duration-300 hover:scale-[1.01] active:scale-[0.99] flex items-center justify-center gap-1.5 cursor-pointer shadow-[0_0_20px_rgba(239,68,68,0.35)]"
                   >
-                    <Download className="w-3.5 h-3.5" />
+                    <Download className="w-3.5 h-3.5 text-black stroke-[2.5]" />
                     Download DNS PDF
                   </button>
                 </div>
@@ -705,9 +709,9 @@ export default function Webrecon() {
                   </button>
                   <button
                     onClick={downloadPDF}
-                    className="flex-1 px-4 py-3 bg-zinc-800 text-white hover:bg-zinc-700 border border-zinc-600 hover:border-red-500 rounded-xl font-mono font-bold text-xs uppercase transition-all duration-300 flex items-center justify-center gap-1.5 cursor-pointer shadow-md"
+                    className="flex-1 px-4 py-3 bg-red-500 hover:bg-red-600 text-black border border-red-400 rounded-xl font-mono font-bold text-xs uppercase transition-all duration-300 hover:scale-[1.01] active:scale-[0.99] flex items-center justify-center gap-1.5 cursor-pointer shadow-[0_0_20px_rgba(239,68,68,0.35)]"
                   >
-                    <Download className="w-4 h-4 text-red-400" />
+                    <Download className="w-4 h-4 text-black stroke-[2.5]" />
                     Download PDF Report
                   </button>
                 </div>

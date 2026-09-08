@@ -27,6 +27,7 @@ export default function LinkDetector() {
   );
 
   const [link, setLink] = useState("");
+  const [scannedLink, setScannedLink] = useState("");
   const [bulkMode, setBulkMode] = useState(false);
   const [bulkText, setBulkText] = useState("");
   const [scanning, setScanning] = useState(false);
@@ -37,7 +38,10 @@ export default function LinkDetector() {
   const protectedAction = useProtectedAction();
 
   const handleScan = async () => {
-    if (!link.trim()) return;
+    const activeLink = link.trim();
+    if (!activeLink) return;
+
+    setScannedLink(activeLink);
     setScanning(true);
     setResult(null);
     setError("");
@@ -49,11 +53,11 @@ export default function LinkDetector() {
             "Content-Type": "application/json",
             Authorization: `Bearer ${userToken}`,
           },
-          body: JSON.stringify({ url: link.trim() }),
+          body: JSON.stringify({ url: activeLink }),
         });
         const data = await res.json();
         if (res.ok) {
-          setResult(data);
+          setResult({ ...data, url: activeLink, target: activeLink });
         } else {
           setError(data?.message || "Link check failed.");
         }
@@ -169,7 +173,10 @@ export default function LinkDetector() {
 
   const handleDownloadPdf = () => {
     generateLinkDetectorPDF(
-      { result, bulkResults },
+      {
+        result: result ? { ...result, url: result?.url || scannedLink || link } : null,
+        bulkResults,
+      },
       setPdfProgress
     );
   };
@@ -459,9 +466,9 @@ export default function LinkDetector() {
                     <button
                       onClick={handleDownloadPdf}
                       disabled={!!pdfProgress}
-                      className="bg-emerald-500/5 hover:bg-emerald-500/10 text-emerald-400 border border-emerald-500/25 hover:border-emerald-500/50 px-3.5 py-2 rounded-xl transition-all duration-300 font-mono font-bold text-[11px] uppercase tracking-wider flex items-center gap-2 cursor-pointer hover:scale-[1.01] active:scale-[0.99] hover:shadow-[0_0_15px_rgba(16,185,129,0.1)] focus:outline-none disabled:opacity-50 disabled:pointer-events-none"
+                      className="bg-emerald-500 hover:bg-emerald-400 text-black border border-emerald-400 px-4 py-2 rounded-xl transition-all duration-300 font-mono font-bold text-xs uppercase tracking-wider flex items-center gap-2 cursor-pointer hover:scale-[1.01] active:scale-[0.99] shadow-[0_0_20px_rgba(16,185,129,0.35)] focus:outline-none disabled:opacity-50 disabled:pointer-events-none"
                     >
-                      {pdfProgress ? <Loader2 size={14} className="animate-spin" /> : <FileText size={14} />}
+                      {pdfProgress ? <Loader2 size={14} className="animate-spin text-black" /> : <FileText size={14} className="text-black stroke-[2.5]" />}
                       {pdfProgress ? "Generating..." : "PDF Report"}
                     </button>
                     <button

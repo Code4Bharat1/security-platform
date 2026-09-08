@@ -140,6 +140,7 @@ const FakeQRCodeDetectorAndQRGenerator = () => {
   const [rawScanResult, setRawScanResult] = useState(null);
   const [generateResult, setGenerateResult] = useState("");
   const [loading, setLoading] = useState(false);
+  const [scannedImageName, setScannedImageName] = useState("");
   const [qrText, setQrText] = useState("");
   const [generatedImage, setGeneratedImage] = useState(null);
   const protectedAction = useProtectedAction();
@@ -178,6 +179,8 @@ const FakeQRCodeDetectorAndQRGenerator = () => {
       setScanResult("Please upload or capture an image first.");
       return;
     }
+    const currentName = imageSrc?.file?.name || "qr-code-image.jpg";
+    setScannedImageName(currentName);
     setLoading(true);
     setScanResult("");
     await protectedAction(async (userToken) => {
@@ -197,7 +200,10 @@ const FakeQRCodeDetectorAndQRGenerator = () => {
         );
 
         const data = await response.json();
-        setRawScanResult(data);
+        setRawScanResult({
+          ...data,
+          fileName: currentName,
+        });
         if (data.status === "error") {
           setScanResult(`❌ Error: ${data.message}`);
         } else {
@@ -265,6 +271,7 @@ const FakeQRCodeDetectorAndQRGenerator = () => {
     setGeneratedImage(null);
     setScanResult("");
     setRawScanResult(null);
+    setScannedImageName("");
     setGenerateResult("");
     setQrText("");
     setInputMethod("upload");
@@ -354,7 +361,8 @@ const FakeQRCodeDetectorAndQRGenerator = () => {
                 </h2>
                 <button
                   onClick={resetAll}
-                  className="bg-emerald-500/5 hover:bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 hover:border-emerald-500/50 rounded-xl font-mono font-bold text-[11px] uppercase px-3 py-2 transition-all duration-300 hover:scale-[1.01] active:scale-[0.99] flex items-center gap-1.5 cursor-pointer hover:shadow-[0_0_15px_rgba(16,185,129,0.1)] focus:outline-none"
+                  disabled={loading}
+                  className="bg-emerald-500/5 hover:bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 hover:border-emerald-500/50 rounded-xl font-mono font-bold text-[11px] uppercase px-3 py-2 transition-all duration-300 hover:scale-[1.01] active:scale-[0.99] flex items-center gap-1.5 cursor-pointer hover:shadow-[0_0_15px_rgba(16,185,129,0.1)] focus:outline-none disabled:opacity-40 disabled:pointer-events-none"
                 >
                   <RefreshCcw size={13} /> Reset
                 </button>
@@ -367,7 +375,7 @@ const FakeQRCodeDetectorAndQRGenerator = () => {
                 ].map(({ value, icon: Icon, label, desc }) => (
                   <label
                     key={value}
-                    className={`flex items-center gap-3 text-sm cursor-pointer group p-3.5 rounded-xl border transition-all ${
+                    className={`flex items-center gap-3 text-sm cursor-pointer group p-3.5 rounded-xl border transition-all ${loading ? "opacity-50 pointer-events-none" : ""} ${
                       tab === value
                         ? "border-emerald-500/50 bg-transparent text-white"
                         : "border-zinc-800/80 bg-transparent text-zinc-300 hover:bg-transparent hover:border-zinc-700"
@@ -377,6 +385,7 @@ const FakeQRCodeDetectorAndQRGenerator = () => {
                       type="radio"
                       name="tab"
                       value={value}
+                      disabled={loading}
                       checked={tab === value}
                       onChange={() => {
                         setTab(value);
@@ -455,7 +464,7 @@ const FakeQRCodeDetectorAndQRGenerator = () => {
                       <p className="text-zinc-600 text-xs font-mono mb-4">or click below to browse</p>
                       <label
                         htmlFor="file-upload"
-                        className="inline-flex items-center gap-2 bg-emerald-500/5 hover:bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 hover:border-emerald-500/50 rounded-xl font-mono font-bold text-xs uppercase px-5 py-2.5 transition-all duration-300 cursor-pointer hover:scale-[1.01] active:scale-[0.99] hover:shadow-[0_0_15px_rgba(16,185,129,0.1)]"
+                        className={`inline-flex items-center gap-2 bg-emerald-500/5 hover:bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 hover:border-emerald-500/50 rounded-xl font-mono font-bold text-xs uppercase px-5 py-2.5 transition-all duration-300 cursor-pointer hover:scale-[1.01] active:scale-[0.99] hover:shadow-[0_0_15px_rgba(16,185,129,0.1)] ${loading ? "opacity-50 pointer-events-none" : ""}`}
                       >
                         <QrCode className="h-4 w-4" /> Browse Images
                       </label>
@@ -463,6 +472,7 @@ const FakeQRCodeDetectorAndQRGenerator = () => {
                         id="file-upload"
                         type="file"
                         accept="image/*"
+                        disabled={loading}
                         onChange={handleFileInput}
                         className="hidden"
                       />
@@ -569,10 +579,10 @@ const FakeQRCodeDetectorAndQRGenerator = () => {
                   </div>
                   {tab === "scanner" && rawScanResult && (
                     <button
-                      onClick={() => generateQrPDF(rawScanResult, imageSrc?.file?.name || "qr-code-image.jpg")}
-                      className="bg-emerald-500/5 hover:bg-emerald-500/10 text-emerald-400 border border-emerald-500/25 hover:border-emerald-500/50 px-3.5 py-1.5 rounded-xl transition-all duration-300 font-mono font-bold text-[11px] uppercase tracking-wider flex items-center gap-2 cursor-pointer hover:scale-[1.01] active:scale-[0.99] hover:shadow-[0_0_15px_rgba(16,185,129,0.1)] focus:outline-none self-start sm:self-auto"
+                      onClick={() => generateQrPDF(rawScanResult, rawScanResult?.fileName || scannedImageName || imageSrc?.file?.name || "qr-code-image.jpg")}
+                      className="bg-emerald-500 hover:bg-emerald-400 text-black border border-emerald-400 px-4 py-2 rounded-xl transition-all duration-300 font-mono font-bold text-xs uppercase tracking-wider flex items-center gap-2 cursor-pointer hover:scale-[1.01] active:scale-[0.99] shadow-[0_0_20px_rgba(16,185,129,0.35)] focus:outline-none self-start sm:self-auto"
                     >
-                      <Download size={14} /> PDF Report
+                      <Download size={14} className="text-black stroke-[2.5]" /> PDF Report
                     </button>
                   )}
                 </div>

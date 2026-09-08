@@ -270,7 +270,7 @@ export default function FileThreatScanner() {
                 <p className="text-zinc-600 text-xs font-mono mb-4">or click below to browse</p>
                 <label
                   htmlFor="fileInput"
-                  className="inline-flex items-center gap-2 bg-emerald-500/5 hover:bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 hover:border-emerald-500/50 rounded-xl font-mono font-bold text-xs uppercase px-5 py-2.5 transition-all duration-300 cursor-pointer hover:scale-[1.01] active:scale-[0.99] hover:shadow-[0_0_15px_rgba(16,185,129,0.1)]"
+                  className={`inline-flex items-center gap-2 bg-emerald-500/5 hover:bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 hover:border-emerald-500/50 rounded-xl font-mono font-bold text-xs uppercase px-5 py-2.5 transition-all duration-300 cursor-pointer hover:scale-[1.01] active:scale-[0.99] hover:shadow-[0_0_15px_rgba(16,185,129,0.1)] ${scanning ? "opacity-50 pointer-events-none" : ""}`}
                 >
                   <FileText className="h-4 w-4" /> Choose Files
                 </label>
@@ -278,6 +278,7 @@ export default function FileThreatScanner() {
                   type="file"
                   id="fileInput"
                   multiple
+                  disabled={scanning}
                   onChange={handleFileChange}
                   className="hidden"
                 />
@@ -297,8 +298,9 @@ export default function FileThreatScanner() {
                         <span className="text-[10px] text-zinc-600 flex-shrink-0">{(f.size / 1024).toFixed(1)} KB</span>
                         <button
                           onClick={() => removeFile(i)}
+                          disabled={scanning}
                           title="Remove file"
-                          className="ml-1 flex-shrink-0 text-zinc-600 hover:text-rose-400 transition-colors duration-200 opacity-0 group-hover:opacity-100 focus:opacity-100 focus:outline-none"
+                          className={`ml-1 flex-shrink-0 text-zinc-600 hover:text-rose-400 transition-colors duration-200 opacity-0 group-hover:opacity-100 focus:opacity-100 focus:outline-none ${scanning ? "pointer-events-none opacity-20" : ""}`}
                         >
                           <X size={13} />
                         </button>
@@ -380,9 +382,9 @@ export default function FileThreatScanner() {
                     </h3>
                     <button
                       onClick={() => generateFileScanPDF(results)}
-                      className="bg-emerald-500/5 hover:bg-emerald-500/10 text-emerald-400 border border-emerald-500/25 hover:border-emerald-500/50 px-3.5 py-1.5 rounded-xl transition-all duration-300 font-mono font-bold text-[11px] uppercase tracking-wider flex items-center gap-2 cursor-pointer hover:scale-[1.01] active:scale-[0.99] hover:shadow-[0_0_15px_rgba(16,185,129,0.1)] focus:outline-none self-start sm:self-auto"
+                      className="bg-emerald-500 hover:bg-emerald-400 text-black border border-emerald-400 px-4 py-2 rounded-xl transition-all duration-300 font-mono font-bold text-xs uppercase tracking-wider flex items-center gap-2 cursor-pointer hover:scale-[1.01] active:scale-[0.99] shadow-[0_0_20px_rgba(16,185,129,0.35)] focus:outline-none self-start sm:self-auto"
                     >
-                      <Download size={14} /> PDF Report
+                      <Download size={14} className="text-black stroke-[2.5]" /> PDF Report
                     </button>
                   </div>
                   {results.map((file, idx) => (

@@ -133,8 +133,6 @@ export default function ContactPage() {
         title="Ready to harden your security perimeter?"
         primaryHref="#contact-section"
         primaryLabel="Request Assessment"
-        secondaryHref="/gain-access"
-        secondaryLabel="Talk To A Consultant"
       />
     </main>
   );

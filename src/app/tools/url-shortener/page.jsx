@@ -20,6 +20,7 @@ import { generateURLShortenerPDF } from "./generateURLShortenerPDF";
 
 export default function UrlShortener() {
   const [originalUrl, setOriginalUrl] = useState("");
+  const [scannedUrl, setScannedUrl] = useState("");
   const [shortUrl, setShortUrl] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
@@ -36,7 +37,7 @@ export default function UrlShortener() {
     try {
       const data = item
         ? { result: item }
-        : { result: { original: originalUrl, short: shortUrl, timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' }) }, history };
+        : { result: { original: scannedUrl || originalUrl, short: shortUrl, timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' }) }, history };
 
       await generateURLShortenerPDF(
         data,
@@ -81,6 +82,7 @@ export default function UrlShortener() {
       return;
     }
 
+    setScannedUrl(trimmedUrl);
     setLoading(true);
     setError("");
     setShortUrl("");
@@ -221,6 +223,7 @@ export default function UrlShortener() {
                       type="text"
                       placeholder="https://example.com/very-long-path-name"
                       value={originalUrl}
+                      disabled={loading}
                       onChange={(e) => setOriginalUrl(e.target.value)}
                       className="w-full pl-10 bg-zinc-900/40 text-zinc-100 border border-zinc-800/80 rounded-xl p-3 text-sm focus:border-emerald-500/50 focus:ring-1 focus:ring-emerald-500/30 focus:shadow-[0_0_12px_rgba(16,185,129,0.08)] focus:outline-none transition-all placeholder:text-zinc-600 font-mono"
                     />
@@ -286,10 +289,10 @@ export default function UrlShortener() {
                       <button
                         type="button"
                         onClick={() => downloadPDF({ original: originalUrl, short: shortUrl, timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' }) })}
-                        className="p-3.5 rounded-xl border border-zinc-800 bg-zinc-950/80 text-zinc-400 hover:text-emerald-400 hover:border-emerald-500/30 transition-all flex items-center justify-center flex-shrink-0 cursor-pointer"
+                        className="p-3.5 rounded-xl border border-emerald-400 bg-emerald-500 hover:bg-emerald-400 text-black transition-all duration-300 hover:scale-[1.02] active:scale-[0.98] flex items-center justify-center flex-shrink-0 cursor-pointer shadow-[0_0_15px_rgba(16,185,129,0.35)]"
                         title="Download PDF Report"
                       >
-                        <FileText size={16} />
+                        <FileText size={16} className="text-black stroke-[2.5]" />
                       </button>
                     </div>
                   </div>
@@ -314,10 +317,10 @@ export default function UrlShortener() {
                   <button
                     type="button"
                     onClick={() => downloadPDF()}
-                    className="px-3 py-1.5 bg-zinc-900/40 hover:bg-emerald-500/5 text-zinc-300 hover:text-emerald-400 border border-zinc-800/80 hover:border-emerald-500/30 rounded-xl font-mono font-bold text-xs uppercase tracking-wider transition-all duration-300 flex items-center justify-center gap-1.5 cursor-pointer"
+                    className="px-3 py-1.5 bg-emerald-500 hover:bg-emerald-400 text-black border border-emerald-400 rounded-xl font-mono font-bold text-xs uppercase tracking-wider transition-all duration-300 hover:scale-[1.01] active:scale-[0.99] flex items-center justify-center gap-1.5 cursor-pointer shadow-[0_0_15px_rgba(16,185,129,0.35)]"
                     title="Download Bulk PDF Report"
                   >
-                    <Download className="w-3.5 h-3.5" />
+                    <Download className="w-3.5 h-3.5 text-black stroke-[2.5]" />
                     Download PDF
                   </button>
                 </div>
@@ -376,10 +379,10 @@ export default function UrlShortener() {
                           <button
                             type="button"
                             onClick={() => downloadPDF(item)}
-                            className="p-2 rounded-lg border border-zinc-850 bg-zinc-900/40 text-zinc-400 hover:text-emerald-400 hover:border-emerald-500/20 transition-all flex items-center justify-center cursor-pointer"
+                            className="p-2 rounded-lg border border-emerald-400 bg-emerald-500 hover:bg-emerald-400 text-black transition-all flex items-center justify-center cursor-pointer shadow-[0_0_10px_rgba(16,185,129,0.3)]"
                             title="Download PDF Report"
                           >
-                            <FileText size={12} />
+                            <FileText size={12} className="text-black stroke-[2.5]" />
                           </button>
                         </div>
                       </div>

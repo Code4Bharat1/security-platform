@@ -4,16 +4,19 @@ import React, { useState } from 'react';
 
 export default function SensitiveFileScanner() {
   const [url, setUrl] = useState('');
+  const [scannedUrl, setScannedUrl] = useState('');
   const [results, setResults] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
 
   const handleScan = async () => {
-    if (!url.startsWith('http')) {
+    const activeUrl = url.trim();
+    if (!activeUrl.startsWith('http')) {
       setError('Please enter a valid URL starting with http or https');
       return;
     }
 
+    setScannedUrl(activeUrl);
     setLoading(true);
     setError(null);
     setResults([]);
@@ -22,7 +25,7 @@ export default function SensitiveFileScanner() {
       const res = await fetch(`${process.env.NEXT_PUBLIC_PROD_API_URL}/sensitive-files/check`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ url }),
+        body: JSON.stringify({ url: activeUrl }),
       });
 
       const data = await res.json();
@@ -47,6 +50,7 @@ export default function SensitiveFileScanner() {
             placeholder="Enter target URL (e.g. https://example.com)"
             value={url}
             onChange={(e) => setUrl(e.target.value.trim())}
+            disabled={loading}
             className="mb-3 w-full rounded-lg border border-[color:var(--border)] bg-[color:var(--surface-subtle)] px-4 py-3 text-[color:var(--text-body)] placeholder:text-[color:var(--text-muted)]"
           />
           <button

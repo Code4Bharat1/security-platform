@@ -158,6 +158,7 @@ function DataTable({ rows }) {
 // ─────────────────────────────────────────────────────────────────────────────
 export default function WebsiteOptimizationTool() {
   const [url, setUrl]         = useState("");
+  const [scannedUrl, setScannedUrl] = useState("");
   const [info, setInfo]       = useState("");
   const [result, setResult]   = useState(null);
   const [showRaw, setShowRaw] = useState(false);
@@ -169,7 +170,7 @@ export default function WebsiteOptimizationTool() {
   // ── PDF download using Unified PDF Reporting Framework ────────────────────
   const downloadPDF = async () => {
     if (!result) return;
-    await generateWebsiteOptimizationPDF(result, setPdfProgress);
+    await generateWebsiteOptimizationPDF({ ...result, url: result?.url || scannedUrl || url, target: result?.target || scannedUrl || url }, setPdfProgress);
   };
 
   // ── URL validation — Bug F-1 fix: use URL() parse, not just startsWith ────
@@ -204,6 +205,8 @@ export default function WebsiteOptimizationTool() {
 
     await protection(async (userToken) => {
       try {
+        const activeUrl = url.trim();
+        setScannedUrl(activeUrl);
         setLoading(true);
         setError("");
         setInfo("");
@@ -211,12 +214,12 @@ export default function WebsiteOptimizationTool() {
 
         const response = await axios.post(
           `${process.env.NEXT_PUBLIC_PROD_API_URL}/website-optimization`,
-          { url: url.trim() },
+          { url: activeUrl },
           { headers: { Authorization: `Bearer ${userToken}` } }
         );
 
         setInfo(response.data.message);
-        setResult(response.data.data);
+        setResult({ ...response.data.data, url: activeUrl, target: activeUrl });
       } catch (err) {
         // Bug F-2 fix: differentiate error messages
         const status = err.response?.status;
@@ -507,12 +510,12 @@ export default function WebsiteOptimizationTool() {
                   <button
                     onClick={downloadPDF}
                     disabled={pdfProgress !== null}
-                    className="w-full bg-emerald-500/5 hover:bg-emerald-500/10 text-emerald-400 border border-emerald-500/25 hover:border-emerald-500/50 px-4 py-3 rounded-xl font-mono font-bold text-[11px] uppercase tracking-wider flex items-center justify-center gap-2 transition-all hover:scale-[1.01] active:scale-[0.99] focus:outline-none cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
+                    className="w-full bg-emerald-500 hover:bg-emerald-400 text-black border border-emerald-400 px-4 py-3.5 rounded-xl font-mono font-bold text-xs uppercase tracking-wider flex items-center justify-center gap-2 transition-all duration-300 hover:scale-[1.01] active:scale-[0.99] shadow-[0_0_20px_rgba(16,185,129,0.35)] focus:outline-none cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
                   >
                     {pdfProgress ? (
-                      <><Loader2 className="w-4 h-4 animate-spin" /> {pdfProgress}</>
+                      <><Loader2 className="w-4 h-4 animate-spin text-black" /> {pdfProgress}</>
                     ) : (
-                      <><FileDown className="w-4 h-4" /> Download PDF Report</>
+                      <><FileDown className="w-4 h-4 text-black stroke-[2.5]" /> Download PDF Report</>
                     )}
                   </button>
                   <button

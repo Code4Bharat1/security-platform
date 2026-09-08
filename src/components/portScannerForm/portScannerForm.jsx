@@ -17,7 +17,6 @@ import {
   Layers,
   Download,
   FileSpreadsheet,
-  FileJson,
   Loader2
 } from "lucide-react";
 import useProtectedAction from "../UseProtectedAction/UseProtectedAction";
@@ -58,6 +57,7 @@ function parsePortInput(input) {
 
 export default function PortScannerForm() {
   const [host, setHost] = useState("");
+  const [scannedHost, setScannedHost] = useState("");
   const [portInput, setPortInput] = useState("");
   const [filter, setFilter] = useState("all");
   const [includeHostnames, setIncludeHostnames] = useState(false);
@@ -89,6 +89,8 @@ export default function PortScannerForm() {
       }
       setHost(cleanHost);
     }
+
+    setScannedHost(cleanHost);
 
     await protectedAction(async (token) => {
       try {
@@ -162,7 +164,7 @@ export default function PortScannerForm() {
         }
 
         const data = await res.json();
-        setResult(data);
+        setResult({ ...data, host: cleanHost, target: cleanHost });
       } catch (err) {
         setError(err?.message || "Scan failed.");
       } finally {
@@ -302,6 +304,7 @@ export default function PortScannerForm() {
                       type="text"
                       value={host}
                       onChange={(e) => setHost(e.target.value)}
+                      disabled={loading}
                       placeholder="example.com or 192.168.1.1"
                       required
                       className="w-full bg-zinc-900/40 text-zinc-100 border border-zinc-800/80 rounded-xl p-3.5 pl-12 text-sm focus:border-red-500/50 focus:ring-1 focus:ring-red-500/30 focus:shadow-[0_0_12px_rgba(239,68,68,0.08)] focus:outline-none transition-all placeholder:text-zinc-600 font-mono"
@@ -321,6 +324,7 @@ export default function PortScannerForm() {
                       type="text"
                       value={portInput}
                       onChange={(e) => setPortInput(e.target.value)}
+                      disabled={loading}
                       placeholder="80, 80-1000, or 'common'"
                       required
                       className="w-full bg-zinc-900/40 text-zinc-100 border border-zinc-800/80 rounded-xl p-3.5 pl-12 text-sm focus:border-red-500/50 focus:ring-1 focus:ring-red-500/30 focus:shadow-[0_0_12px_rgba(239,68,68,0.08)] focus:outline-none transition-all placeholder:text-zinc-600 font-mono"
@@ -342,6 +346,7 @@ export default function PortScannerForm() {
                         id="portscan-filter-select"
                         value={filter}
                         onChange={(e) => setFilter(e.target.value)}
+                        disabled={loading}
                         className="w-full bg-zinc-900/40 text-zinc-100 border border-zinc-800/80 rounded-xl p-3.5 text-sm focus:border-red-500/50 focus:ring-1 focus:ring-red-500/30 focus:outline-none transition-all font-mono appearance-none"
                       >
                         <option value="all">All Ports</option>
@@ -559,15 +564,8 @@ export default function PortScannerForm() {
   );
 }
 
-/* JSON / CSV Export */
+/* CSV Export */
 function ExportBar({ baseName, rows, result, host }) {
-  const downloadJSON = () => {
-    const blob = new Blob([JSON.stringify(rows, null, 2)], {
-      type: "application/json",
-    });
-    triggerDownload(blob, `${baseName}.json`);
-  };
-
   const downloadCSV = () => {
     const csv = toCsv(rows);
     const blob = new Blob([csv], { type: "text/csv" });
@@ -575,18 +573,11 @@ function ExportBar({ baseName, rows, result, host }) {
   };
 
   const downloadPDF = () => {
-    generatePortScannerPDF(result, host);
+    generatePortScannerPDF({ ...result, host: result?.host || scannedHost || host }, scannedHost || result?.host || host);
   };
 
   return (
     <div className="flex flex-wrap items-center gap-3">
-      <button
-        onClick={downloadJSON}
-        className="px-4 py-2.5 bg-zinc-900/40 hover:bg-red-500/5 text-zinc-350 hover:text-red-400 border border-zinc-800/80 hover:border-red-500/30 rounded-xl font-mono font-bold text-xs uppercase transition-all duration-300 flex items-center gap-1.5 cursor-pointer"
-      >
-        <FileJson className="w-3.5 h-3.5" />
-        JSON Export
-      </button>
       <button
         onClick={downloadCSV}
         className="px-4 py-2.5 bg-zinc-900/40 hover:bg-red-500/5 text-zinc-350 hover:text-red-400 border border-zinc-800/80 hover:border-red-500/30 rounded-xl font-mono font-bold text-xs uppercase transition-all duration-300 flex items-center gap-1.5 cursor-pointer"
@@ -596,9 +587,9 @@ function ExportBar({ baseName, rows, result, host }) {
       </button>
       <button
         onClick={downloadPDF}
-        className="px-4 py-2.5 bg-zinc-900/40 hover:bg-red-500/5 text-zinc-350 hover:text-red-400 border border-zinc-800/80 hover:border-red-500/30 rounded-xl font-mono font-bold text-xs uppercase transition-all duration-300 flex items-center gap-1.5 cursor-pointer"
+        className="px-4 py-2.5 bg-red-500 hover:bg-red-600 text-black border border-red-400 rounded-xl font-mono font-bold text-xs uppercase transition-all duration-300 hover:scale-[1.01] active:scale-[0.99] flex items-center gap-1.5 cursor-pointer shadow-[0_0_20px_rgba(239,68,68,0.35)]"
       >
-        <Download className="w-3.5 h-3.5" />
+        <Download className="w-3.5 h-3.5 text-black stroke-[2.5]" />
         Download PDF Report
       </button>
       <div className="text-zinc-500 text-xs font-mono ml-auto">

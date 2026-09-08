@@ -6,6 +6,7 @@ import useProtectedAction from "../UseProtectedAction/UseProtectedAction";
 
 export default function FakeSoftwareDetector() {
   const [files, setFiles] = useState([]);
+  const [scannedFileNames, setScannedFileNames] = useState([]);
   const [scanning, setScanning] = useState(false);
   const [result, setResult] = useState(null);   // full API response object
   const [error, setError] = useState(null);
@@ -21,6 +22,8 @@ export default function FakeSoftwareDetector() {
 
   const handleScan = async () => {
     if (!files.length) return;
+    const currentNames = files.map((f) => f.name);
+    setScannedFileNames(currentNames);
     setScanning(true);
     setResult(null);
     setError(null);
@@ -43,7 +46,7 @@ export default function FakeSoftwareDetector() {
         if (response.ok) {
           setResult({
             ...data,
-            fileNames: files.map((f) => f.name),
+            fileNames: currentNames,
           });
         } else {
           setError(data.message || "Scan failed.");
@@ -62,7 +65,7 @@ export default function FakeSoftwareDetector() {
       message:          result.message          || "",
       totalLinesScanned:result.totalLinesScanned || 0,
       sensitiveMatches: result.sensitiveMatches  || [],
-      fileNames:        result.fileNames         || [],
+      fileNames:        result.fileNames         || scannedFileNames || [],
       generatedFiles:   result.generatedFiles    || [],
     });
   };
@@ -83,8 +86,9 @@ export default function FakeSoftwareDetector() {
         <input
           type="file"
           multiple
+          disabled={scanning}
           onChange={handleFileChange}
-          className="mb-2 cursor-pointer border p-2 rounded-md w-full text-sm"
+          className="mb-2 cursor-pointer border p-2 rounded-md w-full text-sm disabled:opacity-50 disabled:cursor-not-allowed"
         />
 
         {files.length > 0 && (
@@ -149,9 +153,9 @@ export default function FakeSoftwareDetector() {
             {/* PDF download */}
             <button
               onClick={handleDownloadPDF}
-              className="w-full flex items-center justify-center gap-2 py-2.5 bg-blue-700 hover:bg-blue-800 text-white rounded-lg text-sm font-semibold transition-colors"
+              className="w-full flex items-center justify-center gap-2 py-3 bg-emerald-500 hover:bg-emerald-400 text-black border border-emerald-400 rounded-xl font-mono font-bold text-xs uppercase tracking-wider transition-all duration-300 hover:scale-[1.01] active:scale-[0.99] shadow-[0_0_20px_rgba(16,185,129,0.35)] cursor-pointer"
             >
-              <Download size={16} />
+              <Download size={16} className="text-black stroke-[2.5]" />
               Download PDF Report
             </button>
           </div>

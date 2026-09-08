@@ -23,6 +23,7 @@ export default function SecretKeyScanner() {
   const isVaTeam = pathname.includes("secret-key-scanner") || pathname.includes("/va/") || pathname.includes("-scan");
 
   const [code, setCode] = useState("");
+  const [scannedCode, setScannedCode] = useState("");
   const [results, setResults] = useState([]);
   const [loading, setLoading] = useState(false);
   const [validateOnline, setValidateOnline] = useState(false);
@@ -35,6 +36,10 @@ export default function SecretKeyScanner() {
   );
 
   const scanSecrets = async () => {
+    const activeCode = code.trim();
+    if (!activeCode) return;
+
+    setScannedCode(activeCode);
     setLoading(true);
     setResults([]);
 
@@ -46,7 +51,7 @@ export default function SecretKeyScanner() {
             "Content-Type": "application/json",
             Authorization: `Bearer ${token}`,
           },
-          body: JSON.stringify({ code, validateOnline }),
+          body: JSON.stringify({ code: activeCode, validateOnline }),
         });
 
         const data = await res.json();
@@ -244,6 +249,7 @@ export default function SecretKeyScanner() {
                   }`}
                   placeholder="Paste configuration variables, source code patterns, or upload keys files..."
                   value={code}
+                  disabled={loading}
                   onChange={(e) => setCode(e.target.value)}
                 />
 
@@ -252,6 +258,7 @@ export default function SecretKeyScanner() {
                     <input
                       type="checkbox"
                       checked={validateOnline}
+                      disabled={loading}
                       onChange={(e) => setValidateOnline(e.target.checked)}
                       className={`w-4.5 h-4.5 bg-transparent border-zinc-700 rounded ${
                         isVaTeam ? "text-amber-500 focus:ring-amber-500" : "text-red-500 focus:ring-red-500"
@@ -266,6 +273,7 @@ export default function SecretKeyScanner() {
                     type="file"
                     accept=".js,.env,.txt,.json"
                     id="fileInput"
+                    disabled={loading}
                     className="hidden"
                     onChange={(e) => {
                       const file = e.target.files?.[0];
@@ -277,7 +285,9 @@ export default function SecretKeyScanner() {
                   />
                   <label
                     htmlFor="fileInput"
-                    className={`flex-1 flex items-center justify-center gap-2 px-4 py-4 bg-zinc-900/40 border border-zinc-800/80 rounded-xl font-mono font-bold text-xs uppercase transition-all duration-350 cursor-pointer text-center ${
+                    className={`flex-1 flex items-center justify-center gap-2 px-4 py-4 bg-zinc-900/40 border border-zinc-800/80 rounded-xl font-mono font-bold text-xs uppercase transition-all duration-350 text-center ${
+                      loading ? "cursor-not-allowed opacity-50" : "cursor-pointer"
+                    } ${
                       isVaTeam 
                         ? "hover:bg-amber-50/5 text-zinc-350 hover:text-amber-400 hover:border-amber-500/30" 
                         : "hover:bg-red-50/5 text-zinc-350 hover:text-red-450 hover:border-red-500/30"
@@ -317,13 +327,13 @@ export default function SecretKeyScanner() {
               <div className="flex flex-wrap gap-3">
                 <button
                   onClick={makePdf}
-                  className={`px-4 py-2.5 bg-zinc-900/40 text-zinc-350 border border-zinc-800/80 rounded-xl font-mono font-bold text-xs uppercase transition-all duration-300 flex items-center gap-1.5 cursor-pointer ${
+                  className={`px-4 py-2.5 text-black rounded-xl font-mono font-bold text-xs uppercase transition-all duration-300 hover:scale-[1.01] active:scale-[0.99] flex items-center gap-1.5 cursor-pointer ${
                     isVaTeam 
-                      ? "hover:bg-amber-500/5 hover:text-amber-400 hover:border-amber-500/30" 
-                      : "hover:bg-red-500/5 hover:text-red-400 hover:border-red-500/30"
+                      ? "bg-yellow-400 hover:bg-yellow-300 border border-yellow-300 shadow-[0_0_20px_rgba(250,204,21,0.35)]" 
+                      : "bg-red-500 hover:bg-red-600 border border-red-400 shadow-[0_0_20px_rgba(239,68,68,0.35)]"
                   }`}
                 >
-                  <Download className="w-3.5 h-3.5" />
+                  <Download className="w-3.5 h-3.5 text-black stroke-[2.5]" />
                   PDF Report
                 </button>
                 <button

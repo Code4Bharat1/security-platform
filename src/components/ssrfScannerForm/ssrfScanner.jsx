@@ -3,6 +3,7 @@ import { useState, useEffect } from 'react';
 
 export default function SSRFScanner() {
   const [targetUrl, setTargetUrl] = useState('');
+  const [scannedTarget, setScannedTarget] = useState('');
   const [results, setResults] = useState([]);
    const [scanHistory, setScanHistory] = useState([]);
    const [history, setHistory] = useState([]);
@@ -30,18 +31,25 @@ useEffect(() => {
 
 const handleScan = async (e) => {
   e.preventDefault(); // prevent form reload
+  const activeTarget = targetUrl.trim();
+  if (!activeTarget) return;
+
+  setScannedTarget(activeTarget);
+  setLoading(true);
 
   try {
     const res = await fetch(`${process.env.NEXT_PUBLIC_PROD_API_URL}/ssrf-checker/test`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ targetUrl }),
+      body: JSON.stringify({ targetUrl: activeTarget }),
     });
 
     const data = await res.json();
-    setScanResults(data.results || []);
+    setResults(data.results || []);
   } catch (error) {
     console.error('Scan failed:', error.message);
+  } finally {
+    setLoading(false);
   }
 };
 
@@ -71,7 +79,9 @@ const handleDelete = async (id) => {
           type="text"
           placeholder="Enter target URL (e.g., http://example.com)"
           value={targetUrl}
-          onChange={(e) => setTargetUrl(e.target.value.trim())}         className="w-full p-2 border rounded"
+          onChange={(e) => setTargetUrl(e.target.value.trim())}
+          disabled={loading}
+          className="w-full p-2 border rounded"
           required
         />
         <button

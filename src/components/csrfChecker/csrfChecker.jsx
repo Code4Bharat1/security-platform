@@ -21,6 +21,7 @@ import { generateCsrfPDF } from "./generateCsrfPDF";
 
 export default function CSRFChecker() {
   const [code, setCode] = useState("");
+  const [scannedCode, setScannedCode] = useState("");
   const [result, setResult] = useState(null);
   const [loading, setLoading] = useState(false);
   const [toasts, setToasts] = useState([]);
@@ -49,11 +50,13 @@ export default function CSRFChecker() {
     setToasts((prev) => prev.filter((t) => t.id !== id));
 
   const handleAnalyze = async () => {
-    if (!code.trim()) {
+    const activeCode = code.trim();
+    if (!activeCode) {
       addToast("Please enter some code to analyze", "error");
       return;
     }
 
+    setScannedCode(activeCode);
     setLoading(true);
     setResult(null);
 
@@ -69,7 +72,7 @@ export default function CSRFChecker() {
             "Content-Type": "application/json",
             Authorization: `Bearer ${token}`,
           },
-          body: JSON.stringify({ code }),
+          body: JSON.stringify({ code: activeCode }),
         });
 
         if (!res.ok) {
@@ -78,7 +81,7 @@ export default function CSRFChecker() {
         }
 
         const data = await res.json();
-        setResult(data);
+        setResult({ ...data, code: activeCode, target: activeCode });
 
         addToast(
           data.vulnerable
@@ -236,17 +239,19 @@ export default function CSRFChecker() {
 
               <div className="space-y-4">
                 <textarea
-                  className="w-full h-64 p-4 bg-zinc-900/40 border border-zinc-800/80 rounded-xl resize-none focus:outline-none focus:ring-1 focus:ring-red-500/50 focus:border-red-500/50 transition-all duration-200 font-mono text-xs text-zinc-300 placeholder:text-zinc-650"
+                  className="w-full h-64 p-4 bg-zinc-900/40 border border-zinc-800/80 rounded-xl resize-none focus:outline-none focus:ring-1 focus:ring-red-500/50 focus:border-red-500/50 transition-all duration-200 font-mono text-xs text-zinc-300 placeholder:text-zinc-655"
                   placeholder="Paste HTML, JavaScript middleware, or frontend form elements here..."
                   value={code}
+                  disabled={loading}
                   onChange={(e) => setCode(e.target.value)}
                 />
 
                 <div className="flex flex-col sm:flex-row gap-3">
-                  <label className="flex-1 cursor-pointer">
+                  <label className={`flex-1 ${loading ? 'cursor-not-allowed opacity-50' : 'cursor-pointer'}`}>
                     <input
                       type="file"
                       accept=".html,.js,.jsx,.ts,.tsx"
+                      disabled={loading}
                       onChange={handleFileUpload}
                       className="hidden"
                     />
@@ -288,9 +293,9 @@ export default function CSRFChecker() {
                   </h3>
                   <button
                     onClick={downloadPDF}
-                    className="px-3 py-1.5 bg-zinc-900/40 hover:bg-red-500/5 text-zinc-350 hover:text-red-400 border border-zinc-800/80 hover:border-red-500/30 rounded-xl font-mono font-bold text-xs uppercase transition-all duration-300 flex items-center justify-center gap-1.5 cursor-pointer"
+                    className="px-3.5 py-2 bg-red-500 hover:bg-red-600 text-black border border-red-400 rounded-xl font-mono font-bold text-xs uppercase transition-all duration-300 hover:scale-[1.01] active:scale-[0.99] flex items-center justify-center gap-1.5 cursor-pointer shadow-[0_0_20px_rgba(239,68,68,0.35)]"
                   >
-                    <Download className="w-3.5 h-3.5" />
+                    <Download className="w-3.5 h-3.5 text-black stroke-[2.5]" />
                     Download PDF Report
                   </button>
                 </div>

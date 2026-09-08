@@ -6,7 +6,7 @@ import {
   renderTable,
   getAuditorInfo,
   applyHeaderFooterDecorator,
-} from "../../utils/pdfFramework";
+} from "../../utils/pdfFramework.js";
 
 const sqliLookup = {
   "Boolean-Based": {
@@ -20,6 +20,10 @@ const sqliLookup = {
   "Time-Based Blind": {
     impact: "Time-based blind SQL injection allows attackers to infer database values by injecting time delays (e.g., SLEEP), enabling complete data extraction.",
     recommendation: "Enforce strictly parameterized queries across all database drivers and run static code analysis to verify input sterilization."
+  },
+  "Union-Based": {
+    impact: "Union-based SQL injection allows attackers to join and extract data from multiple database tables, user credentials, and database schemas directly into HTTP responses.",
+    recommendation: "Use parameterized queries, strictly validate input types, and ensure database user permissions follow least privilege."
   },
   "Generic": {
     impact: "SQL Injection vulnerabilities allow unauthorized access to database servers, enabling attackers to read, modify, or delete database tables, bypass authentications, and execute arbitrary system commands.",
@@ -237,7 +241,9 @@ export const generateSQLiPDF = async (result = {}) => {
         const respTime = String(f.timeMs || f.responseTime || "—");
         const evidence = f.evidence || "Observable database response signature mismatch.";
 
-        const lookup = sqliLookup[technique] || sqliLookup["Generic"];
+        const lookup = sqliLookup[technique] ||
+          Object.entries(sqliLookup).find(([k]) => k.toLowerCase() === (technique || "").toLowerCase())?.[1] ||
+          sqliLookup["Generic"];
         const impact = lookup.impact;
         const recommendation = lookup.recommendation;
 
@@ -277,16 +283,65 @@ export const generateSQLiPDF = async (result = {}) => {
     }
 
     // ══════════════════════════════════════════════════════════════════════
-    // CONCLUSION & RECOMMENDATIONS & APPENDIX
+    // SECTION 4 — INJECTION SCAN LOGS (COMPLETE TECHNICAL AUDIT TRAIL)
+    // ══════════════════════════════════════════════════════════════════════
+    const tests = result?.tests || [];
+    if (tests.length > 0) {
+      if (297 - y < 65) {
+        doc.addPage();
+        y = 25;
+      }
+
+      y = drawSectionHeader(doc, "4. INJECTION SCAN LOGS", y);
+
+      const logRows = tests.map((t, idx) => [
+        String(idx + 1),
+        String(t.type || "—"),
+        String(t.payload || "—").slice(0, 100),
+        String(t.evidence || (t.error ? "Request failed" : "—")),
+        String(t.status ?? "—"),
+        String(t.timeMs ?? "—")
+      ]);
+
+      renderTable(doc, {
+        startY: y,
+        head: [["#", "Type", "Payload / Vector", "Evidence / Error", "HTTP", "Time(ms)"]],
+        body: logRows,
+        headStyles: {
+          fillColor: C.bgHeader,
+          textColor: C.white,
+          fontSize: 7.5,
+          fontStyle: "bold"
+        },
+        styles: {
+          fontSize: 7,
+          cellPadding: { top: 2.5, right: 3, bottom: 2.5, left: 3 },
+          overflow: "linebreak"
+        },
+        columnStyles: {
+          0: { cellWidth: 10, halign: "center" },
+          1: { cellWidth: 32 },
+          2: { cellWidth: 60 },
+          3: { cellWidth: 44 },
+          4: { cellWidth: 16, halign: "center" },
+          5: { cellWidth: 20, halign: "center" }
+        }
+      });
+
+      y = doc.lastAutoTable.finalY + 10;
+    }
+
+    // ══════════════════════════════════════════════════════════════════════
+    // SECTION 5 — CONCLUSION & RECOMMENDATIONS
     // ══════════════════════════════════════════════════════════════════════
     if (297 - y < 85) {
       doc.addPage();
       y = 25;
     }
 
-    y = drawSectionHeader(doc, "4. CONCLUSION & RECOMMENDATIONS", y);
+    y = drawSectionHeader(doc, "5. CONCLUSION & RECOMMENDATIONS", y);
 
-    const conclusionText = `The SQLi Scanner assessment executed Boolean-based, Error-based, and Time-based blind injection payload sets against all testable parameters of the target web application. A baseline response was recorded prior to each test series to establish a reference for response size, HTTP status code, and response time. Deviations from the baseline — including database error strings, response body differences, and measurable time delays — were evaluated alongside a confidence score to determine whether each finding constitutes a confirmed vulnerability.\n\nSQL Injection vulnerabilities represent a critical risk, enabling adversaries to extract, modify, or delete database contents; bypass authentication mechanisms; and, in certain configurations, execute operating system commands. Confirmed findings must be prioritised for immediate remediation. Findings with a lower confidence score should be validated through manual testing before treatment as confirmed vulnerabilities to avoid remediation effort based on false positives.\n\nIt is strongly recommended to replace all dynamic SQL query construction with parameterised queries or prepared statements across every database interaction layer. An ORM (Object-Relational Mapping) framework should be used where possible to abstract direct query composition. Database accounts used by the application should be granted least-privilege permissions, restricting access to only the tables and operations required for application function. Detailed database error messages must be suppressed in production environments and replaced with generic error responses to prevent error-based information leakage. All parameters identified as vulnerable in Section 3 must be remediated and validated through re-testing prior to production deployment.`;
+    const conclusionText = `The SQLi Scanner assessment executed Boolean-based, Error-based, Union-based, and Time-based blind injection payload sets against all testable parameters of the target web application. A baseline response was recorded prior to each test series to establish a reference for response size, HTTP status code, and response time. Deviations from the baseline — including database error strings, response body differences, and measurable time delays — were evaluated alongside a confidence score to determine whether each finding constitutes a confirmed vulnerability.\n\nSQL Injection vulnerabilities represent a critical risk, enabling adversaries to extract, modify, or delete database contents; bypass authentication mechanisms; and, in certain configurations, execute operating system commands. Confirmed findings must be prioritised for immediate remediation. Findings with a lower confidence score should be validated through manual testing before treatment as confirmed vulnerabilities to avoid remediation effort based on false positives.\n\nIt is strongly recommended to replace all dynamic SQL query construction with parameterised queries or prepared statements across every database interaction layer. An ORM (Object-Relational Mapping) framework should be used where possible to abstract direct query composition. Database accounts used by the application should be granted least-privilege permissions, restricting access to only the tables and operations required for application function. Detailed database error messages must be suppressed in production environments and replaced with generic error responses to prevent error-based information leakage. All parameters identified as vulnerable in Section 3 must be remediated and validated through re-testing prior to production deployment.`;
 
     doc.setFont("helvetica", "normal");
     doc.setFontSize(8.5);
@@ -294,7 +349,7 @@ export const generateSQLiPDF = async (result = {}) => {
     doc.text(conclusionText, 14, y, { maxWidth: 182, align: "left", lineHeightFactor: 1.45 });
 
     doc.addPage();
-    y = drawSectionHeader(doc, "5. APPENDIX", 25);
+    y = drawSectionHeader(doc, "6. APPENDIX", 25);
 
     doc.setFont("helvetica", "bold");
     doc.setFontSize(10);
@@ -348,8 +403,28 @@ export const generateSQLiPDF = async (result = {}) => {
     // Apply header & footer decorator to all pages
     applyHeaderFooterDecorator(doc, "SQLi Scanner");
 
-    doc.save(`SQLi-Scanner-Report-${Date.now()}.pdf`);
+    const filename = `SQLi-Scanner-Report-${Date.now()}.pdf`;
+    try {
+      doc.save(filename);
+    } catch (saveErr) {
+      if (typeof window !== "undefined") {
+        const blob = doc.output("blob");
+        const blobUrl = URL.createObjectURL(blob);
+        const a = document.createElement("a");
+        a.href = blobUrl;
+        a.download = filename;
+        document.body.appendChild(a);
+        a.click();
+        setTimeout(() => {
+          document.body.removeChild(a);
+          URL.revokeObjectURL(blobUrl);
+        }, 150);
+      }
+    }
+
+    return doc;
   } catch (err) {
     console.error("Failed to generate SQLi PDF report:", err);
+    throw err;
   }
 };

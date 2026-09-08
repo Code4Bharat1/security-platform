@@ -23,6 +23,7 @@ const ENDPOINT = "/password/analyze";
 
 export default function PasswordCheckerPage() {
   const [pw, setPw] = useState("");
+  const [scannedPw, setScannedPw] = useState("");
   const [show, setShow] = useState(true);
   const [loading, setLoading] = useState(false);
   const [err, setErr] = useState(null);
@@ -38,7 +39,7 @@ export default function PasswordCheckerPage() {
 
     try {
       await generatePasswordStrengthPDF(
-        { password: pw, data },
+        { password: scannedPw || pw, data },
         (msg) => {
           if (msg) {
             toast.loading(msg, { id: "pdf-gen" });
@@ -84,8 +85,10 @@ export default function PasswordCheckerPage() {
       setErr(null);
       if (pw === "") {
         setData(null);
+        setScannedPw("");
         return;
       }
+      const activePw = pw;
       setLoading(true);
       try {
         const tokenRaw = typeof window !== "undefined" ? localStorage.getItem("token") : null;
@@ -96,11 +99,12 @@ export default function PasswordCheckerPage() {
             "Content-Type": "application/json",
             Authorization: `Bearer ${token}`
           },
-          body: JSON.stringify({ password: pw }),
+          body: JSON.stringify({ password: activePw }),
         });
         const json = await r.json();
         if (!r.ok) throw new Error(json?.message || `HTTP ${r.status}`);
         setData(json);
+        setScannedPw(activePw);
       } catch (e) {
         setErr(e?.message || "Failed to analyze.");
         setData(null);
@@ -232,8 +236,9 @@ export default function PasswordCheckerPage() {
                     <input
                       type={show ? "text" : "password"}
                       value={pw}
+                      disabled={loading}
                       onChange={(e) => setPw(e.target.value)}
-                      className="w-full bg-zinc-900/40 text-zinc-100 border border-zinc-800/80 rounded-xl p-4 pr-32 text-base focus:border-emerald-500/50 focus:ring-1 focus:ring-emerald-500/30 focus:shadow-[0_0_12px_rgba(16,185,129,0.08)] focus:outline-none transition-all placeholder:text-zinc-500 font-mono tracking-wider"
+                      className="w-full bg-zinc-900/40 text-zinc-100 border border-zinc-800/80 rounded-xl p-4 pr-32 text-base focus:border-emerald-500/50 focus:ring-1 focus:ring-emerald-500/30 focus:shadow-[0_0_12px_rgba(16,185,129,0.08)] focus:outline-none transition-all placeholder:text-zinc-500 font-mono tracking-wider disabled:opacity-50 disabled:cursor-not-allowed"
                       placeholder="Type a secure credential..."
                     />
 
@@ -241,7 +246,7 @@ export default function PasswordCheckerPage() {
                       <button
                         type="button"
                         onClick={() => copyToClipboard(pw, setCopied)}
-                        disabled={!pw}
+                        disabled={!pw || loading}
                         className="p-2 rounded-lg border border-zinc-800 bg-zinc-950/80 text-zinc-400 hover:text-emerald-400 hover:border-emerald-500/30 transition-all disabled:opacity-30 disabled:cursor-not-allowed focus:outline-none"
                         title="Copy Password"
                       >
@@ -251,11 +256,13 @@ export default function PasswordCheckerPage() {
                       {pw && (
                         <button
                           type="button"
+                          disabled={loading}
                           onClick={() => {
                             setPw("");
+                            setScannedPw("");
                             setData(null);
                           }}
-                          className="px-2.5 py-2 rounded-lg border border-zinc-800 bg-zinc-950/80 text-xs font-mono text-zinc-400 hover:text-rose-400 hover:border-rose-500/30 transition-all focus:outline-none"
+                          className="px-2.5 py-2 rounded-lg border border-zinc-800 bg-zinc-950/80 text-xs font-mono text-zinc-400 hover:text-rose-400 hover:border-rose-500/30 transition-all focus:outline-none disabled:opacity-30 disabled:cursor-not-allowed"
                         >
                           Clear
                         </button>
@@ -270,6 +277,8 @@ export default function PasswordCheckerPage() {
                   type="button"
                   disabled={loading || !pw}
                   onClick={async () => {
+                    const activePw = pw;
+                    setScannedPw(activePw);
                     setErr(null);
                     setLoading(true);
                     try {
@@ -281,11 +290,12 @@ export default function PasswordCheckerPage() {
                           "Content-Type": "application/json",
                           Authorization: `Bearer ${token}`
                         },
-                        body: JSON.stringify({ password: pw }),
+                        body: JSON.stringify({ password: activePw }),
                       });
                       const json = await r.json();
                       if (!r.ok) throw new Error(json?.message || `HTTP ${r.status}`);
                       setData(json);
+                      setScannedPw(activePw);
                       toast.success("Security audit completed!");
                     } catch (e) {
                       setErr(e?.message || "Failed to analyze.");
@@ -365,10 +375,10 @@ export default function PasswordCheckerPage() {
                   <button
                     type="button"
                     onClick={downloadPDF}
-                    className="px-4 py-2 bg-zinc-900/40 hover:bg-emerald-500/5 text-zinc-300 hover:text-emerald-400 border border-zinc-800/80 hover:border-emerald-500/30 rounded-xl font-mono font-bold text-xs uppercase tracking-wider transition-all duration-300 flex items-center justify-center gap-1.5 cursor-pointer"
+                    className="px-4 py-2 bg-emerald-500 hover:bg-emerald-400 text-black border border-emerald-400 rounded-xl font-mono font-bold text-xs uppercase tracking-wider transition-all duration-300 hover:scale-[1.01] active:scale-[0.99] flex items-center justify-center gap-1.5 cursor-pointer shadow-[0_0_20px_rgba(16,185,129,0.35)]"
                     title="Download PDF Report"
                   >
-                    <Download className="w-3.5 h-3.5" />
+                    <Download className="w-3.5 h-3.5 text-black stroke-[2.5]" />
                     Download PDF
                   </button>
                 )}

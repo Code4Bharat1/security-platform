@@ -36,13 +36,16 @@ function SpeedForm({ onTest, data, loading, url, setUrl, handleSubmit }) {
             className="w-full border border-gray-300 rounded-lg p-2 mb-4 focus:outline-none focus:ring-2 focus:ring-green-800 focus:border-green-800"
             placeholder="Enter website URL"
             value={url}
-            onChange={(e) => setUrl(e.target.value.trim())}         />
+            disabled={loading}
+            onChange={(e) => setUrl(e.target.value.trim())}
+          />
           <button
             type="submit"
-            className="w-full bg-green-800 text-white py-2 px-4 rounded hover:bg-green-700 transition-colors duration-300 flex items-center justify-center gap-2"
+            disabled={loading || !url}
+            className="w-full bg-green-800 text-white py-2 px-4 rounded hover:bg-green-700 transition-colors duration-300 flex items-center justify-center gap-2 disabled:opacity-50"
           >
             <SearchIcon className="h-5 w-5" />
-            Test Page Speed
+            {loading ? "Testing..." : "Test Page Speed"}
           </button>
         </form>
 
@@ -60,17 +63,27 @@ export default function SpeedPage() {
   const [report, setReport] = useState(null);
   const [loading, setLoading] = useState(false);
   const [url, setUrl] = useState("");
+  const [scannedUrl, setScannedUrl] = useState("");
 
   const handleSpeedTest = async (testUrl) => {
+    const activeUrl = (testUrl || "").trim();
+    if (!activeUrl) return;
+
+    setScannedUrl(activeUrl);
     setLoading(true);
-    const res = await fetch(`${process.env.NEXT_PUBLIC_PROD_API_URL}/speed/speedtest`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ url: testUrl }),
-    });
-    const data = await res.json();
-    setReport(data);
-    setLoading(false);
+    try {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_PROD_API_URL}/speed/speedtest`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ url: activeUrl }),
+      });
+      const data = await res.json();
+      setReport({ ...data, url: activeUrl, target: activeUrl });
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setLoading(false);
+    }
   };
 
   const handleSubmit = (e) => {

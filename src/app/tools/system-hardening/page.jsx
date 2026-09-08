@@ -14,7 +14,8 @@ import {
   Activity,
   CheckCircle2,
   AlertTriangle,
-  Info
+  Info,
+  Filter
 } from "lucide-react";
 import { generateSystemHardeningPDF } from "@/components/systemHardening/generateSystemHardeningPDF";
 import useProtectedAction from "@/components/UseProtectedAction/UseProtectedAction";
@@ -23,6 +24,7 @@ export default function SystemHardeningPage() {
   const router = useRouter();
   const protectedAction = useProtectedAction();
   const [target, setTarget] = useState("");
+  const [scannedTarget, setScannedTarget] = useState("");
   const [scanning, setScanning] = useState(false);
   const [consoleLogs, setConsoleLogs] = useState([]);
   const [reportReady, setReportReady] = useState(false);
@@ -40,8 +42,10 @@ export default function SystemHardeningPage() {
 
   const handleStartScan = async (e) => {
     e.preventDefault();
-    if (!target.trim()) return;
+    const activeTarget = target.trim();
+    if (!activeTarget) return;
 
+    setScannedTarget(activeTarget);
     setScanning(true);
     setReportReady(false);
     setConsoleLogs([]);
@@ -52,7 +56,7 @@ export default function SystemHardeningPage() {
     
     await protectedAction(async (token) => {
       try {
-        const streamUrl = `${API_BASE}/system-hardening/audit-stream?target=${encodeURIComponent(target)}&token=${encodeURIComponent(token)}`;
+        const streamUrl = `${API_BASE}/system-hardening/audit-stream?target=${encodeURIComponent(activeTarget)}&token=${encodeURIComponent(token)}`;
         const es = new EventSource(streamUrl);
 
         es.onmessage = (event) => {
@@ -92,7 +96,7 @@ export default function SystemHardeningPage() {
   };
 
   const handleDownloadPDF = () => {
-    generateSystemHardeningPDF(results, target);
+    generateSystemHardeningPDF(results, scannedTarget || target);
   };
 
   const checksFailed = results.filter(r => r.status === 'Fail').length;

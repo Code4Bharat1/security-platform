@@ -32,6 +32,9 @@ export default function JWTSignatureValidator() {
   const [token, setToken] = useState("");
   const [secret, setSecret] = useState("");
   const [algorithm, setAlgorithm] = useState("auto");
+  const [scannedToken, setScannedToken] = useState("");
+  const [scannedSecret, setScannedSecret] = useState("");
+  const [scannedAlgorithm, setScannedAlgorithm] = useState("auto");
   const [result, setResult] = useState(null);
   const [error, setError] = useState(null);
   const [loading, setLoading] = useState(false);
@@ -65,6 +68,9 @@ export default function JWTSignatureValidator() {
       return;
     }
 
+    setScannedToken(t);
+    setScannedSecret(s);
+    setScannedAlgorithm(algorithm);
     setLoading(true);
     setError(null);
     setResult(null);
@@ -95,7 +101,7 @@ export default function JWTSignatureValidator() {
         const data = await res.json();
 
         if (res.ok) {
-          setResult(data);
+          setResult({ ...data, token: t, secret: s, algorithm, target: t });
         } else {
           setError(data.error || "Invalid JWT");
         }
@@ -117,7 +123,7 @@ export default function JWTSignatureValidator() {
 
   const handleDownloadPDF = async () => {
     if (!result) return;
-    await generateJWTPDF(result, algorithm, token, secret, setPdfProgress);
+    await generateJWTPDF(result, scannedAlgorithm || algorithm, scannedToken || token, scannedSecret || secret, setPdfProgress);
   };
 
   const handleDownloadTXT = () => {
@@ -240,7 +246,8 @@ export default function JWTSignatureValidator() {
                     placeholder="Paste your JWT Token here (e.g. eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...)"
                     value={token}
                     onChange={(e) => setToken(e.target.value)}
-                    className="w-full bg-zinc-900/40 text-zinc-100 border border-zinc-800/80 rounded-xl p-3.5 text-xs focus:border-blue-500/50 focus:ring-1 focus:ring-blue-500/30 focus:shadow-[0_0_12px_rgba(59,130,246,0.08)] focus:outline-none transition-all placeholder:text-zinc-650 font-mono resize-none"
+                    disabled={loading}
+                    className="w-full bg-zinc-900/40 text-zinc-100 border border-zinc-800/80 rounded-xl p-3.5 text-xs focus:border-blue-500/50 focus:ring-1 focus:ring-blue-500/30 focus:shadow-[0_0_12px_rgba(59,130,246,0.08)] focus:outline-none transition-all placeholder:text-zinc-655 font-mono resize-none"
                     rows={4}
                   />
                 </div>
@@ -253,6 +260,7 @@ export default function JWTSignatureValidator() {
                   <select
                     value={algorithm}
                     onChange={(e) => setAlgorithm(e.target.value)}
+                    disabled={loading}
                     className="w-full bg-zinc-900/40 text-zinc-100 border border-zinc-800/80 rounded-xl p-3 text-sm focus:border-blue-500/50 focus:ring-1 focus:ring-blue-500/30 focus:shadow-[0_0_12px_rgba(59,130,246,0.08)] focus:outline-none transition-all font-mono"
                   >
                     {ALG_OPTIONS.map((opt) => (
@@ -276,6 +284,7 @@ export default function JWTSignatureValidator() {
                       placeholder={`-----BEGIN PUBLIC KEY-----\nMIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEA...\n-----END PUBLIC KEY-----`}
                       value={secret}
                       onChange={(e) => setSecret(e.target.value)}
+                      disabled={loading}
                       className="w-full bg-zinc-900/40 text-zinc-100 border border-zinc-800/80 rounded-xl p-3 text-xs focus:border-blue-500/50 focus:ring-1 focus:ring-blue-500/30 focus:shadow-[0_0_12px_rgba(59,130,246,0.08)] focus:outline-none transition-all font-mono"
                       rows={5}
                     />
@@ -285,6 +294,7 @@ export default function JWTSignatureValidator() {
                       placeholder="e.g. your-256-bit-shared-secret"
                       value={secret}
                       onChange={(e) => setSecret(e.target.value)}
+                      disabled={loading}
                       className="w-full bg-zinc-900/40 text-zinc-100 border border-zinc-800/80 rounded-xl p-3 text-sm focus:border-blue-500/50 focus:ring-1 focus:ring-blue-500/30 focus:shadow-[0_0_12px_rgba(59,130,246,0.08)] focus:outline-none transition-all font-mono"
                     />
                   )}
@@ -343,16 +353,16 @@ export default function JWTSignatureValidator() {
                   <button
                     onClick={handleDownloadPDF}
                     disabled={pdfProgress !== null}
-                    className="flex-1 bg-zinc-900/40 hover:bg-blue-500/5 text-zinc-300 hover:text-blue-400 border border-zinc-800/80 hover:border-blue-500/30 rounded-xl font-mono font-bold text-xs uppercase py-3.5 transition-all duration-300 hover:scale-[1.01] active:scale-[0.99] flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50"
+                    className="flex-1 bg-blue-500 hover:bg-blue-400 text-black border border-blue-400 rounded-xl font-mono font-bold text-xs uppercase py-3.5 transition-all duration-300 hover:scale-[1.01] active:scale-[0.99] flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50 shadow-[0_0_20px_rgba(59,130,246,0.35)]"
                   >
                     {pdfProgress ? (
                       <>
-                        <Loader2 className="h-4 w-4 animate-spin text-blue-400" />
+                        <Loader2 className="h-4 w-4 animate-spin text-black" />
                         <span>{pdfProgress}</span>
                       </>
                     ) : (
                       <>
-                        <Download className="w-4 h-4" />
+                        <Download className="w-4 h-4 text-black stroke-[2.5]" />
                         <span>Download PDF Report</span>
                       </>
                     )}

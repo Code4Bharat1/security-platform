@@ -53,6 +53,7 @@ export default function DependencyCheckPage() {
   }
 }`);
   const [fileName, setFileName] = useState("package.json");
+  const [scannedFileName, setScannedFileName] = useState("package.json");
   const [scanning, setScanning] = useState(false);
   const [consoleLogs, setConsoleLogs] = useState([]);
   const [reportReady, setReportReady] = useState(false);
@@ -86,8 +87,8 @@ export default function DependencyCheckPage() {
   // Run Dependency Audit Scan
   const handleStartScan = async (e) => {
     e.preventDefault();
-    if (!packageJsonText.trim()) return;
-
+    const activeFileName = fileName || "package.json";
+    setScannedFileName(activeFileName);
     setScanning(true);
     setReportReady(false);
     setErrorMsg("");
@@ -179,7 +180,7 @@ export default function DependencyCheckPage() {
 
   // Export PDF Report
   const handleDownloadPDF = () => {
-    generateMalwareScanPDF(results, fileName, riskScore, summaryText);
+    generateMalwareScanPDF(results, scannedFileName || fileName, riskScore, summaryText);
   };
 
   return (

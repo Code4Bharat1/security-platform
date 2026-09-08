@@ -24,6 +24,7 @@ import { generateKeywordPDF } from "./generateKeywordPDF";
 
 export default function KeywordPage() {
   const [url, setUrl] = useState("");
+  const [scannedUrl, setScannedUrl] = useState("");
   const [report, setReport] = useState(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
@@ -31,9 +32,10 @@ export default function KeywordPage() {
   const protectedAction = useProtectedAction();
 
   const handleSubmit = async (e) => {
-    e.preventDefault?.();
-    if (!url.trim()) return;
+    const activeUrl = url.trim();
+    if (!activeUrl) return;
 
+    setScannedUrl(activeUrl);
     setLoading(true);
     setError("");
     setReport(null);
@@ -51,7 +53,7 @@ export default function KeywordPage() {
               "Content-Type": "application/json",
               Authorization: `Bearer ${userToken}`,
             },
-            body: JSON.stringify({ url }),
+            body: JSON.stringify({ url: activeUrl }),
             signal: controller.signal,
           }
         );
@@ -64,7 +66,7 @@ export default function KeywordPage() {
         }
 
         const data = await response.json();
-        setReport(data);
+        setReport({ ...data, url: activeUrl });
         toast.success("Keyword intelligence audit complete!");
       } catch (err) {
         console.warn("Keyword analysis failed:", err);
@@ -83,12 +85,12 @@ export default function KeywordPage() {
   /* ---------- Exports ---------- */
   const exportPDF = async () => {
     if (!report) return;
-    await generateKeywordPDF(report, url);
+    await generateKeywordPDF(report, scannedUrl || report?.url || url);
   };
 
   const exportInsightPDF = async () => {
     if (!report) return;
-    await generateKeywordPDF(report, url);
+    await generateKeywordPDF(report, scannedUrl || report?.url || url);
   };
 
   const exportTXT = () => {
@@ -96,7 +98,7 @@ export default function KeywordPage() {
 
     const lines = [];
     lines.push("Keyword Density Report");
-    lines.push(`Target: ${url}`);
+    lines.push(`Target: ${scannedUrl || report?.url || url}`);
     if (report.title) lines.push(`Title: ${report.title}`);
     if (report.metaDescription)
       lines.push(`Meta Description: ${report.metaDescription}`);
@@ -122,7 +124,7 @@ export default function KeywordPage() {
       lines.push(`${k.phrase}\t${k.count}\t${k.percentage}`)
     );
 
-    downloadText(lines.join("\n"), `keyword-report-${safeHostname(url)}.txt`);
+    downloadText(lines.join("\n"), `keyword-report-${safeHostname(scannedUrl || report?.url || url)}.txt`);
   };
 
   return (
@@ -343,16 +345,16 @@ export default function KeywordPage() {
               <div className="flex flex-wrap gap-2">
                 <button
                   onClick={exportPDF}
-                  className="action-btn bg-emerald-500/5 hover:bg-emerald-500/10 text-emerald-400 border border-emerald-500/25 hover:border-emerald-500/50 px-3.5 py-2 rounded-xl transition-all duration-300 font-mono font-bold text-[11px] uppercase tracking-wider flex items-center gap-2 cursor-pointer hover:scale-[1.01] active:scale-[0.99] hover:shadow-[0_0_15px_rgba(16,185,129,0.1)] focus:outline-none"
+                  className="action-btn bg-emerald-500 hover:bg-emerald-400 text-black border border-emerald-400 px-4 py-2 rounded-xl transition-all duration-300 font-mono font-bold text-xs uppercase tracking-wider flex items-center gap-2 cursor-pointer hover:scale-[1.01] active:scale-[0.99] shadow-[0_0_20px_rgba(16,185,129,0.35)] focus:outline-none"
                 >
-                  <FileText className="w-4 h-4" /> Export PDF
+                  <FileText className="w-4 h-4 text-black stroke-[2.5]" /> Export PDF
                 </button>
                 {report.insights && (
                   <button
                     onClick={exportInsightPDF}
-                    className="action-btn bg-emerald-500/5 hover:bg-emerald-500/10 text-emerald-400 border border-emerald-500/25 hover:border-emerald-500/50 px-3.5 py-2 rounded-xl transition-all duration-300 font-mono font-bold text-[11px] uppercase tracking-wider flex items-center gap-2 cursor-pointer hover:scale-[1.01] active:scale-[0.99] hover:shadow-[0_0_15px_rgba(16,185,129,0.1)] focus:outline-none"
+                    className="action-btn bg-emerald-500 hover:bg-emerald-400 text-black border border-emerald-400 px-4 py-2 rounded-xl transition-all duration-300 font-mono font-bold text-xs uppercase tracking-wider flex items-center gap-2 cursor-pointer hover:scale-[1.01] active:scale-[0.99] shadow-[0_0_20px_rgba(16,185,129,0.35)] focus:outline-none"
                   >
-                    <FileText className="w-4 h-4" /> Insight PDF
+                    <FileText className="w-4 h-4 text-black stroke-[2.5]" /> Insight PDF
                   </button>
                 )}
                 <button

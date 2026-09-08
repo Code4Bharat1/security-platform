@@ -10,6 +10,7 @@ const classNames = (...xs) => xs.filter(Boolean).join(" ");
 
 export default function SitemapForm() {
   const [url, setUrl] = useState("");
+  const [scannedUrl, setScannedUrl] = useState("");
   const [error, setError] = useState("");
   const [sitemapData, setSitemapData] = useState(null);
   const [loading, setLoading] = useState(false);
@@ -48,6 +49,7 @@ export default function SitemapForm() {
     await protectedAction(async (userToken) => {
       try {
         const normalizedUrl = url.startsWith("http") ? url : `https://${url}`;
+        setScannedUrl(normalizedUrl);
 
         const response = await fetch(
           `${process.env.NEXT_PUBLIC_PROD_API_URL}/sitemap/sitemap-scanner`,
@@ -63,13 +65,13 @@ export default function SitemapForm() {
 
         const result = await response.json();
 
-        if (result.error) {
+        if (response.ok) {
+          setSitemapData({ ...result, url: normalizedUrl });
+        } else {
           setError(result.message || "Failed to generate sitemap.");
           setLoading(false);
           return;
         }
-
-        setSitemapData(result);
       } catch (err) {
         console.error("Error:", err);
         setError("Something went wrong with the request.");
@@ -89,12 +91,12 @@ export default function SitemapForm() {
   const downloadTXT = () => {
     const content = (sitemapData?.urls || []).join("\n");
     const blob = new Blob([content], { type: "text/plain" });
-    triggerDownload(blob, `sitemap-${extractHostname(url)}.txt`);
+    triggerDownload(blob, `sitemap-${extractHostname(scannedUrl || sitemapData?.url || url)}.txt`);
   };
 
   const downloadPDF = async () => {
     if (!sitemapData) return;
-    await generateSitemapPDF(sitemapData, url, depth);
+    await generateSitemapPDF(sitemapData, scannedUrl || sitemapData?.url || url, depth);
   };
 
   return (
@@ -437,10 +439,10 @@ export default function SitemapForm() {
               </button>
               <button
                 onClick={downloadPDF}
-                className="bg-emerald-500/5 hover:bg-emerald-500/10 text-emerald-400 border border-emerald-500/25 hover:border-emerald-500/50 py-3.5 px-4 rounded-xl transition-all duration-300 font-mono font-bold text-[11px] uppercase tracking-wider flex items-center justify-center gap-2 cursor-pointer hover:scale-[1.01] active:scale-[0.99] hover:shadow-[0_0_15px_rgba(16,185,129,0.15)] focus:outline-none focus:ring-2 focus:ring-emerald-500/40 focus:ring-offset-2 focus:ring-offset-black/20"
+                className="bg-emerald-500 hover:bg-emerald-400 text-black border border-emerald-400 py-3.5 px-4 rounded-xl transition-all duration-300 font-mono font-bold text-xs uppercase tracking-wider flex items-center justify-center gap-2 cursor-pointer hover:scale-[1.01] active:scale-[0.99] shadow-[0_0_20px_rgba(16,185,129,0.35)] focus:outline-none"
               >
-                <FileText className="h-4 w-4 text-emerald-400" />
-                Download PDF
+                <FileText className="h-4 w-4 text-black stroke-[2.5]" />
+                Download PDF Report
               </button>
             </div>
           </div>

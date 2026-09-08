@@ -21,6 +21,7 @@ import { generateIpPDF } from "./generateIpPDF";
 
 export default function IPInfoFinder() {
   const [ip, setIp] = useState("");
+  const [scannedIp, setScannedIp] = useState("");
   const [loading, setLoading] = useState(false);
   const [info, setInfo] = useState(null);
   const [error, setError] = useState("");
@@ -28,9 +29,10 @@ export default function IPInfoFinder() {
 
   const handleSubmit = useCallback(
     async (e) => {
-      e.preventDefault();
-      if (!ip.trim()) return;
+      const activeIp = ip.trim();
+      if (!activeIp) return;
 
+      setScannedIp(activeIp);
       setLoading(true);
       setError(null);
       setInfo(null);
@@ -38,10 +40,17 @@ export default function IPInfoFinder() {
         try {
           const res = await axios.post(
             `${process.env.NEXT_PUBLIC_PROD_API_URL}/ipinfo/`,
-            { ip },
+            { ip: activeIp },
             { headers: { Authorization: `Bearer ${userToken}` } }
           );
-          setInfo(res.data);
+          setInfo({
+            ...res.data,
+            ip: activeIp,
+            basicInformation: {
+              ...(res.data?.basicInformation || {}),
+              ipAddress: res.data?.basicInformation?.ipAddress || activeIp,
+            },
+          });
         } catch (err) {
           setError(err.response?.data?.error || "Failed to fetch IP information.");
         } finally {
@@ -112,7 +121,15 @@ export default function IPInfoFinder() {
   }
 
   function exportPDF() {
-    generateIpPDF(info);
+    if (!info) return;
+    const targetAddress = info?.basicInformation?.ipAddress || scannedIp || ip;
+    generateIpPDF({
+      ...info,
+      basicInformation: {
+        ...(info?.basicInformation || {}),
+        ipAddress: targetAddress,
+      },
+    });
   }
 
   return (
@@ -287,9 +304,9 @@ export default function IPInfoFinder() {
                       </button>
                       <button
                         onClick={exportPDF}
-                        className="bg-emerald-500/5 hover:bg-emerald-500/10 text-emerald-400 border border-emerald-500/25 hover:border-emerald-500/50 px-3.5 py-1.5 rounded-xl transition-all duration-300 font-mono font-bold text-[11px] uppercase tracking-wider flex items-center gap-2 cursor-pointer hover:scale-[1.01] active:scale-[0.99] hover:shadow-[0_0_15px_rgba(16,185,129,0.1)] focus:outline-none"
+                        className="bg-emerald-500 hover:bg-emerald-400 text-black border border-emerald-400 px-4 py-2 rounded-xl transition-all duration-300 font-mono font-bold text-xs uppercase tracking-wider flex items-center gap-2 cursor-pointer hover:scale-[1.01] active:scale-[0.99] shadow-[0_0_20px_rgba(16,185,129,0.35)] focus:outline-none"
                       >
-                        <Download size={14} /> PDF Report
+                        <Download size={14} className="text-black stroke-[2.5]" /> PDF Report
                       </button>
                     </div>
                   </div>

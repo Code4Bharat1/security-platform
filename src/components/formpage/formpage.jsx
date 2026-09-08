@@ -4,6 +4,7 @@ import { Search, Loader2, SearchIcon } from 'lucide-react';
 
 const FormPage = () => {
   const [url, setUrl] = useState("");
+  const [scannedUrl, setScannedUrl] = useState("");
   const [error, setError] = useState("");
   const [sslData, setSslData] = useState(null);
   const [loading, setLoading] = useState(false);
@@ -18,12 +19,14 @@ const FormPage = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    const activeUrl = url.trim();
 
-    if (!validateUrl(url)) {
+    if (!validateUrl(activeUrl)) {
       setError("Please enter a valid website URL.");
       return;
     }
 
+    setScannedUrl(activeUrl);
     setError("");
     setLoading(true); // Show loading indicator
     setSslData(null); // Clear previous results
@@ -32,7 +35,7 @@ const FormPage = () => {
       const response = await fetch(`${process.env.NEXT_PUBLIC_PROD_API_URL}/ssl-checker`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ url }),
+        body: JSON.stringify({ url: activeUrl }),
       });
 
       const result = await response.json();
@@ -43,7 +46,7 @@ const FormPage = () => {
         return;
       }
 
-      setSslData(result); // Update state with the fetched SSL data
+      setSslData({ ...result, url: activeUrl, target: activeUrl }); // Update state with the fetched SSL data
       setLoading(false);
     } catch (error) {
       console.error("Error:", error);
@@ -69,7 +72,9 @@ const FormPage = () => {
             id="websiteUrl"
             name="websiteUrl"
             value={url}
-            onChange={(e) => setUrl(e.target.value.trim())}           placeholder="https://example.com"
+            onChange={(e) => setUrl(e.target.value.trim())}
+            disabled={loading}
+            placeholder="https://example.com"
             required
             className="w-full border border-gray-300 rounded-lg p-2 mb-4 focus:outline-none focus:ring-2 focus:ring-green-800 focus:border-green-800"
           />

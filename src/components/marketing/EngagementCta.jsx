@@ -10,11 +10,11 @@ export default function EngagementCta({
   description = "Talk to a senior consultant. Scoping in one business day, NDA on request.",
   primaryHref = "/connect",
   primaryLabel = "Request Assessment",
-  secondaryHref = "/connect",
-  secondaryLabel = "Talk To A Consultant",
+  secondaryHref,
+  secondaryLabel,
 }) {
   const handleScroll = (e, href) => {
-    if (href.startsWith("#")) {
+    if (href?.startsWith("#")) {
       e.preventDefault();
       const targetId = href.substring(1);
       const element = document.getElementById(targetId);
@@ -43,13 +43,15 @@ export default function EngagementCta({
             <span>{primaryLabel}</span>
             <ArrowRight className="h-4 w-4" />
           </Link>
-          <Link
-            href={secondaryHref}
-            onClick={(e) => handleScroll(e, secondaryHref)}
-            className="ghost-button"
-          >
-            {secondaryLabel}
-          </Link>
+          {secondaryLabel && secondaryHref && (
+            <Link
+              href={secondaryHref}
+              onClick={(e) => handleScroll(e, secondaryHref)}
+              className="ghost-button"
+            >
+              {secondaryLabel}
+            </Link>
+          )}
         </div>
       </div>
     </section>

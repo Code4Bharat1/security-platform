@@ -307,7 +307,6 @@ export default function HistoryPage() {
                     <option value="">All Formats</option>
                     <option value="PDF">PDF Reports</option>
                     <option value="TXT">TXT Reports</option>
-                    <option value="JSON">JSON Data</option>
                     <option value="CSV">CSV Spreadsheets</option>
                     <option value="PNG">PNG Images</option>
                     <option value="DOCX">DOCX Documents</option>

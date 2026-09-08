@@ -4,6 +4,7 @@ import { Globe, Search, MapPin, Wifi, Building2, Hash } from "lucide-react";
 
 export default function IPGeoPage() {
   const [domain, setDomain] = useState("");
+  const [scannedDomain, setScannedDomain] = useState("");
   const [result, setResult] = useState(null);
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
@@ -11,14 +12,16 @@ export default function IPGeoPage() {
   const handleLookup = async () => {
     setError("");
     setResult(null);
-    if (!domain) return;
+    const activeDomain = domain.trim();
+    if (!activeDomain) return;
 
+    setScannedDomain(activeDomain);
     setLoading(true);
     try {
       const res = await fetch(`${process.env.NEXT_PUBLIC_PROD_API_URL}/ipgeo/lookup`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ domain }),
+        body: JSON.stringify({ domain: activeDomain }),
       });
 
       const data = await res.json();
@@ -27,7 +30,7 @@ export default function IPGeoPage() {
         return;
       }
 
-      setResult(data);
+      setResult({ ...data, domain: activeDomain, target: activeDomain });
     } catch (err) {
       setError("Failed to fetch geolocation data.");
     } finally {
@@ -65,7 +68,9 @@ export default function IPGeoPage() {
               placeholder="Enter domain (e.g., openai.com) or IP address"
               className="w-full p-4 pr-12 border-2 border-green-200 rounded-lg focus:border-green-500 focus:outline-none transition-colors duration-200 text-gray-800 placeholder-gray-500"
               value={domain}
-              onChange={(e) => setDomain(e.target.value.trim())}             onKeyPress={handleKeyPress}
+              disabled={loading}
+              onChange={(e) => setDomain(e.target.value.trim())}
+              onKeyPress={handleKeyPress}
             />
             <Search className="absolute right-4 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
           </div>

@@ -276,6 +276,8 @@ function ReportGeneratorContent() {
   
   // General State
   const [domain, setDomain] = useState("");
+  const [scannedCleanHost, setScannedCleanHost] = useState("");
+  const [scannedTargetUrl, setScannedTargetUrl] = useState("");
   const [scanning, setScanning] = useState(false);
   const [consoleLogs, setConsoleLogs] = useState([]);
   const [reportReady, setReportReady] = useState(false);
@@ -582,6 +584,8 @@ function ReportGeneratorContent() {
 
     const cleanHost = domain.replace(/^https?:\/\//i, "").replace(/\/.*$/, "");
     const targetUrl = domain.startsWith("http") ? domain : `https://${cleanHost}`;
+    setScannedCleanHost(cleanHost);
+    setScannedTargetUrl(targetUrl);
 
     appendLog(`[INFO] Starting Multi-Tool Security Audit for ${tierLabel.toUpperCase()} Tier Report...`);
     appendLog(`[INFO] Target Host: ${cleanHost} (${targetUrl})`);
@@ -926,7 +930,7 @@ function ReportGeneratorContent() {
       const passedCount = scanResults.filter(r => r.status === "completed").length;
       const failedCount = scanResults.filter(r => r.status === "failed").length;
       const { employeeName, employeeMail } = getAuditorInfo();
-      const cleanHost = domain.replace(/^https?:\/\//i, "").replace(/\/.*$/, "");
+      const cleanHost = (scannedCleanHost || domain || "").replace(/^https?:\/\//i, "").replace(/\/.*$/, "") || "Target_Host";
 
       // ── Cover Page & Executive Summary ──────────────────────────────────────
       summaryDoc.setFillColor(...C.bluePrimary);
@@ -1044,7 +1048,8 @@ function ReportGeneratorContent() {
       const url = URL.createObjectURL(blob);
       const link = document.createElement("a");
       link.href = url;
-      link.download = `Nexcore_${tierLabel}_Integrated_Security_Report_${Date.now()}.pdf`;
+      const safeHost = (scannedCleanHost || domain || "Report").replace(/[^a-zA-Z0-9_-]/g, "_");
+      link.download = `Nexcore_${safeHost}_${tierLabel}_Integrated_Security_Report_${Date.now()}.pdf`;
       document.body.appendChild(link);
       link.click();
       document.body.removeChild(link);
@@ -1296,7 +1301,7 @@ function ReportGeneratorContent() {
                 className="bg-white hover:bg-zinc-200 text-black border border-white font-mono font-bold text-xs uppercase px-6 py-3 rounded-lg transition duration-200 flex items-center justify-center gap-2 cursor-pointer shadow-[0_0_15px_rgba(255,255,255,0.3)]"
               >
                 <Download className="h-4 w-4 text-black stroke-[2.5]" />
-                Download Stacked PDF Report
+                Download PDF Report
               </button>
             </div>
 

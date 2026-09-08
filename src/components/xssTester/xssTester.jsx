@@ -9,7 +9,6 @@ import {
   AlertTriangle,
   CheckCircle,
   X,
-  Download,
   Globe,
   Info,
   Terminal,
@@ -25,6 +24,7 @@ import { generateXssTesterPDF } from "./generateXssTesterPDF";
 
 export default function XssTester() {
   const [url, setUrl] = useState("");
+  const [scannedUrl, setScannedUrl] = useState("");
   const [loading, setLoading] = useState(false);
   const [result, setResult] = useState(null);
   const [payloadCount, setPayloadCount] = useState(null);
@@ -57,6 +57,10 @@ export default function XssTester() {
 
   const handleTest = async (e) => {
     e?.preventDefault?.();
+    const activeUrl = url.trim();
+    if (!activeUrl) return;
+
+    setScannedUrl(activeUrl);
     setResult(null);
     setLoading(true);
 
@@ -69,7 +73,7 @@ export default function XssTester() {
             Authorization: `Bearer ${token}`,
           },
           body: JSON.stringify({
-            url,
+            url: activeUrl,
             domScan: true,
             takeScreenshots: true,
             autoBypass: true,
@@ -77,7 +81,7 @@ export default function XssTester() {
         });
 
         const data = await res.json();
-        setResult(data);
+        setResult({ ...data, url: activeUrl, target: activeUrl });
       } catch (err) {
         setResult({ error: String(err) });
       }
@@ -87,18 +91,10 @@ export default function XssTester() {
   };
 
   const makePdf = () => {
-    generateXssTesterPDF(result, url);
-  };
-
-  const downloadJson = () => {
-    if (!result) return;
-    const blob = new Blob([JSON.stringify(result, null, 2)], { type: "application/json" });
-    const urlObj = URL.createObjectURL(blob);
-    const a = document.createElement("a");
-    a.href = urlObj;
-    a.download = "xss-report.json";
-    a.click();
-    URL.revokeObjectURL(urlObj);
+    generateXssTesterPDF(
+      { ...result, url: result?.url || scannedUrl || url },
+      scannedUrl || result?.url || url
+    );
   };
 
   const riskBadge = (risk) => {
@@ -196,6 +192,7 @@ export default function XssTester() {
                       placeholder="e.g., https://site.com/search?id=1&query=test"
                       value={url}
                       onChange={(e) => setUrl(e.target.value)}
+                      disabled={loading}
                       required
                       className="w-full bg-zinc-900/40 text-zinc-100 border border-zinc-800/80 rounded-xl p-3.5 pl-12 text-sm focus:border-red-500/50 focus:ring-1 focus:ring-red-500/30 focus:shadow-[0_0_12px_rgba(239,68,68,0.08)] focus:outline-none transition-all placeholder:text-zinc-600 font-mono"
                     />
@@ -248,26 +245,15 @@ export default function XssTester() {
                   </button>
 
                   {result && !result.error && (
-                    <>
-                      <button
-                        type="button"
-                        id="xss-download-pdf-btn"
-                        onClick={makePdf}
-                        className="px-5 py-4 rounded-xl bg-zinc-800 text-white hover:bg-zinc-700 border border-zinc-600 hover:border-red-500 font-mono font-bold text-xs uppercase transition-all duration-350 flex items-center justify-center gap-2 cursor-pointer shadow-md hover:shadow-[0_0_15px_rgba(239,68,68,0.4)]"
-                      >
-                        <FileDown className="w-4 h-4 text-red-400" />
-                        PDF Report
-                      </button>
-                      <button
-                        type="button"
-                        id="xss-download-json-btn"
-                        onClick={downloadJson}
-                        className="px-5 py-4 rounded-xl bg-zinc-800 text-white hover:bg-zinc-700 border border-zinc-600 hover:border-red-500 font-mono font-bold text-xs uppercase transition-all duration-350 flex items-center justify-center gap-2 cursor-pointer shadow-md hover:shadow-[0_0_15px_rgba(239,68,68,0.4)]"
-                      >
-                        <Download className="w-4 h-4 text-red-400" />
-                        JSON
-                      </button>
-                    </>
+                    <button
+                      type="button"
+                      id="xss-download-pdf-btn"
+                      onClick={makePdf}
+                      className="px-5 py-4 rounded-xl bg-red-500 hover:bg-red-600 text-black border border-red-400 font-mono font-bold text-xs uppercase transition-all duration-350 hover:scale-[1.01] active:scale-[0.99] flex items-center justify-center gap-2 cursor-pointer shadow-[0_0_20px_rgba(239,68,68,0.35)]"
+                    >
+                      <FileDown className="w-4 h-4 text-black stroke-[2.5]" />
+                      PDF Report
+                    </button>
                   )}
                 </div>
               </form>

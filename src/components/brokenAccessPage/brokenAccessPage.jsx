@@ -5,6 +5,8 @@ import { toast } from 'react-hot-toast';
 
 export default function BrokenAccessControlPage() {
   const [targetUrl, setTargetUrl] = useState('');
+  const [scannedTarget, setScannedTarget] = useState('');
+  const [loading, setLoading] = useState(false);
   const [authHeader, setAuthHeader] = useState('');
   const [customPaths, setCustomPaths] = useState([]); // start empty
   const [newPath, setNewPath] = useState('');
@@ -37,6 +39,11 @@ useEffect( () =>{
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    const activeTarget = targetUrl.trim();
+    if (!activeTarget) return;
+
+    setScannedTarget(activeTarget);
+    setLoading(true);
     setResults([]);
 
     try {
@@ -44,7 +51,7 @@ useEffect( () =>{
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          targetUrl,
+          targetUrl: activeTarget,
           authHeader,
           customPaths, // send the correct state array
         }),
@@ -54,6 +61,8 @@ useEffect( () =>{
       setResults(data.results || []);
     } catch (err) {
       console.error('Error:', err);
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -99,7 +108,9 @@ const handleDelete = async (id) => {
           placeholder="Target URL (e.g., https://example.com)"
           className="w-full p-2 border rounded"
           value={targetUrl}
-          onChange={(e) => setTargetUrl(e.target.value.trim())}         required
+          disabled={loading}
+          onChange={(e) => setTargetUrl(e.target.value.trim())}
+          required
         />
 
         <input
@@ -107,7 +118,9 @@ const handleDelete = async (id) => {
           placeholder="Authorization header (optional)"
           className="w-full p-2 border rounded"
           value={authHeader}
-          onChange={(e) => setAuthHeader(e.target.value.trim())}       />
+          disabled={loading}
+          onChange={(e) => setAuthHeader(e.target.value.trim())}
+        />
 
         <div>
           <label className="block mb-1">Custom Paths</label>
@@ -117,11 +130,14 @@ const handleDelete = async (id) => {
               placeholder="/admin"
               className="p-2 border rounded w-full"
               value={newPath}
-              onChange={(e) => setNewPath(e.target.value.trim())}           />
+              disabled={loading}
+              onChange={(e) => setNewPath(e.target.value.trim())}
+            />
             <button
               type="button"
               onClick={handleAddPath}
-              className="px-4 py-2 bg-blue-600 text-white rounded"
+              disabled={loading}
+              className="px-4 py-2 bg-blue-600 text-white rounded disabled:opacity-50"
             >
               Add
             </button>
@@ -133,8 +149,8 @@ const handleDelete = async (id) => {
           </ul>
         </div>
 
-        <button type="submit" className="px-6 py-2 bg-green-600 text-white rounded">
-          Run Scan
+        <button type="submit" disabled={loading} className="px-6 py-2 bg-green-600 text-white rounded disabled:opacity-50">
+          {loading ? 'Scanning...' : 'Run Scan'}
         </button>
       </form>
 

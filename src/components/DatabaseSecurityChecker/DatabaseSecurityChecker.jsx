@@ -28,13 +28,14 @@ export default function DbSecurityChecker() {
     checks: [],
   });
   const [loading, setLoading] = useState(false);
+  const [scannedForm, setScannedForm] = useState(null);
   const [result, setResult] = useState(null);
 
   const protectedAction = useProtectedAction();
   
   const downloadPDF = () => {
     if (!result) return;
-    generateDbPDF(result);
+    generateDbPDF({ ...result, host: result?.host || scannedForm?.host || form.host });
   };
 
   const toggleCheck = (check) => {
@@ -50,6 +51,8 @@ export default function DbSecurityChecker() {
     if (!protectedAction) return;
 
     await protectedAction(async (token) => {
+      const activeForm = { ...form, host: form.host.trim() };
+      setScannedForm(activeForm);
       setLoading(true);
       setResult(null);
 
@@ -62,12 +65,12 @@ export default function DbSecurityChecker() {
               "Content-Type": "application/json",
               Authorization: `Bearer ${token}`,
             },
-            body: JSON.stringify(form),
+            body: JSON.stringify(activeForm),
           }
         );
 
         const data = await res.json();
-        setResult(data);
+        setResult({ ...data, host: activeForm.host, form: activeForm });
       } catch (err) {
         console.error("Scan error:", err);
         setResult({ error: err?.message || "Unexpected error" });
@@ -172,6 +175,7 @@ export default function DbSecurityChecker() {
                       type="text"
                       value={form.host}
                       onChange={(e) => setForm({ ...form, host: e.target.value })}
+                      disabled={loading}
                       placeholder="127.0.0.1"
                       className="w-full bg-zinc-900/40 text-zinc-100 border border-zinc-800/80 rounded-xl p-3.5 text-sm focus:border-red-500/50 focus:ring-1 focus:ring-red-500/30 focus:outline-none transition-all font-mono"
                     />
@@ -187,6 +191,7 @@ export default function DbSecurityChecker() {
                       type="text"
                       value={form.port}
                       onChange={(e) => setForm({ ...form, port: e.target.value })}
+                      disabled={loading}
                       placeholder="27017"
                       className="w-full bg-zinc-900/40 text-zinc-100 border border-zinc-800/80 rounded-xl p-3.5 text-sm focus:border-red-500/50 focus:ring-1 focus:ring-red-500/30 focus:outline-none transition-all font-mono"
                     />
@@ -200,6 +205,7 @@ export default function DbSecurityChecker() {
                       type="text"
                       value={form.username}
                       onChange={(e) => setForm({ ...form, username: e.target.value })}
+                      disabled={loading}
                       placeholder="optional"
                       className="w-full bg-zinc-900/40 text-zinc-100 border border-zinc-800/80 rounded-xl p-3.5 text-sm focus:border-red-500/50 focus:ring-1 focus:ring-red-500/30 focus:outline-none transition-all font-mono"
                     />
@@ -213,6 +219,7 @@ export default function DbSecurityChecker() {
                       type="password"
                       value={form.password}
                       onChange={(e) => setForm({ ...form, password: e.target.value })}
+                      disabled={loading}
                       placeholder="optional"
                       className="w-full bg-zinc-900/40 text-zinc-100 border border-zinc-800/80 rounded-xl p-3.5 text-sm focus:border-red-500/50 focus:ring-1 focus:ring-red-500/30 focus:outline-none transition-all font-mono"
                     />
@@ -346,9 +353,9 @@ export default function DbSecurityChecker() {
                     <div className="flex flex-wrap gap-3 border-t border-zinc-900 pt-4 mt-4">
                       <button
                         onClick={downloadPDF}
-                        className="px-4 py-2.5 bg-zinc-900/40 hover:bg-red-500/5 text-zinc-350 hover:text-red-400 border border-zinc-800/80 hover:border-red-500/30 rounded-xl font-mono font-bold text-xs uppercase transition-all duration-300 flex items-center gap-1.5 cursor-pointer"
+                        className="px-4 py-2.5 bg-red-500 hover:bg-red-600 text-black border border-red-400 rounded-xl font-mono font-bold text-xs uppercase transition-all duration-300 hover:scale-[1.01] active:scale-[0.99] flex items-center gap-1.5 cursor-pointer shadow-[0_0_20px_rgba(239,68,68,0.35)]"
                       >
-                        <Download className="w-3.5 h-3.5" strokeWidth={2.5} /> PDF Report
+                        <Download className="w-3.5 h-3.5 text-black stroke-[2.5]" /> PDF Report
                       </button>
                     </div>
 

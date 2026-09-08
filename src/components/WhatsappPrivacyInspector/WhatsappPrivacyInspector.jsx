@@ -20,6 +20,7 @@ import { generateWhatsappPDF } from "./generateWhatsappPDF";
 
 export default function WhatsappPrivacyChecker() {
   const [images, setImages] = useState([]);
+  const [scannedImageCount, setScannedImageCount] = useState(0);
   const [score, setScore] = useState(null);
   const [messages, setMessages] = useState([]);
   const [settings, setSettings] = useState({});
@@ -61,6 +62,9 @@ export default function WhatsappPrivacyChecker() {
       toast.warning(`Please upload at least ${MIN_IMAGES} images to proceed.`);
       return;
     }
+
+    const currentCount = images.length;
+    setScannedImageCount(currentCount);
 
     const formData = new FormData();
     images.forEach((img) => {
@@ -218,7 +222,7 @@ export default function WhatsappPrivacyChecker() {
                 <p className="text-zinc-600 text-xs font-mono mb-4">or click to browse local files (2–5 images)</p>
                 <label
                   htmlFor="imageInput"
-                  className="inline-flex items-center gap-2 bg-emerald-500/5 hover:bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 hover:border-emerald-500/50 rounded-xl font-mono font-bold text-xs uppercase px-5 py-2.5 transition-all duration-300 cursor-pointer hover:scale-[1.01] active:scale-[0.99] hover:shadow-[0_0_15px_rgba(16,185,129,0.1)]"
+                  className={`inline-flex items-center gap-2 bg-emerald-500/5 hover:bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 hover:border-emerald-500/50 rounded-xl font-mono font-bold text-xs uppercase px-5 py-2.5 transition-all duration-300 cursor-pointer hover:scale-[1.01] active:scale-[0.99] hover:shadow-[0_0_15px_rgba(16,185,129,0.1)] ${isLoading ? "opacity-50 pointer-events-none cursor-not-allowed" : ""}`}
                 >
                   <FileText className="h-4 w-4" /> Browse Images
                 </label>
@@ -226,6 +230,7 @@ export default function WhatsappPrivacyChecker() {
                   type="file"
                   accept="image/*"
                   multiple
+                  disabled={isLoading}
                   capture="environment"
                   onChange={handleUpload}
                   className="hidden"
@@ -250,7 +255,8 @@ export default function WhatsappPrivacyChecker() {
                         <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity duration-200 flex items-center justify-center">
                           <button
                             onClick={() => removeImage(idx)}
-                            className="bg-rose-500/20 hover:bg-rose-500/40 text-rose-400 border border-rose-500/30 hover:border-rose-500/50 p-2 rounded-lg transition-all"
+                            disabled={isLoading}
+                            className={`bg-rose-500/20 hover:bg-rose-500/40 text-rose-400 border border-rose-500/30 hover:border-rose-500/50 p-2 rounded-lg transition-all ${isLoading ? "pointer-events-none opacity-50" : ""}`}
                             title="Remove image"
                             type="button"
                           >
@@ -294,10 +300,10 @@ export default function WhatsappPrivacyChecker() {
                     </h2>
                   </div>
                   <button
-                    onClick={() => generateWhatsappPDF(score, messages, settings, images.length)}
-                    className="bg-emerald-500/5 hover:bg-emerald-500/10 text-emerald-400 border border-emerald-500/25 hover:border-emerald-500/50 px-3.5 py-1.5 rounded-xl transition-all duration-300 font-mono font-bold text-[11px] uppercase tracking-wider flex items-center gap-2 cursor-pointer hover:scale-[1.01] active:scale-[0.99] hover:shadow-[0_0_15px_rgba(16,185,129,0.1)] focus:outline-none self-start sm:self-auto"
+                    onClick={() => generateWhatsappPDF(score, messages, settings, scannedImageCount || images.length)}
+                    className="bg-emerald-500 hover:bg-emerald-400 text-black border border-emerald-400 px-4 py-2 rounded-xl transition-all duration-300 font-mono font-bold text-xs uppercase tracking-wider flex items-center gap-2 cursor-pointer hover:scale-[1.01] active:scale-[0.99] shadow-[0_0_20px_rgba(16,185,129,0.35)] focus:outline-none self-start sm:self-auto"
                   >
-                    <Download size={14} /> PDF Report
+                    <Download size={14} className="text-black stroke-[2.5]" /> PDF Report
                   </button>
                 </div>
 

@@ -25,6 +25,7 @@ import {
 
 export default function BrokenStreamPage() {
   const [url, setUrl] = useState("");
+  const [scannedUrl, setScannedUrl] = useState("");
   const [items, setItems] = useState([]);
   const [loading, setLoading] = useState(false);
   const [progress, setProgress] = useState({ done: 0, total: 0 });
@@ -59,7 +60,10 @@ export default function BrokenStreamPage() {
   }
 
   const startCheck = async () => {
-    if (!url) return;
+    const activeUrl = url.trim();
+    if (!activeUrl) return;
+
+    setScannedUrl(activeUrl);
 
     await protectedAction(async (token) => {
       setLoading(true);
@@ -71,7 +75,7 @@ export default function BrokenStreamPage() {
 
       try {
         const streamUrl = `${apiBase}/brokenlink/brokenlink-stream?url=${encodeURIComponent(
-          url
+          activeUrl
         )}&token=${encodeURIComponent(token)}`;
 
         const es = new EventSource(streamUrl);
@@ -210,7 +214,7 @@ export default function BrokenStreamPage() {
   }
 
   async function downloadPDF() {
-    generateBrokenLinkPDF(items, summary, url);
+    generateBrokenLinkPDF(items, summary, scannedUrl || url);
   }
 
   return (
@@ -402,9 +406,9 @@ export default function BrokenStreamPage() {
                 </button>
                 <button
                   onClick={downloadPDF}
-                  className="px-4 py-2.5 bg-zinc-900/40 hover:bg-red-500/5 text-zinc-350 hover:text-red-400 border border-zinc-800/80 hover:border-red-500/30 rounded-xl font-mono font-bold text-xs uppercase transition-all duration-300 flex items-center gap-1.5 cursor-pointer"
+                  className="px-4 py-2.5 bg-red-500 hover:bg-red-600 text-black border border-red-400 rounded-xl font-mono font-bold text-xs uppercase transition-all duration-300 hover:scale-[1.01] active:scale-[0.99] flex items-center gap-1.5 cursor-pointer shadow-[0_0_20px_rgba(239,68,68,0.35)]"
                 >
-                  <Download className="w-3.5 h-3.5" />
+                  <Download className="w-3.5 h-3.5 text-black stroke-[2.5]" />
                   PDF Report
                 </button>
               </div>

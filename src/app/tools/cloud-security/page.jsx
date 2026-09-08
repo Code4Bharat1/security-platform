@@ -66,6 +66,7 @@ export default function CloudSecurityPage() {
 
   // Connection fields
   const [target, setTarget] = useState("");
+  const [scannedTarget, setScannedTarget] = useState("");
   const [provider, setProvider] = useState("AWS");
   const [awsAccessKeyId, setAwsAccessKeyId] = useState("");
   const [awsSecretAccessKey, setAwsSecretAccessKey] = useState("");
@@ -92,8 +93,10 @@ export default function CloudSecurityPage() {
   // Handle audit execution
   const handleStartScan = async (e) => {
     e.preventDefault();
-    if (!target.trim()) return;
+    const activeTarget = target.trim();
+    if (!activeTarget) return;
 
+    setScannedTarget(activeTarget);
     setScanning(true);
     setReportReady(false);
     setErrorMsg("");
@@ -133,7 +136,7 @@ export default function CloudSecurityPage() {
             Authorization: `Bearer ${token}`
           },
           body: JSON.stringify({
-            target: target.trim(),
+            target: activeTarget,
             awsAccessKeyId: awsAccessKeyId.trim() || undefined,
             awsSecretAccessKey: awsSecretAccessKey.trim() || undefined,
             awsSessionToken: awsSessionToken.trim() || undefined
@@ -204,7 +207,7 @@ export default function CloudSecurityPage() {
     doc.setTextColor(50, 50, 50);
     doc.setFont("helvetica", "normal");
     doc.setFontSize(9);
-    doc.text(`Target Target: ${target}`, M, y);
+    doc.text(`Target Target: ${scannedTarget || target}`, M, y);
     doc.text(`Cloud Provider: ${provider}`, M, y + 15);
     doc.text(`Audit Date: ${new Date().toLocaleString()}`, M, y + 30);
     doc.text(`Consolidated Risk Score: ${riskScore}/100`, M, y + 45);

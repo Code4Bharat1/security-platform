@@ -15,12 +15,15 @@ import {
 
 export default function BrokenLinkScanner() {
   const [url, setUrl] = useState("");
+  const [scannedUrl, setScannedUrl] = useState("");
   const [scanning, setScanning] = useState(false);
   const [result, setResult] = useState(null);
 
   const handleScan = async () => {
-    if (!url.trim()) return;
+    const activeUrl = url.trim();
+    if (!activeUrl) return;
 
+    setScannedUrl(activeUrl);
     setScanning(true);
     setResult(null);
 
@@ -30,7 +33,7 @@ export default function BrokenLinkScanner() {
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({ url }),
+        body: JSON.stringify({ url: activeUrl }),
       });
 
       const data = await res.json();
@@ -126,6 +129,7 @@ export default function BrokenLinkScanner() {
                       placeholder="https://example.com"
                       value={url}
                       onChange={(e) => setUrl(e.target.value.trim())}
+                      disabled={scanning}
                       className="w-full bg-zinc-900/40 text-zinc-100 border border-zinc-800/80 rounded-xl p-3.5 pl-12 text-sm focus:border-red-500/50 focus:ring-1 focus:ring-red-500/30 focus:shadow-[0_0_12px_rgba(239,68,68,0.08)] focus:outline-none transition-all placeholder:text-zinc-600 font-mono"
                     />
                   </div>

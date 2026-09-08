@@ -132,6 +132,7 @@ function StateBadge({ state }) {
 /* ─────────────── Main Component ─────────────── */
 export default function BasicNetworkScan() {
   const [target, setTarget] = useState("");
+  const [scannedTarget, setScannedTarget] = useState("");
   const [preset, setPreset] = useState("common");
   const [customStart, setCustomStart] = useState("1");
   const [customEnd, setCustomEnd] = useState("1024");
@@ -156,7 +157,8 @@ export default function BasicNetworkScan() {
   /* ── Run scan ── */
   const handleScan = async (e) => {
     e?.preventDefault();
-    if (!isValidTarget || loading) return;
+    const activeTarget = target.trim();
+    setScannedTarget(activeTarget);
     setLoading(true);
     setError("");
     setResult(null);
@@ -167,7 +169,7 @@ export default function BasicNetworkScan() {
 
     await protectedAction(async (token) => {
       try {
-        const body = { target: target.trim(), preset };
+        const body = { target: activeTarget, preset };
 
         if (preset === "custom") {
           const s = parseInt(customStart, 10);
@@ -205,7 +207,7 @@ export default function BasicNetworkScan() {
         const data = await res.json();
         const elapsed = Date.now() - start;
 
-        setResult(data);
+        setResult({ ...data, target: activeTarget });
         setScanMeta({
           elapsed,
           preset: PORT_PRESETS[preset]?.label || preset,
@@ -588,7 +590,7 @@ export default function BasicNetworkScan() {
                       <div className="flex items-center gap-2 flex-shrink-0">
                         <button
                           type="button"
-                          onClick={() => generateBasicNetworkScanPDF(result, target)}
+                          onClick={() => generateBasicNetworkScanPDF(result, scannedTarget || result?.target || target)}
                           className="flex items-center gap-1.5 text-xs font-mono font-bold px-3 py-1.5 rounded-lg border border-yellow-300 text-black bg-yellow-400 hover:bg-yellow-300 transition-all hover:scale-[1.02] active:scale-[0.98] cursor-pointer shadow-[0_0_15px_rgba(250,204,21,0.35)]"
                         >
                           <Download className="h-3.5 w-3.5 text-black stroke-[2.5]" />

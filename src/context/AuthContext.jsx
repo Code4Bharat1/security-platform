@@ -78,6 +78,17 @@ export const AuthProvider = ({ children }) => {
         );
 
         if (!res.ok) {
+          if (res.status === 403) {
+            const errData = await res.json().catch(() => ({}));
+            if (errData.suspended) {
+              toast.error(
+                errData.message || "Your account has been suspended by an administrator. You have been logged out.",
+                { id: "suspended-toast", duration: 8000 }
+              );
+              logout({ redirect: true });
+              return null;
+            }
+          }
           throw new Error("Token refresh endpoint returned non-ok status");
         }
 
@@ -145,6 +156,39 @@ export const AuthProvider = ({ children }) => {
         return false;
       }
       return true;
+    }
+
+    // Active server verification to immediately catch account suspension
+    try {
+      const apiBase = (process.env.NEXT_PUBLIC_PROD_API_URL || "").replace(/\/+$/, "");
+      const res = await fetch(`${apiBase}/auth/verify-token`, {
+        method: "GET",
+        headers: {
+          Authorization: `Bearer ${activeToken}`,
+        },
+      });
+
+      if (res.status === 403) {
+        const errData = await res.json().catch(() => ({}));
+        if (errData.suspended) {
+          console.warn("🚫 [AuthContext] Account has been suspended by administrator.");
+          toast.error(
+            errData.message || "Your account has been suspended by an administrator. You have been logged out.",
+            { id: "suspended-toast", duration: 8000 }
+          );
+          logout({ redirect: true });
+          return false;
+        }
+      }
+
+      if (res.status === 401) {
+        // Token was rejected on server, try refresh
+        const refreshed = await refreshSession(activeRefreshToken);
+        return !!refreshed;
+      }
+    } catch (netErr) {
+      // Offline / network drop: skip without logging out
+      console.warn("⚠️ [AuthContext] Server verify-token check skipped due to network:", netErr.message);
     }
 
     // If token is close to expiry (within 5 minutes), refresh it silently in background

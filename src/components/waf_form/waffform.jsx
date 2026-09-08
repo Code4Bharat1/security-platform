@@ -12,6 +12,7 @@ import {
 
 const Wafform = () => {
   const [url, setUrl] = useState("");
+  const [scannedUrl, setScannedUrl] = useState("");
   const [error, setError] = useState("");
   const [wafData, setWafData] = useState(null);
   const [loading, setLoading] = useState(false);
@@ -37,6 +38,7 @@ const Wafform = () => {
       return;
     }
 
+    setScannedUrl(formattedUrl);
     setError("");
     setLoading(true);
     setWafData(null);
@@ -64,7 +66,7 @@ const Wafform = () => {
       }
 
       const processedData = processWafData(result, formattedUrl);
-      setWafData(processedData);
+      setWafData({ ...processedData, url: formattedUrl, target: formattedUrl });
     } catch (error) {
       console.error("Error:", error);
       setError(error.message || "Something went wrong. Please try again.");
@@ -406,6 +408,7 @@ const Wafform = () => {
                     type="url" 
                     value={url}
                     onChange={(e) => setUrl(e.target.value.trim())}
+                    disabled={loading}
                     placeholder="https://example.com"
                     className="w-full bg-zinc-900/40 text-zinc-100 border border-zinc-800/80 rounded-xl p-3 text-sm focus:border-blue-500/50 focus:ring-1 focus:ring-blue-500/30 focus:shadow-[0_0_12px_rgba(59,130,246,0.08)] focus:outline-none transition-all placeholder:text-zinc-650 font-mono"
                     required

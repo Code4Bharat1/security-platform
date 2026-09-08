@@ -35,6 +35,7 @@ const apiBase = (process.env.NEXT_PUBLIC_PROD_API_URL || "").replace(/\/$/, "");
 
 export default function ReverseDNSLookup() {
   const [ip, setIp] = useState("");
+  const [scannedIp, setScannedIp] = useState("");
   const [valid, setValid] = useState(false);
   const [validationMsg, setValidationMsg] = useState("");
   const [loading, setLoading] = useState(false);
@@ -115,6 +116,10 @@ export default function ReverseDNSLookup() {
   }, [data]);
 
   async function lookup() {
+    const activeIp = ip.trim();
+    if (!activeIp) return;
+
+    setScannedIp(activeIp);
     setLoading(true);
     setErr("");
     setData(null);
@@ -126,7 +131,7 @@ export default function ReverseDNSLookup() {
             "Content-Type": "application/json",
             Authorization: `Bearer ${userToken}`,
           },
-          body: JSON.stringify({ ip: ip.trim() }),
+          body: JSON.stringify({ ip: activeIp }),
         });
         const j = await res.json();
         if (!res.ok) throw new Error(j.error || res.statusText);
@@ -149,7 +154,7 @@ export default function ReverseDNSLookup() {
             timespan: null,
           });
         } else {
-          setData(j);
+          setData({ ...j, ip: j.ip || activeIp, target: activeIp });
         }
       } catch (e) {
         setErr(e.message || "Lookup failed");
@@ -233,7 +238,8 @@ export default function ReverseDNSLookup() {
 
   function downloadPDF() {
     if (!data) return;
-    generateReverseDnsPDF(data, blacklistSummary, blacklists);
+    const targetIp = scannedIp || data?.ip || ip;
+    generateReverseDnsPDF({ ...data, ip: data?.ip || targetIp }, blacklistSummary, blacklists, targetIp);
   };
 
   return (
@@ -320,6 +326,7 @@ export default function ReverseDNSLookup() {
                       placeholder="e.g. 8.8.8.8 or 2001:4860:4860::8888"
                       value={ip}
                       onChange={(e) => setIp(e.target.value)}
+                      disabled={loading}
                       className={`w-full bg-zinc-900/40 text-zinc-100 border p-3.5 pl-12 rounded-xl text-sm focus:outline-none transition-all font-mono ${
                         validationMsg
                           ? "border-red-500/40 focus:border-red-500/70 focus:ring-1 focus:ring-red-500/30"
@@ -408,9 +415,9 @@ export default function ReverseDNSLookup() {
                   <div className="flex gap-2">
                     <button
                       onClick={downloadPDF}
-                      className="px-4 py-2.5 bg-zinc-900/40 hover:bg-blue-500/5 text-zinc-300 hover:text-blue-400 border border-zinc-800/80 hover:border-blue-500/30 rounded-xl font-mono font-bold text-xs uppercase transition-all duration-300 hover:scale-[1.01] active:scale-[0.99] flex items-center justify-center gap-1.5"
+                      className="px-4 py-2.5 bg-blue-500 hover:bg-blue-400 text-black border border-blue-400 rounded-xl font-mono font-bold text-xs uppercase transition-all duration-300 hover:scale-[1.01] active:scale-[0.99] flex items-center justify-center gap-1.5 cursor-pointer shadow-[0_0_20px_rgba(59,130,246,0.35)]"
                     >
-                      <Download className="w-3.5 h-3.5" />
+                      <Download className="w-3.5 h-3.5 text-black stroke-[2.5]" />
                       PDF Report
                     </button>
                     <button

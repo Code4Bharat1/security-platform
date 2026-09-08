@@ -55,6 +55,7 @@ export default function WebAppAudit() {
   const protectedAction = useProtectedAction();
   
   const [url, setUrl] = useState("");
+  const [scannedUrl, setScannedUrl] = useState("");
   const [scanning, setScanning] = useState(false);
   const [activeTab, setActiveTab] = useState("overview");
   const [scanData, setScanData] = useState(null);
@@ -92,6 +93,8 @@ export default function WebAppAudit() {
       return;
     }
 
+    const activeUrl = url.trim();
+    setScannedUrl(activeUrl);
     setScanning(true);
     setErrorMsg("");
     setScanData(null);
@@ -123,7 +126,7 @@ export default function WebAppAudit() {
             "Content-Type": "application/json",
             Authorization: `Bearer ${token}`
           },
-          body: JSON.stringify({ url })
+          body: JSON.stringify({ url: activeUrl })
         });
 
         const data = await res.json();
@@ -150,7 +153,7 @@ export default function WebAppAudit() {
 
         await addLog(`[SUCCESS] Web application configuration audit completed.`, 100);
 
-        setScanData(data);
+        setScanData({ ...data, url: activeUrl, target: activeUrl, domain });
       } catch (err) {
         await addLog(`[ERROR] Scan process failed: ${err.message}`, 100);
         setErrorMsg(err.message);
@@ -171,7 +174,7 @@ export default function WebAppAudit() {
   // Export PDF Report
   const handleDownloadPDF = () => {
     if (!scanData) return;
-    generateWebAppTestPDF(scanData);
+    generateWebAppTestPDF({ ...scanData, url: scanData?.url || scannedUrl || url, target: scanData?.target || scannedUrl || url });
   };
 
   return (

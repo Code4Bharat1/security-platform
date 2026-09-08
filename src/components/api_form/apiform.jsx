@@ -85,6 +85,7 @@ export default function Apiform() {
     body: DEFAULT_BODY,
     timeout: 5000,
   });
+  const [scannedFormData, setScannedFormData] = useState(null);
   const [error, setError] = useState("");
   const [results, setResults] = useState(null);
   const [loading, setLoading] = useState(false);
@@ -96,11 +97,14 @@ export default function Apiform() {
     toast.loading("Generating PDF Report...", { id: "pdf-gen" });
     try {
       const { generateAPISecurityTesterPDF } = await import("./generateAPISecurityTesterPDF");
-      await generateAPISecurityTesterPDF(results, (msg) => {
-        if (msg) {
-          toast.loading(msg, { id: "pdf-gen" });
+      await generateAPISecurityTesterPDF(
+        { ...results, url: results?.url || scannedFormData?.url || formData.url, target: results?.target || scannedFormData?.url || formData.url },
+        (msg) => {
+          if (msg) {
+            toast.loading(msg, { id: "pdf-gen" });
+          }
         }
-      });
+      );
       toast.success("PDF report downloaded!", { id: "pdf-gen" });
     } catch (err) {
       console.error(err);
@@ -166,6 +170,7 @@ export default function Apiform() {
       options: { timeout: parseInt(formData.timeout, 10) || 5000 },
     };
 
+    setScannedFormData(requestData);
     setError("");
     setLoading(true);
     setResults(null);
@@ -188,7 +193,7 @@ export default function Apiform() {
           throw new Error(data?.error || `Request failed (${response.status})`);
         }
 
-        setResults(data);
+        setResults({ ...data, url: formattedUrl, target: formattedUrl, formData: requestData });
       } catch (err) {
         console.error("API Test Error:", err);
         setError(err?.message || "Something went wrong. Please try again.");
@@ -315,6 +320,7 @@ export default function Apiform() {
                       name="url"
                       value={formData.url}
                       onChange={handleInputChange}
+                      disabled={loading}
                       placeholder={EXAMPLES[0]}
                       required
                       className="w-full bg-zinc-900/40 text-zinc-100 border border-zinc-800/80 rounded-xl p-3.5 pl-12 text-sm focus:border-red-500/50 focus:ring-1 focus:ring-red-500/30 focus:shadow-[0_0_12px_rgba(239,68,68,0.08)] focus:outline-none transition-all placeholder:text-zinc-600 font-mono"
@@ -331,6 +337,7 @@ export default function Apiform() {
                       name="method"
                       value={formData.method}
                       onChange={handleInputChange}
+                      disabled={loading}
                       className="w-full bg-zinc-900/40 text-zinc-100 border border-zinc-800/80 rounded-xl p-3.5 text-sm focus:border-red-500/50 focus:ring-1 focus:ring-red-500/30 focus:outline-none transition-all font-mono"
                     >
                       <option value="GET">GET</option>
@@ -352,6 +359,7 @@ export default function Apiform() {
                       name="timeout"
                       value={formData.timeout}
                       onChange={handleInputChange}
+                      disabled={loading}
                       min="1000"
                       max="30000"
                       className="w-full bg-zinc-900/40 text-zinc-100 border border-zinc-800/80 rounded-xl p-3.5 text-sm focus:border-red-500/50 focus:ring-1 focus:ring-red-500/30 focus:outline-none transition-all font-mono"
@@ -486,9 +494,9 @@ export default function Apiform() {
                   <div className="flex gap-2">
                     <button
                       onClick={exportPDF}
-                      className="px-3.5 py-2 bg-zinc-900/40 hover:bg-red-500/5 text-zinc-350 hover:text-red-400 border border-zinc-800/80 hover:border-red-500/30 rounded-xl font-mono font-bold text-xs uppercase transition-all duration-300 flex items-center justify-center gap-1.5 cursor-pointer"
+                      className="px-3.5 py-2 bg-red-500 hover:bg-red-600 text-black border border-red-400 rounded-xl font-mono font-bold text-xs uppercase transition-all duration-300 hover:scale-[1.01] active:scale-[0.99] flex items-center justify-center gap-1.5 cursor-pointer shadow-[0_0_20px_rgba(239,68,68,0.35)]"
                     >
-                      <FileDown className="h-3.5 w-3.5" />
+                      <FileDown className="h-3.5 w-3.5 text-black stroke-[2.5]" />
                       PDF Report
                     </button>
                     <button
