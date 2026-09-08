@@ -121,7 +121,6 @@ export default function ContactPage() {
                 <p className="eyebrow mb-5 text-white/40">Response Time</p>
                 <p className="text-sm leading-8 text-[var(--muted)]">
                   All inquiries answered within <span className="text-[var(--gold)]">one business day</span>.
-                  Critical incidents: 24x7 via our SOC hotline.
                 </p>
               </article>
             </div>

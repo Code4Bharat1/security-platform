@@ -89,50 +89,19 @@ export default function Webrecon() {
       setScannedDomain(target);
       setLoading(true);
       try {
-        if (recordType === "ALL") {
-          const types = ["A", "AAAA", "MX", "TXT", "NS"];
-          const responses = await Promise.all(
-            types.map(async (type) => {
-              try {
-                const res = await fetch(`${API_BASE}/dns/resolve`, {
-                  method: "POST",
-                  headers: { 
-                    "Content-Type": "application/json",
-                    Authorization: `Bearer ${token}`
-                  },
-                  body: JSON.stringify({ domain: target, type }),
-                });
-                const data = await res.json();
-                return { type, data: data.success ? data.data : null };
-              } catch (_) {
-                return { type, data: null };
-              }
-            })
-          );
-
-          const combinedAnswer = [];
-          responses.forEach(({ data }) => {
-            if (data && Array.isArray(data.Answer)) {
-              combinedAnswer.push(...data.Answer);
-            }
-          });
-
-          setResult({ Answer: combinedAnswer });
-        } else {
-          const res = await fetch(`${API_BASE}/dns/resolve`, {
-            method: "POST",
-            headers: { 
-              "Content-Type": "application/json",
-              Authorization: `Bearer ${token}`
-            },
-            body: JSON.stringify({ domain: target, type: recordType }),
-          });
-          const data = await res.json();
-          if (!res.ok || !data?.success) {
-            throw new Error(data?.error || `Request failed (${res.status})`);
-          }
-          setResult(data.data);
+        const res = await fetch(`${API_BASE}/dns/resolve`, {
+          method: "POST",
+          headers: { 
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`
+          },
+          body: JSON.stringify({ domain: target, type: recordType }),
+        });
+        const data = await res.json();
+        if (!res.ok || !data?.success) {
+          throw new Error(data?.error || `Request failed (${res.status})`);
         }
+        setResult(data.data);
       } catch (err) {
         setError(err?.message || "Error fetching DNS data");
       } finally {
@@ -176,6 +145,19 @@ export default function Webrecon() {
         }
 
         setScan({ ...data, domain: target, urlUsed: target });
+
+        // Also populate DNS result table if present in recon scan
+        if (data.dns) {
+          const combinedAnswer = [];
+          RECORD_TYPES.forEach((type) => {
+            if (Array.isArray(data.dns[type]?.Answer)) {
+              combinedAnswer.push(...data.dns[type].Answer);
+            }
+          });
+          if (combinedAnswer.length > 0) {
+            setResult({ Answer: combinedAnswer });
+          }
+        }
       } catch (err) {
         setScanError(err?.message || "Deep scan failed");
       } finally {
@@ -342,23 +324,43 @@ export default function Webrecon() {
                   })}
                 </div>
 
-                <button
-                  onClick={handleLookup}
-                  disabled={loading || !domain}
-                  className="w-full bg-red-500 hover:bg-red-600 text-black rounded-xl font-mono font-bold text-xs uppercase py-4 transition-all duration-300 hover:scale-[1.01] active:scale-[0.99] flex items-center justify-center gap-2 cursor-pointer hover:shadow-[0_0_20px_rgba(239,68,68,0.2)] focus:outline-none"
-                >
-                  {loading ? (
-                    <>
-                      <Loader2 className="w-4 h-4 animate-spin text-black" />
-                      Resolving DNS Records...
-                    </>
-                  ) : (
-                    <>
-                      <Search className="w-4 h-4 text-black" />
-                      Execute DNS Lookup
-                    </>
-                  )}
-                </button>
+                <div className="flex flex-col sm:flex-row gap-3 pt-1">
+                  <button
+                    onClick={handleDeepScan}
+                    disabled={scanLoading || !domain}
+                    className="flex-1 bg-red-500 hover:bg-red-600 text-black rounded-xl font-mono font-bold text-xs uppercase py-4 transition-all duration-300 hover:scale-[1.01] active:scale-[0.99] flex items-center justify-center gap-2 cursor-pointer hover:shadow-[0_0_20px_rgba(239,68,68,0.2)] focus:outline-none"
+                  >
+                    {scanLoading ? (
+                      <>
+                        <Loader2 className="w-4 h-4 animate-spin text-black" />
+                        Running Website Recon...
+                      </>
+                    ) : (
+                      <>
+                        <Activity className="w-4 h-4 text-black" />
+                        Run Complete Website Recon
+                      </>
+                    )}
+                  </button>
+
+                  <button
+                    onClick={handleLookup}
+                    disabled={loading || !domain}
+                    className="sm:w-52 bg-zinc-800 hover:bg-zinc-700 text-zinc-100 border border-zinc-700 hover:border-red-500/40 rounded-xl font-mono font-bold text-xs uppercase py-4 transition-all duration-300 flex items-center justify-center gap-2 cursor-pointer focus:outline-none"
+                  >
+                    {loading ? (
+                      <>
+                        <Loader2 className="w-4 h-4 animate-spin text-red-400" />
+                        Resolving DNS...
+                      </>
+                    ) : (
+                      <>
+                        <Search className="w-4 h-4 text-red-400" />
+                        Quick DNS Lookup
+                      </>
+                    )}
+                  </button>
+                </div>
               </div>
             </div>
 

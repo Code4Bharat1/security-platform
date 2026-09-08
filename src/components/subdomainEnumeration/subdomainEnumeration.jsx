@@ -104,7 +104,6 @@ export default function SubdomainScanner() {
   };
 
   const downloadPDF = async () => {
-    if (!results || results.length === 0) return;
     const cleanDomain = (scannedDomain || domain).trim().toLowerCase() || "unknown-domain";
     
     // Import toast if not already in context
@@ -112,7 +111,7 @@ export default function SubdomainScanner() {
     toast.loading("Generating PDF Report...", { id: "pdf-gen" });
 
     try {
-      await generateSubdomainPDF(
+      const doc = await generateSubdomainPDF(
         results,
         stats,
         cleanDomain,
@@ -122,10 +121,51 @@ export default function SubdomainScanner() {
           }
         }
       );
+
+      // Also persist/sync to backend history so it is immediately visible in /history and /admin/reports
+      try {
+        if (doc && typeof doc.output === "function") {
+          const arrayBuffer = doc.output("arraybuffer");
+          const bytes = new Uint8Array(arrayBuffer);
+          let binary = "";
+          for (let i = 0; i < bytes.byteLength; i++) {
+            binary += String.fromCharCode(bytes[i]);
+          }
+          const base64 = btoa(binary);
+          const token = typeof window !== "undefined" ? localStorage.getItem("token") : null;
+          if (token) {
+            const fileName = `Subdomain_Scanner_Report_${cleanDomain}_${Date.now()}.pdf`;
+            await fetch(`${API_URL}/history/upload`, {
+              method: "POST",
+              headers: {
+                "Content-Type": "application/json",
+                Authorization: `Bearer ${token}`
+              },
+              body: JSON.stringify({
+                toolName: "Subdomain Enumeration",
+                target: cleanDomain,
+                fileName,
+                fileBufferBase64: base64,
+                details: {
+                  domain: cleanDomain,
+                  total: stats?.total ?? results.length,
+                  durationMs: stats?.durationMs,
+                  startedAt: stats?.startedAt,
+                  finishedAt: stats?.finishedAt,
+                  results
+                }
+              })
+            });
+          }
+        }
+      } catch (uploadErr) {
+        console.warn("[SubdomainScanner] History upload background sync notice:", uploadErr);
+      }
+
       toast.success("PDF report downloaded!", { id: "pdf-gen" });
     } catch (err) {
-      console.error(err);
-      toast.error("Failed to generate PDF report", { id: "pdf-gen" });
+      console.error("PDF generation error:", err);
+      toast.error("Failed to generate PDF report: " + (err?.message || "Unknown error"), { id: "pdf-gen" });
     }
   };
 

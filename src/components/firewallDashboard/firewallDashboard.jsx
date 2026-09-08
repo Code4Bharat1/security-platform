@@ -2,8 +2,6 @@
 
 import React, { useState } from "react";
 import { 
-  FileText, 
-  FileDown, 
   Shield, 
   AlertTriangle, 
   CheckCircle2, 
@@ -37,78 +35,9 @@ export default function FirewallDashboard({ data }) {
     </span>
   );
 
-  const safeNameFromUrl = (u) => {
-    try { return new URL(u).hostname; }
-    catch { return String(u || "site").replace(/[^a-z0-9.-]/gi, "_"); }
-  };
-
   const handleDownloadPdf = () => {
     if (!data) return;
     generateWafPDF(data, setPdfProgress);
-  };
-
-  const handleDownloadTxt = () => {
-    if (!data) return;
-
-    const {
-      url = "-",
-      statusCode = "-",
-      protectionLevel = "None",
-      detected = false,
-      firewallName = "None",
-      serverHeader = "N/A",
-    } = data;
-
-    const allHeaders = data.headers || data.rawHeaders || null;
-
-    const lines = [];
-    lines.push("WAF Security Detection Report");
-    lines.push("====================================");
-    lines.push(`Generated:        ${new Date().toLocaleString()}`);
-    lines.push(`URL:              ${url}`);
-    lines.push(`HTTP Status:      ${statusCode}`);
-    lines.push(`Protection Level: ${protectionLevel}`);
-    lines.push(`Firewall Detected:${detected ? " " + firewallName : " None"}`);
-    lines.push(`Server Header:    ${serverHeader || "N/A"}`);
-    lines.push("");
-
-    lines.push("Matched Headers");
-    lines.push("------------------------------------");
-    if (matchedHeaders.length) {
-      matchedHeaders.forEach(({ header, value }) => {
-        lines.push(`${header}: ${String(value ?? "")}`);
-      });
-    } else {
-      lines.push("None");
-    }
-    lines.push("");
-
-    lines.push("Security Headers Detected");
-    lines.push("------------------------------------");
-    if (securityHeadersDetected.length) {
-      securityHeadersDetected.forEach((h) => lines.push(h));
-    } else {
-      lines.push("None");
-    }
-    lines.push("");
-
-    if (allHeaders && Object.keys(allHeaders).length) {
-      lines.push("All Response Headers");
-      lines.push("------------------------------------");
-      Object.entries(allHeaders).forEach(([k, v]) => {
-        lines.push(`${k}: ${String(v)}`);
-      });
-      lines.push("");
-    }
-
-    const blob = new Blob([lines.join("\n")], { type: "text/plain;charset=utf-8" });
-    const link = document.createElement("a");
-    link.href = URL.createObjectURL(blob);
-    link.download = `Firewall_Report_${safeNameFromUrl(url)}.txt`;
-    document.body.appendChild(link);
-    link.click();
-    URL.revokeObjectURL(link.href);
-    link.remove();
   };
 
   if (!data) {
@@ -164,13 +93,6 @@ export default function FirewallDashboard({ data }) {
                 PDF Report
               </>
             )}
-          </button>
-          <button
-            onClick={handleDownloadTxt}
-            className="px-4 py-2.5 bg-zinc-900/40 hover:bg-blue-500/5 text-zinc-300 hover:text-blue-400 border border-zinc-800/80 hover:border-blue-500/30 rounded-xl font-mono font-bold text-xs uppercase transition-all duration-300 hover:scale-[1.01] active:scale-[0.99] flex items-center justify-center gap-1.5"
-          >
-            <FileDown className="w-3.5 h-3.5" />
-            TXT Report
           </button>
         </div>
       </div>

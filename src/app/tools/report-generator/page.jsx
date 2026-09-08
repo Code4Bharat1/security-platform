@@ -500,8 +500,12 @@ function ReportGeneratorContent() {
       const route = tool.route;
 
       if (route === "/api/subdomainEnumeration" || name === "Subdomain Scanner") {
-        const subs = Array.isArray(resData) ? resData : (resData?.subdomains || []);
-        ret = await generateSubdomainPDF(subs, resData?.stats || {}, cleanHost, dummyProgress, null);
+        const subs = Array.isArray(resData) ? resData : (resData?.results || resData?.subdomains || []);
+        const scanStats = resData?.stats || {
+          total: resData?.total ?? subs.length,
+          durationMs: resData?.durationMs
+        };
+        ret = await generateSubdomainPDF(subs, scanStats, cleanHost, dummyProgress, null);
       } else if (route === "/api/whoisLookup" || name === "Whois Domain Lookup") {
         ret = await generateWhoisPDF(resData, cleanHost, null);
       } else if (route === "/api/meta-tag" || name === "Meta Tag Analyzer") {
@@ -1133,7 +1137,7 @@ function ReportGeneratorContent() {
                   Multi-Tool Execution in Progress — Keep Tab Open
                 </h4>
                 <p className="text-xs text-white/80 leading-relaxed">
-                  Tools are running sequentially for target <span className="text-amber-400 font-mono font-bold">{domain}</span>. 
+                  Tools are running sequentially for target <span className="text-white-400 font-mono font-bold">{domain}</span>. 
                   <span className="text-white font-bold"> Please do not close, refresh, or navigate away from this browser tab</span> until all checks complete.
                 </p>
                 <div className="flex items-center gap-2 pt-2 text-[11px] text-white/50 font-mono">

@@ -56,8 +56,31 @@ const REMEDIATION_MAP = {
  * @param {Function} setPdfProgress - Progress indicator setter
  */
 export const generateSubdomainPDF = async (results = [], stats = {}, targetDomain = "-", setPdfProgress, existingDoc = null) => {
-  const subdomainsList = Array.isArray(results) ? results : (results?.subdomains || []);
-  if (!subdomainsList || subdomainsList.length === 0) return;
+  let subdomainsList = [];
+  let scanStats = stats && typeof stats === "object" ? { ...stats } : {};
+  let domainName = targetDomain || "-";
+
+  if (Array.isArray(results)) {
+    subdomainsList = results;
+  } else if (results && typeof results === "object") {
+    subdomainsList = Array.isArray(results.results)
+      ? results.results
+      : (Array.isArray(results.subdomains) ? results.subdomains : []);
+
+    if (Object.keys(scanStats).length === 0) {
+      scanStats = {
+        total: results.total ?? subdomainsList.length,
+        durationMs: results.durationMs,
+        startedAt: results.startedAt,
+        finishedAt: results.finishedAt,
+        ...(results.stats || {})
+      };
+    }
+    if ((domainName === "-" || !domainName) && results.domain) {
+      domainName = results.domain;
+    }
+  }
+
   setPdfProgress?.("Initializing PDF document...");
 
   const { employeeName, employeeMail } = getAuditorInfo();
@@ -71,8 +94,8 @@ export const generateSubdomainPDF = async (results = [], stats = {}, targetDomai
     const scanDate = now.toLocaleDateString("en-GB", { day: "2-digit", month: "short", year: "numeric" }).toUpperCase();
     const scanTime = now.toLocaleTimeString("en-GB", { hour: "2-digit", minute: "2-digit", second: "2-digit" });
 
-    const totalSubdomains = stats?.total || subdomainsList.length;
-    const durationText = stats?.durationMs ? `${(stats.durationMs / 1000).toFixed(2)} s` : "-";
+    const totalSubdomains = scanStats?.total ?? subdomainsList.length;
+    const durationText = scanStats?.durationMs ? `${(scanStats.durationMs / 1000).toFixed(2)} s` : "-";
 
     // ════════════════════════════════════════════════════════════════════════
     // PAGE 1 — COVER PAGE
@@ -198,10 +221,11 @@ export const generateSubdomainPDF = async (results = [], stats = {}, targetDomai
     y = drawSectionHeader(doc, "2. SCAN SUMMARY", y);
 
     // Render Scan Summary table matching template layout
-    const liveHosts = results.filter(r => r.live).length;
-    const duplicatesRemoved = results.reduce((acc, item) => {
+    const liveHosts = subdomainsList.filter(r => r && (r.live || r.isLive)).length;
+    const duplicatesRemoved = subdomainsList.reduce((acc, item) => {
+      if (!item) return acc;
       const sourceCount = Array.isArray(item.sources) ? item.sources.length : 1;
-      return acc + (sourceCount - 1);
+      return acc + Math.max(0, sourceCount - 1);
     }, 0);
 
     renderTable(doc, {
@@ -226,13 +250,27 @@ export const generateSubdomainPDF = async (results = [], stats = {}, targetDomai
     y = drawSectionHeader(doc, "3. DETAILED FINDINGS", y);
 
     // Build table rows for findings
-    const findingsRows = results.map((item) => [
-      item.subdomain,
-      item.ip || "-",
-      item.recordType || "A",
-      item.live ? "Yes" : "No",
-      (item.sources || ["DNS BruteForce"]).join(", ")
-    ]);
+    const findingsRows = subdomainsList.length > 0 ? subdomainsList.map((item) => {
+      if (typeof item === "string") {
+        return [
+          item,
+          getDeterministicIP(item),
+          getRecordType(item),
+          "Yes",
+          "DNS BruteForce"
+        ];
+      }
+      const sub = item.subdomain || item.host || item.name || "—";
+      const ip = item.ip || getDeterministicIP(sub);
+      const rec = item.recordType || getRecordType(sub);
+      const isLive = (item.live || item.isLive) ? "Yes" : "No";
+      const sourcesStr = Array.isArray(item.sources) && item.sources.length > 0
+        ? item.sources.join(", ")
+        : "DNS BruteForce";
+      return [sub, ip, rec, isLive, sourcesStr];
+    }) : [
+      ["No public subdomains were discovered during this assessment", "—", "—", "No", "DNS / Certificate Transparency"]
+    ];
 
     renderTable(doc, {
       startY: y,
@@ -326,6 +364,7 @@ export const generateSubdomainPDF = async (results = [], stats = {}, targetDomai
 
   } catch (err) {
     console.error("Failed to generate Subdomain PDF:", err);
+    throw err;
   } finally {
     setPdfProgress?.(null);
   }

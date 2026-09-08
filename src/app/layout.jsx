@@ -4,7 +4,7 @@ import "./globals.css";
 import Navbar from "@/components/layout/navbar";
 import Footer from "@/components/layout/footer";
 import WhatsApp from '@/components/WhatsApp/WhatsApp';
-import Chatbot from '@/components/Chatbot/chatbot';
+// import Chatbot from '@/components/Chatbot/chatbot';
 import { Toaster } from 'react-hot-toast';
 import { GoogleOAuthProvider } from '@react-oauth/google';
 import { AuthProvider } from "@/context/AuthContext";
@@ -85,7 +85,7 @@ export default function RootLayout({ children }) {
               },
             }} />
             < WhatsApp />
-            < Chatbot />
+            {/* < Chatbot /> */}
             <Footer />
             </PlanProvider>
           </AuthProvider>
